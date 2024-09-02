@@ -11,6 +11,9 @@ export class Users {
   @Column({ name: 'login', type: 'varchar', length: 255 })
   login: string;
 
+  @Column({ name: 'email', type: 'varchar', length: 255, nullable: true  })
+  email: string;
+  
   @Column({ name: 'senha', type: 'varchar', length: 255 })
   senha: string;
 }
