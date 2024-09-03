@@ -12,6 +12,7 @@ Essa rota permite buscar requisições com filtros opcionais e suporta paginaç�
 - `page` (opcional): Especifica a página dos resultados que será retornada (default: `1`).
 - `limit` ou `take` (opcional): Especifica o número máximo de registros que serão retornados por página (default: `10`).
 
+
 ### Exemplo de Requisição
 
 ```bash
