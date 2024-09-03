@@ -4,11 +4,17 @@ import {
   Post,
   Body,
   UseGuards,
+  Delete,
+  Param,
+  Query,
+  Put,
 
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UsersDto } from './users.dto';
+import { UsersDto, UserUpdateDto } from './users.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { FindAllParams } from './users.dto';
+import { query } from 'express';
 
 @UseGuards(AuthGuard)
 @Controller('users')
@@ -21,22 +27,22 @@ export class UsersController {
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  async findAll(@Query() params: FindAllParams): Promise<UsersDto[]> {
+    return await this.usersService.findAll(params);
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.usersService.findOne(+id);
-  // }
+  @Delete('/:id')
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(+id);
+  }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.usersService.update(+id, updateUserDto);
-  // }
+  @Get('/:id')
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(+id);
+  }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.usersService.remove(+id);
-  // }
+  @Put('/:id')
+  update(@Param('id') id: number, @Body() updateUserDto: UserUpdateDto) {
+    return this.usersService.update(+id, updateUserDto);
+  }
 }
