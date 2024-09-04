@@ -1,7 +1,5 @@
 import { Entity, PrimaryColumn, Column } from 'typeorm';
 
-
- 
 @Entity('PPESSOA', { schema: 'RM' })
 export class PPessoa {
   @PrimaryColumn({ type: 'number', name: 'CODIGO' })

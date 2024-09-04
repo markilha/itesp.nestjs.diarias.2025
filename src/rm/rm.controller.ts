@@ -12,5 +12,15 @@ export class RmController {
     async findAll(@Query() params: FindAllParams): Promise<RMPessoaDto[]> {
       return await this.rmService.findAll(params);
     }
+    @Get('func')
+
+    async getFunc() {
+      return this.rmService.findAllFuncs();
+    }
+    
+    @Get('ppesso-func')
+    async findPessoaFunc(@Query() params: FindAllParams): Promise<RMPessoaDto[]> {
+      return this.rmService.findPessoaWithFunc(params);
+    }
 
 }
