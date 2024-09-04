@@ -4,6 +4,8 @@ import { AuthModule } from './auth/auth.module';
 import { DbUsersModule } from './db_users/db.users.module';
 import { S001RequisicaoModule } from './s001_requisicao/s001_requisicao.module';
 import { DbReqModule } from './db_requisicao/db.req.module';
+import { RmModule } from './rm/rm.module';
+import { DbRmModule } from './db_rm/db_rm.module';
 
 
 @Module({
@@ -12,7 +14,9 @@ import { DbReqModule } from './db_requisicao/db.req.module';
     DbUsersModule,   
     AuthModule,
     S001RequisicaoModule,
-    DbReqModule,   
+    DbReqModule,
+    RmModule,
+    DbRmModule    
   ],
   controllers: [],
   providers: [],
