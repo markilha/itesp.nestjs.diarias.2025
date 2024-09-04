@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Requisicao } from 'src/db/entities/requisicao.entity';
+import { Requisicao } from 'src/db_requisicao/entities/requisicao.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams } from './requisicao.dto';
 
 @Injectable()
 export class S001RequisicaoService {
   constructor(
-    @InjectRepository(Requisicao)
+    @InjectRepository(Requisicao, 'db_requisicao')
     private requisicaoRepository: Repository<Requisicao>,
   ) {}
 

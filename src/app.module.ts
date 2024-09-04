@@ -1,17 +1,18 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { DbModule } from './db/db.module';
+import { DbUsersModule } from './db_users/db.users.module';
 import { S001RequisicaoModule } from './s001_requisicao/s001_requisicao.module';
+import { DbReqModule } from './db_requisicao/db.req.module';
+
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    DbModule,
-    UsersModule,
+    DbUsersModule,   
     AuthModule,
     S001RequisicaoModule,
+    DbReqModule,   
   ],
   controllers: [],
   providers: [],
