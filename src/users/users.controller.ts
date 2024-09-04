@@ -15,8 +15,7 @@ import { UsersDto, UserUpdateDto } from './users.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { FindAllParams } from './users.dto';
 
-
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard) 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
