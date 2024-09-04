@@ -1,25 +1,23 @@
-import { IsNumber, MaxLength, MinLength } from 'class-validator';
+import {  MaxLength, MinLength } from 'class-validator';
 
 export class UsersDto {
-  @IsNumber()
-  readonly id?: number;
+ 
+  readonly USER_ID?: number;
 
   @MinLength(3)
   @MaxLength(100)
-  readonly nome: string;
-
-  readonly login: string;
-
-  readonly senha: string;
+  readonly  REAL_NAME: string;
+  readonly USERCS_NAME: string;
+   USER_PWD: string;
 }
 export class UserUpdateDto {
-  readonly nome?: string;
-  readonly login?: string;
+  readonly REAL_NAME?: string;
+  readonly USERCS_NAME?: string;
 }
 
 export interface FindAllParams {
-  nome: string;
-  login: string;
+  REAL_NAME: string;
+  USERCS_NAME: string;
 }
 
 export enum StatusDto {

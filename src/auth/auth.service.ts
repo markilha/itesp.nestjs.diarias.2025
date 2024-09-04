@@ -20,13 +20,14 @@ export class AuthService {
 
   async signIn(login: string, senha: string): Promise<AuthResponseDto> {
     const fountUser = await this.usersService.findByUserName(login);
-    if (!fountUser || !bcryptCompareSync(senha, fountUser.senha)) {
+    
+    if (!fountUser || !bcryptCompareSync(senha, fountUser.USER_PWD)) {
       throw new UnauthorizedException('Usuário ou senha inválidos');
     }
   
     const payload = {
-      sub: fountUser.id,
-      login: fountUser.login,
+      sub: fountUser.USER_ID,
+      login: fountUser.USERCS_NAME,
     };
     const token = this.jwtService.sign(payload);
   
