@@ -1,16 +1,12 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm'; 
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { S001RequisicaoController } from './s001_requisicao.controller';
 import { S001RequisicaoService } from './s001_requisicao.service';
-import {Requisicao} from 'src/database/db_oracle/entities/requisicao.entity'
-
+import { Requisicao } from 'src/database/db_oracle/entities/requisicao.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Requisicao]),
-  ],
+  imports: [TypeOrmModule.forFeature([Requisicao])],
   controllers: [S001RequisicaoController],
   providers: [S001RequisicaoService],
 })
 export class S001RequisicaoModule {}
-
