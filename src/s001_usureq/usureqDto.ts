@@ -10,5 +10,14 @@ export class UsureqDto {
     page?: number;
     limit?: number;
   }
+
+  export enum TipoUsoMov {
+    IDA = 'I',
+    VOLTA = 'V',
+    IDA_E_VOLTA = 'O',
+    RESPONSAVEL = 'R',
+    NEGADA = 'N',
+  }
+  
   
   

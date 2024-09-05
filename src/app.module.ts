@@ -6,6 +6,8 @@ import { S001RequisicaoModule } from './s001_requisicao/s001_requisicao.module';
 import { RmModule } from './rm/rm.module';
 import { DbOraModule } from './database/db_oracle/db.ora.module';
 import { S001UsureqModule } from './s001_usureq/s001_usureq.module';
+import { PfuncaoModule } from './pfuncao/pfuncao.module';
+import { PsecaoModule } from './psecao/psecao.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { S001UsureqModule } from './s001_usureq/s001_usureq.module';
     S001RequisicaoModule,
     RmModule,
     S001UsureqModule,
+    PfuncaoModule,
+    PsecaoModule,
   ],
   controllers: [],
   providers: [],
