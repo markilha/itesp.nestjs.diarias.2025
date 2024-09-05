@@ -4,15 +4,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
-    TypeOrmModule.forRootAsync({   
-      name: 'db_rm',    
+    TypeOrmModule.forRootAsync({ 
       useFactory: async (configService: ConfigService) => ({        
         type: 'oracle',
-        host: configService.get<string>('DB_HOST'),
-        port: +configService.get<string>('DB_PORT'),
-        username: configService.get<string>('DB_USER_RM'),
-        password: configService.get<string>('DB_PASS_RM'),
-        serviceName: configService.get<string>('DB_NAME_RM'),
+        host: configService.get<string>('DB_HOST_ORA'),
+        port: +configService.get<string>('DB_PORT_ORA'),
+        username: configService.get<string>('DB_USER_ORA'),
+        password: configService.get<string>('DB_PASS_ORA'),
+        serviceName: configService.get<string>('DB_NAME_ORA'), 
         entities: [__dirname + '/entities/**'],      
         synchronize: false,
       }),
@@ -20,4 +19,4 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     }),
   ],
 })
-export class DbRmModule {}
+export class DbOraModule {}

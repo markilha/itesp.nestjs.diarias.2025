@@ -7,12 +7,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     TypeOrmModule.forRootAsync({   
       name: 'db_users',    
       useFactory: async (configService: ConfigService) => ({        
-        type: 'oracle',
+        type: 'mysql',
         host: configService.get<string>('DB_HOST'),
-        port: +configService.get<string>('DB_PORT'),
-        username: configService.get<string>('DB_USER_USERCS'),
-        password: configService.get<string>('DB_PASS_USERCS'),
-        serviceName: configService.get<string>('DB_NAME_USERCS'), // Usando serviceName para o nome do serviço
+        port: +configService.get<string>('DB_PORT_USER'),
+        username: configService.get<string>('DB_USER_USER'),
+        password: configService.get<string>('DB_PASS_USER'),
+        database: configService.get<string>('DB_NAME_USER'), 
         entities: [__dirname + '/entities/**'],
         migrations: [__dirname + '/migrations/*.ts'],
         synchronize: false,

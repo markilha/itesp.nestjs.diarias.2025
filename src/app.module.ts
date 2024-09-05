@@ -1,22 +1,22 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
-import { DbUsersModule } from './db_users/db.users.module';
+import { DbUsersModule } from './database/db_users/db.users.module';
 import { S001RequisicaoModule } from './s001_requisicao/s001_requisicao.module';
-import { DbReqModule } from './db_requisicao/db.req.module';
+
 import { RmModule } from './rm/rm.module';
-import { DbRmModule } from './db_rm/db_rm.module';
+
+import { DbOraModule } from './database/db_oracle/db.ora.module';
 
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    DbOraModule,
     DbUsersModule,   
     AuthModule,
-    S001RequisicaoModule,
-    DbReqModule,
-    RmModule,
-    DbRmModule    
+    S001RequisicaoModule,  
+    RmModule,   
   ],
   controllers: [],
   providers: [],

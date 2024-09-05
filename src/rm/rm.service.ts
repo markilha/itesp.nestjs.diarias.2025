@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PPessoa } from 'src/db_rm/entities/rm.entity';
-import { pFunc } from 'src/db_rm/entities/pfunc.entity';
+import { PPessoa } from 'src/database/db_oracle/entities/ppessoa.entity';
+import { pFunc } from 'src/database/db_oracle/entities/pfunc.entity';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { FindAllParams, RMPessoaDto } from './rm.dto';
 
 @Injectable()
 export class RmService {
   constructor(
-    @InjectRepository(PPessoa, 'db_rm')
+    @InjectRepository(PPessoa)
     private rmRepository: Repository<PPessoa>,
-    @InjectRepository(pFunc, 'db_rm')
+    @InjectRepository(pFunc)
     private funcRepository: Repository<pFunc>,
   ) {}
 
@@ -46,8 +46,8 @@ export class RmService {
     }
   
     const queryBuilder = this.rmRepository
-      .createQueryBuilder('pessoa')
-      .innerJoinAndSelect(pFunc, 'func', 'pessoa.codusuario = func.CHAPA');
+    .createQueryBuilder('pessoa')
+    .innerJoinAndSelect('pFunc', 'func', 'pessoa.codusuario = func.CHAPA');
   
     // Adiciona filtros ao queryBuilder
     if (params.nome) {

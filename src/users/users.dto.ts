@@ -2,22 +2,22 @@ import {  MaxLength, MinLength } from 'class-validator';
 
 export class UsersDto {
  
-  readonly USER_ID?: number;
+  readonly id_usuario?: number;
 
   @MinLength(3)
   @MaxLength(100)
-  readonly  REAL_NAME: string;
-  readonly USERCS_NAME: string;
-   USER_PWD: string;
+  readonly  nome: string;
+  readonly login: string;
+   senha: string;
 }
 export class UserUpdateDto {
-  readonly REAL_NAME?: string;
-  readonly USERCS_NAME?: string;
+  readonly nome?: string;
+  readonly login?: string;
 }
 
 export interface FindAllParams {
-  REAL_NAME: string;
-  USERCS_NAME: string;
+  nome: string;
+  login: string;
 }
 
 export enum StatusDto {
