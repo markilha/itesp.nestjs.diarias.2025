@@ -1,40 +1,51 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { S001Usureq } from 'src/database/db_oracle/entities/usureq.entity';
+import { UsuReqEntity } from 'src/database/db_oracle/entities/usureq.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, UsureqDto } from './usureqDto';
+import { ReturnUserReqDto } from './returnUserReqDto';
+
 
 @Injectable()
 export class S001UsureqService {
   constructor(
-    @InjectRepository(S001Usureq)
-    private usureqRepository: Repository<S001Usureq>,
+    @InjectRepository(UsuReqEntity)
+    private usureqRepository: Repository<UsuReqEntity>,
   ) {}
 
-  async findAll(params: FindAllParams): Promise<S001Usureq[]> {
-    const searchParams: FindOptionsWhere<S001Usureq> = {};
+  async findAll(params: FindAllParams): Promise<ReturnUserReqDto[]> {
+    const searchParams: FindOptionsWhere<UsuReqEntity> = {}; 
 
     if (params.reqIdCodigo) {
       searchParams.reqIdCodigo = params.reqIdCodigo;
     }
+    if (params.chapa) {
+      searchParams.chapa = params.chapa;
+    }
 
+    let users: UsuReqEntity[];
+    
     if (params.page && params.limit) {
       const page = params.page;
       const limit = params.limit;
       const skip = (page - 1) * limit;
 
-      return await this.usureqRepository.find({
+      users = await this.usureqRepository.find({
         where: searchParams,
         skip,
         take: limit,
+        relations: ['pessoa'], 
+      });
+    } else {
+      users = await this.usureqRepository.find({
+        where: searchParams,
         relations: ['pessoa'],
       });
     }
+   
+    return users.map(user => new ReturnUserReqDto(user));
+}
 
-    return await this.usureqRepository.find({
-      where: searchParams,
-    });
-  }
 
   async create(usureqDto: UsureqDto): Promise<UsureqDto> {
     try {

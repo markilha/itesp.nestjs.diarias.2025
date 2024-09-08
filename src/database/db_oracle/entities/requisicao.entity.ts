@@ -1,8 +1,8 @@
 import { Entity, Column, PrimaryGeneratedColumn,  OneToMany } from 'typeorm';
-import { S001Usureq } from './usureq.entity';
+import { UsuReqEntity } from './usureq.entity';
 
 @Entity('S001_REQUISICAO', { schema: 'TRANSPORTE' })
-export class Requisicao {
+export class RequisicaoEntity {
   @PrimaryGeneratedColumn({ name: 'REQ_ID_CODIGO' })
   reqIdCodigo: number;
 
@@ -71,8 +71,8 @@ export class Requisicao {
   @Column({ name: 'REQ_GOVERNADOR', nullable: true, type: 'char', length: 1 })
   reqGovernador: string;
 
-  @OneToMany(() => S001Usureq,(usu) => usu.requisicao)  
-  usereq?: S001Usureq[];
+  @OneToMany(() => UsuReqEntity,(usu) => usu.requisicao)  
+  usereq?: UsuReqEntity[];
 
 
   

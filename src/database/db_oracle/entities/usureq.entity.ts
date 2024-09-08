@@ -1,9 +1,9 @@
 import { Entity,  JoinColumn,  ManyToOne,  OneToOne,  PrimaryColumn } from 'typeorm';
-import { Requisicao } from './requisicao.entity';
-import { PPessoa } from './ppessoa.entity';
+import { RequisicaoEntity } from './requisicao.entity';
+import { PPessoaEntity } from './ppessoa.entity';
 
 @Entity({ name: 'S001_USUREQ', schema: 'TRANSPORTE' })
-export class S001Usureq {
+export class UsuReqEntity {
   @PrimaryColumn({ name: 'REQ_ID_CODIGO', type: 'number' })
   reqIdCodigo: number;
 
@@ -16,14 +16,12 @@ export class S001Usureq {
   @PrimaryColumn({ name: 'USU_MOV', type: 'char', length: 1 })
   usuMov: string;
 
-  @ManyToOne(() => Requisicao, (requi) => requi.usereq)
+  @ManyToOne(() => RequisicaoEntity, (requi) => requi.usereq)
   @JoinColumn({ name: 'REQ_ID_CODIGO', referencedColumnName: 'reqIdCodigo' })
-  requisicao?: Requisicao;
+  requisicao?: RequisicaoEntity;
 
-  @OneToOne(() => PPessoa, (pessoa) => pessoa.usereq)
+  @OneToOne(() => PPessoaEntity, (pessoa) => pessoa.usereq)
   @JoinColumn({ name: 'CHAPA', referencedColumnName: 'codusuario' })
-  pessoa?: PPessoa;
-
-
+  pessoa?: PPessoaEntity;
 
 }

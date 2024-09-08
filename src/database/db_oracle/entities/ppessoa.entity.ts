@@ -1,8 +1,8 @@
 import { Entity, PrimaryColumn, Column, OneToOne } from 'typeorm';
-import { S001Usureq } from './usureq.entity';
+import { UsuReqEntity } from './usureq.entity';
 
 @Entity('PPESSOA', { schema: 'RM' })
-export class PPessoa {
+export class PPessoaEntity {
   @PrimaryColumn({ type: 'number', name: 'CODIGO' })
   codigo: number;
   @Column({ type: 'varchar2', length: 20, name: 'CODUSUARIO', nullable: true })
@@ -110,8 +110,8 @@ export class PPessoa {
   @Column({ type: 'varchar2', length: 3, name: 'ANO1EMPREGO', nullable: true })
   ANO1EMPREGO: number;
 
-  @OneToOne(() => S001Usureq, (pessoa) => pessoa.pessoa)
-  usereq?: S001Usureq;
+  @OneToOne(() => UsuReqEntity, (pessoa) => pessoa.pessoa)
+  usereq?: UsuReqEntity;
 
 
     // @Column({ type: 'number', name: 'IDIMAGEM', nullable: true })

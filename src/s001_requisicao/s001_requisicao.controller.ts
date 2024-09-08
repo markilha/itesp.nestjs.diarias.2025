@@ -12,7 +12,7 @@ import {
 import { S001RequisicaoService } from './s001_requisicao.service';
 import { RequisicaoDto, FindAllParams } from './requisicao.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { Requisicao } from 'src/database/db_oracle/entities/requisicao.entity';
+import { RequisicaoEntity } from 'src/database/db_oracle/entities/requisicao.entity';
 
 @UseGuards(AuthGuard)
 @Controller('requisicao')
@@ -27,7 +27,7 @@ export class S001RequisicaoController {
   @Post()
   async createRequisicao(
     @Body() requisicaoDto: RequisicaoDto,
-  ): Promise<Requisicao> {
+  ): Promise<RequisicaoEntity> {
     return await this.requisicao.createRequisicao(requisicaoDto);
   }
 

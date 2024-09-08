@@ -2,13 +2,14 @@ import { Body, Controller, Delete, Get, HttpCode, Post, Query, UseGuards } from 
 import { S001UsureqService } from './s001_usureq.service';
 import { FindAllParams, UsureqDto } from './usureqDto';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { ReturnUserReqDto } from './returnUserReqDto';
 
 @UseGuards(AuthGuard)
 @Controller('usureq')
 export class S001UsureqController {
   constructor(private readonly usureq: S001UsureqService) {}
   @Get()
-  async findAll(@Query() params: FindAllParams): Promise<UsureqDto[]> {
+  async findAll(@Query() params: FindAllParams): Promise<ReturnUserReqDto[]> {    
     return await this.usureq.findAll(params);
   }
 

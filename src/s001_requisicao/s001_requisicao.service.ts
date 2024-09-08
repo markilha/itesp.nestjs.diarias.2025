@@ -6,7 +6,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Requisicao } from 'src/database/db_oracle/entities/requisicao.entity';
+import { RequisicaoEntity } from 'src/database/db_oracle/entities/requisicao.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams } from './requisicao.dto';
 import { RequisicaoDto } from './requisicao.dto';
@@ -14,13 +14,13 @@ import { RequisicaoDto } from './requisicao.dto';
 @Injectable()
 export class S001RequisicaoService {
   constructor(
-    @InjectRepository(Requisicao)
-    private requisicaoRepository: Repository<Requisicao>,
+    @InjectRepository(RequisicaoEntity)
+    private requisicaoRepository: Repository<RequisicaoEntity>,
   ) {}
 
-  async findAll(params: FindAllParams): Promise<Requisicao[]> {
+  async findAll(params: FindAllParams): Promise<RequisicaoEntity[]> {
     try {
-      const searchParams: FindOptionsWhere<Requisicao> = {};
+      const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
       if (params.reqIdCodigo) {
         searchParams.reqIdCodigo = params.reqIdCodigo;
       }
@@ -53,7 +53,7 @@ export class S001RequisicaoService {
     }
   }
 
-  async createRequisicao(requisicaoDto: RequisicaoDto): Promise<Requisicao> {
+  async createRequisicao(requisicaoDto: RequisicaoDto): Promise<RequisicaoEntity> {
     try {
       const novaRequisicao = this.requisicaoRepository.create(requisicaoDto);
       return await this.requisicaoRepository.save(novaRequisicao);
