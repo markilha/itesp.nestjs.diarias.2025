@@ -1,4 +1,5 @@
-import { Entity,  PrimaryColumn } from 'typeorm';
+import { Entity,  JoinColumn,  ManyToOne,  PrimaryColumn } from 'typeorm';
+import { Requisicao } from './requisicao.entity';
 
 @Entity({ name: 'S001_USUREQ', schema: 'TRANSPORTE' })
 export class S001Usureq {
@@ -13,4 +14,11 @@ export class S001Usureq {
 
   @PrimaryColumn({ name: 'USU_MOV', type: 'char', length: 1 })
   usuMov: string;
+
+  @ManyToOne(() => Requisicao, (requi) => requi.usereq)
+  @JoinColumn({ name: 'REQ_ID_CODIGO', referencedColumnName: 'reqIdCodigo' })
+  requisicao?: Requisicao;
+
+
+
 }

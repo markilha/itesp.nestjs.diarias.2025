@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn,  OneToMany } from 'typeorm';
+import { S001Usureq } from './usureq.entity';
 
 @Entity('S001_REQUISICAO', { schema: 'TRANSPORTE' })
 export class Requisicao {
@@ -69,4 +70,10 @@ export class Requisicao {
 
   @Column({ name: 'REQ_GOVERNADOR', nullable: true, type: 'char', length: 1 })
   reqGovernador: string;
+
+  @OneToMany(() => S001Usureq,(usu) => usu.requisicao)  
+  usereq?: S001Usureq[];
+
+
+  
 }

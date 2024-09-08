@@ -1,8 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Requisicao } from 'src/database/db_oracle/entities/requisicao.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams } from './requisicao.dto';
+import { RequisicaoDto } from './requisicao.dto';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -12,34 +19,70 @@ export class S001RequisicaoService {
   ) {}
 
   async findAll(params: FindAllParams): Promise<Requisicao[]> {
-    const searchParams: FindOptionsWhere<Requisicao> = {};
-
-    if (params.reqIdCodigo) {
-      searchParams.reqIdCodigo = params.reqIdCodigo;
-    }
-    if (params.codMunicipio) {
-      searchParams.codMunicipio = params.codMunicipio;
-    }
-    if (params.reqStatus) {
-      searchParams.reqStatus = params.reqStatus;
-    }
-
-    // Verifica se os parâmetros page e limit foram fornecidos
-    if (params.page && params.limit) {
-      const page = params.page;
-      const limit = params.limit;
-      const skip = (page - 1) * limit;
-      // Retorna os registros paginados
+    try {
+      const searchParams: FindOptionsWhere<Requisicao> = {};
+      if (params.reqIdCodigo) {
+        searchParams.reqIdCodigo = params.reqIdCodigo;
+      }
+      if (params.codMunicipio) {
+        searchParams.codMunicipio = params.codMunicipio;
+      }
+      if (params.reqStatus) {
+        searchParams.reqStatus = params.reqStatus;
+      }
+      if (params.page && params.limit) {
+        const page = params.page;
+        const limit = params.limit;
+        const skip = (page - 1) * limit;
+        // Retorna os registros paginados
+        return await this.requisicaoRepository.find({
+          where: searchParams,
+          skip,
+          take: limit,
+          relations: ['usereq']
+        });
+      }
       return await this.requisicaoRepository.find({
         where: searchParams,
-        skip,
-        take: limit,
       });
+    } catch (error) {
+      throw new HttpException(
+        'Erro ao buscar as requisições',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
+  }
 
-    // Se page e limit não forem fornecidos, retorna todos os registros
-    return await this.requisicaoRepository.find({
-      where: searchParams,
-    });
+  async createRequisicao(requisicaoDto: RequisicaoDto): Promise<Requisicao> {
+    try {
+      const novaRequisicao = this.requisicaoRepository.create(requisicaoDto);
+      return await this.requisicaoRepository.save(novaRequisicao);
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new HttpException('Requisição já existe', HttpStatus.CONFLICT);
+      } else {
+        throw new HttpException(
+          'Erro ao criar a requisição',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+  } 
+
+
+  async removeRequisicao(reqIdCodigo: number): Promise<{message:string}> {
+    try {
+      const result = await this.requisicaoRepository.delete(reqIdCodigo);
+      if (result.affected === 0) {
+        throw new HttpException(`Requisição com ID ${reqIdCodigo} não encontrada.`,HttpStatus.NOT_FOUND);
+      }
+      return { message: 'Requisição removida com sucesso.' };
+
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Erro ao remover a requisição',
+        error.message,
+      );
+    }
   }
 }

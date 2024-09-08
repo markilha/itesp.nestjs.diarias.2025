@@ -64,6 +64,7 @@ export class DiariaService {
       }
 
       let diariaParcial = diariaBase; // Valor cheio do último dia
+
       diariaParcial = DataUtils.arredondar(diariaParcial);
 
       if (alojamento) {
@@ -79,10 +80,12 @@ export class DiariaService {
       const diffTime = Math.abs(
         dataRetornoDate.getTime() - dataSaidaDate.getTime(),
       );
+
       const totalDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
       // Retirada o ultimo dia para calcular a diaria parcial
       let diariaIntegral = diariaBase * (totalDias - 1);
+      
       diariaIntegral = DataUtils.arredondar(diariaIntegral);
 
       let resultadofinal = '';

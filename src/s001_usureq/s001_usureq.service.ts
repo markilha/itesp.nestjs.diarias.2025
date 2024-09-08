@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { S001Usureq } from 'src/database/db_oracle/entities/usureq.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams } from './usureqDto';
+import { FindAllParams, UsureqDto } from './usureqDto';
 
 @Injectable()
 export class S001UsureqService {
@@ -33,5 +33,35 @@ export class S001UsureqService {
     return await this.usureqRepository.find({
       where: searchParams,
     });
+  }
+
+  async create(usureqDto: UsureqDto): Promise<UsureqDto> {
+    try {
+      const novoUsuReq = this.usureqRepository.create(usureqDto);
+      return await this.usureqRepository.save(novoUsuReq);
+    } catch (error) {
+      throw new HttpException(
+        'Erro ao criar a requisição',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async remove(dto: UsureqDto): Promise<{ message: string }> {
+    try {
+      const result = await this.usureqRepository.delete({
+        reqIdCodigo: dto.reqIdCodigo,
+        chapa: dto.chapa,
+      });
+
+      if (result.affected === 0) {
+        return {
+          message: `Requisição com ID ${dto.reqIdCodigo} e chapa ${dto.chapa} não encontrada.`,
+        };
+      }
+      return { message: 'Requisição removida com sucesso.' };
+    } catch (error) {
+      throw new HttpException('Erro ao remover a requisição', error.message);
+    }
   }
 }
