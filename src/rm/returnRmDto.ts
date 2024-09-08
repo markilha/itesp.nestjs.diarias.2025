@@ -24,6 +24,7 @@ export class returnRmDto {
   email?: string;
   codprofissao?: number;
   codocupacao?: string;
+  pfunc?: any;
   
   constructor(rmEntity: PPessoaEntity) {
     this.codigo = rmEntity.codigo;
@@ -50,5 +51,6 @@ export class returnRmDto {
     this.email = rmEntity.email;
     this.codprofissao = rmEntity.codprofissao;
     this.codocupacao = rmEntity.codocupacao;
+    this.pfunc = rmEntity.pfunc;
   }
 }

@@ -1,18 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PPessoaEntity } from 'src/database/db_oracle/entities/ppessoa.entity';
-import { pFunc } from 'src/database/db_oracle/entities/pfunc.entity';
+import { PFuncEntity } from 'src/database/db_oracle/entities/pfunc.entity';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { FindAllParams, RMPessoaDto } from './rm.dto';
 import { returnRmDto } from './returnRmDto';
+import { returnFuncDto } from './returnFuncDto';
 
 @Injectable()
 export class RmService {
   constructor(
     @InjectRepository(PPessoaEntity)
     private rmRepository: Repository<PPessoaEntity>,
-    @InjectRepository(pFunc)
-    private funcRepository: Repository<pFunc>,
+    @InjectRepository(PFuncEntity)
+    private funcRepository: Repository<PFuncEntity>,
   ) {}
 
   async findAll(params: FindAllParams): Promise<returnRmDto[]> {
@@ -22,22 +23,24 @@ export class RmService {
       searchParams['nome'] = ILike(`%${params.nome}%`);
     }
 
-    let rms;
+    let rms: PPessoaEntity[];
 
     // Verifica se os parâmetros page e limit foram fornecidos
     if (params.page && params.limit) {
       const page = params.page;
       const limit = params.limit;
       const skip = (page - 1) * limit;
-      // Retorna os registros paginados
+     
       rms = await this.rmRepository.find({
         where: searchParams,
         skip,
         take: limit,
+        relations: ['pfunc'],
       });
     } else {
       rms = await this.rmRepository.find({
         where: searchParams,
+        relations: ['pfunc'],
       });
     }
 
@@ -68,8 +71,7 @@ export class RmService {
       queryBuilder.skip(skip).take(limit);
     }
 
-    try {
-      // console.log(queryBuilder.getSql()); // Verifica a consulta SQL gerada
+    try {     
       return await queryBuilder.getMany();
     } catch (error) {
       console.error('Erro ao executar a consulta:', error);
@@ -77,7 +79,11 @@ export class RmService {
     }
   }
 
-  async findAllFuncs(): Promise<pFunc[]> {
-    return this.funcRepository.find();
+  async findAllFuncs(): Promise<returnFuncDto[]> {
+
+    let funcs: PFuncEntity[];
+    funcs = await this.funcRepository.find();
+    return funcs.map((func) => new returnFuncDto(func));
+   
   }
 }

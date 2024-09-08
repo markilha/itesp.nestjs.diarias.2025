@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'PFUNCAO', schema: 'RM' })
-export class Pfuncao {
+export class PfuncaoEntity {
   @PrimaryColumn({ type: 'varchar2', name: 'CODIGO' })
   CODIGO: string;
 

@@ -1,7 +1,8 @@
-import { Entity, Column, PrimaryColumn, Double } from 'typeorm';
+import { Entity, Column, PrimaryColumn, Double, OneToOne } from 'typeorm';
+import { PPessoaEntity } from './ppessoa.entity';
 
 @Entity('PFUNC', { schema: 'RM' })
-export class pFunc {
+export class PFuncEntity {
   @Column({ type: 'varchar2', length: 120, name: 'NOME', nullable: true })
   NOME: string;
 
@@ -29,4 +30,7 @@ export class pFunc {
 
   @Column({ type: 'varchar2', length: 120, name: 'GRUPOSALARIAL', nullable: true })
   GRUPOSALARIAL: string;
+
+  @OneToOne(() => PPessoaEntity, (ppessoa) => ppessoa.pfunc)  
+  pessoa?: PPessoaEntity;
 }

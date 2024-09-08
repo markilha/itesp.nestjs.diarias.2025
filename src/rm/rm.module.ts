@@ -3,12 +3,12 @@ import { RmController } from './rm.controller';
 import { RmService } from './rm.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PPessoaEntity } from 'src/database/db_oracle/entities/ppessoa.entity';
-import { pFunc } from 'src/database/db_oracle/entities/pfunc.entity';
+import { PFuncEntity } from 'src/database/db_oracle/entities/pfunc.entity';
 
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([PPessoaEntity, pFunc]),
+    TypeOrmModule.forFeature([PPessoaEntity, PFuncEntity]),
   ],
   controllers: [RmController],
   providers: [RmService]

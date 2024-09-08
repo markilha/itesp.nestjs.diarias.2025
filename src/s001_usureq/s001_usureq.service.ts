@@ -15,7 +15,6 @@ export class S001UsureqService {
 
   async findAll(params: FindAllParams): Promise<ReturnUserReqDto[]> {
     const searchParams: FindOptionsWhere<UsuReqEntity> = {}; 
-
     if (params.reqIdCodigo) {
       searchParams.reqIdCodigo = params.reqIdCodigo;
     }

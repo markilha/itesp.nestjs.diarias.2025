@@ -1,10 +1,12 @@
-import { Entity, PrimaryColumn, Column, OneToOne } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn } from 'typeorm';
 import { UsuReqEntity } from './usureq.entity';
+import { PFuncEntity } from './pfunc.entity';
 
 @Entity('PPESSOA', { schema: 'RM' })
 export class PPessoaEntity {
   @PrimaryColumn({ type: 'number', name: 'CODIGO' })
   codigo: number;
+
   @Column({ type: 'varchar2', length: 20, name: 'CODUSUARIO', nullable: true })
   codusuario: string;
 
@@ -112,6 +114,12 @@ export class PPessoaEntity {
 
   @OneToOne(() => UsuReqEntity, (pessoa) => pessoa.pessoa)
   usereq?: UsuReqEntity;
+
+  @OneToOne(() => PFuncEntity, (pfunc) => pfunc.pessoa)
+  @JoinColumn({ name: 'CODUSUARIO', referencedColumnName: 'CHAPA' })
+  pfunc?: PFuncEntity;
+
+ 
 
 
     // @Column({ type: 'number', name: 'IDIMAGEM', nullable: true })
