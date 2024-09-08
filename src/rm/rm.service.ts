@@ -30,7 +30,7 @@ export class RmService {
       return await this.rmRepository.find({
         where: searchParams,
         skip,
-        take: limit,
+        take: limit        
       });
     }
     

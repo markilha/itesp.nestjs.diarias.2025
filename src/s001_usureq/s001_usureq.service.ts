@@ -27,6 +27,7 @@ export class S001UsureqService {
         where: searchParams,
         skip,
         take: limit,
+        relations: ['pessoa'],
       });
     }
 

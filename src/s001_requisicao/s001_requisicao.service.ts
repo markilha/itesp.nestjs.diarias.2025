@@ -39,7 +39,7 @@ export class S001RequisicaoService {
           where: searchParams,
           skip,
           take: limit,
-          relations: ['usereq']
+          relations: ['usereq','usereq.pessoa'],
         });
       }
       return await this.requisicaoRepository.find({

@@ -1,4 +1,5 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToOne } from 'typeorm';
+import { S001Usureq } from './usureq.entity';
 
 @Entity('PPESSOA', { schema: 'RM' })
 export class PPessoa {
@@ -108,6 +109,9 @@ export class PPessoa {
 
   @Column({ type: 'varchar2', length: 3, name: 'ANO1EMPREGO', nullable: true })
   ANO1EMPREGO: number;
+
+  @OneToOne(() => S001Usureq, (pessoa) => pessoa.pessoa)
+  usereq?: S001Usureq;
 
 
     // @Column({ type: 'number', name: 'IDIMAGEM', nullable: true })

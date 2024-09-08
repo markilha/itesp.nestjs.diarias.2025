@@ -1,5 +1,6 @@
-import { Entity,  JoinColumn,  ManyToOne,  PrimaryColumn } from 'typeorm';
+import { Entity,  JoinColumn,  ManyToOne,  OneToOne,  PrimaryColumn } from 'typeorm';
 import { Requisicao } from './requisicao.entity';
+import { PPessoa } from './ppessoa.entity';
 
 @Entity({ name: 'S001_USUREQ', schema: 'TRANSPORTE' })
 export class S001Usureq {
@@ -18,6 +19,10 @@ export class S001Usureq {
   @ManyToOne(() => Requisicao, (requi) => requi.usereq)
   @JoinColumn({ name: 'REQ_ID_CODIGO', referencedColumnName: 'reqIdCodigo' })
   requisicao?: Requisicao;
+
+  @OneToOne(() => PPessoa, (pessoa) => pessoa.usereq)
+  @JoinColumn({ name: 'CHAPA', referencedColumnName: 'codusuario' })
+  pessoa?: PPessoa;
 
 
 
