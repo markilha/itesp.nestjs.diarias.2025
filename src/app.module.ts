@@ -8,6 +8,7 @@ import { DbOraModule } from './database/db_oracle/db.ora.module';
 import { S001UsureqModule } from './s001_usureq/s001_usureq.module';
 import { PfuncaoModule } from './pfuncao/pfuncao.module';
 import { PsecaoModule } from './psecao/psecao.module';
+import { ReqviagemModule } from './reqviagem/reqviagem.module';
 
 @Module({
   imports: [
@@ -20,6 +21,8 @@ import { PsecaoModule } from './psecao/psecao.module';
     S001UsureqModule,
     PfuncaoModule,
     PsecaoModule,
+    ReqviagemModule,
+    ReqviagemModule
   ],
   controllers: [],
   providers: [],
