@@ -11,6 +11,7 @@ import { PsecaoModule } from './psecao/psecao.module';
 import { ReqviagemModule } from './reqviagem/reqviagem.module';
 
 import { ReqnumerarioModule } from './reqnumerario/reqnumerario.module';
+import { SaqueModule } from './saque/saque.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { ReqnumerarioModule } from './reqnumerario/reqnumerario.module';
     PsecaoModule,
     ReqviagemModule,
     ReqviagemModule,
-    ReqnumerarioModule
+    ReqnumerarioModule,
+    SaqueModule
   ],
   controllers: [],
   providers: [],
