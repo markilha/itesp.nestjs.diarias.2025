@@ -1,48 +1,47 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ReqViagemEntity } from 'src/database/db_oracle/entities/reqviagem.entity';
+import { ReqNumerarioEntity } from 'src/database/db_oracle/entities/reqnumerario.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams,reqviagemDto } from './reqviagemDto';
-
+import { FindAllParams } from './reqnumerarioDto';
+import { ReqnumerarioDto } from './reqnumerarioDto';
 
 @Injectable()
-export class ReqviagemService {
+export class ReqnumerarioService {
   constructor(
-    @InjectRepository(ReqViagemEntity)
-    private readonly reqviagemRepository: Repository<ReqViagemEntity>,
+    @InjectRepository(ReqNumerarioEntity)
+    private readonly reqviagemRepository: Repository<ReqNumerarioEntity>,
   ) {}
 
-  async findAll(params: FindAllParams): Promise<reqviagemDto[]> {
+  async findAll(params: FindAllParams): Promise<ReqnumerarioDto[]> {
     try {
-      const searchParams: FindOptionsWhere<ReqViagemEntity> = {};
+      const searchParams: FindOptionsWhere<ReqNumerarioEntity> = {};
 
-       if (params.rnuIdCodigo) {
+      if (params.rnuIdCodigo) {
         searchParams.rnuIdCodigo = params.rnuIdCodigo;
       }
       if (params.reqIdCodigo) {
         searchParams.reqIdCodigo = params.reqIdCodigo;
       }
 
-
-      let reqviagems: ReqViagemEntity[] = [];
+      let reqnumerarios: ReqNumerarioEntity[] = [];
 
       if (params.page && params.limit) {
         const page = params.page;
         const limit = params.limit;
         const skip = (page - 1) * limit;
 
-        reqviagems = await this.reqviagemRepository.find({
+        reqnumerarios = await this.reqviagemRepository.find({
           where: searchParams,
           skip,
           take: limit,
         });
       } else {
-        reqviagems = await this.reqviagemRepository.find({
+        reqnumerarios = await this.reqviagemRepository.find({
           where: searchParams,
         });
       }
 
-      return reqviagems.map((reqv) => new reqviagemDto(reqv));
+      return reqnumerarios.map((reqv) => new ReqnumerarioDto(reqv));
     } catch (error) {
       throw new HttpException(
         'Erro ao buscar as requisições',

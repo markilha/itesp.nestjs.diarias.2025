@@ -10,6 +10,8 @@ import { PfuncaoModule } from './pfuncao/pfuncao.module';
 import { PsecaoModule } from './psecao/psecao.module';
 import { ReqviagemModule } from './reqviagem/reqviagem.module';
 
+import { ReqnumerarioModule } from './reqnumerario/reqnumerario.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -22,7 +24,8 @@ import { ReqviagemModule } from './reqviagem/reqviagem.module';
     PfuncaoModule,
     PsecaoModule,
     ReqviagemModule,
-    ReqviagemModule
+    ReqviagemModule,
+    ReqnumerarioModule
   ],
   controllers: [],
   providers: [],
