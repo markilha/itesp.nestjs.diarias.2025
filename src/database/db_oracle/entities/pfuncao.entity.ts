@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn} from 'typeorm';
 
 @Entity({ name: 'PFUNCAO', schema: 'RM' })
 export class PfuncaoEntity {
@@ -22,4 +22,6 @@ export class PfuncaoEntity {
 
   @Column({ type: 'varchar2', length: 10, nullable: true })
   CODFUNCAOCHEFIA: string;
+
+
 }

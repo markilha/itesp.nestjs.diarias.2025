@@ -1,8 +1,19 @@
-import { Entity, Column, PrimaryGeneratedColumn,  OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
 import { UsuReqEntity } from './usureq.entity';
+import { TransMeioEntity } from './transmeio.entity';
+import { MunicipioEntity } from './municipios.entity';
+import { RequisicaoDestinoEntity } from './requisicaoDestino.entity';
 
 @Entity('S001_REQUISICAO', { schema: 'TRANSPORTE' })
 export class RequisicaoEntity {
+
   @PrimaryGeneratedColumn({ name: 'REQ_ID_CODIGO' })
   reqIdCodigo: number;
 
@@ -71,9 +82,20 @@ export class RequisicaoEntity {
   @Column({ name: 'REQ_GOVERNADOR', nullable: true, type: 'char', length: 1 })
   reqGovernador: string;
 
-  @OneToMany(() => UsuReqEntity,(usu) => usu.requisicao)  
+  @OneToMany(() => UsuReqEntity, (usu) => usu.requisicao)
   usereq?: UsuReqEntity[];
 
+  @OneToOne(() => TransMeioEntity, (trans) => trans.requisicao)
+  @JoinColumn({ name: 'TRA_ID_CODIGO', referencedColumnName: 'traIdCodigo' })
+  transmeio: TransMeioEntity;
 
-  
+  @OneToOne(() => MunicipioEntity, (muni) => muni.requisicao)
+  @JoinColumn({ name: 'COD_MUNICIP', referencedColumnName: 'codMunicipio' })
+  municipio: MunicipioEntity;
+
+  @OneToOne(() => RequisicaoDestinoEntity, (muni) => muni.requisicao)
+  @JoinColumn({ name: 'REQ_ID_CODIGO', referencedColumnName: 'reqIdCodigo' })
+  destino: RequisicaoDestinoEntity;
+
+
 }

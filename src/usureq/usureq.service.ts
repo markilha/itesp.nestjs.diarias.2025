@@ -2,28 +2,31 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsuReqEntity } from 'src/database/db_oracle/entities/usureq.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, UsureqDto } from './usureqDto';
+import { FindAllParams, UsureqDto, CreateUsureqDto } from './usureqDto';
 import { ReturnUserReqDto } from './returnUserReqDto';
 
-
 @Injectable()
-export class S001UsureqService {
+export class UsureqService {
   constructor(
     @InjectRepository(UsuReqEntity)
     private usureqRepository: Repository<UsuReqEntity>,
   ) {}
 
   async findAll(params: FindAllParams): Promise<ReturnUserReqDto[]> {
-    const searchParams: FindOptionsWhere<UsuReqEntity> = {}; 
+    const searchParams: FindOptionsWhere<UsuReqEntity> = {};
+
     if (params.reqIdCodigo) {
       searchParams.reqIdCodigo = params.reqIdCodigo;
     }
     if (params.chapa) {
       searchParams.chapa = params.chapa;
     }
+    if (params.usuMov) {
+      searchParams.usuMov = params.usuMov;
+    }
 
     let users: UsuReqEntity[];
-    
+
     if (params.page && params.limit) {
       const page = params.page;
       const limit = params.limit;
@@ -33,22 +36,38 @@ export class S001UsureqService {
         where: searchParams,
         skip,
         take: limit,
-        relations: ['pessoa'], 
+        relations: [
+          'pessoa',
+          'requisicao',
+          'requisicao.transmeio',
+          'requisicao.municipio',
+          'requisicao.destino',
+          'requisicao.destino.municipio',
+        ],
       });
     } else {
       users = await this.usureqRepository.find({
         where: searchParams,
-        relations: ['pessoa'],
+        relations: [
+          'pessoa',
+          'requisicao',
+          'requisicao.transmeio',
+          'requisicao.municipio',
+          'requisicao.destino',
+          'requisicao.destino.municipio',
+        ],
       });
     }
-   
-    return users.map(user => new ReturnUserReqDto(user));
-}
 
+    return users.map((user) => new ReturnUserReqDto(user));
+  }
 
-  async create(usureqDto: UsureqDto): Promise<UsureqDto> {
+  async create(createusureqDto: CreateUsureqDto): Promise<UsureqDto> {
     try {
-      const novoUsuReq = this.usureqRepository.create(usureqDto);
+      if (!createusureqDto.codColigada) {
+        createusureqDto.codColigada = 1;
+      }
+      const novoUsuReq = this.usureqRepository.create(createusureqDto);
       return await this.usureqRepository.save(novoUsuReq);
     } catch (error) {
       throw new HttpException(

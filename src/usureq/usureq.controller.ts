@@ -1,22 +1,30 @@
-import { Body, Controller, Delete, Get, HttpCode, Post, Query, UseGuards } from '@nestjs/common';
-import { S001UsureqService } from './s001_usureq.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { UsureqService } from './usureq.service';
 import { FindAllParams, UsureqDto } from './usureqDto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ReturnUserReqDto } from './returnUserReqDto';
 
 @UseGuards(AuthGuard)
 @Controller('usureq')
-export class S001UsureqController {
-  constructor(private readonly usureq: S001UsureqService) {}
+export class UsureqController {
+  constructor(private readonly usureq: UsureqService) {}
+
   @Get()
-  async findAll(@Query() params: FindAllParams): Promise<ReturnUserReqDto[]> {    
+  async findAll(@Query() params: FindAllParams): Promise<ReturnUserReqDto[]> {
     return await this.usureq.findAll(params);
   }
 
   @Post()
-  async create(
-    @Body() usureqDto: UsureqDto,
-  ): Promise<UsureqDto> {
+  async create(@Body() usureqDto: UsureqDto): Promise<UsureqDto> {
     return await this.usureq.create(usureqDto);
   }
 
