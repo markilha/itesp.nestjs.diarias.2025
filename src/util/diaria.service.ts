@@ -44,9 +44,7 @@ export class DiariaService {
         case Destino.OUTRAS_LOCALIDADES:
           diariaBase = diariaBase;
           break;
-      }
-
-      // Artigo 5 - Sem pernoite
+      }      
 
       let diariaParcial40 = 0;
       let diariaParcial20 = 0;
@@ -77,8 +75,7 @@ export class DiariaService {
         diariaParcial40,
         diariaParcial20,
       };
-    } catch (error) {
-      // Captura de erro e resposta amigável
+    } catch (error) {    
       throw new Error(`Erro ao calcular diária: ${error.message}`);
     }
   }
