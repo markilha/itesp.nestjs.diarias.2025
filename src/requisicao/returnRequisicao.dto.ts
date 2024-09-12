@@ -42,8 +42,6 @@ export class ReturnRequisicaoDto {
   destino_local?: string;
   destino_municipio?: string;
   destino_populacao?: number;
-  salario?: number;
-
 
   constructor(requisicao: RequisicaoEntity) {
     this.reqIdCodigo = requisicao.reqIdCodigo;
@@ -61,7 +59,6 @@ export class ReturnRequisicaoDto {
     this.reqParcial = requisicao.reqParcial;
     this.reqEspecial = requisicao.reqEspecial;
     this.reqPacote = requisicao.reqPacote;
-
     this.transmeio = requisicao.transmeio
       ? requisicao.transmeio.traDescricao
       : null;
@@ -70,7 +67,7 @@ export class ReturnRequisicaoDto {
       : null;
     this.destino_local = requisicao.destino ? requisicao.destino.desLocal : null;
     this.destino_municipio = requisicao.destino ? requisicao.destino.municipio.munCidade: null;
-    this.destino_populacao = requisicao.destino ? requisicao.destino.municipio.munPopulacao : null;    
+    this.destino_populacao = requisicao.destino ? requisicao.destino.municipio.munPopulacao : null;     
 
   }
 }

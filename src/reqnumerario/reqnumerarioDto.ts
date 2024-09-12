@@ -72,3 +72,28 @@ export interface FindAllParams {
   limit: number;
 }
 
+
+export class CreateReqnumerarioDto {
+  rnuIdCodigo?: number;
+  chapa: string;
+  sqeIdCodigo?: number;
+  reqIdCodigo: number;
+  iteIdCodigo: number;
+  rreIdCodigo: number;
+  dirIdCodigo: number;
+  rnuDtInicio: Date;
+  rnuHoraInicio: string;
+  rnuDtFim: Date;
+  rnuHoraFim: string;
+  rnuIntPrev: string;
+  rnuParPrev: string;
+  rnuIntReal: string;
+  rnuParReal: string;
+  rnuMotivo: string;
+  rnuPacote: string;
+  rnuGovernador: string;
+  rnuVlIntegral: number;
+  rnuVlParcial: number;
+  rnuVlBase: number;
+}
+

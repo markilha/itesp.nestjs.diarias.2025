@@ -61,7 +61,4 @@ export class ReqNumerarioEntity {
 
   @Column({ type: 'number', precision: 10, scale: 2, name: 'RNU_VLBASE', nullable: true })
   rnuVlBase: number;
-  
-
-
 }

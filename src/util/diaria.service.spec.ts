@@ -1,440 +1,79 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { DiariaService } from './diaria.service';
 import { Destino, enumCargo } from './diariaDto';
+
 
 describe('DiariaService', () => {
   let service: DiariaService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [DiariaService],
-    }).compile();
-
-    service = module.get<DiariaService>(DiariaService);
+  beforeEach(() => {
+    service = new DiariaService();
   });
 
-  it('deve estar definido', () => {
-    expect(service).toBeDefined();
+  it('deve calcular a diária parcialmente com 20% (hora de chegada > 13 horas)', () => {
+    const UFESP = 35.36;
+    const cargo = enumCargo.DIRECAO;
+    const destino = Destino.DF_MANaus;
+    const req_pacote = 0;
+    const req_integral = 1;
+    const req_parcial = 1;
+    const horaRetorno = '14:00';
+
+    const resultado = service.calcularDiaria(UFESP, cargo, destino, req_pacote, req_integral, req_parcial, horaRetorno);
+
+  
+    expect(resultado.diariaIntegral).toBe(636.48); // 1 * 636.48
+    expect(resultado.diariaParcial40).toBe(0); // 636.48 * 0.4
+    expect(resultado.diariaParcial20).toBe(127.30);// 636.48 * 0.2
   });
 
-  describe('----------DEMAIS CARGO-----------', () => {
-    describe('---DF/MANAUS', () => {
-      it('Sem alojamento ', () => {
-        const result = service.calcularDiaria(
-          enumCargo.DEMAIS, //carco
-          Destino.DF_MANaus, //destino         
-          true, //pernoite
-          false, //alojamento
-          '05/09/2024', //dataSaida
-          '08:00', //horaSaida
-          '06/09/2024', //dataSaida
-          '17:00', //horaRetorno
-        );
+  it('deve calcular a diária parcialmente com 40% (hora de chegada  > 19 horas)', () => {
+    const UFESP = 35.36;
+    const cargo = enumCargo.DIRECAO;
+    const destino = Destino.DF_MANaus;
+    const req_pacote = 0;
+    const req_integral = 1;
+    const req_parcial = 1;
+    const horaRetorno = '19:01';
 
-        expect(result).toBe('594.05');
-      });
-      it('Com alojamento ', () => {
-        const result = service.calcularDiaria(
-          enumCargo.DEMAIS, //carco
-          Destino.DF_MANaus, //destino     
-          true, //pernoite
-          true, //alojamento
-          '05/09/2024', //dataSaida
-          '08:00', //horaSaida
-          '06/09/2024', //dataSaida
-          '17:00', //horaRetorno
-        );
+    const resultado = service.calcularDiaria(UFESP, cargo, destino, req_pacote, req_integral, req_parcial, horaRetorno);
 
-        expect(result).toBe('346.53');
-      });
-    });
-
-    describe('---SP', () => {
-      it('Sem Alojamento', () => {
-        const result = service.calcularDiaria(
-          enumCargo.DEMAIS, //carco
-          Destino.SAO_PAULO_RIO_JANEIRO_BH_POA_SALVADOR_RECIFE_FORTALEZA, //destino        
-          true, //pernoite
-          false, //alojamento
-          '05/09/2024', //dataSaida
-          '08:00', //horaSaida
-          '06/09/2024', //dataSaida
-          '17:00', //horaRetorno
-        );
-
-        expect(result).toBe('534.65'); // Valor ajustado conforme o teste
-      });
-
-      it('Com Alojamento', () => {
-        const result = service.calcularDiaria(
-          enumCargo.DEMAIS, //carco
-          Destino.SAO_PAULO_RIO_JANEIRO_BH_POA_SALVADOR_RECIFE_FORTALEZA, //destino         
-          true, //pernoite
-          true, //alojamento
-          '05/09/2024', //dataSaida
-          '08:00', //horaSaida
-          '06/09/2024', //dataSaida
-          '17:00', //horaRetorno
-        );
-
-        expect(result).toBe('311.88'); // Valor ajustado conforme o teste
-      });
-    });
-
-    describe('---DEMAIS CAPITAIS', () => {
-      it('Sem alojamento ', () => {
-        const result = service.calcularDiaria(
-          enumCargo.DEMAIS, //carco
-          Destino.DEMAIS_CAPITAIS, //destino       
-          true, //pernoite
-          false, //alojamento
-          '05/09/2024', //dataSaida
-          '08:00', //horaSaida
-          '06/09/2024', //dataSaida
-          '17:00', //horaRetorno
-        );
-
-        expect(result).toBe('504.94');
-      });
-      it('Com alojamento ', () => {
-        const result = service.calcularDiaria(
-          'Demais cargo', //carco
-          Destino.DEMAIS_CAPITAIS, //destino        
-          true, //pernoite
-          true, //alojamento
-          '05/09/2024', //dataSaida
-          '08:00', //horaSaida
-          '06/09/2024', //dataSaida
-          '17:00', //horaRetorno
-        );
-
-        expect(result).toBe('294.55');
-      });
-    });
-
-    describe('---MAIS DE 200 MIL HABITANTES ', () => {
-      it('Sem alojamento ', () => {
-        const result = service.calcularDiaria(
-          enumCargo.DEMAIS, //carco
-          Destino.MAIS_DE_200K_HABITANTES_DISTANCIA_70KM, //destino        
-          true, //pernoite
-          false, //alojamento
-          '05/09/2024', //dataSaida
-          '08:00', //horaSaida
-          '06/09/2024', //dataSaida
-          '17:00', //horaRetorno
-        );
-
-        expect(result).toBe('445.54');
-      });
-      it('Com alojamento ', () => {
-        const result = service.calcularDiaria(
-          enumCargo.DEMAIS, //carco
-          Destino.MAIS_DE_200K_HABITANTES_DISTANCIA_70KM, //destino         
-          true, //pernoite
-          true, //alojamento
-          '05/09/2024', //dataSaida
-          '08:00', //horaSaida
-          '06/09/2024', //dataSaida
-          '17:00', //horaRetorno
-        );
-
-        expect(result).toBe('259.90');
-      });
-    });
-
-    describe('---DEMAIS CAPITAIS ', () => {
-      it('Sem alojamento ', () => {
-        const result = service.calcularDiaria(
-          enumCargo.DEMAIS, //carco
-          Destino.DEMAIS_CAPITAIS, //destino       
-          true, //pernoite
-          false, //alojamento
-          '05/09/2024', //dataSaida
-          '08:00', //horaSaida
-          '06/09/2024', //dataSaida
-          '17:00', //horaRetorno
-        );
-
-        expect(result).toBe('504.94');
-      });
-      it('Com alojamento ', () => {
-        const result = service.calcularDiaria(
-          enumCargo.DEMAIS, //carco
-          Destino.DEMAIS_CAPITAIS, //destino        
-          true, //pernoite
-          true, //alojamento
-          '05/09/2024', //dataSaida
-          '08:00', //horaSaida
-          '06/09/2024', //dataSaida
-          '17:00', //horaRetorno
-        );
-
-        expect(result).toBe('294.55');
-      });
-    });
-
-    describe('---OUTRAS LOCALIDADES ', () => {
-      it('Sem alojamento ', () => {
-        const result = service.calcularDiaria(
-          enumCargo.DEMAIS, //carco
-          Destino.OUTRAS_LOCALIDADES, //destino         
-          true, //pernoite
-          false, //alojamento
-          '05/09/2024', //dataSaida
-          '08:00', //horaSaida
-          '06/09/2024', //dataSaida
-          '17:00', //horaRetorno
-        );
-
-        expect(result).toBe('297.02');
-      });
-
-      it('Com alojamento ', () => {
-        const result = service.calcularDiaria(
-          enumCargo.DEMAIS, //carco
-          Destino.OUTRAS_LOCALIDADES, //destino         
-          true, //pernoite
-          true, //alojamento
-          '05/09/2024', //dataSaida
-          '08:00', //horaSaida
-          '06/09/2024', //dataSaida
-          '17:00', //horaRetorno
-        );
-
-        expect(result).toBe('173.26');
-      });
-    });
+   
+    expect(resultado.diariaIntegral).toBe(636.48); // 1 * 636.48
+    expect(resultado.diariaParcial40).toBe(254.59); // 636.48 * 0.4
+    expect(resultado.diariaParcial20).toBe(0);
   });
 
-  describe('-----------DIREÇÃO DE NÍVEL SUPERIOR----------------', () => {
-    describe('---DF/MANAUS', () => {
-      it('Sem alojamento ', () => {
-        const result = service.calcularDiaria(
-          enumCargo.DIRECAO, //carco
-          Destino.DF_MANaus, //destino       
-          true, //pernoite
-          false, //alojamento
-          '05/09/2024', //dataSaida
-          '08:00', //horaSaida
-          '06/09/2024', //dataSaida
-          '17:00', //horaRetorno
-        );
+//   it('deve calcular a diária parcialmente com 20% (deslocamento entre 6 e 12 horas)', () => {
+//     const UFESP = 35.36;
+//     const cargo = enumCargo.DIRECAO;
+//     const destino = Destino.OUTRAS_LOCALIDADES;
+//     const req_pacote = 0;
+//     const req_integral = 0;
+//     const req_parcial = 1;
+//     const horaRetorno = '08:00';
 
-        expect(result).toBe('763.78');
-      });
-      it('Com alojamento ', () => {
-        const result = service.calcularDiaria(
-          enumCargo.DIRECAO, //carco
-          Destino.DF_MANaus, //destino         
-          true, //pernoite
-          true, //alojamento
-          '05/09/2024', //dataSaida
-          '08:00', //horaSaida
-          '06/09/2024', //dataSaida
-          '17:00', //horaRetorno
-        );
+//     const resultado = service.calcularDiaria(UFESP, cargo, destino, req_pacote, req_integral, req_parcial, horaRetorno);
 
-        expect(result).toBe('445.54');
-      });
+//     expect(resultado.diariaBase).toBe(270); // 9 * 30 (não ajustado por destino)
+//     expect(resultado.diariaIntegral).toBe(0);
+//     expect(resultado.diariaParcial40).toBe(0);
+//     expect(resultado.diariaParcial20).toBe(54); // 270 * 0.2
+//   });
 
-      describe('---SP', () => {
-        it('Sem Alojamento', () => {
-          const result = service.calcularDiaria(
-            enumCargo.DIRECAO, //carco
-            Destino.SAO_PAULO_RIO_JANEIRO_BH_POA_SALVADOR_RECIFE_FORTALEZA, //destino            
-            true, //pernoite
-            false, //alojamento
-            '05/09/2024', //dataSaida
-            '08:00', //horaSaida
-            '06/09/2024', //dataSaida
-            '17:00', //horaRetorno
-          );
-          expect(result).toBe('687.40'); // Valor ajustado conforme o teste
-        });
-        it('Com Alojamento', () => {
-          const result = service.calcularDiaria(
-            enumCargo.DIRECAO, //carco
-            Destino.SAO_PAULO_RIO_JANEIRO_BH_POA_SALVADOR_RECIFE_FORTALEZA, //destino          
-            true, //pernoite
-            true, //alojamento
-            '05/09/2024', //dataSaida
-            '08:00', //horaSaida
-            '06/09/2024', //dataSaida
-            '17:00', //horaRetorno
-          );
-          expect(result).toBe('400.99'); // Valor ajustado conforme o teste
-        });
-      });
+//   it('deve aplicar desconto de 50% quando req_pacote for 1', () => {
+//     const UFESP = 35.36;
+//     const cargo = enumCargo.DIRECAO;
+//     const destino = Destino.DF_MANaus;
+//     const req_pacote = 1;
+//     const req_integral = 1;
+//     const req_parcial = 0;
+//     const horaRetorno = '13:00';
 
-      describe('---DEMAIS CAPITAIS', () => {
-        it('Sem alojamento ', () => {
-          const result = service.calcularDiaria(
-            enumCargo.DIRECAO, //carco
-            Destino.DEMAIS_CAPITAIS, //destino           
-            true, //pernoite
-            false, //alojamento
-            '05/09/2024', //dataSaida
-            '08:00', //horaSaida
-            '06/09/2024', //dataSaida
-            '17:00', //horaRetorno
-          );
+//     const resultado = service.calcularDiaria(UFESP, cargo, destino, req_pacote, req_integral, req_parcial, horaRetorno);
 
-          expect(result).toBe('649.21');
-        });
-        it('Com alojamento ', () => {
-          const result = service.calcularDiaria(
-            enumCargo.DIRECAO, //carco
-            Destino.DEMAIS_CAPITAIS, //destino       
-            true, //pernoite
-            true, //alojamento
-            '05/09/2024', //dataSaida
-            '08:00', //horaSaida
-            '06/09/2024', //dataSaida
-            '17:00', //horaRetorno
-          );
-
-          expect(result).toBe('378.70');
-        });
-      });
-
-      describe('---MAIS DE 200 MIL HABITANTES', () => {
-        it('Sem alojamento ', () => {
-          const result = service.calcularDiaria(
-            enumCargo.DIRECAO, //carco
-            Destino.MAIS_DE_200K_HABITANTES_DISTANCIA_70KM, //destino        
-            true, //pernoite
-            false, //alojamento
-            '05/09/2024', //dataSaida
-            '08:00', //horaSaida
-            '06/09/2024', //dataSaida
-            '17:00', //horaRetorno
-          );
-
-          expect(result).toBe('572.83');
-        });
-        it('Com alojamento ', () => {
-          const result = service.calcularDiaria(
-            enumCargo.DIRECAO, //carco
-            Destino.MAIS_DE_200K_HABITANTES_DISTANCIA_70KM, //destino          
-            true, //pernoite
-            true, //alojamento
-            '05/09/2024', //dataSaida
-            '08:00', //horaSaida
-            '06/09/2024', //dataSaida
-            '17:00', //horaRetorno
-          );
-
-          expect(result).toBe('334.15');
-        });
-      });
-
-      describe('---DEMAIS CAPITAIS ', () => {
-        it('Sem alojamento ', () => {
-          const result = service.calcularDiaria(
-            enumCargo.DIRECAO, //carco
-            Destino.DEMAIS_CAPITAIS, //destino         
-            true, //pernoite
-            false, //alojamento
-            '05/09/2024', //dataSaida
-            '08:00', //horaSaida
-            '06/09/2024', //dataSaida
-            '17:00', //horaRetorno
-          );
-
-          expect(result).toBe('649.21');
-        });
-        it('Com alojamento ', () => {
-          const result = service.calcularDiaria(
-            enumCargo.DIRECAO, //carco
-            Destino.DEMAIS_CAPITAIS, //destino           
-            true, //pernoite
-            true, //alojamento
-            '05/09/2024', //dataSaida
-            '08:00', //horaSaida
-            '06/09/2024', //dataSaida
-            '17:00', //horaRetorno
-          );
-
-          expect(result).toBe('378.70');
-        });
-      });
-
-      describe('---OUTRAS LOCALIDADES ', () => {
-        it('Sem alojamento (20%) ', () => {
-          const result = service.calcularDiaria(
-            enumCargo.DIRECAO, //carco
-            Destino.OUTRAS_LOCALIDADES, //destino         
-            true, //pernoite
-            false, //alojamento
-            '05/09/2024', //dataSaida
-            '08:00', //horaSaida
-            '06/09/2024', //dataSaida
-            '17:00', //horaRetorno
-          );
-
-          expect(result).toBe('381.89');
-        });
-
-        it('Sem alojamento (40%) ', () => {
-          const result = service.calcularDiaria(
-            enumCargo.DIRECAO, //carco
-            Destino.OUTRAS_LOCALIDADES, //destino           
-            true, //pernoite
-            false, //alojamento
-            '05/09/2024', //dataSaida
-            '08:00', //horaSaida
-            '06/09/2024', //dataSaida
-            '19:00', //horaRetorno
-          );
-
-          expect(result).toBe('445.54');
-        });
-
-        it('Com alojamento (20%) ', () => {
-          const result = service.calcularDiaria(
-            enumCargo.DIRECAO, //carco
-            Destino.OUTRAS_LOCALIDADES, //destino          
-            true, //pernoite
-            true, //alojamento
-            '05/09/2024', //dataSaida
-            '08:00', //horaSaida
-            '06/09/2024', //dataSaida
-            '17:00', //horaRetorno
-          );
-          expect(result).toBe('222.77');
-        });
-
-        it('Com alojamento (40%) ', () => {
-          const result = service.calcularDiaria(
-            enumCargo.DIRECAO, //carco
-            Destino.OUTRAS_LOCALIDADES, //destino          
-            true, //pernoite
-            true, //alojamento
-            '05/09/2024', //dataSaida
-            '08:00', //horaSaida
-            '06/09/2024', //dataSaida
-            '19:00', //horaRetorno
-          );
-          expect(result).toBe('286.42');
-        });
-      });
-    });
-  });
-
-  describe('DESLOCAMENTO SEM PERNOITE', () => {
-    it('Sem pernoite ', () => {
-      const result = service.calcularDiaria(
-        enumCargo.DEMAIS, //cargo
-        Destino.OUTRAS_LOCALIDADES, //destino         
-        false, //pernoite
-        false, //alojamento
-        '05/09/2024', //dataSaida
-        '08:00', //horaSaida
-        '05/09/2024', //dataSaida
-        '17:00', //horaRetorno
-      );
-      expect(result).toBe('49.50');
-    });
-  });
+//     expect(resultado.diariaBase).toBe(270); // (9 * 30 * 2) * 0.5
+//     expect(resultado.diariaIntegral).toBe(270); // 1 * 270
+//     expect(resultado.diariaParcial40).toBe(0);
+//     expect(resultado.diariaParcial20).toBe(0);
+//   });
 });

@@ -1,6 +1,6 @@
 import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Users } from 'src/database/db_users/entities/user.entity';
+import { Users } from 'src/database/db_mysql/entities/user.entity'; 
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { FindAllParams, UsersDto, UserUpdateDto } from './users.dto';
 import { hashSync as bcryptHashSync } from 'bcrypt';
@@ -8,7 +8,7 @@ import { hashSync as bcryptHashSync } from 'bcrypt';
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(Users, 'db_users')
+    @InjectRepository(Users, 'mysqlConnection')
     private usersRepository: Repository<Users>,
   ) {}
 

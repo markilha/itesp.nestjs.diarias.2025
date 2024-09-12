@@ -24,8 +24,8 @@ export class returnRmDto {
   email?: string;
   codprofissao?: number;
   codocupacao?: string;
-  pfunc?: any;
   salario?: number;
+  CODFUNCAO?: string;;
   
   constructor(rmEntity: PPessoaEntity) {
     this.codigo = rmEntity.codigo;
@@ -51,8 +51,9 @@ export class returnRmDto {
     this.datachegada = rmEntity.datachegada;
     this.email = rmEntity.email;
     this.codprofissao = rmEntity.codprofissao;
-    this.codocupacao = rmEntity.codocupacao;
-    this.pfunc = rmEntity.pfunc;
+    this.codocupacao = rmEntity.codocupacao; 
     this.salario = rmEntity.pfunc ? rmEntity.pfunc.SALARIO : undefined;
+    this.CODFUNCAO = rmEntity.pfunc ? rmEntity.pfunc.CODFUNCAO : undefined;
+    
   }
 }

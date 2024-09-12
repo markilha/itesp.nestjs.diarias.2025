@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
-import { DbUsersModule } from './database/db_users/db.users.module';
+import { DbUsersModule } from './database/db_mysql/db.users.module';
 import { S001RequisicaoModule } from './requisicao/s001_requisicao.module';
 import { RmModule } from './rm/rm.module';
 import { DbOraModule } from './database/db_oracle/db.ora.module';

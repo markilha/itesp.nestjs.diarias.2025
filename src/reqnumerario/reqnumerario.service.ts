@@ -2,15 +2,22 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ReqNumerarioEntity } from 'src/database/db_oracle/entities/reqnumerario.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams } from './reqnumerarioDto';
+import { CreateReqnumerarioDto, FindAllParams } from './reqnumerarioDto';
 import { ReqnumerarioDto } from './reqnumerarioDto';
+import { CreateReqNumerarioEntity } from 'src/database/db_mysql/entities/createReqNumerario.entity';
 
 @Injectable()
 export class ReqnumerarioService {
   constructor(
     @InjectRepository(ReqNumerarioEntity)
     private readonly reqviagemRepository: Repository<ReqNumerarioEntity>,
+    
+    @InjectRepository(CreateReqNumerarioEntity, 'mysqlConnection')
+    private readonly mysqlRepository: Repository<CreateReqNumerarioEntity>,
+
+
   ) {}
+
 
   async findAll(params: FindAllParams): Promise<ReqnumerarioDto[]> {
     try {
@@ -47,6 +54,33 @@ export class ReqnumerarioService {
         'Erro ao buscar as requisições',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  async create(createReqnumerarioDto: CreateReqnumerarioDto): Promise<ReqNumerarioEntity> {
+    try {     
+      const existingReqNumerario = await this.mysqlRepository.findOne({
+        where: {
+          chapa: createReqnumerarioDto.chapa,
+          reqIdCodigo: createReqnumerarioDto.reqIdCodigo,
+        },
+      });
+      const reqNumerario = this.mysqlRepository.create(createReqnumerarioDto); 
+      if (existingReqNumerario) {
+        throw new HttpException(
+          'Requisição já existe',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      return await this.mysqlRepository.save(reqNumerario);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Erro ao criar a requisição',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        error,
+      );
+      
     }
   }
 }

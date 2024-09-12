@@ -8,7 +8,7 @@ export class PFuncEntity {
   @Column({ type: 'varchar2', length: 120, name: 'NOME', nullable: true })
   NOME: string;
 
-  @PrimaryColumn({ type: 'varchar2', length: 120, name: 'CHAPA' })
+  @PrimaryColumn({ name: 'CHAPA', type: 'varchar2', length: 16 })
   CHAPA: string;
  
 
@@ -36,8 +36,9 @@ export class PFuncEntity {
   @OneToOne(() => PPessoaEntity, (ppessoa) => ppessoa.pfunc)  
   pessoa?: PPessoaEntity;  
 
-  // @OneToOne(() => UsuReqEntity, (usur) => usur.pfunc)
-  // usereq?: UsuReqEntity;
+  @OneToOne(() => UsuReqEntity, (usu) => usu.pfunc)  
+  usureq?: UsuReqEntity;  
+
 
 
 }
