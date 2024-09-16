@@ -6,6 +6,7 @@ export interface DiariaCalculada {
   diariaIntegral: number;
   diariaParcial40: number;
   diariaParcial20: number;
+  
 }
 
 @Injectable()

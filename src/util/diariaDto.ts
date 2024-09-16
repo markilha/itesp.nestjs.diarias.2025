@@ -11,3 +11,9 @@ export enum Destino {
     DEMAIS = 'Demais cargos',
     DIRECAO = 'Direção e de Nivel Superior'   
   }
+
+  export interface DiariaCalculadaDto {
+    diariaIntegral: number;
+    diariaParcial40: number;
+    diariaParcial20: number;    
+  }

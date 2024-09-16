@@ -5,23 +5,28 @@ import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, UsureqDto, CreateUsureqDto } from './usureqDto';
 import { ReturnUserReqDto } from './returnUserReqDto';
 import { CreateUsuReqEntity } from 'src/database/db_mysql/entities/createUsureq.entity';
+import { DiariaService } from 'src/util/diaria.service';
+import { Destino, enumCargo,DiariaCalculadaDto } from 'src/util/diariaDto';
+import { verificarDestino } from 'src/util/verificaDestino';
 
 
 @Injectable()
 export class UsureqService {
   constructor(
     @InjectRepository(UsuReqEntity)
-    private usureqRepository: Repository<UsuReqEntity>,  
+    private usureqRepository: Repository<UsuReqEntity>,
 
-    @InjectRepository(CreateUsuReqEntity, 'mysqlConnection') 
-    private mysqlRepository: Repository<CreateUsuReqEntity>, 
+    @InjectRepository(CreateUsuReqEntity, 'mysqlConnection')
+    private mysqlRepository: Repository<CreateUsuReqEntity>,
+
+    private diariaCalculada: DiariaService,
+    
   ) {}
 
   async findAll(params: FindAllParams): Promise<ReturnUserReqDto[]> {
     try {
-      
       const searchParams: FindOptionsWhere<UsuReqEntity> = {};
-  
+
       if (params.reqIdCodigo) {
         searchParams.reqIdCodigo = params.reqIdCodigo;
       }
@@ -31,20 +36,20 @@ export class UsureqService {
       if (params.usuMov) {
         searchParams.usuMov = params.usuMov;
       }
-  
+
       let users: UsuReqEntity[];
-  
+
       if (params.page && params.limit) {
         const page = params.page;
         const limit = params.limit;
         const skip = (page - 1) * limit;
-  
+
         users = await this.usureqRepository.find({
           where: searchParams,
           skip,
           take: limit,
-          relations: [   
-            'pfunc',         
+          relations: [
+            'pfunc',
             'requisicao',
             'requisicao.transmeio',
             'requisicao.municipio',
@@ -55,8 +60,8 @@ export class UsureqService {
       } else {
         users = await this.usureqRepository.find({
           where: searchParams,
-          relations: [  
-            'pfunc',          
+          relations: [
+            'pfunc',
             'requisicao',
             'requisicao.transmeio',
             'requisicao.municipio',
@@ -65,15 +70,43 @@ export class UsureqService {
           ],
         });
       }
-  
-      return users.map((user) => new ReturnUserReqDto(user));
+
+ 
+  const UFESP = 35.36;
+
+  return users.map((user) => {   
+    const destino = verificarDestino(user.requisicao.codMunicipio);    
+
+    if (!destino) {
+      throw new HttpException(
+        `Código do município ${user.requisicao.codMunicipio} não encontrado.`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    const diarias: DiariaCalculadaDto = this.diariaCalculada.calcularDiaria(
+      UFESP,
+      enumCargo.DIRECAO, 
+      destino as Destino,
+      parseInt(user.requisicao.reqPacote) || 0,    
+      user.requisicao.reqIntegral,
+      user.requisicao.reqParcial,
+      user.requisicao.reqHRet,
+    );  
+   
+    return new ReturnUserReqDto(
+      user,
+      diarias.diariaIntegral,
+      diarias.diariaParcial40,
+      diarias.diariaParcial20,
+    );
+  });
     } catch (error) {
       console.log(error);
       throw new HttpException(
         'Erro ao buscar as requisições',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-      
     }
   }
 

@@ -27,9 +27,9 @@ describe('CARGO DIREÇÃO OU SUPERIOR', () => {
           horaRetorno,
         );
 
-        expect(resultado.diariaIntegral).toBe(636.48); // 1 * 636.48
-        expect(resultado.diariaParcial40).toBe(0); // 636.48 * 0.4
-        expect(resultado.diariaParcial20).toBe(127.3); // 636.48 * 0.2
+        expect(resultado.diariaIntegral).toBe(636.48); 
+        expect(resultado.diariaParcial40).toBe(0); 
+        expect(resultado.diariaParcial20).toBe(127.3); 
       });
     });
     describe('parcial 40%', () => {
@@ -49,8 +49,8 @@ describe('CARGO DIREÇÃO OU SUPERIOR', () => {
             req_parcial,
             horaRetorno,
           );
-          expect(resultado.diariaIntegral).toBe(636.48); // 1 * 636.48
-          expect(resultado.diariaParcial40).toBe(254.59); // 636.48 * 0.4
+          expect(resultado.diariaIntegral).toBe(636.48); 
+          expect(resultado.diariaParcial40).toBe(254.59); 
           expect(resultado.diariaParcial20).toBe(0);
         });
       });
@@ -75,8 +75,8 @@ describe('CARGO DIREÇÃO OU SUPERIOR', () => {
         );
 
         expect(resultado.diariaIntegral).toBe(572.83);
-        expect(resultado.diariaParcial40).toBe(0); // 636.48 * 0.4
-        expect(resultado.diariaParcial20).toBe(114.57); // 636.48 * 0.2
+        expect(resultado.diariaParcial40).toBe(0); 
+        expect(resultado.diariaParcial20).toBe(114.57); 
       });
     });
     describe('parcial 40%', () => {
