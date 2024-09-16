@@ -12,6 +12,7 @@ import { ReqviagemModule } from './reqviagem/reqviagem.module';
 
 import { ReqnumerarioModule } from './reqnumerario/reqnumerario.module';
 import { SaqueModule } from './saque/saque.module';
+import { UfespModule } from './ufesp/ufesp.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { SaqueModule } from './saque/saque.module';
     ReqviagemModule,
     ReqviagemModule,
     ReqnumerarioModule,
-    SaqueModule
+    SaqueModule,
+    UfespModule
   ],
   controllers: [],
   providers: [],
