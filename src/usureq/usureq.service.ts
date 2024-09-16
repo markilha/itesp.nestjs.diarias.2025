@@ -8,6 +8,7 @@ import { CreateUsuReqEntity } from 'src/database/db_mysql/entities/createUsureq.
 import { DiariaService } from 'src/util/diaria.service';
 import { Destino, enumCargo,DiariaCalculadaDto } from 'src/util/diariaDto';
 import { verificarDestino } from 'src/util/verificaDestino';
+import { UfespService } from 'src/ufesp/ufesp.service';
 
 
 @Injectable()
@@ -20,6 +21,8 @@ export class UsureqService {
     private mysqlRepository: Repository<CreateUsuReqEntity>,
 
     private diariaCalculada: DiariaService,
+   
+    private ufespService: UfespService,
     
   ) {}
 
@@ -72,7 +75,11 @@ export class UsureqService {
       }
 
  
-  const UFESP = 35.36;
+  
+  // buscar o valor da UFESP no banco de dados
+  const UFESP2 = await this.ufespService.findMostRecentValue();
+  const UFESP = UFESP2.ufeValor || 0;  
+ 
 
   return users.map((user) => {   
     const destino = verificarDestino(user.requisicao.codMunicipio);    

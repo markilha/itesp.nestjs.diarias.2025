@@ -7,6 +7,8 @@ import { UferpsEntity } from 'src/database/db_oracle/entities/ufesp.entity';
 @Module({
   imports:[TypeOrmModule.forFeature([UferpsEntity])],
   providers: [UfespService],
-  controllers: [UfespController]
+  controllers: [UfespController],
+  exports: [UfespService]
+  
 })
 export class UfespModule {}
