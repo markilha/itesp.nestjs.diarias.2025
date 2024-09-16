@@ -23,5 +23,8 @@ export class PfuncaoEntity {
   @Column({ type: 'varchar2', length: 10, nullable: true })
   CODFUNCAOCHEFIA: string;
 
+  @Column({ type: 'varchar2',  nullable: true })
+  DESCRICAO: string;
+
 
 }

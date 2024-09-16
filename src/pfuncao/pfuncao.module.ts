@@ -9,6 +9,7 @@ import { PfuncaoEntity } from 'src/database/db_oracle/entities/pfuncao.entity';
     TypeOrmModule.forFeature([PfuncaoEntity]),
   ],
   controllers: [PfuncaoController],
-  providers: [PfuncaoService]
+  providers: [PfuncaoService],
+  exports: [PfuncaoService],
 })
 export class PfuncaoModule {}

@@ -6,10 +6,10 @@ import { FindAllParams, UsureqDto, CreateUsureqDto } from './usureqDto';
 import { ReturnUserReqDto } from './returnUserReqDto';
 import { CreateUsuReqEntity } from 'src/database/db_mysql/entities/createUsureq.entity';
 import { DiariaService } from 'src/util/diaria.service';
-import { Destino, enumCargo,DiariaCalculadaDto } from 'src/util/diariaDto';
+import { Destino, enumCargo, DiariaCalculadaDto } from 'src/util/diariaDto';
 import { verificarDestino } from 'src/util/verificaDestino';
 import { UfespService } from 'src/ufesp/ufesp.service';
-
+import { PfuncaoService } from 'src/pfuncao/pfuncao.service';
 
 @Injectable()
 export class UsureqService {
@@ -21,14 +21,16 @@ export class UsureqService {
     private mysqlRepository: Repository<CreateUsuReqEntity>,
 
     private diariaCalculada: DiariaService,
-   
+
     private ufespService: UfespService,
-    
+
+    private pfuncaoService: PfuncaoService,
   ) {}
 
   async findAll(params: FindAllParams): Promise<ReturnUserReqDto[]> {
     try {
       const searchParams: FindOptionsWhere<UsuReqEntity> = {};
+      const result: ReturnUserReqDto[] = [];
 
       if (params.reqIdCodigo) {
         searchParams.reqIdCodigo = params.reqIdCodigo;
@@ -72,42 +74,45 @@ export class UsureqService {
             'requisicao.destino.municipio',
           ],
         });
+      }     
+      const UFESP2 = await this.ufespService.findMostRecentValue();
+      const UFESP = UFESP2.ufeValor || 0;
+
+      for (const user of users) {
+        const destino = verificarDestino(user.requisicao.codMunicipio);
+
+        if (!destino) {
+          throw new HttpException(
+            `Código do município ${user.requisicao.codMunicipio} não encontrado.`,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+
+        const pfuncao = await this.pfuncaoService.findByCodigo(
+          user.pfunc.CODFUNCAO,
+        );       
+
+        const diarias: DiariaCalculadaDto = this.diariaCalculada.calcularDiaria(
+          UFESP,
+          pfuncao.NIVEL as enumCargo,
+          destino as Destino,
+          parseInt(user.requisicao.reqPacote) || 0,
+          user.requisicao.reqIntegral,
+          user.requisicao.reqParcial,
+          user.requisicao.reqHRet,
+        );
+
+        result.push(
+          new ReturnUserReqDto(
+            user,
+            diarias.diariaIntegral,
+            diarias.diariaParcial40,
+            diarias.diariaParcial20,
+          ),
+        );
       }
 
- 
-  
-  // buscar o valor da UFESP no banco de dados
-  const UFESP2 = await this.ufespService.findMostRecentValue();
-  const UFESP = UFESP2.ufeValor || 0;  
- 
-
-  return users.map((user) => {   
-    const destino = verificarDestino(user.requisicao.codMunicipio);    
-
-    if (!destino) {
-      throw new HttpException(
-        `Código do município ${user.requisicao.codMunicipio} não encontrado.`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-
-    const diarias: DiariaCalculadaDto = this.diariaCalculada.calcularDiaria(
-      UFESP,
-      enumCargo.DIRECAO, 
-      destino as Destino,
-      parseInt(user.requisicao.reqPacote) || 0,    
-      user.requisicao.reqIntegral,
-      user.requisicao.reqParcial,
-      user.requisicao.reqHRet,
-    );  
-   
-    return new ReturnUserReqDto(
-      user,
-      diarias.diariaIntegral,
-      diarias.diariaParcial40,
-      diarias.diariaParcial20,
-    );
-  });
+      return result;
     } catch (error) {
       console.log(error);
       throw new HttpException(

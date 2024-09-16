@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { PfuncaoService } from './pfuncao.service';
 import { FindAllParams, PfuncaoDto } from './pfuncaoDto';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -15,5 +15,10 @@ export class PfuncaoController {
     @Get()
     async findAll(@Query() params: FindAllParams): Promise<returnPfuncaDto[]> {
       return await this.pfuncaoService.findAll(params);
+    }
+    
+    @Get(':codigo')
+    async findByCodigo(@Param('codigo') codigo: string): Promise<returnPfuncaDto> {
+      return await this.pfuncaoService.findByCodigo(codigo);
     }
 }

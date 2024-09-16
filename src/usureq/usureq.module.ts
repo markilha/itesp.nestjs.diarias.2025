@@ -6,13 +6,15 @@ import { UsureqService } from './usureq.service';
 import { CreateUsuReqEntity } from 'src/database/db_mysql/entities/createUsureq.entity';
 import { DiariaService } from 'src/util/diaria.service';
 import { UfespModule } from 'src/ufesp/ufesp.module';
+import { PfuncaoModule } from 'src/pfuncao/pfuncao.module';
 
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([UsuReqEntity]),
     TypeOrmModule.forFeature([CreateUsuReqEntity], 'mysqlConnection'),   
-    UfespModule
+    UfespModule,
+    PfuncaoModule
   ],
   controllers: [UsureqController],
   providers: [UsureqService, DiariaService],

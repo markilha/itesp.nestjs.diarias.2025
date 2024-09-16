@@ -1,6 +1,5 @@
 import { Entity, Column, PrimaryColumn, Double, OneToOne } from 'typeorm';
 import { PPessoaEntity } from './ppessoa.entity';
-import { RequisicaoEntity } from './requisicao.entity';
 import { UsuReqEntity } from './usureq.entity';
 
 @Entity('PFUNC', { schema: 'RM' })
