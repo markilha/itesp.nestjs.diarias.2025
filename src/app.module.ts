@@ -16,7 +16,7 @@ import { UfespModule } from './ufesp/ufesp.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     DbOraModule,
     DbUsersModule,
     AuthModule,
