@@ -1,4 +1,6 @@
-import { ReqNumerarioEntity } from 'src/database/db_oracle/entities/reqnumerario.entity';
+
+import { CreateReqNumerarioEntity } from 'src/database/db_mysql/entities/createReqNumerario.entity';
+
 
 export class ReqnumerarioDto {
   rnuIdCodigo: number;
@@ -19,16 +21,18 @@ export class ReqnumerarioDto {
   rnuPacote: string;
   rnuGovernador: string;
   rnuVlIntegral: number;
-  rnuVlParcial: number;
+  rnuVlParcial20: number;
+  rnuVlParcial40: number;
   rnuVlBase: number;
+  rnuDtSaque: Date;
+  rnuDtPrest: Date;
+  rnuStatus: string;
+  rnuMunOri: number;
+  rnuMunDes: number;
 
-  constructor(reqnumerario: ReqNumerarioEntity) {
+  constructor(reqnumerario: CreateReqNumerarioEntity) {
     this.rnuIdCodigo = reqnumerario.rnuIdCodigo;
-    this.sqeIdCodigo = reqnumerario.sqeIdCodigo;
-    this.reqIdCodigo = reqnumerario.reqIdCodigo;
-    this.iteIdCodigo = reqnumerario.iteIdCodigo;
-    this.rreIdCodigo = reqnumerario.rreIdCodigo;
-    this.dirIdCodigo = reqnumerario.dirIdCodigo;
+    this.reqIdCodigo = reqnumerario.reqIdCodigo;  
     this.rnuDtInicio = reqnumerario.rnuDtInicio;
     this.rnuHoraInicio = reqnumerario.rnuHoraInicio;
     this.rnuDtFim = reqnumerario.rnuDtFim;
@@ -41,8 +45,15 @@ export class ReqnumerarioDto {
     this.rnuPacote = reqnumerario.rnuPacote;
     this.rnuGovernador = reqnumerario.rnuGovernador;
     this.rnuVlIntegral = reqnumerario.rnuVlIntegral;
-    this.rnuVlParcial = reqnumerario.rnuVlParcial;
+    this.rnuVlParcial20 = reqnumerario.rnuVlParcial20;
+    this.rnuVlParcial40 = reqnumerario.rnuVlParcial40;
     this.rnuVlBase = reqnumerario.rnuVlBase;
+    this.rnuDtSaque = reqnumerario.rnuDtSaque;
+    this.rnuDtPrest = reqnumerario.rnuDtPrest;
+    this.rnuStatus = reqnumerario.rnuStatus;
+    this.rnuMunOri = reqnumerario.rnuMunOri;
+    this.rnuMunDes = reqnumerario.rnuMunDes; 
+
   }
 }
 
@@ -66,6 +77,8 @@ export interface FindAllParams {
   page: number;
   limit: number;
 }
+
+
 
 export class CreateReqnumerarioDto {
   rnuIdCodigo?: number;

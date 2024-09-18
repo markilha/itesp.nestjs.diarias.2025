@@ -22,7 +22,7 @@ export class ReqnumerarioService {
 
   async findAll(params: FindAllParams): Promise<ReqnumerarioDto[]> {
     try {
-      const searchParams: FindOptionsWhere<ReqNumerarioEntity> = {};
+      const searchParams: FindOptionsWhere<CreateReqNumerarioEntity> = {};
 
       if (params.rnuIdCodigo) {
         searchParams.rnuIdCodigo = params.rnuIdCodigo;
@@ -31,20 +31,20 @@ export class ReqnumerarioService {
         searchParams.reqIdCodigo = params.reqIdCodigo;
       }
 
-      let reqnumerarios: ReqNumerarioEntity[] = [];
+      let reqnumerarios: CreateReqNumerarioEntity[] = [];
 
       if (params.page && params.limit) {
         const page = params.page;
         const limit = params.limit;
         const skip = (page - 1) * limit;
 
-        reqnumerarios = await this.reqviagemRepository.find({
+        reqnumerarios = await this.mysqlRepository.find({
           where: searchParams,
           skip,
           take: limit,
         });
       } else {
-        reqnumerarios = await this.reqviagemRepository.find({
+        reqnumerarios = await this.mysqlRepository.find({
           where: searchParams,
         });
       }
