@@ -15,26 +15,28 @@ export class ReqnumerarioController {
   async createReqNumerario(@Body() body: any) {
     
     const createReqNumerarioDto: CreateReqnumerarioDto = {     
-      reqIdCodigo: body.reqIdCodigo,
-      sqeIdCodigo: null,
-      iteIdCodigo: null,
-      rreIdCodigo: null,
-      dirIdCodigo: null,
+      reqIdCodigo: body.reqIdCodigo,      
       chapa: body.chapa,
       rnuMotivo: body.reqMotivo,
       rnuDtInicio: new Date(body.reqDtSaida), 
       rnuHoraInicio: body.reqHSaida,
       rnuDtFim: new Date(body.reqDtRetorno),
-      rnuHoraFim: body.reqHRet,
-      rnuVlIntegral: null,
-      rnuVlParcial: null ,
+      rnuHoraFim: body.reqHRet,    
       rnuPacote: body.reqPacote,
       rnuIntPrev: body.reqIntegral, 
       rnuParPrev: body.reqParcial, 
       rnuIntReal: null,
       rnuParReal: null,
-      rnuGovernador: null,   
+      rnuGovernador: body.reqGovernador,   
       rnuVlBase: 0, 
+      rnuVlIntegral:body.diariaIntegral,
+      rnuVlParcial20: body.diariaParcial20,
+      rnuVlParcial40: body.diariaParcial40,
+      rnuStatus: body.reqStatus,
+      rnuDtSaque: null,
+      rnuDtPrest: null,      
+      rnuMunOri: body.codMunicipio,
+      rnuMunDes: body.destino_cod_municipio,
     };
    
     return this.reqnumerarioService.create(createReqNumerarioDto);

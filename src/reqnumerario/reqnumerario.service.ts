@@ -6,6 +6,7 @@ import { CreateReqnumerarioDto, FindAllParams } from './reqnumerarioDto';
 import { ReqnumerarioDto } from './reqnumerarioDto';
 import { CreateReqNumerarioEntity } from 'src/database/db_mysql/entities/createReqNumerario.entity';
 
+
 @Injectable()
 export class ReqnumerarioService {
   constructor(
@@ -57,7 +58,7 @@ export class ReqnumerarioService {
     }
   }
 
-  async create(createReqnumerarioDto: CreateReqnumerarioDto): Promise<ReqNumerarioEntity> {
+  async create(createReqnumerarioDto: CreateReqnumerarioDto): Promise<CreateReqNumerarioEntity> {
     try {     
       const existingReqNumerario = await this.mysqlRepository.findOne({
         where: {
@@ -65,18 +66,22 @@ export class ReqnumerarioService {
           reqIdCodigo: createReqnumerarioDto.reqIdCodigo,
         },
       });
+
       const reqNumerario = this.mysqlRepository.create(createReqnumerarioDto); 
+
       if (existingReqNumerario) {
         throw new HttpException(
           'Requisição já existe',
           HttpStatus.BAD_REQUEST,
         );
-      }
+      }     
+
       return await this.mysqlRepository.save(reqNumerario);
+      
     } catch (error) {
       console.log(error);
       throw new HttpException(
-        'Erro ao criar a requisição',
+        error.response || 'Erro ao salvar a requisição',
         HttpStatus.INTERNAL_SERVER_ERROR,
         error,
       );

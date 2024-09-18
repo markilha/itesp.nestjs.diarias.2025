@@ -135,7 +135,7 @@ export class UsureqService {
     } catch (error) {
       console.log(error);
       throw new HttpException(
-        'Erro ao criar a requisição',
+        'Erro ao salvar a requisição',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

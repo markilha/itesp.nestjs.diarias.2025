@@ -1,28 +1,28 @@
-import { ReqNumerarioEntity } from "src/database/db_oracle/entities/reqnumerario.entity";
-
+import { ReqNumerarioEntity } from 'src/database/db_oracle/entities/reqnumerario.entity';
 
 export class ReqnumerarioDto {
-    rnuIdCodigo: number;
-    sqeIdCodigo: number;
-    reqIdCodigo: number;
-    iteIdCodigo: number;
-    rreIdCodigo: number;
-    dirIdCodigo: number;
-    rnuDtInicio: Date;
-    rnuHoraInicio: string;
-    rnuDtFim: Date;
-    rnuHoraFim: string;
-    rnuIntPrev: string;
-    rnuParPrev: string;
-    rnuIntReal: string;
-    rnuParReal: string;
-    rnuMotivo: string;
-    rnuPacote: string;
-    rnuGovernador: string;
-    rnuVlIntegral: number;
-    rnuVlParcial: number;
-    rnuVlBase: number;
-      constructor(reqnumerario: ReqNumerarioEntity) {
+  rnuIdCodigo: number;
+  sqeIdCodigo: number;
+  reqIdCodigo: number;
+  iteIdCodigo: number;
+  rreIdCodigo: number;
+  dirIdCodigo: number;
+  rnuDtInicio: Date;
+  rnuHoraInicio: string;
+  rnuDtFim: Date;
+  rnuHoraFim: string;
+  rnuIntPrev: string;
+  rnuParPrev: string;
+  rnuIntReal: string;
+  rnuParReal: string;
+  rnuMotivo: string;
+  rnuPacote: string;
+  rnuGovernador: string;
+  rnuVlIntegral: number;
+  rnuVlParcial: number;
+  rnuVlBase: number;
+
+  constructor(reqnumerario: ReqNumerarioEntity) {
     this.rnuIdCodigo = reqnumerario.rnuIdCodigo;
     this.sqeIdCodigo = reqnumerario.sqeIdCodigo;
     this.reqIdCodigo = reqnumerario.reqIdCodigo;
@@ -46,14 +46,9 @@ export class ReqnumerarioDto {
   }
 }
 
-
 export interface FindAllParams {
-  rnuIdCodigo: number;
-  sqeIdCodigo: number;
+  rnuIdCodigo: number; 
   reqIdCodigo: number;
-  iteIdCodigo: number;
-  rreIdCodigo: number;
-  dirIdCodigo: number;
   rnuDtInicio: Date;
   rnuHoraInicio: string;
   rnuDtFim: Date;
@@ -72,15 +67,10 @@ export interface FindAllParams {
   limit: number;
 }
 
-
 export class CreateReqnumerarioDto {
   rnuIdCodigo?: number;
-  chapa: string;
-  sqeIdCodigo?: number;
   reqIdCodigo: number;
-  iteIdCodigo: number;
-  rreIdCodigo: number;
-  dirIdCodigo: number;
+  chapa: string; 
   rnuDtInicio: Date;
   rnuHoraInicio: string;
   rnuDtFim: Date;
@@ -93,7 +83,12 @@ export class CreateReqnumerarioDto {
   rnuPacote: string;
   rnuGovernador: string;
   rnuVlIntegral: number;
-  rnuVlParcial: number;
+  rnuVlParcial20: number;
+  rnuVlParcial40: number;
   rnuVlBase: number;
+  rnuDtSaque: Date;
+  rnuDtPrest: Date;
+  rnuStatus: string;
+  rnuMunOri: number;
+  rnuMunDes: number;
 }
-
