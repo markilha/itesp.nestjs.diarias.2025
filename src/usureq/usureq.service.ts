@@ -111,6 +111,7 @@ export class UsureqService {
             diarias.diariaIntegral,
             diarias.diariaParcial40,
             diarias.diariaParcial20,
+            diarias.diariaBase,
           ),
         );
       }

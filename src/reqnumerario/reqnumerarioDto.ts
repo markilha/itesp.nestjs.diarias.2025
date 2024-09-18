@@ -91,4 +91,5 @@ export class CreateReqnumerarioDto {
   rnuStatus: string;
   rnuMunOri: number;
   rnuMunDes: number;
+
 }

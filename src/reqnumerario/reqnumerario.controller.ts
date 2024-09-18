@@ -28,7 +28,7 @@ export class ReqnumerarioController {
       rnuIntReal: null,
       rnuParReal: null,
       rnuGovernador: body.reqGovernador,   
-      rnuVlBase: 0, 
+      rnuVlBase: body.diariaBase,
       rnuVlIntegral:body.diariaIntegral,
       rnuVlParcial20: body.diariaParcial20,
       rnuVlParcial40: body.diariaParcial40,
@@ -37,6 +37,7 @@ export class ReqnumerarioController {
       rnuDtPrest: null,      
       rnuMunOri: body.codMunicipio,
       rnuMunDes: body.destino_cod_municipio,
+ 
     };
    
     return this.reqnumerarioService.create(createReqNumerarioDto);

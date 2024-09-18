@@ -53,6 +53,9 @@ export class CreateReqNumerarioEntity {
   @Column({ type: 'decimal',  precision: 10, scale: 2, name: 'RNU_VLPARCIAL40', nullable: true, }) //prettier-ignore})
   rnuVlParcial40: number;
 
+  @Column({ type: 'decimal',  precision: 10, scale: 2, name: 'RNU_VLBASE', nullable: true, }) //prettier-ignore})
+  rnuVlBase: number;
+
   @Column({ type: 'date', name: 'RNU_DTSAQUE', nullable: true })
   rnuDtSaque: Date;
 
