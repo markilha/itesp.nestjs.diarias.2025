@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 
-@Entity({ name: 'USU_USUARIO_CPF',schema: 'dev_itesp_diarias' })
+@Entity({ name: 'usu_usuario_cpf',schema: 'dev_itesp_diarias' })
 export class Users {
   @PrimaryGeneratedColumn('increment')
   id_usuario: number;
