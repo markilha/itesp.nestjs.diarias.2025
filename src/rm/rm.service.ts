@@ -1,80 +1,89 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PPessoa } from 'src/db_rm/entities/rm.entity';
-import { pFunc } from 'src/db_rm/entities/pfunc.entity';
+import { PPessoaEntity } from 'src/database/db_oracle/entities/ppessoa.entity';
+import { PFuncEntity } from 'src/database/db_oracle/entities/pfunc.entity';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { FindAllParams, RMPessoaDto } from './rm.dto';
+import { returnRmDto } from './returnRmDto';
+import { returnFuncDto } from './returnFuncDto';
 
 @Injectable()
 export class RmService {
   constructor(
-    @InjectRepository(PPessoa, 'db_rm')
-    private rmRepository: Repository<PPessoa>,
-    @InjectRepository(pFunc, 'db_rm')
-    private funcRepository: Repository<pFunc>,
+    @InjectRepository(PPessoaEntity)
+    private rmRepository: Repository<PPessoaEntity>,
+    @InjectRepository(PFuncEntity)
+    private funcRepository: Repository<PFuncEntity>,
   ) {}
 
-  async findAll(params: FindAllParams): Promise<RMPessoaDto[]> {
+  async findAll(params: FindAllParams): Promise<returnRmDto[]> {
     const searchParams: FindOptionsWhere<RMPessoaDto> = {};
 
     if (params.nome) {
       searchParams['nome'] = ILike(`%${params.nome}%`);
     }
 
+    let rms: PPessoaEntity[];
+
     // Verifica se os parâmetros page e limit foram fornecidos
     if (params.page && params.limit) {
       const page = params.page;
       const limit = params.limit;
       const skip = (page - 1) * limit;
-      // Retorna os registros paginados
-      return await this.rmRepository.find({
+     
+      rms = await this.rmRepository.find({
         where: searchParams,
         skip,
         take: limit,
+        relations: ['pfunc'],
+      });
+    } else {
+      rms = await this.rmRepository.find({
+        where: searchParams,
+        relations: ['pfunc'],
       });
     }
-    
-    return await this.rmRepository.find({
-      where: searchParams,
-    });
+
+    return rms.map((rm) => new returnRmDto(rm));
   }
 
   async findPessoaWithFunc(params: FindAllParams): Promise<RMPessoaDto[]> {
-    const searchParams: FindOptionsWhere<PPessoa> = {};  
+    const searchParams: FindOptionsWhere<PPessoaEntity> = {};
     if (params.nome) {
       searchParams['nome'] = ILike(`%${params.nome}%`);
     }
-  
+
     const queryBuilder = this.rmRepository
       .createQueryBuilder('pessoa')
-      .innerJoinAndSelect(pFunc, 'func', 'pessoa.codusuario = func.CHAPA');
-  
+      .innerJoinAndSelect('pFunc', 'func', 'pessoa.codusuario = func.CHAPA');
+
     // Adiciona filtros ao queryBuilder
     if (params.nome) {
       queryBuilder.andWhere('UPPER(pessoa.nome) LIKE UPPER(:nome)', {
         nome: `%${params.nome}%`,
       });
-    }  
-    
+    }
+
     if (params.page && params.limit) {
       const page = params.page;
       const limit = params.limit;
-      const skip = (page - 1) * limit;      
+      const skip = (page - 1) * limit;
       queryBuilder.skip(skip).take(limit);
     }
-  
- 
-    try {
-      // console.log(queryBuilder.getSql()); // Verifica a consulta SQL gerada
+
+    try {     
       return await queryBuilder.getMany();
     } catch (error) {
       console.error('Erro ao executar a consulta:', error);
       throw new Error('Erro ao executar a consulta.');
     }
   }
-  
-  
-  async findAllFuncs(): Promise<pFunc[]> {
-    return this.funcRepository.find();
+
+  async findAllFuncs(): Promise<returnFuncDto[]> {
+
+    let funcs: PFuncEntity[];
+    funcs = await this.funcRepository.find();
+    return funcs.map((func) => new returnFuncDto(func));
+   
   }
 }
