@@ -1,6 +1,6 @@
 import { Entity, PrimaryColumn } from 'typeorm';
 
-@Entity({ name: 'S001_USUREQ', schema: 'hom_itesp' })
+@Entity({ name: 'S001_USUREQ', schema: 'dev_itesp_diarias' })
 export class CreateUsuReqEntity {
   @PrimaryColumn({ name: 'REQ_ID_CODIGO', type: 'int' }) // Alterado para 'int'
   reqIdCodigo: number;

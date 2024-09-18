@@ -1,6 +1,5 @@
 import { Entity,  JoinColumn,  ManyToOne,  OneToOne,  PrimaryColumn } from 'typeorm';
 import { RequisicaoEntity } from './requisicao.entity';
-import { PPessoaEntity } from './ppessoa.entity';
 import { PFuncEntity } from './pfunc.entity';
 
 @Entity({ name: 'S001_USUREQ', schema: 'TRANSPORTE' })

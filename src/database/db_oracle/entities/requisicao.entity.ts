@@ -10,6 +10,7 @@ import { UsuReqEntity } from './usureq.entity';
 import { TransMeioEntity } from './transmeio.entity';
 import { MunicipioEntity } from './municipios.entity';
 import { RequisicaoDestinoEntity } from './requisicaoDestino.entity';
+import { MunicipiosIbgIEntity } from './municipiosIBGE';
 
 @Entity('S001_REQUISICAO', { schema: 'TRANSPORTE' })
 export class RequisicaoEntity {
@@ -96,6 +97,10 @@ export class RequisicaoEntity {
   @OneToOne(() => RequisicaoDestinoEntity, (muni) => muni.requisicao)
   @JoinColumn({ name: 'REQ_ID_CODIGO', referencedColumnName: 'reqIdCodigo' })
   destino: RequisicaoDestinoEntity;
+
+  @OneToOne(() => MunicipiosIbgIEntity, (muni) => muni.requisicao)
+  @JoinColumn({ name: 'COD_MUNICIP', referencedColumnName: 'codMunicipio' })
+  municipio_partida: MunicipiosIbgIEntity;
 
 
 }

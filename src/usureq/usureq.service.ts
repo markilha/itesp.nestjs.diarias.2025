@@ -55,6 +55,7 @@ export class UsureqService {
           take: limit,
           relations: [
             'pfunc',
+            'requisicao.municipio_partida',
             'requisicao',
             'requisicao.transmeio',
             'requisicao.municipio',
@@ -68,13 +69,14 @@ export class UsureqService {
           relations: [
             'pfunc',
             'requisicao',
+            'requisicao.municipio_partida',
             'requisicao.transmeio',
             'requisicao.municipio',
             'requisicao.destino',
             'requisicao.destino.municipio',
           ],
         });
-      }     
+      }
       const UFESP2 = await this.ufespService.findMostRecentValue();
       const UFESP = UFESP2.ufeValor || 0;
 
@@ -90,7 +92,7 @@ export class UsureqService {
 
         const pfuncao = await this.pfuncaoService.findByCodigo(
           user.pfunc.CODFUNCAO,
-        );       
+        );
 
         const diarias: DiariaCalculadaDto = this.diariaCalculada.calcularDiaria(
           UFESP,

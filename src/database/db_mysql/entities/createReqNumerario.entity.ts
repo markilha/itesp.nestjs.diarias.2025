@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm';
 
-@Entity('S009_REQNUMERARIO', { schema: 'FINANCEIRO' })
+@Entity('S009_REQNUMERARIO', { schema: 'dev_itesp_diarias' })
 export class CreateReqNumerarioEntity {
   @PrimaryColumn({ type: 'int', name: 'RNU_ID_CODIGO' })
   rnuIdCodigo: number;

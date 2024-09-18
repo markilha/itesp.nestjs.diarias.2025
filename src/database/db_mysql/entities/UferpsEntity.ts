@@ -1,7 +1,7 @@
-import { Entity, PrimaryColumn, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 
-@Entity('S009_UFERPSVALOR', { schema: 'FINANCEIRO' })
+@Entity('S009_UFERPSVALOR', { schema: 'dev_itesp_diarias' })
 export class UferpsEntity {
   @PrimaryGeneratedColumn({ type: 'int', name: 'UFE_ID_CODIGO' })
   ufeIdCodigo: number;

@@ -13,6 +13,7 @@ export class ReturnUserReqDto {
     diariaIntegral: number;
     diariaParcial40: number;
     diariaParcial20: number;
+    municipio_partida: string;
   
     constructor(
       userReqEntity: UsuReqEntity,
@@ -33,6 +34,7 @@ export class ReturnUserReqDto {
       this.diariaIntegral = diariaIntegral;
       this.diariaParcial40 = diariaParcial40;
       this.diariaParcial20 = diariaParcial20;
+      this.municipio_partida = userReqEntity.requisicao?.municipio_partida?.nmeMunic;
     }
   }
   
