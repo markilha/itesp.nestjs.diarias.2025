@@ -81,7 +81,8 @@ export class UsureqService {
       const UFESP = UFESP2.ufeValor || 0;
 
       for (const user of users) {
-        const destino = verificarDestino(user.requisicao.codMunicipio);
+      
+        const destino = verificarDestino(user.requisicao.destino.municipio.munIdCodigo);
 
         if (!destino) {
           throw new HttpException(
