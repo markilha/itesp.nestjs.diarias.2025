@@ -7,6 +7,7 @@ const municipios80PorcentCodigos = new Set(Municipios80Porcent);
 const demaisCapitaisCodigos = new Set(DemaisCapitais);
 const mais200Codigos = new Set(Mais200);
 
+
 export function verificarDestino(codMunicipio: number): string | null {
   const codMunicipioStr = codMunicipio.toString();
 
