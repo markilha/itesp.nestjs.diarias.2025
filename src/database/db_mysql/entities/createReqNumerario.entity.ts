@@ -4,33 +4,17 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 export class CreateReqNumerarioEntity {
   @PrimaryColumn({ type: 'int', name: 'RNU_ID_CODIGO' })
   rnuIdCodigo: number;
-  @Column({ type: 'varchar', name: 'chapa', nullable: true })
-  chapa: string;
 
-  @Column({ type: 'int', name: 'SQE_ID_CODIGO', nullable: true })
-  sqeIdCodigo: number;
+  @Column({ type: 'varchar', name: 'CHAPA', nullable: true })
+  chapa: string;
 
   @Column({ type: 'int', name: 'REQ_ID_CODIGO', nullable: true })
   reqIdCodigo: number;
 
-  @Column({ type: 'int', name: 'ITE_ID_CODIGO', nullable: true })
-  iteIdCodigo: number;
-
-  @Column({ type: 'int', name: 'RRE_ID_CODIGO', nullable: true })
-  rreIdCodigo: number;
-
-  @Column({ type: 'int', name: 'DIR_ID_CODIGO', nullable: true })
-  dirIdCodigo: number;
-
   @Column({ type: 'date', name: 'RNU_DTINICIO', nullable: true })
   rnuDtInicio: Date;
 
-  @Column({
-    type: 'varchar',
-    length: 10,
-    name: 'RNU_HORAINICIO',
-    nullable: true,
-  })
+  @Column({type: 'varchar', length: 10, name: 'RNU_HORAINICIO', nullable: true, }) //prettier-ignore
   rnuHoraInicio: string;
 
   @Column({ type: 'date', name: 'RNU_DTFIM', nullable: true })
@@ -57,38 +41,34 @@ export class CreateReqNumerarioEntity {
   @Column({ type: 'varchar', length: 1, name: 'RNU_PACOTE', nullable: true })
   rnuPacote: string;
 
-  @Column({
-    type: 'varchar',
-    length: 1,
-    name: 'RNU_GOVERNADOR',
-    nullable: true,
-  })
+  @Column({ type: 'varchar', length: 1, name: 'RNU_GOVERNADOR', nullable: true, }) //prettier-ignore
   rnuGovernador: string;
 
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
-    name: 'RNU_VLINTEGRAL',
-    nullable: true,
-  })
+  @Column({ type: 'decimal', precision: 10, scale: 2, name: 'RNU_VLINTEGRAL',  nullable: true, }) //prettier-ignore})
   rnuVlIntegral: number;
 
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
-    name: 'RNU_VLPARCIAL',
-    nullable: true,
-  })
-  rnuVlParcial: number;
+  @Column({ type: 'decimal',  precision: 10, scale: 2, name: 'RNU_VLPARCIAL20', nullable: true, }) //prettier-ignore})
+  rnuVlParcial20: number;
 
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
-    name: 'RNU_VLBASE',
-    nullable: true,
-  })
+  @Column({ type: 'decimal',  precision: 10, scale: 2, name: 'RNU_VLPARCIAL40', nullable: true, }) //prettier-ignore})
+  rnuVlParcial40: number;
+
+  @Column({ type: 'decimal',  precision: 10, scale: 2, name: 'RNU_VLBASE', nullable: true, }) //prettier-ignore})
   rnuVlBase: number;
+
+  @Column({ type: 'date', name: 'RNU_DTSAQUE', nullable: true })
+  rnuDtSaque: Date;
+
+  @Column({ type: 'date', name: 'RNU_DTPREST', nullable: true })
+  rnuDtPrest: Date;
+   
+  @Column({ type: 'varchar',length: 1000,  name: 'RNU_STATUS', nullable: true })
+  rnuStatus: string;
+
+  @Column({ type: 'int', name: 'RNU_MUN_ORI', nullable: true })
+  rnuMunOri: number;
+
+  @Column({ type: 'int', name: 'RNU_MUN_DES', nullable: true })
+  rnuMunDes: number;
+
 }

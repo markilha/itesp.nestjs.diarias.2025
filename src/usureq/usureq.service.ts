@@ -81,7 +81,8 @@ export class UsureqService {
       const UFESP = UFESP2.ufeValor || 0;
 
       for (const user of users) {
-        const destino = verificarDestino(user.requisicao.codMunicipio);
+      
+        const destino = verificarDestino(user.requisicao.destino.municipio.munIdCodigo);
 
         if (!destino) {
           throw new HttpException(
@@ -110,6 +111,7 @@ export class UsureqService {
             diarias.diariaIntegral,
             diarias.diariaParcial40,
             diarias.diariaParcial20,
+            diarias.diariaBase,
           ),
         );
       }
@@ -134,7 +136,7 @@ export class UsureqService {
     } catch (error) {
       console.log(error);
       throw new HttpException(
-        'Erro ao criar a requisição',
+        'Erro ao salvar a requisição',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

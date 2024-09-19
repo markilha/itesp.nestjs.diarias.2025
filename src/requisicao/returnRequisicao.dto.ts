@@ -44,7 +44,6 @@ export class ReturnRequisicaoDto {
   destino_cod_municipio?: number;
   destino_populacao?: number;
 
-
   constructor(requisicao: RequisicaoEntity) {
     this.reqIdCodigo = requisicao.reqIdCodigo;
     this.codMunicipio = requisicao.codMunicipio;
@@ -67,10 +66,17 @@ export class ReturnRequisicaoDto {
     this.municipio = requisicao.municipio
       ? requisicao.municipio.nomeMunicipio
       : null;
-    this.destino_local = requisicao.destino ? requisicao.destino.desLocal : null;
-    this.destino_municipio = requisicao.destino ? requisicao.destino.municipio.munCidade: null;
-    this.destino_populacao = requisicao.destino ? requisicao.destino.municipio.munPopulacao : null;     
-    this.destino_cod_municipio = requisicao.destino ? requisicao.destino.munIdCodigo : null;
-
+    this.destino_local = requisicao.destino
+      ? requisicao.destino.desLocal
+      : null;
+    this.destino_municipio = requisicao.destino
+      ? requisicao.destino.municipio.munCidade
+      : null;
+    this.destino_populacao = requisicao.destino
+      ? requisicao.destino.municipio.munPopulacao
+      : null;
+    this.destino_cod_municipio = requisicao.destino
+      ? requisicao.destino.munIdCodigo
+      : null;
   }
 }

@@ -15,5 +15,6 @@ export enum Destino {
   export interface DiariaCalculadaDto {
     diariaIntegral: number;
     diariaParcial40: number;
-    diariaParcial20: number;    
+    diariaParcial20: number;   
+    diariaBase: number; 
   }

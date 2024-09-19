@@ -6,6 +6,7 @@ export interface DiariaCalculada {
   diariaIntegral: number;
   diariaParcial40: number;
   diariaParcial20: number;
+  diariaBase: number;
   
 }
 
@@ -75,6 +76,7 @@ export class DiariaService {
         diariaIntegral,
         diariaParcial40,
         diariaParcial20,
+        diariaBase,
       };
     } catch (error) {    
       throw new Error(`Erro ao calcular diária: ${error.message}`);
