@@ -36,10 +36,14 @@ export class ReqnumerarioController {
       rnuDtSaque: null,
       rnuDtPrest: null,      
       rnuMunOri: body.codMunicipio,
-      rnuMunDes: body.destino_cod_municipio,
+      rnuMunDes: body.destino_cod_municipio,  
  
     };
    
     return this.reqnumerarioService.create(createReqNumerarioDto);
+  }
+  @Get('totalmes/:chapa')
+  async findOne(@Param('chapa') chapa: string): Promise<number> {
+    return await this.reqnumerarioService.findTotalReNumerarioMesAtual(chapa);
   }
 }

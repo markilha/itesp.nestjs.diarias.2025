@@ -6,19 +6,15 @@ import { CreateReqnumerarioDto, FindAllParams } from './reqnumerarioDto';
 import { ReqnumerarioDto } from './reqnumerarioDto';
 import { CreateReqNumerarioEntity } from 'src/database/db_mysql/entities/createReqNumerario.entity';
 
-
 @Injectable()
 export class ReqnumerarioService {
   constructor(
     @InjectRepository(ReqNumerarioEntity)
     private readonly reqviagemRepository: Repository<ReqNumerarioEntity>,
-    
+
     @InjectRepository(CreateReqNumerarioEntity, 'mysqlConnection')
     private readonly mysqlRepository: Repository<CreateReqNumerarioEntity>,
-
-
   ) {}
-
 
   async findAll(params: FindAllParams): Promise<ReqnumerarioDto[]> {
     try {
@@ -48,7 +44,6 @@ export class ReqnumerarioService {
           where: searchParams,
         });
       }
-
       return reqnumerarios.map((reqv) => new ReqnumerarioDto(reqv));
     } catch (error) {
       throw new HttpException(
@@ -58,8 +53,10 @@ export class ReqnumerarioService {
     }
   }
 
-  async create(createReqnumerarioDto: CreateReqnumerarioDto): Promise<CreateReqNumerarioEntity> {
-    try {     
+  async create(
+    createReqnumerarioDto: CreateReqnumerarioDto,
+  ): Promise<CreateReqNumerarioEntity> {
+    try {
       const existingReqNumerario = await this.mysqlRepository.findOne({
         where: {
           chapa: createReqnumerarioDto.chapa,
@@ -67,17 +64,13 @@ export class ReqnumerarioService {
         },
       });
 
-      const reqNumerario = this.mysqlRepository.create(createReqnumerarioDto); 
+      const reqNumerario = this.mysqlRepository.create(createReqnumerarioDto);
 
       if (existingReqNumerario) {
-        throw new HttpException(
-          'Requisição já existe',
-          HttpStatus.BAD_REQUEST,
-        );
-      }     
+        throw new HttpException('Requisição já existe', HttpStatus.BAD_REQUEST);
+      }
 
       return await this.mysqlRepository.save(reqNumerario);
-      
     } catch (error) {
       console.log(error);
       throw new HttpException(
@@ -85,7 +78,42 @@ export class ReqnumerarioService {
         HttpStatus.INTERNAL_SERVER_ERROR,
         error,
       );
-      
+    }
+  }
+
+  async findTotalReNumerarioMesAtual(chapa: string): Promise<number> {
+    try {
+      const dataAtual = new Date();
+      const primeiroDiaMes = new Date(
+        dataAtual.getFullYear(),
+        dataAtual.getMonth(),
+        1,
+      );
+      const ultimoDiaMes = new Date(
+        dataAtual.getFullYear(),
+        dataAtual.getMonth() + 1,
+        0,
+      );
+
+      const total = await this.mysqlRepository
+        .createQueryBuilder('s009_reqnumerario')
+        .select(
+          'SUM(COALESCE(s009_reqnumerario.RNU_VLINTEGRAL, 0) + COALESCE(s009_reqnumerario.RNU_VLPARCIAL20, 0) + COALESCE(s009_reqnumerario.RNU_VLPARCIAL40, 0))',
+          'total',
+        )
+        .where('s009_reqnumerario.RNU_DTINICIO BETWEEN :inicio AND :fim', {
+          inicio: primeiroDiaMes,
+          fim: ultimoDiaMes,
+        })
+        .andWhere('s009_reqnumerario.CHAPA = :chapa', { chapa })
+        .getRawOne();
+
+      return total.total || 0; 
+    } catch (error) {
+      throw new HttpException(
+        'Erro ao buscar as requisições',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }
