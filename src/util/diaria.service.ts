@@ -72,6 +72,7 @@ export class DiariaService {
         diariaIntegral = req_integral * diariaBase;
         diariaIntegral = DataUtils.arredondar(diariaIntegral);
       }
+      diariaBase = DataUtils.arredondar(diariaBase);
       return {      
         diariaIntegral,
         diariaParcial40,

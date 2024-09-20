@@ -12,5 +12,6 @@ import { CreateReqNumerarioEntity } from 'src/database/db_mysql/entities/createR
     ],
     controllers: [ReqnumerarioController],
     providers: [ReqnumerarioService],
+    exports: [ReqnumerarioService]
 })
 export class ReqnumerarioModule {}

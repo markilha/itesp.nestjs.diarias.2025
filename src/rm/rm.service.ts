@@ -5,7 +5,7 @@ import { PFuncEntity } from 'src/database/db_oracle/entities/pfunc.entity';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { FindAllParams, RMPessoaDto } from './rm.dto';
 import { returnRmDto } from './returnRmDto';
-import { returnFuncDto } from './returnFuncDto';
+import { FuncParams, returnFuncDto } from './returnFuncDto';
 
 @Injectable()
 export class RmService {
@@ -30,7 +30,7 @@ export class RmService {
       const page = params.page;
       const limit = params.limit;
       const skip = (page - 1) * limit;
-     
+
       rms = await this.rmRepository.find({
         where: searchParams,
         skip,
@@ -71,7 +71,7 @@ export class RmService {
       queryBuilder.skip(skip).take(limit);
     }
 
-    try {     
+    try {
       return await queryBuilder.getMany();
     } catch (error) {
       console.error('Erro ao executar a consulta:', error);
@@ -79,11 +79,23 @@ export class RmService {
     }
   }
 
-  async findAllFuncs(): Promise<returnFuncDto[]> {
+  async findAllFuncs(params: FuncParams): Promise<returnFuncDto[]> {
+    const searchParams: FindOptionsWhere<PFuncEntity> = {};
+    if (params.NOME) {
+      searchParams['NOME'] = ILike(`%${params.NOME}%`);
+    }
+    
+    if (params.CHAPA) {
+      searchParams['CHAPA'] = ILike(`%${params.CHAPA}%`);
+    }
+    
 
     let funcs: PFuncEntity[];
-    funcs = await this.funcRepository.find();
+    funcs = await this.funcRepository.find({
+      where: searchParams,
+      take: params.limit,
+      skip: params.page,
+    });
     return funcs.map((func) => new returnFuncDto(func));
-   
   }
 }
