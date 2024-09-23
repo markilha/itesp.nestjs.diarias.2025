@@ -11,6 +11,9 @@ import { verificarDestino } from 'src/util/verificaDestino';
 import { UfespService } from 'src/ufesp/ufesp.service';
 import { PfuncaoService } from 'src/pfuncao/pfuncao.service';
 import { ReqnumerarioService } from 'src/reqnumerario/reqnumerario.service';
+import { PcargoService } from 'src/pcargo/pcargo.service';
+import { PfuncaoDto } from 'src/pfuncao/pfuncaoDto';
+import { PcargoDto } from 'src/pcargo/pcargoDto';
 
 @Injectable()
 export class UsureqService {
@@ -28,6 +31,8 @@ export class UsureqService {
     private pfuncaoService: PfuncaoService,
 
     private reqNumerarioService: ReqnumerarioService,
+
+    private pcargoService: PcargoService,
   ) {}
 
   async findAll(params: FindAllParams): Promise<ReturnUserReqDto[]> {
@@ -103,12 +108,14 @@ export class UsureqService {
           );
         }
 
+        const cargoufesp = await this.pcargoService.findOne(pfuncao.CARGO);
+
         let diarias: DiariaCalculadaDto;
 
-        if (pfuncao && pfuncao.NIVEL) {
+        if (pfuncao ) {
           diarias = this.diariaCalculada.calcularDiaria(
             UFESP,
-            pfuncao.NIVEL as enumCargo,
+            cargoufesp?.ufesp || 0,
             destino as Destino,
             parseInt(user.requisicao.reqPacote) || 0,
             user.requisicao.reqIntegral,
@@ -148,7 +155,7 @@ export class UsureqService {
             diarias.diariaParcial20,
             diarias.diariaBase,
             excedeu50Porcento,
-            totalNumerario
+            totalNumerario,
           ),
         );
       }

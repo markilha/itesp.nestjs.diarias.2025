@@ -8,6 +8,7 @@ import { DiariaService } from 'src/util/diaria.service';
 import { UfespModule } from 'src/ufesp/ufesp.module';
 import { PfuncaoModule } from 'src/pfuncao/pfuncao.module';
 import { ReqnumerarioModule } from 'src/reqnumerario/reqnumerario.module';
+import { PcargoModule } from 'src/pcargo/pcargo.module';
 
 
 @Module({
@@ -17,6 +18,7 @@ import { ReqnumerarioModule } from 'src/reqnumerario/reqnumerario.module';
     UfespModule,
     PfuncaoModule,
     ReqnumerarioModule,
+    PcargoModule
   ],
   controllers: [UsureqController],
   providers: [UsureqService, DiariaService],

@@ -10,9 +10,9 @@ export class returnPfuncaDto {
   FAIXASALARIAL: string;
   CBO2002: string;
   CODFUNCAOCHEFIA: string;
-  NIVEL: string;
 
-  constructor(pfuncao: PfuncaoEntity, nivel: string) {
+
+  constructor(pfuncao: PfuncaoEntity) {
     this.CODIGO = pfuncao.CODIGO;
     this.NOME = pfuncao.NOME;
     this.CBO = pfuncao.CBO;
@@ -20,6 +20,6 @@ export class returnPfuncaDto {
     this.FAIXASALARIAL = pfuncao.FAIXASALARIAL;
     this.CBO2002 = pfuncao.CBO2002;
     this.CODFUNCAOCHEFIA = pfuncao.CODFUNCAOCHEFIA;
-    this.NIVEL = nivel; // Recebe o nível como parâmetro e define aqui
+
   }
 }
