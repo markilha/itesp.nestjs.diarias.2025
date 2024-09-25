@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build && copyfiles .env dist/",   
+    "build": "nest build && copyfiles .env dist/",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "dev": "nest start --watch",
@@ -34,7 +34,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "mysql2": "^3.11.0",
-    "oracledb": "^6.6.0",
+    "oracledb": "^5.5.0",
     "pg": "^8.12.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",

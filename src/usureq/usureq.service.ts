@@ -107,6 +107,7 @@ export class UsureqService {
             user.pfunc.CODFUNCAO,
           );
         }
+        console.log(pfuncao);
 
         const cargoufesp = await this.pcargoService.findOne(pfuncao.CARGO);
 
