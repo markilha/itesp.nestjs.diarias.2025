@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Destino, enumCargo } from './diariaDto';
+import { Destino } from './diariaDto';
 import { DataUtils } from './DataUtils';
 
 export interface DiariaCalculada {
@@ -7,14 +7,13 @@ export interface DiariaCalculada {
   diariaParcial40: number;
   diariaParcial20: number;
   diariaBase: number;
-  
 }
 
 @Injectable()
 export class DiariaService {
   calcularDiaria(
     UFESP: number,
-    cargo: string,
+    cargoUfesp: number,
     destino: Destino,
     req_pacote: number,
     req_integral: number,
@@ -24,11 +23,8 @@ export class DiariaService {
     try {
       let diariaBase: number;
       // Artigo 2.º - Definir base conforme o cargo
-      if (cargo === enumCargo.DIRECAO) {
-        diariaBase = 9 * UFESP;
-      } else {
-        diariaBase = 7 * UFESP;
-      }
+      diariaBase = cargoUfesp * UFESP;
+
       // Artigo 3.º - Ajuste da base conforme o destino
       switch (destino) {
         case Destino.DF_MANaus:
@@ -46,7 +42,7 @@ export class DiariaService {
         case Destino.OUTRAS_LOCALIDADES:
           diariaBase = diariaBase;
           break;
-      }      
+      }
 
       let diariaParcial40 = 0;
       let diariaParcial20 = 0;
@@ -60,7 +56,7 @@ export class DiariaService {
           diariaParcial20 = req_parcial * (diariaBase * 0.2); // 20% se deslocamento entre 6 e 12 horas - b
           diariaParcial20 = DataUtils.arredondar(diariaParcial20);
         }
-      }   
+      }
 
       if (req_pacote === 1) {
         diariaBase *= 0.5; // 50%
@@ -72,13 +68,14 @@ export class DiariaService {
         diariaIntegral = req_integral * diariaBase;
         diariaIntegral = DataUtils.arredondar(diariaIntegral);
       }
-      return {      
+      diariaBase = DataUtils.arredondar(diariaBase);
+      return {
         diariaIntegral,
         diariaParcial40,
         diariaParcial20,
         diariaBase,
       };
-    } catch (error) {    
+    } catch (error) {
       throw new Error(`Erro ao calcular diária: ${error.message}`);
     }
   }

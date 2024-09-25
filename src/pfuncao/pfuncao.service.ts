@@ -40,12 +40,7 @@ export class PfuncaoService {
       });
     }
 
-    return pfuncoes.map((pfuncao) => {
-      if (pfuncao.DESCRICAO) {
-        const nivel = pfuncao.DESCRICAO.includes('formação superior') ? enumCargo.DIRECAO : enumCargo.DEMAIS;
-        return new returnPfuncaDto(pfuncao, nivel);
-      }
-    });
+    return pfuncoes.map((pfuncao) => new returnPfuncaDto(pfuncao));
   }
 
   // Método para buscar uma função pelo código
@@ -54,13 +49,8 @@ export class PfuncaoService {
       where: { CODIGO: codigo } 
     });
   
-    if (pfuncao && pfuncao.DESCRICAO) {
-      const nivel = pfuncao.DESCRICAO.toLowerCase().includes('superior') ? enumCargo.DIRECAO : enumCargo.DEMAIS;
-
-      return new returnPfuncaDto(pfuncao, nivel);
-    }
-  
-    throw new Error('Função não encontrada');
+   return new returnPfuncaDto(pfuncao);
+   
   }
 
 

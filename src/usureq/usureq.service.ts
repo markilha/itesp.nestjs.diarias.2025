@@ -10,6 +10,10 @@ import { Destino, enumCargo, DiariaCalculadaDto } from 'src/util/diariaDto';
 import { verificarDestino } from 'src/util/verificaDestino';
 import { UfespService } from 'src/ufesp/ufesp.service';
 import { PfuncaoService } from 'src/pfuncao/pfuncao.service';
+import { ReqnumerarioService } from 'src/reqnumerario/reqnumerario.service';
+import { PcargoService } from 'src/pcargo/pcargo.service';
+import { PfuncaoDto } from 'src/pfuncao/pfuncaoDto';
+import { PcargoDto } from 'src/pcargo/pcargoDto';
 
 @Injectable()
 export class UsureqService {
@@ -25,6 +29,10 @@ export class UsureqService {
     private ufespService: UfespService,
 
     private pfuncaoService: PfuncaoService,
+
+    private reqNumerarioService: ReqnumerarioService,
+
+    private pcargoService: PcargoService,
   ) {}
 
   async findAll(params: FindAllParams): Promise<ReturnUserReqDto[]> {
@@ -81,30 +89,65 @@ export class UsureqService {
       const UFESP = UFESP2.ufeValor || 0;
 
       for (const user of users) {
-      
-        const destino = verificarDestino(user.requisicao.destino.municipio.munIdCodigo);
+        const destino =
+          verificarDestino(user.requisicao?.destino?.municipio?.munIdCodigo) ||
+          null;
 
         if (!destino) {
           throw new HttpException(
-            `Código do município ${user.requisicao.codMunicipio} não encontrado.`,
+            `Município de destino não encontrado para a requisição ${user.reqIdCodigo}`,
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
         }
 
-        const pfuncao = await this.pfuncaoService.findByCodigo(
-          user.pfunc.CODFUNCAO,
-        );
+        let pfuncao = null;
 
-        const diarias: DiariaCalculadaDto = this.diariaCalculada.calcularDiaria(
-          UFESP,
-          pfuncao.NIVEL as enumCargo,
-          destino as Destino,
-          parseInt(user.requisicao.reqPacote) || 0,
-          user.requisicao.reqIntegral,
-          user.requisicao.reqParcial,
-          user.requisicao.reqHRet,
-        );
+        if (user.pfunc && user.pfunc.CODFUNCAO) {
+          pfuncao = await this.pfuncaoService.findByCodigo(
+            user.pfunc.CODFUNCAO,
+          );
+        }
+        console.log(pfuncao);
 
+        const cargoufesp = await this.pcargoService.findOne(pfuncao.CARGO);
+
+        let diarias: DiariaCalculadaDto;
+
+        if (pfuncao ) {
+          diarias = this.diariaCalculada.calcularDiaria(
+            UFESP,
+            cargoufesp?.ufesp || 0,
+            destino as Destino,
+            parseInt(user.requisicao.reqPacote) || 0,
+            user.requisicao.reqIntegral,
+            user.requisicao.reqParcial,
+            user.requisicao.reqHRet,
+          );
+        } else {
+          throw new HttpException(
+            'Função ou nível não definido.',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+
+        const totalDiarias =
+          diarias.diariaIntegral +
+          diarias.diariaParcial40 +
+          diarias.diariaParcial20;
+
+        const totalNumerario =
+          await this.reqNumerarioService.findTotalReNumerarioMesAtual(
+            user.chapa,
+          );
+
+        const totalGeral = totalDiarias + totalNumerario;
+        const salario = user.pfunc.SALARIO || 0;
+
+        let excedeu50Porcento = false;
+
+        if (totalGeral > salario / 2) {
+          excedeu50Porcento = true;
+        }
         result.push(
           new ReturnUserReqDto(
             user,
@@ -112,6 +155,8 @@ export class UsureqService {
             diarias.diariaParcial40,
             diarias.diariaParcial20,
             diarias.diariaBase,
+            excedeu50Porcento,
+            totalNumerario,
           ),
         );
       }

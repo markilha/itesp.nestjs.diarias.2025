@@ -8,7 +8,12 @@ const demaisCapitaisCodigos = new Set(DemaisCapitais);
 const mais200Codigos = new Set(Mais200);
 
 
-export function verificarDestino(codMunicipio: number): string | null {
+export function verificarDestino(codMunicipio: number | undefined): string | null {
+ 
+  if (codMunicipio === undefined || codMunicipio === null) {
+    return null; 
+  }
+
   const codMunicipioStr = codMunicipio.toString();
 
   // Verificar diretamente nos conjuntos
@@ -25,6 +30,7 @@ export function verificarDestino(codMunicipio: number): string | null {
     return Destino.MAIS_DE_200K_HABITANTES_DISTANCIA_70KM;
   }
 
-  // Se o código não for encontrado, retorna null
-  return Destino.OUTRAS_LOCALIDADES
+
+  return Destino.OUTRAS_LOCALIDADES;
 }
+

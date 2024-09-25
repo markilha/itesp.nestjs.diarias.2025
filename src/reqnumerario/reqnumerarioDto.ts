@@ -64,10 +64,10 @@ export interface FindAllParams {
   rnuHoraInicio: string;
   rnuDtFim: Date;
   rnuHoraFim: string;
-  rnuIntPrev: string;
-  rnuParPrev: string;
-  rnuIntReal: string;
-  rnuParReal: string;
+  rnuIntPrev: number;
+  rnuParPrev: number;
+  rnuIntReal: number;
+  rnuParReal:  number;
   rnuMotivo: string;
   rnuPacote: string;
   rnuGovernador: string;

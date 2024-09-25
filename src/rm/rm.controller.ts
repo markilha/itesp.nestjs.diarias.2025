@@ -3,6 +3,7 @@ import { RmService } from './rm.service';
 import { RMPessoaDto,FindAllParams } from './rm.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { returnRmDto } from './returnRmDto';
+import { FuncParams, returnFuncDto } from './returnFuncDto';
 
 
 @UseGuards(AuthGuard) 
@@ -17,8 +18,8 @@ export class RmController {
     }
     @Get('func')
 
-    async getFunc() {
-      return this.rmService.findAllFuncs();
+    async getFunc(@Query() params: FuncParams): Promise<returnFuncDto[]> {
+      return this.rmService.findAllFuncs(params);
     }
     
     @Get('ppesso-func')
