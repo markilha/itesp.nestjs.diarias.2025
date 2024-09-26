@@ -14,6 +14,7 @@ import { ReqnumerarioModule } from './reqnumerario/reqnumerario.module';
 import { SaqueModule } from './saque/saque.module';
 import { UfespModule } from './ufesp/ufesp.module';
 import { PcargoModule } from './pcargo/pcargo.module';
+import { FuncsalarioModule } from './funcsalario/funcsalario.module';
 
 
 @Module({
@@ -32,7 +33,8 @@ import { PcargoModule } from './pcargo/pcargo.module';
     ReqnumerarioModule,
     SaqueModule,
     UfespModule,
-    PcargoModule
+    PcargoModule,
+    FuncsalarioModule
     
   ],
   controllers: [],
