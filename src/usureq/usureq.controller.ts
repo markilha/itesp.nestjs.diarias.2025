@@ -24,7 +24,7 @@ export class UsureqController {
   }
 
   @Get('saque')
-  async findSaque(@Query() params: FindAllParams): Promise<ReturnUserReqDto[]> {
+  async findSaque(@Query() params: FindAllParams): Promise<ReturnUserReqDto> {
     return await this.usureq.findSaque(params);
   }
 

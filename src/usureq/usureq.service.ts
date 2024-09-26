@@ -106,29 +106,28 @@ export class UsureqService {
     }
   }
 
-  async findSaque(params: FindAllParams): Promise<ReturnUserReqDto[]> {
+  async findSaque(params: FindAllParams): Promise<ReturnUserReqDto | null> {
     try {
       const searchParams: FindOptionsWhere<ReturnUserReqDto> = {};
-      const result: ReturnUserReqDto[] = [];
-
+      let result: ReturnUserReqDto | null = null;
+  
       if (params.reqIdCodigo) {
         searchParams.reqIdCodigo = params.reqIdCodigo;
       }
       if (params.chapa) {
         searchParams.chapa = params.chapa;
       }
-
       if (params.usuMov) {
         searchParams.chapa = params.usuMov;
       }
-
+  
       let users: UsuReqEntity[];
-
+  
       if (params.page && params.limit) {
         const page = params.page;
         const limit = params.limit;
         const skip = (page - 1) * limit;
-
+  
         users = await this.usureqRepository.find({
           where: searchParams,
           skip,
@@ -157,39 +156,39 @@ export class UsureqService {
           ],
         });
       }
-
+  
       const UFESP2 = await this.ufespService.findMostRecentValue();
       const UFESP = UFESP2.ufeValor || 0;
-
+  
       for (const user of users) {
         try {
           const destino =
             verificarDestino(
               user.requisicao?.destino?.municipio?.munIdCodigo,
             ) || null;
-
+  
           if (!destino) {
             console.warn(
               `Município de destino não encontrado para a requisição ${user.reqIdCodigo}`,
             );
             continue;
           }
-
+  
           if (!user.pfunc) {
             console.warn(
               `Funcionário não encontrado para a requisição ${user.reqIdCodigo}`,
             );
             continue;
           }
-
+  
           let cargoufesp = null;
           if (user.pfunc?.cargo) {
             cargoufesp =
               (await this.pcargoService.findOne(user.pfunc?.cargo)) || null;
           }
-
+  
           let diarias: DiariaCalculadaDto;
-
+  
           if (cargoufesp) {
             diarias = this.diariaCalculada.calcularDiaria(
               UFESP,
@@ -204,45 +203,47 @@ export class UsureqService {
             console.warn('Função ou nível não definido.');
             continue;
           }
-
+  
           const totalDiarias =
             diarias.diariaIntegral +
             diarias.diariaParcial40 +
             diarias.diariaParcial20;
-
+  
           const totalNumerario =
             await this.reqNumerarioService.findTotalReNumerarioMesAtual(
               user.chapa,
             );
-
+  
           const totalGeral = totalDiarias + totalNumerario;
           const salario = user.pfunc.salario || 0;
-
+  
           let excedeu50Porcento = false;
-
+  
           if (totalGeral > salario / 2) {
             excedeu50Porcento = true;
           }
-
-          result.push(
-            new ReturnUserReqDto(
-              user,
-              diarias.diariaIntegral,
-              diarias.diariaParcial40,
-              diarias.diariaParcial20,
-              diarias.diariaBase,
-              excedeu50Porcento,
-              totalNumerario,
-            ),
-          );
+  
+          result = new ReturnUserReqDto(
+            user,
+            diarias.diariaIntegral,
+            diarias.diariaParcial40,
+            diarias.diariaParcial20,
+            diarias.diariaBase,
+            excedeu50Porcento,
+            totalNumerario,
+          );  
+        
+          return result;
+  
         } catch (error) {
           console.error(
             `Erro ao processar a requisição ${user.reqIdCodigo}: ${error.message}`,
           );
         }
       }
-
-      return result;
+  
+      return result; 
+  
     } catch (error) {
       console.log(error);
       throw new HttpException(
@@ -251,6 +252,153 @@ export class UsureqService {
       );
     }
   }
+  
+
+  // async findSaque(params: FindAllParams): Promise<ReturnUserReqDto[]> {
+  //   try {
+  //     const searchParams: FindOptionsWhere<ReturnUserReqDto> = {};
+  //     const result: ReturnUserReqDto[] = [];
+
+  //     if (params.reqIdCodigo) {
+  //       searchParams.reqIdCodigo = params.reqIdCodigo;
+  //     }
+  //     if (params.chapa) {
+  //       searchParams.chapa = params.chapa;
+  //     }
+
+  //     if (params.usuMov) {
+  //       searchParams.chapa = params.usuMov;
+  //     }
+
+  //     let users: UsuReqEntity[];
+
+  //     if (params.page && params.limit) {
+  //       const page = params.page;
+  //       const limit = params.limit;
+  //       const skip = (page - 1) * limit;
+
+  //       users = await this.usureqRepository.find({
+  //         where: searchParams,
+  //         skip,
+  //         take: limit,
+  //         relations: [
+  //           'pfunc',
+  //           'requisicao.municipio_partida',
+  //           'requisicao',
+  //           'requisicao.transmeio',
+  //           'requisicao.municipio',
+  //           'requisicao.destino',
+  //           'requisicao.destino.municipio',
+  //         ],
+  //       });
+  //     } else {
+  //       users = await this.usureqRepository.find({
+  //         where: searchParams,
+  //         relations: [
+  //           'pfunc',
+  //           'requisicao',
+  //           'requisicao.municipio_partida',
+  //           'requisicao.transmeio',
+  //           'requisicao.municipio',
+  //           'requisicao.destino',
+  //           'requisicao.destino.municipio',
+  //         ],
+  //       });
+  //     }
+
+  //     const UFESP2 = await this.ufespService.findMostRecentValue();
+  //     const UFESP = UFESP2.ufeValor || 0;
+
+  //     for (const user of users) {
+  //       try {
+  //         const destino =
+  //           verificarDestino(
+  //             user.requisicao?.destino?.municipio?.munIdCodigo,
+  //           ) || null;
+
+  //         if (!destino) {
+  //           console.warn(
+  //             `Município de destino não encontrado para a requisição ${user.reqIdCodigo}`,
+  //           );
+  //           continue;
+  //         }
+
+  //         if (!user.pfunc) {
+  //           console.warn(
+  //             `Funcionário não encontrado para a requisição ${user.reqIdCodigo}`,
+  //           );
+  //           continue;
+  //         }
+
+  //         let cargoufesp = null;
+  //         if (user.pfunc?.cargo) {
+  //           cargoufesp =
+  //             (await this.pcargoService.findOne(user.pfunc?.cargo)) || null;
+  //         }
+
+  //         let diarias: DiariaCalculadaDto;
+
+  //         if (cargoufesp) {
+  //           diarias = this.diariaCalculada.calcularDiaria(
+  //             UFESP,
+  //             cargoufesp?.ufesp || 0,
+  //             destino as Destino,
+  //             parseInt(user.requisicao.reqPacote) || 0,
+  //             user.requisicao.reqIntegral,
+  //             user.requisicao.reqParcial,
+  //             user.requisicao.reqHRet,
+  //           );
+  //         } else {
+  //           console.warn('Função ou nível não definido.');
+  //           continue;
+  //         }
+
+  //         const totalDiarias =
+  //           diarias.diariaIntegral +
+  //           diarias.diariaParcial40 +
+  //           diarias.diariaParcial20;
+
+  //         const totalNumerario =
+  //           await this.reqNumerarioService.findTotalReNumerarioMesAtual(
+  //             user.chapa,
+  //           );
+
+  //         const totalGeral = totalDiarias + totalNumerario;
+  //         const salario = user.pfunc.salario || 0;
+
+  //         let excedeu50Porcento = false;
+
+  //         if (totalGeral > salario / 2) {
+  //           excedeu50Porcento = true;
+  //         }
+
+  //         result.push(
+  //           new ReturnUserReqDto(
+  //             user,
+  //             diarias.diariaIntegral,
+  //             diarias.diariaParcial40,
+  //             diarias.diariaParcial20,
+  //             diarias.diariaBase,
+  //             excedeu50Porcento,
+  //             totalNumerario,
+  //           ),
+  //         );
+  //       } catch (error) {
+  //         console.error(
+  //           `Erro ao processar a requisição ${user.reqIdCodigo}: ${error.message}`,
+  //         );
+  //       }
+  //     }
+
+  //     return result;
+  //   } catch (error) {
+  //     console.log(error);
+  //     throw new HttpException(
+  //       'Erro ao buscar as requisições',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 
   async create(createusureqDto: CreateUsureqDto): Promise<UsureqDto> {
     try {
