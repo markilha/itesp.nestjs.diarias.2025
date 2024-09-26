@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ReqNumerarioEntity } from 'src/database/db_oracle/entities/reqnumerario.entity';
+
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { CreateReqnumerarioDto, FindAllParams } from './reqnumerarioDto';
 import { ReqnumerarioDto } from './reqnumerarioDto';
@@ -8,9 +8,7 @@ import { CreateReqNumerarioEntity } from 'src/database/db_mysql/entities/createR
 
 @Injectable()
 export class ReqnumerarioService {
-  constructor(
-    @InjectRepository(ReqNumerarioEntity)
-    private readonly reqviagemRepository: Repository<ReqNumerarioEntity>,
+  constructor( 
 
     @InjectRepository(CreateReqNumerarioEntity, 'mysqlConnection')
     private readonly mysqlRepository: Repository<CreateReqNumerarioEntity>,
