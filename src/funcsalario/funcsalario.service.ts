@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { FuncSalarioEntity } from 'src/database/db_mysql/entities/funcsalario.entity';
@@ -39,6 +39,19 @@ export class FuncsalarioService {
     return await this.funcSalarioRepository.find({
       where: searchParams,
     });
+  }
+
+  async findByCodigo(chapa: string): Promise<FuncSalarioEntity> {
+    const pfuncao = await this.funcSalarioRepository.findOne({
+      where: { chapa: chapa },
+    });
+
+    // Se não encontrar, lança uma exceção 404
+    if (!pfuncao) {
+      throw new NotFoundException(`Funcionário com a chapa ${chapa} não foi encontrado`);
+    }
+
+    return pfuncao;
   }
 
 }

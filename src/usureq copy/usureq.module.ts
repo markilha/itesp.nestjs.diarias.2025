@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsuReqEntity } from 'src/database/db_mysql/entities/usureq.entity';
+import { UsuReqEntity } from 'src/database/db_oracle/entities/usureq.entity';
 import { UsureqController } from './usureq.controller';
 import { UsureqService } from './usureq.service';
 import { CreateUsuReqEntity } from 'src/database/db_mysql/entities/createUsureq.entity';
@@ -13,7 +13,7 @@ import { PcargoModule } from 'src/pcargo/pcargo.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UsuReqEntity],'mysqlConnection'),
+    TypeOrmModule.forFeature([UsuReqEntity]),
     TypeOrmModule.forFeature([CreateUsuReqEntity], 'mysqlConnection'),   
     UfespModule,
     PfuncaoModule,

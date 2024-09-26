@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToOne } from 'typeorm';
+import { UsuReqEntity } from './usureq.entity';
 @Entity('v009_funcsalario', { schema: 'dev_itesp_diarias' })
 export class FuncSalarioEntity {
   @PrimaryColumn({ name: 'chapa', type: 'varchar', length: 50 }) 
@@ -30,5 +31,8 @@ export class FuncSalarioEntity {
 
   @Column({ name: 'reg_descricao', type: 'varchar', length: 255 })
   regDescricao: string;
+
+  @OneToOne(() => UsuReqEntity, (usu) => usu.pfunc)  
+  usureq?: UsuReqEntity;  
 }
 

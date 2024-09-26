@@ -1,7 +1,6 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { FuncsalarioService } from './funcsalario.service'; // Importa o serviço
-import { FindAllParams,FuncSalarioDto } from './funcsalarioDto';
-
+import { FindAllParams, FuncSalarioDto } from './funcsalarioDto';
 
 @Controller('funcsalario')
 export class FuncsalarioController {
@@ -10,6 +9,10 @@ export class FuncsalarioController {
   @Get()
   async findAll(@Query() params: FindAllParams): Promise<FuncSalarioDto[]> {
     return await this.funcSalarioService.findAll(params);
-}
+  }
 
+  @Get(':chapa')
+  async findByCodigo(@Param('chapa') chapa: string): Promise<FuncSalarioDto>  {
+    return await this.funcSalarioService.findByCodigo(chapa);
+  }
 }
