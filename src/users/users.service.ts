@@ -1,23 +1,58 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Users } from 'src/db/entities/user.entity';
-import { Repository } from 'typeorm';
-import { UsersDto } from './users.dto';
+import { Users } from 'src/database/db_mysql/entities/user.entity'; 
+import { FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { FindAllParams, UsersDto, UserUpdateDto } from './users.dto';
+import { hashSync as bcryptHashSync } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(Users)
+    @InjectRepository(Users, 'mysqlConnection')
     private usersRepository: Repository<Users>,
   ) {}
 
-  async findAll(): Promise<Users[]> {
-    return this.usersRepository.find();
-  }
-
   async create(userDTO: UsersDto): Promise<UsersDto> {
+    userDTO.senha = bcryptHashSync(userDTO.senha, 10);
+
     const createUser = await this.usersRepository.save(userDTO);
     return createUser;
+  }
+
+  async findAll(params: FindAllParams): Promise<Users[]> {
+    const searchParams: FindOptionsWhere<Users> = {};
+
+    if (params.nome) {
+      searchParams.nome = ILike(`%${params.nome}%`);
+    }
+    if (params.login) {
+      searchParams.login = ILike(`%${params.login}%`);
+    }
+
+    const users = await this.usersRepository.find({ where: searchParams });
+    return users;
+  }
+
+  async remove(id_usuario: number): Promise<void> {
+    const user = await this.usersRepository.findOne({ where: { id_usuario } });
+    if (!user) {
+      throw new HttpException(
+        `User with id ${id_usuario} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    await this.usersRepository.delete(id_usuario);
+  }
+
+  async findOne(id_usuario: number): Promise<Users> {
+    const user = await this.usersRepository.findOne({ where: { id_usuario } });
+    if (!user) {
+      throw new HttpException(
+        `User with id ${id_usuario} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return user;
   }
 
   async findByUserName(login: string): Promise<UsersDto | null> {
@@ -29,5 +64,21 @@ export class UsersService {
       return null;
     }
     return userFound;
+  }
+
+  async update(
+    id_usuario: number,
+    userUpdateDto: UserUpdateDto,
+  ): Promise<UsersDto> {
+    const user = await this.usersRepository.findOne({ where: { id_usuario } });
+    if (!user) {
+      throw new HttpException(
+        `User with id ${id_usuario} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    await this.usersRepository.update(id_usuario, userUpdateDto);
+
+    return { ...user, ...userUpdateDto };
   }
 }
