@@ -8,7 +8,7 @@ export class UsureqDto {
   export interface FindAllParams {    
     reqIdCodigo: number; 
     chapa: string;
-    usuMov: string;   
+    usuMov: string;
     page?: number;
     limit?: number;
   }
