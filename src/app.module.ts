@@ -7,6 +7,7 @@ import { ReqnumerarioModule } from './reqnumerario/reqnumerario.module';
 import { UfespModule } from './ufesp/ufesp.module';
 import { PcargoModule } from './pcargo/pcargo.module';
 import { FuncsalarioModule } from './funcsalario/funcsalario.module';
+import { S001RequisicaoModule } from './requisicao/s001_requisicao.module';
 
 
 @Module({
@@ -18,7 +19,8 @@ import { FuncsalarioModule } from './funcsalario/funcsalario.module';
     ReqnumerarioModule,  
     UfespModule,
     PcargoModule,
-    FuncsalarioModule    
+    FuncsalarioModule,
+    S001RequisicaoModule
   ],
   controllers: [],
   providers: [],

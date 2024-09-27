@@ -14,7 +14,7 @@ Esta API permite consultar as requisiçoes do transporte, filtrando por reqIdCod
 ### Exemplo de Requisição
 
 ```bash
-GET http://localhost:6000/usureq?reqIdCodigo=13&chapa=000383&page=1&limit=10
+GET http://localhost:3000/usureq?reqIdCodigo=13&chapa=000383&page=1&limit=10
 
 Exemplo de Resposta:
 [
@@ -63,7 +63,7 @@ Esta API permite consultar as requisiçoes do transporte com calculo, filtrando 
 ### Exemplo de Requisição
 
 ```bash
-GET http://localhost:6000/usureq/saque?reqIdCodigo=13&chapa=000428
+GET http://localhost:3000/usureq/saque?reqIdCodigo=13&chapa=000428
 
 Exemplo de Resposta:
 {
@@ -99,3 +99,56 @@ Exemplo de Resposta:
 	"totalNumerario": 0,
 	"usuMov": "R"
 }
+
+## Requisição do transporte  `/requisicao`
+
+### Descrição
+
+Esta API permite consultar as requisiçoes do transporte , filtrando por reqIdCodigo, codMunicipio,reqStatus.
+
+### Endpoint
+
+- `reqIdCodigo` (opcional): Filtra as requisições pelo código de identificação da requisição.
+- `codMunicipio` (opcional): Filtra as requisições pelo código de identificação do municipio de origem.
+- `reqStatus` (opcional): Filtra as requisições pelo status da requisicao.
+
+
+
+### Exemplo de Requisição
+
+```bash
+GET http://localhost:3000/requisicao?reqIdCodigo=29&codMunicipio=355030&reqStatus=CANCELADA&page=1&limit=10
+
+Exemplo de Resposta:
+[
+	{
+		"reqIdCodigo": 29,
+		"reqDtReq": "17/07/2002, 09:45:43",
+		"reqDtSaida": "2002-06-25 00:00:00.000",
+		"reqHSaida": "14:30",
+		"reqDtRetorno": "2002-06-25 00:00:00.000",
+		"reqMotivo": "EXPOSICAO CERAMICA E CADADANIA",
+		"reqHRet": "17:00",
+		"reqKm": null,
+		"reqStatus": "CANCELADA",
+		"reqDiaria": "",
+		"reqIntegral": "",
+		"reqParcial": "",
+		"reqEspecial": "",
+		"reqPacote": 1,
+		"reqGovernador": "",
+		"transmeio": 1,
+		"municipio": 355030,
+		"des_local": "ASSEMBLEIA LEGISLATIVA",
+		"des_mun_id_codigo": 7107,
+		"des_mun_nme": "SAO PAULO",
+		"useReq": [
+			{
+				"reqIdCodigo": 29,
+				"codColigada": 1,
+				"chapa": "000101",
+				"usuMov": "R"
+			}
+		]
+	}
+]
