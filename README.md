@@ -13,7 +13,7 @@ Esta API permite consultar as requisiçoes do transporte, filtrando por reqIdCod
 
 ### Exemplo de Requisição
 
-```bash
+````bash
 GET http://localhost:3000/usureq?reqIdCodigo=13&chapa=000383&page=1&limit=10
 
 Exemplo de Resposta:
@@ -152,3 +152,4 @@ Exemplo de Resposta:
 		]
 	}
 ]
+````
