@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 @Module({
   imports:[TypeOrmModule.forFeature([SaqueEntity], 'mysqlConnection')],
   providers: [SaqueService],
-  controllers: [SaqueController]
+  controllers: [SaqueController],
+  exports: [SaqueService]
 })
 export class SaqueModule {}

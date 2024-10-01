@@ -47,7 +47,8 @@ export class ReqnumerarioController {
   async createReqNumerario(@Body() body: Requisicao) {
     
     const createReqNumerarioDto: CreateReqnumerarioDto = {     
-      reqIdCodigo: body.reqIdCodigo,      
+      reqIdCodigo: body.reqIdCodigo,     
+      sqeIdCodigo: null,
       chapa: body.chapa,
       rnuMotivo: body.reqMotivo,
       rnuDtInicio: new Date(body.reqDtSaida), 
@@ -63,8 +64,7 @@ export class ReqnumerarioController {
       rnuVlBase: body.diariaBase,
       rnuVlIntegral:body.diariaIntegral,
       rnuVlParcial20: body.diariaParcial20,
-      rnuVlParcial40: body.diariaParcial40,
-      rnuStatus: body.reqStatus,
+      rnuVlParcial40: body.diariaParcial40,    
       rnuDtSaque: null,
       rnuDtPrest: null,      
       rnuMunOri: body.codMunicipio,

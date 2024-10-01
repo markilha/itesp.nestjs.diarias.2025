@@ -1,11 +1,13 @@
-import { Controller, Get, HttpException, HttpStatus, Param, Query } from '@nestjs/common';
-import { SaqueDto } from './saque.dto';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { CreateSaqueDto, SaqueDto } from './saque.dto';
 import { SaqueService } from './saque.service';
 import { FindAllParams } from 'src/ufesp/ufespDto';
 
 @Controller('saque')
 export class SaqueController {
     constructor(private readonly saqueService: SaqueService) {}
+
+   
     
     @Get()
     async findAll(@Query() params: FindAllParams): Promise<SaqueDto[]> {      
@@ -22,5 +24,10 @@ export class SaqueController {
         );
         }
         return saque;
+    }
+
+    @Post()
+    async create(@Body() createSaqueDto: CreateSaqueDto): Promise<SaqueDto> {
+      return this.saqueService.create(createSaqueDto);
     }
 }

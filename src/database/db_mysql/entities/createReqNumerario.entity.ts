@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToOne } from 'typeorm';
+import { SaqueEntity } from './saque.entity';
 
 @Entity('s009_reqnumerario', { schema: 'dev_itesp_diarias' })
 export class CreateReqNumerarioEntity {
@@ -10,6 +11,9 @@ export class CreateReqNumerarioEntity {
 
   @Column({ type: 'int', name: 'REQ_ID_CODIGO', nullable: true })
   reqIdCodigo: number;
+
+  @Column({ type: 'int', name: 'SQE_ID_CODIGO', nullable: true })
+  sqeIdCodigo: number;
 
   @Column({ type: 'date', name: 'RNU_DTINICIO', nullable: true })
   rnuDtInicio: Date;
@@ -61,14 +65,14 @@ export class CreateReqNumerarioEntity {
 
   @Column({ type: 'date', name: 'RNU_DTPREST', nullable: true })
   rnuDtPrest: Date;
-   
-  @Column({ type: 'varchar',length: 1000,  name: 'RNU_STATUS', nullable: true })
-  rnuStatus: string;
 
   @Column({ type: 'int', name: 'RNU_MUN_ORI', nullable: true })
   rnuMunOri: number;
 
   @Column({ type: 'int', name: 'RNU_MUN_DES', nullable: true })
   rnuMunDes: number;
+
+  @OneToOne(() => SaqueEntity, (saq) => saq.numerario)
+  saque?: SaqueEntity; 
 
 }

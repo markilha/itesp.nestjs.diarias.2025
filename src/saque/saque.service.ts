@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { FindAllParams, SaqueDto } from './saque.dto';
+import { CreateSaqueDto, FindAllParams, SaqueDto } from './saque.dto';
 
 import { SaqueEntity } from 'src/database/db_mysql/entities/saque.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,13 +12,17 @@ export class SaqueService {
     private saqueRepository: Repository<SaqueEntity>,
   ) {}
 
-  async findAll(params: FindAllParams): Promise<SaqueDto[]> {     
-    
+  async findAll(params: FindAllParams): Promise<SaqueDto[]> {
     try {
       const searchParams: FindOptionsWhere<SaqueDto> = {};
       if (params.sqeIdCodigo) {
         searchParams['sqeIdCodigo'] = params.sqeIdCodigo;
       }
+
+      if (params.stsIdCodigo) {
+        searchParams['stsIdCodigo'] = params.stsIdCodigo;
+      }
+
 
       if (params.page && params.limit) {
         const page = params.page;
@@ -29,6 +33,7 @@ export class SaqueService {
           where: searchParams,
           skip,
           take: limit,
+          relations: ['numerario'],
         });
       }
 
@@ -36,7 +41,11 @@ export class SaqueService {
         where: searchParams,
       });
     } catch (error) {
-      throw new HttpException('Não foi possível buscar cargos', HttpStatus.INTERNAL_SERVER_ERROR);   
+      console.log(error);
+      throw new HttpException(
+        'Não foi possível buscar os saques',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -44,9 +53,28 @@ export class SaqueService {
     try {
       return await this.saqueRepository.findOne({
         where: { sqeIdCodigo: codigo },
+        relations: ['numerario'],
       });
     } catch (error) {
-      throw new HttpException('Não foi possível busca o cargo', HttpStatus.INTERNAL_SERVER_ERROR); 
+      throw new HttpException(
+        'Não foi possível busca o cargo',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async create(saque: CreateSaqueDto): Promise<SaqueDto> {
+    try {
+      saque.stsIdCodigo = 1;
+      const newSaque = this.saqueRepository.create(saque);
+      await this.saqueRepository.save(newSaque);
+      return newSaque;
+    } catch (error) {
+        console.log(error);
+      throw new HttpException(
+        'Não foi possível criar o saque',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

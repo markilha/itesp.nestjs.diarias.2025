@@ -2,6 +2,7 @@
 import { CreateReqNumerarioEntity } from 'src/database/db_mysql/entities/createReqNumerario.entity';
 
 
+
 export class ReqnumerarioDto {
   rnuIdCodigo: number;
   sqeIdCodigo: number;
@@ -26,13 +27,13 @@ export class ReqnumerarioDto {
   rnuVlBase: number;
   rnuDtSaque: Date;
   rnuDtPrest: Date;
-  rnuStatus: string;
   rnuMunOri: number;
   rnuMunDes: number;
 
   constructor(reqnumerario: CreateReqNumerarioEntity) {
-    this.rnuIdCodigo = reqnumerario.rnuIdCodigo;
+    this.rnuIdCodigo = reqnumerario.rnuIdCodigo;  
     this.reqIdCodigo = reqnumerario.reqIdCodigo;  
+    this.sqeIdCodigo = reqnumerario.sqeIdCodigo;
     this.rnuDtInicio = reqnumerario.rnuDtInicio;
     this.rnuHoraInicio = reqnumerario.rnuHoraInicio;
     this.rnuDtFim = reqnumerario.rnuDtFim;
@@ -49,8 +50,7 @@ export class ReqnumerarioDto {
     this.rnuVlParcial40 = reqnumerario.rnuVlParcial40;
     this.rnuVlBase = reqnumerario.rnuVlBase;
     this.rnuDtSaque = reqnumerario.rnuDtSaque;
-    this.rnuDtPrest = reqnumerario.rnuDtPrest;
-    this.rnuStatus = reqnumerario.rnuStatus;
+    this.rnuDtPrest = reqnumerario.rnuDtPrest;  
     this.rnuMunOri = reqnumerario.rnuMunOri;
     this.rnuMunDes = reqnumerario.rnuMunDes; 
 
@@ -83,6 +83,7 @@ export interface FindAllParams {
 export class CreateReqnumerarioDto {
   rnuIdCodigo?: number;
   reqIdCodigo: number;
+  sqeIdCodigo?: number;
   chapa: string; 
   rnuDtInicio: Date;
   rnuHoraInicio: string;
@@ -100,8 +101,7 @@ export class CreateReqnumerarioDto {
   rnuVlParcial40: number;
   rnuVlBase: number;
   rnuDtSaque: Date;
-  rnuDtPrest: Date;
-  rnuStatus: string;
+  rnuDtPrest: Date; 
   rnuMunOri: number;
   rnuMunDes: number;
 
