@@ -1,5 +1,6 @@
 import { CreateReqNumerarioEntity } from 'src/database/db_mysql/entities/createReqNumerario.entity';
 import { SaqueEntity } from 'src/database/db_mysql/entities/saque.entity';
+import { StatusEntity } from 'src/database/db_mysql/entities/status.entity';
 
 export class SaqueDto {
   sqeIdCodigo?: number;
@@ -11,6 +12,7 @@ export class SaqueDto {
   sqeEfetivo?: string | null;
   sqeDtPedido?: string | null;
   numerario?: CreateReqNumerarioEntity;
+  status?: StatusEntity;
 
   constructor(SaqueEntity: SaqueEntity) {
     this.sqeIdCodigo = SaqueEntity.sqeIdCodigo;
@@ -27,6 +29,7 @@ export class SaqueDto {
 export interface FindAllParams {
   sqeIdCodigo?: number;
   stsIdCodigo?: number;
+  stsDescricao?: string;
   page?: number;
   limit?: number;
 }

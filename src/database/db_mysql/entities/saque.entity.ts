@@ -4,9 +4,10 @@ import {
   PrimaryGeneratedColumn,
   OneToOne,
   JoinColumn,
-  PrimaryColumn,
+ 
 } from 'typeorm';
 import { CreateReqNumerarioEntity } from './createReqNumerario.entity';
+import { StatusEntity } from './status.entity';
 
 @Entity('S009_SAQUE', { schema: 'dev_itesp_diarias' })
 
@@ -94,5 +95,9 @@ export class SaqueEntity {
   @OneToOne(() => CreateReqNumerarioEntity, (num) => num.saque)
   @JoinColumn({ name: 'SQE_ID_CODIGO', referencedColumnName: 'sqeIdCodigo' })
   numerario?: CreateReqNumerarioEntity;
+
+  @OneToOne(() => StatusEntity, (sts) => sts.saque)
+  @JoinColumn({ name: 'STS_ID_CODIGO', referencedColumnName: 'stsIdCodigo' })
+  status?: StatusEntity;
 }
 
