@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateSaqueDto, FindAllParams, SaqueDto } from './saque.dto';
+import { CreateSaqueDto, FindAllParams, SaqueDto, SaqueResultDto } from './saque.dto';
 
 import { SaqueEntity } from 'src/database/db_mysql/entities/saque.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -127,4 +127,53 @@ export class SaqueService {
       );
     }
   }
+
+
+  async getSaqueData(chapa: string): Promise<SaqueResultDto[]> {
+    const result = await this.saqueRepository
+      .createQueryBuilder('a')
+      .select([
+        'a.SQE_ID_CODIGO',
+        'c.RRE_ID_CODIGO',
+        'b.RNU_ID_CODIGO',
+        'b.RNU_DTINICIO',
+        'c.CHAPA',
+        'v.NOME',
+        'b.REQ_ID_CODIGO',
+        'a.SQE_VLSAQUE',
+        'a.SQE_DTSAQUE',
+        'a.SQE_EFETIVO',
+        'a.STS_ID_CODIGO',
+        's.STS_DESCRICAO',
+        'a.SQE_VLPREST',
+        'a.SQE_DTPEDIDO',
+      ])
+      .innerJoin('s009_reqnumerario', 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
+      .innerJoin('s009_itensreqrec', 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
+      .innerJoin('v009_funcsalario', 'v', 'c.CHAPA = v.CHAPA')
+      .innerJoin('s009_status', 's', 'a.STS_ID_CODIGO = s.STS_ID_CODIGO')
+      .where('c.CHAPA = :chapa', { chapa }) 
+      .groupBy('c.RRE_ID_CODIGO')
+      .addGroupBy('b.RNU_ID_CODIGO')
+      .addGroupBy('c.CHAPA')
+      .addGroupBy('v.NOME')
+      .addGroupBy('b.REQ_ID_CODIGO')
+      .addGroupBy('a.STS_ID_CODIGO')
+      .addGroupBy('s.STS_DESCRICAO')     
+      .getRawMany();
+  
+    return result as SaqueResultDto[];
+  }
+  
+
 }
+
+
+
+
+
+
+
+
+
+

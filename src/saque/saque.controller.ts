@@ -1,33 +1,68 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Query } from '@nestjs/common';
-import { CreateSaqueDto, SaqueDto } from './saque.dto';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { CreateSaqueDto, SaqueDto, SaqueResultDto } from './saque.dto';
 import { SaqueService } from './saque.service';
 import { FindAllParams } from 'src/ufesp/ufespDto';
 
 @Controller('saque')
 export class SaqueController {
-    constructor(private readonly saqueService: SaqueService) {}
+  constructor(private readonly saqueService: SaqueService) {}
 
-   
-    
-    @Get()
-    async findAll(@Query() params: FindAllParams): Promise<SaqueDto[]> {      
-        return await this.saqueService.findAll(params);
+  @Get()
+  async findAll(@Query() params: FindAllParams): Promise<SaqueDto[]> {
+    return await this.saqueService.findAll(params);
+  }
+
+  @Get('prestacao')
+  async findPrestacao(
+    @Query('chapa') chapa: string,
+  ): Promise<SaqueResultDto[]> { 
+    if (!chapa) {
+      throw new HttpException(
+        'CHAPA não informada. Por favor, forneça uma CHAPA válida.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
-    
-    @Get(':codigo')
-    async findOne(@Param('codigo') codigo: number): Promise<SaqueDto> {
-        const saque = await this.saqueService.findOne(codigo);
-        if (!saque) {
+
+    try {
+      const result = await this.saqueService.getSaqueData(chapa);
+      if (result.length === 0) {
         throw new HttpException(
-            'Saque Não encontrado',
-            HttpStatus.INTERNAL_SERVER_ERROR,
+          'Nenhum registro encontrado para a CHAPA fornecida.',
+          HttpStatus.NOT_FOUND,
         );
-        }
-        return saque;
+      }
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Erro ao buscar os dados de saque.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
+  }
 
-    @Post()
-    async create(@Body() createSaqueDto: CreateSaqueDto): Promise<SaqueDto> {
-      return this.saqueService.create(createSaqueDto);
+  @Get(':codigo')
+  async findOne(@Param('codigo') codigo: number): Promise<SaqueDto> {
+    const saque = await this.saqueService.findOne(codigo);
+    if (!saque) {
+      throw new HttpException(
+        'Saque Não encontrado',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
+    return saque;
+  }
+
+  @Post()
+  async create(@Body() createSaqueDto: CreateSaqueDto): Promise<SaqueDto> {
+    return this.saqueService.create(createSaqueDto);
+  }
 }

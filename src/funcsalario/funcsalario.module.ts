@@ -7,6 +7,7 @@ import { FuncSalarioEntity } from 'src/database/db_mysql/entities/funcsalario.en
 @Module({
   imports:[TypeOrmModule.forFeature([FuncSalarioEntity], 'mysqlConnection')],
   providers: [FuncsalarioService],
-  controllers: [FuncsalarioController]
+  controllers: [FuncsalarioController],
+  exports: [FuncsalarioService]
 })
 export class FuncsalarioModule {}

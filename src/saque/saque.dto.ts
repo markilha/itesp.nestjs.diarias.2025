@@ -1,4 +1,4 @@
-import { CreateReqNumerarioEntity } from 'src/database/db_mysql/entities/createReqNumerario.entity';
+import { ReqNumerarioEntity } from 'src/database/db_mysql/entities/ReqNumerario.entity';
 import { SaqueEntity } from 'src/database/db_mysql/entities/saque.entity';
 import { StatusEntity } from 'src/database/db_mysql/entities/status.entity';
 
@@ -11,7 +11,7 @@ export class SaqueDto {
   sqeVlSaque?: number | null;
   sqeEfetivo?: string | null;
   sqeDtPedido?: string | null;
-  numerario?: CreateReqNumerarioEntity;
+  numerario?: ReqNumerarioEntity;
   status?: StatusEntity;
 
   constructor(SaqueEntity: SaqueEntity) {
@@ -57,3 +57,21 @@ export class CreateSaqueDto {
   sqeempenho?: string;
   sqelistaSiafem?: string;
 }
+
+export class SaqueResultDto {
+  SQE_ID_CODIGO: number;
+  RRE_ID_CODIGO: number;
+  RNU_ID_CODIGO: number;
+  RNU_DTINICIO: Date;
+  CHAPA: string;
+  NOME: string;
+  REQ_ID_CODIGO: number;
+  SQE_VLSAQUE: number;
+  SQE_DTSAQUE: Date;
+  SQE_EFETIVO: boolean;
+  STS_ID_CODIGO: number;
+  STS_DESCRICAO: string;
+  SQE_VLPREST: number;
+  SQE_DTPEDIDO: Date;
+}
+

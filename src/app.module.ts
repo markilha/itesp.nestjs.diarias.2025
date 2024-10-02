@@ -10,6 +10,8 @@ import { FuncsalarioModule } from './funcsalario/funcsalario.module';
 import { S001RequisicaoModule } from './requisicao/s001_requisicao.module';
 import { PpessoaModule } from './ppessoa/ppessoa.module';
 import { SaqueModule } from './saque/saque.module';
+import { EventosdiariasModule } from './eventosdiarias/eventosdiarias.module';
+import { SaquesMesModule } from './saques-mes/saques-mes.module';
 
 
 @Module({
@@ -24,7 +26,9 @@ import { SaqueModule } from './saque/saque.module';
     FuncsalarioModule,
     S001RequisicaoModule,
     PpessoaModule,
-    SaqueModule
+    SaqueModule,
+    EventosdiariasModule,
+    SaquesMesModule
   ],
   controllers: [],
   providers: [],

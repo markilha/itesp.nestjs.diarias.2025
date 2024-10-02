@@ -6,7 +6,7 @@ import {
   JoinColumn,
  
 } from 'typeorm';
-import { CreateReqNumerarioEntity } from './createReqNumerario.entity';
+import { ReqNumerarioEntity } from './ReqNumerario.entity';
 import { StatusEntity } from './status.entity';
 
 @Entity('S009_SAQUE', { schema: 'dev_itesp_diarias' })
@@ -92,9 +92,9 @@ export class SaqueEntity {
   })
   sqeListaSiafem?: string;
 
-  @OneToOne(() => CreateReqNumerarioEntity, (num) => num.saque)
+  @OneToOne(() => ReqNumerarioEntity, (num) => num.saque)
   @JoinColumn({ name: 'SQE_ID_CODIGO', referencedColumnName: 'sqeIdCodigo' })
-  numerario?: CreateReqNumerarioEntity;
+  numerario?: ReqNumerarioEntity;
 
   @OneToOne(() => StatusEntity, (sts) => sts.saque)
   @JoinColumn({ name: 'STS_ID_CODIGO', referencedColumnName: 'stsIdCodigo' })

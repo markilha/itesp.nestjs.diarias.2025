@@ -78,24 +78,12 @@ export class UsureqService {
 
   
 
-  /**
- * Método responsável por encontrar requisições de saque com base nos parâmetros fornecidos.
- * O método realiza validações em cada usuário e calcula as diárias baseadas no cargo e destino.
- * 
- * @param {FindAllParams} params - Parâmetros para busca das requisições de saque.
- * @returns {Promise<ReturnUserReqDto | null>} - Retorna um objeto contendo os dados do usuário e cálculos de diárias,
- * ou null caso nenhum usuário seja encontrado.
- * @throws {HttpException} - Lança exceção se nenhum usuário for encontrado ou se houver erro no processamento.
- */
 async findSaque(params: FindAllParams): Promise<ReturnUserReqDto | null> {
   try {
-      // Constroi os parâmetros de busca com base nos parâmetros fornecidos.
-      const searchParams = this.buildSearchParams(params);
-
-      // Busca os usuários com base nos parâmetros de busca.
+     
+      const searchParams = this.buildSearchParams(params);     
       const users = await this.findUsers(searchParams, params);
-
-      // Caso não encontre nenhum usuário, lança uma exceção de 'não encontrado'.
+    
       if (users.length === 0) {
           throw new HttpException('Requisição não encontrada', HttpStatus.NOT_FOUND);
       }
@@ -124,14 +112,18 @@ async findSaque(params: FindAllParams): Promise<ReturnUserReqDto | null> {
               continue;
           }
 
+          // CONVERTER STRING PARA NUMBER
+          const reqIntegral = Number(user.requisicao.reqIntegral) || 0;
+          const reqParcial = Number(user.requisicao.reqParcial) || 0;
+
           // Calcula as diárias com base no UFESP, cargo, destino e outras informações da requisição.
           const diarias = this.diariaCalculada.calcularDiaria(
               UFESP,
               cargoufesp.ufesp || 0,
               destino as Destino,
-              parseInt(user.requisicao.reqPacote) || 0,
-              user.requisicao.reqIntegral,
-              user.requisicao.reqParcial,
+              user.requisicao.reqPacote|| 0,
+              reqIntegral,
+              reqParcial,
               user.requisicao.reqHRet,
           );
 
@@ -160,8 +152,9 @@ async findSaque(params: FindAllParams): Promise<ReturnUserReqDto | null> {
       // Retorna null caso não seja encontrado um usuário válido após as validações.
       return null;
   } catch (error) {
+    console.log(error);
       // Lança uma exceção genérica em caso de erro durante o processamento.
-      throw new HttpException('Erro ao buscar as requisições com calculo', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.response || "Erro buscar requisicao com calculo", HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }
 
