@@ -26,55 +26,37 @@ GET http://_baseurl/usureq?reqIdCodigo=1&chapa=000600&page=1&limit=50&order=reqI
 ## Exemplo de Resposta
 ```json
 [
-    {
-        "reqIdCodigo": 1,
-        "chapa": "000600",
-        "municipio": 355030,
-        "oriMunicipio": "SAO PAULO",
-        "reqDtReq": "11/07/2002, 14:39:35",
-        "reqDtSaida": "2002-06-28 00:00:00",
-        "reqHSaida": "  :  ",
-        "reqDtRetorno": "  :  ",
-        "reqMotivo": null,
-        "reqHRet": "  :  ",
-        "reqKm": null,
-        "reqStatus": "FINALIZADA",
-        "reqDiaria": null,
-        "reqIntegral": null,
-        "reqParcial": null,
-        "reqEspecial": null,
-        "reqPacote": 1,
-        "reqGovernador": null,
-        "transmeio": 1,
-        "desLocal": "PALACIO DOS BANDEIRANTES -",
-        "desMunIdCodigo": 7107,
-        "desMunNme": "SAO PAULO"
-    },
-    {
-        "reqIdCodigo": 2,
-        "chapa": "000667",
-        "municipio": 355030,
-        "oriMunicipio": "SAO PAULO",
-        "reqDtReq": "11/07/2002, 14:37:37",
-        "reqDtSaida": "2002-06-28 00:00:00",
-        "reqHSaida": "15:00",
-        "reqDtRetorno": "15:30",
-        "reqMotivo": "RETIRAR MATERIAL",
-        "reqHRet": "15:30",
-        "reqKm": null,
-        "reqStatus": "CANCELADA",
-        "reqDiaria": null,
-        "reqIntegral": null,
-        "reqParcial": null,
-        "reqEspecial": null,
-        "reqPacote": 1,
-        "reqGovernador": null,
-        "transmeio": 1,
-        "desLocal": "FUNDUNESP -",
-        "desMunIdCodigo": 7107,
-        "desMunNme": "SAO PAULO"
-    }
+    	{
+		"reqIdCodigo": 7796,
+		"chapa": "000081",
+		"municipio": 351020,
+		"oriMunicipio": "CAPAO BONITO",
+		"reqDtReq": "02/07/2004 15:20:01",
+		"reqDtSaida": "2004-07-06 00:00:00",
+		"reqHSaida": "08:00:00",
+		"reqDtRetorno": "17:00:00",
+		"reqMotivo": "Atualização do Plano Geral - Barão de Antonina",
+		"reqHRet": "17:00:00",
+		"reqKm": 50,
+		"reqStatus": "CANCELADA AUTO",
+		"reqDiaria": "0",
+		"reqIntegral": "0",
+		"reqParcial": "1",
+		"reqEspecial": "0",
+		"reqPacote": 0,
+		"reqGovernador": null,
+		"transmeio": 3,
+		"desLocal": null,
+		"desMunIdCodigo": 6201,
+		"desMunNme": "BARAO DE ANTONINA",
+		"diariaIntegral": 0,
+		"diariaParcial": 49.5,
+		"diariaBase": 247.52,
+		"salario50Porcento": 615.69,
+		"saldoDisponivel": 566.19
+	}
 ]
+   
 
 
 
