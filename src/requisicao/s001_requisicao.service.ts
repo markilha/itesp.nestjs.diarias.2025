@@ -50,41 +50,54 @@ export class S001RequisicaoService {
       if (params.chapa) {
         searchParams.chapa = params.chapa;
       }
-  
+
+      // Configuração da ordenação baseada na query string
+      const order: { [key: string]: 'ASC' | 'DESC' } = {};
+      if (params.orderBy) {
+        // Verifica se o campo de ordenação está presente e define a direção
+        order[params.orderBy] =
+          params.orderDirection === 'DESC' ? 'DESC' : 'ASC';
+      } else {
+        // Ordenação padrão se nenhum parâmetro for passado
+        order['reqIdCodigo'] = 'ASC'; // Padrão: ordenar por 'reqIdCodigo'
+      }
+
       let requisicoes: RequisicaoEntity[];
-  
+
       if (params.page && params.limit) {
         const page = params.page;
         const limit = params.limit;
         const skip = (page - 1) * limit;
-  
+
         requisicoes = await this.requisicaoRepository.find({
           where: searchParams,
           skip,
           take: limit,
+          order,
           relations: ['transmeio', 'destino', 'destino.municipio'],
         });
       } else {
         requisicoes = await this.requisicaoRepository.find({
           where: searchParams,
+          order,
           relations: ['transmeio', 'destino', 'destino.municipio'],
         });
       }
-  
-      const UFESP = (await this.ufespService.findMostRecentValue()).ufeValor || 0;
-  
+      const UFESP =
+        (await this.ufespService.findMostRecentValue()).ufeValor || 0;
+
       const results = await Promise.all(
         requisicoes.map((requisicao) =>
-          this.processRequisicao(requisicao, params.chapa, UFESP)
-        )
+          this.processRequisicao(requisicao, params.chapa, UFESP),
+        ),
       );
-  
+
       return results;
     } catch (error) {
       console.log(error);
       throw new HttpException(
         'Erro ao buscar as requisições',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -92,23 +105,28 @@ export class S001RequisicaoService {
   private async processRequisicao(
     requisicao: RequisicaoEntity,
     chapa: string,
-    UFESP: number
+    UFESP: number,
   ): Promise<ReturnRequisicaoDto> {
     try {
       const data = new Date(requisicao.reqDtSaida);
       const ano = String(data.getFullYear()).slice(-2);
       const mes = String(data.getMonth() + 1).padStart(2, '0');
-      const formatoYYMM = `${ano}/${mes}`;     
-  
-      const saqueMes = await this.SaquesMesService.somaMesAtual(chapa, formatoYYMM);
+      const formatoYYMM = `${ano}/${mes}`;
+
+      const saqueMes = await this.SaquesMesService.somaMesAtual(
+        chapa,
+        formatoYYMM,
+      );
       const user = await this.funcSalarioService.findByCodigo(chapa);
       const salarioAtual = user?.salario || 0;
       const cargoufesp = await this.pcargoService.findOne(user.cargo);
-      
+
       const reqIntegral = Number(requisicao.reqIntegral) || 0;
       const reqParcial = Number(requisicao.reqParcial) || 0;
-      const destino = verificarDestino(requisicao?.destino?.municipio?.munIdCodigo);
-  
+      const destino = verificarDestino(
+        requisicao?.destino?.municipio?.munIdCodigo,
+      );
+
       // Calcula as diárias com base no UFESP, cargo, destino e outras informações da requisição.
       const diarias = this.diariaCalculada.calcularDiaria(
         UFESP,
@@ -117,9 +135,14 @@ export class S001RequisicaoService {
         requisicao.reqPacote || 0,
         reqIntegral,
         reqParcial,
-        requisicao.reqHRet
+        requisicao.reqHRet,
       );
-  
+
+      const salario50Porcento = (salarioAtual/ 2) || 0;     
+      const salario50PorcentoFormatado = salario50Porcento > 0 ? salario50Porcento.toFixed(2) : 0;    
+      const salario50PorcentoNumber = Number(salario50PorcentoFormatado);
+      
+
       return new ReturnRequisicaoDto(
         requisicao,
         diarias?.diariaIntegral,
@@ -127,20 +150,18 @@ export class S001RequisicaoService {
         diarias?.diariaParcial20,
         diarias?.diariaBase,
         saqueMes,
-        salarioAtual
+        salarioAtual,
+        salario50PorcentoNumber
       );
     } catch (error) {
-      console.error(`Erro ao processar a requisição: ${requisicao.regIdCodigo}`, error);
+      console.error(
+        `Erro ao processar a requisição: ${requisicao.regIdCodigo}`,
+        error,
+      );
       // Retorna o DTO da requisição original para evitar quebra
       return new ReturnRequisicaoDto(requisicao);
     }
   }
-  
-
-
-
-
-  
 
   async createRequisicao(
     requisicaoDto: RequisicaoDto,
@@ -159,23 +180,6 @@ export class S001RequisicaoService {
       }
     }
   }
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   async removeRequisicao(reqIdCodigo: number): Promise<{ message: string }> {
     try {

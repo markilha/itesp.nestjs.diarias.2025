@@ -60,6 +60,7 @@ export class ReturnRequisicaoDto {
   salario: number; 
   totalSaqueMes: number; 
   salarioAtual: number;
+  salario50Porcento: number;
 
   usuMov: string; 
     constructor(
@@ -69,7 +70,8 @@ export class ReturnRequisicaoDto {
     diariaParcial20?: number,
     diariaBase?: number,
     totalSaqueMes?: number,
-    salarioAtual?: number
+    salarioAtual?: number,
+    salario50Porcento?: number
   ) {
     this.reqIdCodigo = userReqEntity.reqIdCodigo;   
     this.chapa = userReqEntity.chapa;
@@ -99,6 +101,7 @@ export class ReturnRequisicaoDto {
     this.diariaBase = diariaBase;
     this.totalSaqueMes = totalSaqueMes;
     this.salarioAtual = salarioAtual;
+    this.salario50Porcento = salario50Porcento;
   }
 
 }
@@ -191,5 +194,7 @@ export interface FindAllParams {
   chapa: string;
   page?: number;
   limit?: number;
+  orderBy?: string;
+  orderDirection?: 'ASC' | 'DESC';
 }
 
