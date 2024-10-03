@@ -51,27 +51,24 @@ export class ReturnRequisicaoDto {
   desLocal: string; 
   desMunIdCodigo: number; 
   desMunNme: string; 
-
   diariaIntegral: number;
-  diariaParcial20: number;
-  diariaParcial40: number; 
+  diariaParcial: number;
   diariaBase: number; 
-  excedeu50Porcento: boolean; 
-  salario: number; 
-  totalSaqueMes: number; 
-  salarioAtual: number;
   salario50Porcento: number;
+  saldoDisponivel: number;
+
+ 
+  
 
   usuMov: string; 
     constructor(
     userReqEntity: RequisicaoEntity,   
     diariaIntegral?: number,
-    diariaParcial40?: number,
-    diariaParcial20?: number,
+    diariaParcial?: number,    
     diariaBase?: number,
-    totalSaqueMes?: number,
-    salarioAtual?: number,
-    salario50Porcento?: number
+    salario50Porcento?: number,
+    saldoDisponivel?: number,   
+   
   ) {
     this.reqIdCodigo = userReqEntity.reqIdCodigo;   
     this.chapa = userReqEntity.chapa;
@@ -96,12 +93,10 @@ export class ReturnRequisicaoDto {
     this.desMunIdCodigo = userReqEntity.destino.municipio.munIdCodigo;
     this.desMunNme = userReqEntity.destino.municipio.munCidade;   
     this.diariaIntegral = diariaIntegral;
-    this.diariaParcial20 = diariaParcial20;
-    this.diariaParcial40 = diariaParcial40;
-    this.diariaBase = diariaBase;
-    this.totalSaqueMes = totalSaqueMes;
-    this.salarioAtual = salarioAtual;
+    this.diariaParcial = diariaParcial   
+    this.diariaBase = diariaBase;    
     this.salario50Porcento = salario50Porcento;
+    this.saldoDisponivel = saldoDisponivel;    
   }
 
 }

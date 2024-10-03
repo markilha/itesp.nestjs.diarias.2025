@@ -138,27 +138,26 @@ export class S001RequisicaoService {
         requisicao.reqHRet,
       );
 
-      const salario50Porcento = (salarioAtual/ 2) || 0;     
-      const salario50PorcentoFormatado = salario50Porcento > 0 ? salario50Porcento.toFixed(2) : 0;    
+      const totalParcial = diarias?.diariaParcial40 + diarias?.diariaParcial20 || 0; //prettier-ignore
+      const totalIntegral = diarias?.diariaIntegral || 0;
+      const salario50Porcento = salarioAtual / 2 || 0;
+      const salario50PorcentoFormatado = salario50Porcento > 0 ? salario50Porcento.toFixed(2) : 0; //prettier-ignore
       const salario50PorcentoNumber = Number(salario50PorcentoFormatado);
-      
+      const saldoRestante = salario50PorcentoNumber - (saqueMes + totalParcial + totalIntegral); //prettier-ignore
 
       return new ReturnRequisicaoDto(
         requisicao,
         diarias?.diariaIntegral,
-        diarias?.diariaParcial40,
-        diarias?.diariaParcial20,
+        totalParcial,
         diarias?.diariaBase,
-        saqueMes,
-        salarioAtual,
-        salario50PorcentoNumber
+        salario50PorcentoNumber,
+        saldoRestante,
       );
     } catch (error) {
       console.error(
         `Erro ao processar a requisição: ${requisicao.regIdCodigo}`,
         error,
-      );
-      // Retorna o DTO da requisição original para evitar quebra
+      );      
       return new ReturnRequisicaoDto(requisicao);
     }
   }
