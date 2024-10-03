@@ -1,155 +1,80 @@
-## Requisição `/usureq`
+# Documentação da API: **GET /usureq**
 
-### Descrição
+## Descrição
+Essa API permite buscar requisições de usuários filtrando pelos parâmetros de `reqIdCodigo` e `chapa`, além de possibilitar paginação e ordenação dos resultados.
 
-Esta API permite consultar as requisiçoes do transporte, filtrando por reqIdCodigo e chapa, além de suportar paginação.
+## Endpoint
 
-### Endpoint
+GET http://_baseurl/usureq
 
-- `reqIdCodigo` (opcional): Filtra as requisições pelo código de identificação da requisição.
-- `chapa` (opcional): Filtra as requisições pelo código da chapa do funcionário.
-- `page` (opcional): Especifica a página dos resultados que será retornada (default: `1`).
-- `limit` ou `take` (opcional): Especifica o número máximo de registros que serão retornados por página (default: `10`).
+## Parâmetros de Consulta (Query Parameters)
 
-### Exemplo de Requisição
+| Parâmetro        | Tipo     | Obrigatório | Descrição                                         | Exemplo     |
+|-------------------|----------|-------------|---------------------------------------------------|-------------|
+| `reqIdCodigo`     | Number   | Não         | Código da requisição.                             | `1`         |
+| `chapa`           | String   | Não         | Número da chapa do funcionário.                   | `000600`    |
+| `page`            | Number   | Não         | Número da página para paginação dos resultados.   | `1`         |
+| `limit`           | Number   | Não         | Número máximo de resultados por página.           | `50`        |
+| `order`           | String   | Não         | Campo pelo qual os resultados devem ser ordenados.| `"reqIdCodigo"` |
+| `orderBy`         | String   | Não         | Direção da ordenação.                             | `"ASC"`     |
 
-````bash
-GET http://localhost:3000/usureq?reqIdCodigo=13&chapa=000383&page=1&limit=10
+## Exemplo de Requisição
 
-Exemplo de Resposta:
+GET http://_baseurl/usureq?reqIdCodigo=1&chapa=000600&page=1&limit=50&order=reqIdCodigo&orderDirection=ASC
+
+
+## Exemplo de Resposta
+```json
 [
-	{
-		"reqIdCodigo": 13,
-		"chapa": "000383",
-		"codMunicipio": 355030,
-		"ori_municipio": "SAO PAULO                                         ",
-		"reqDtReq": "12/07/2002, 09:55:44",
-		"reqDtSaida": "2002-06-27 00:00:00.000",
-		"reqHSaida": "06:00",
-		"reqDtRetorno": "2002-06-28 00:00:00.000",
-		"reqMotivo": "??/////////////////////////",
-		"reqHRet": "21:00",
-		"reqKm": null,
-		"reqStatus": "FINALIZADA",
-		"reqDiaria": "",
-		"reqIntegral": "",
-		"reqParcial": "",
-		"reqEspecial": "",
-		"reqPacote": 1,
-		"reqGovernador": "",
-		"transmeio": 1,
-		"municipio": 355030,
-		"des_local": "",
-		"des_mun_id_codigo": 6165,
-		"des_mun_nme": "ARARAS",
-		"usuMov": "O"
-	}
+    {
+        "reqIdCodigo": 1,
+        "chapa": "000600",
+        "municipio": 355030,
+        "oriMunicipio": "SAO PAULO",
+        "reqDtReq": "11/07/2002, 14:39:35",
+        "reqDtSaida": "2002-06-28 00:00:00",
+        "reqHSaida": "  :  ",
+        "reqDtRetorno": "  :  ",
+        "reqMotivo": null,
+        "reqHRet": "  :  ",
+        "reqKm": null,
+        "reqStatus": "FINALIZADA",
+        "reqDiaria": null,
+        "reqIntegral": null,
+        "reqParcial": null,
+        "reqEspecial": null,
+        "reqPacote": 1,
+        "reqGovernador": null,
+        "transmeio": 1,
+        "desLocal": "PALACIO DOS BANDEIRANTES -",
+        "desMunIdCodigo": 7107,
+        "desMunNme": "SAO PAULO"
+    },
+    {
+        "reqIdCodigo": 2,
+        "chapa": "000667",
+        "municipio": 355030,
+        "oriMunicipio": "SAO PAULO",
+        "reqDtReq": "11/07/2002, 14:37:37",
+        "reqDtSaida": "2002-06-28 00:00:00",
+        "reqHSaida": "15:00",
+        "reqDtRetorno": "15:30",
+        "reqMotivo": "RETIRAR MATERIAL",
+        "reqHRet": "15:30",
+        "reqKm": null,
+        "reqStatus": "CANCELADA",
+        "reqDiaria": null,
+        "reqIntegral": null,
+        "reqParcial": null,
+        "reqEspecial": null,
+        "reqPacote": 1,
+        "reqGovernador": null,
+        "transmeio": 1,
+        "desLocal": "FUNDUNESP -",
+        "desMunIdCodigo": 7107,
+        "desMunNme": "SAO PAULO"
+    }
 ]
 
 
 
-## Requisição `/usureq/saque`
-
-### Descrição
-
-Esta API permite consultar as requisiçoes do transporte com calculo, filtrando por reqIdCodigo e chapa,.
-
-### Endpoint
-
-- `reqIdCodigo` (obrigatório): Filtra as requisições pelo código de identificação da requisição.
-- `chapa` (obrigatorio): Filtra as requisições pelo código da chapa do funcionário.
-
-
-### Exemplo de Requisição
-
-```bash
-GET http://localhost:3000/usureq/saque?reqIdCodigo=13&chapa=000428
-
-Exemplo de Resposta:
-{
-	"reqIdCodigo": 13,
-	"chapa": "000428",
-	"codMunicipio": 355030,
-	"ori_municipio": "SAO PAULO",
-	"reqDtReq": "12/07/2002, 09:55:44",
-	"reqDtSaida": "2002-06-27 00:00:00.000",
-	"reqHSaida": "06:00",
-	"reqDtRetorno": "2002-06-28 00:00:00.000",
-	"reqMotivo": "RECEBER SEMENTES NO IPEF,REUNIAO DE IMPLANTACAO DE SAF AS 13HS",
-	"reqHRet": "21:00",
-	"reqKm": null,
-	"reqStatus": "FINALIZADA",
-	"reqDiaria": "",
-	"reqIntegral": "",
-	"reqParcial": "",
-	"reqEspecial": "",
-	"reqPacote": 1,
-	"reqGovernador": "",
-	"transmeio": 1,
-	"municipio": 355030,
-	"des_local": "",
-	"des_mun_id_codigo": 6165,
-	"des_mun_nme": "ARARAS",
-	"diariaIntegral": 0,
-	"diariaParcial20": 0,
-	"diariaParcial40": 0,
-	"diariaBase": 159.12,
-	"excedeu50Porcento": false,
-	"salario": 7118.78,
-	"totalNumerario": 0,
-	"usuMov": "R"
-}
-
-## Requisição do transporte  `/requisicao`
-
-### Descrição
-
-Esta API permite consultar as requisiçoes do transporte , filtrando por reqIdCodigo, codMunicipio,reqStatus.
-
-### Endpoint
-
-- `reqIdCodigo` (opcional): Filtra as requisições pelo código de identificação da requisição.
-- `codMunicipio` (opcional): Filtra as requisições pelo código de identificação do municipio de origem.
-- `reqStatus` (opcional): Filtra as requisições pelo status da requisicao.
-
-
-
-### Exemplo de Requisição
-
-```bash
-GET http://localhost:3000/requisicao?reqIdCodigo=29&codMunicipio=355030&reqStatus=CANCELADA&page=1&limit=10
-
-Exemplo de Resposta:
-[
-	{
-		"reqIdCodigo": 29,
-		"reqDtReq": "17/07/2002, 09:45:43",
-		"reqDtSaida": "2002-06-25 00:00:00.000",
-		"reqHSaida": "14:30",
-		"reqDtRetorno": "2002-06-25 00:00:00.000",
-		"reqMotivo": "EXPOSICAO CERAMICA E CADADANIA",
-		"reqHRet": "17:00",
-		"reqKm": null,
-		"reqStatus": "CANCELADA",
-		"reqDiaria": "",
-		"reqIntegral": "",
-		"reqParcial": "",
-		"reqEspecial": "",
-		"reqPacote": 1,
-		"reqGovernador": "",
-		"transmeio": 1,
-		"municipio": 355030,
-		"des_local": "ASSEMBLEIA LEGISLATIVA",
-		"des_mun_id_codigo": 7107,
-		"des_mun_nme": "SAO PAULO",
-		"useReq": [
-			{
-				"reqIdCodigo": 29,
-				"codColigada": 1,
-				"chapa": "000101",
-				"usuMov": "R"
-			}
-		]
-	}
-]
-````
