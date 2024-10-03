@@ -15,7 +15,7 @@ import { RequisicaoEntity } from 'src/database/db_mysql/entities/requisicao.enti
 import { ReturnRequisicaoDto } from './returnRequisicao.dto';
 
 @UseGuards(AuthGuard)
-@Controller('requisicao')
+@Controller('usureq')
 export class S001RequisicaoController {
   constructor(private readonly requisicao: S001RequisicaoService) {}
 

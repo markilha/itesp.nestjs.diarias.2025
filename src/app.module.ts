@@ -9,6 +9,9 @@ import { PcargoModule } from './pcargo/pcargo.module';
 import { FuncsalarioModule } from './funcsalario/funcsalario.module';
 import { S001RequisicaoModule } from './requisicao/s001_requisicao.module';
 import { PpessoaModule } from './ppessoa/ppessoa.module';
+import { SaqueModule } from './saque/saque.module';
+import { EventosdiariasModule } from './eventosdiarias/eventosdiarias.module';
+import { SaquesMesModule } from './saques-mes/saques-mes.module';
 
 
 @Module({
@@ -22,7 +25,10 @@ import { PpessoaModule } from './ppessoa/ppessoa.module';
     PcargoModule,
     FuncsalarioModule,
     S001RequisicaoModule,
-    PpessoaModule
+    PpessoaModule,
+    SaqueModule,
+    EventosdiariasModule,
+    SaquesMesModule
   ],
   controllers: [],
   providers: [],

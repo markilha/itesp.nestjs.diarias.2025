@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ReqnumerarioService } from './reqnumerario.service';
-import { CreateReqnumerarioDto, FindAllParams, ReqnumerarioDto } from './reqnumerarioDto';
+import { CreateReqnumerarioDto, FindAllParams, ReturnReqnumerarioDto } from './reqnumerarioDto';
 
 interface Requisicao {
   reqIdCodigo: number;
@@ -39,15 +39,21 @@ export class ReqnumerarioController {
   constructor(private readonly reqnumerarioService: ReqnumerarioService) {}
 
   @Get()
-  async findAll(@Query() params: FindAllParams): Promise<ReqnumerarioDto[]> {
+  async findAll(@Query() params: FindAllParams): Promise<ReturnReqnumerarioDto[]> {
     return await this.reqnumerarioService.findAll(params);
   }
 
   @Post()
-  async createReqNumerario(@Body() body: Requisicao) {
+  async createReqNumerario(@Body() body: Requisicao) {   
+
+    const parcial20 = body.diariaParcial20 || 0;
+    const parcial40 = body.diariaParcial40 || 0;
+
+    const totalVlParcial = (parcial20 + parcial40);
     
     const createReqNumerarioDto: CreateReqnumerarioDto = {     
-      reqIdCodigo: body.reqIdCodigo,      
+      reqIdCodigo: body.reqIdCodigo,     
+      sqeIdCodigo: null,
       chapa: body.chapa,
       rnuMotivo: body.reqMotivo,
       rnuDtInicio: new Date(body.reqDtSaida), 
@@ -62,13 +68,7 @@ export class ReqnumerarioController {
       rnuGovernador: body.reqGovernador || null,   
       rnuVlBase: body.diariaBase,
       rnuVlIntegral:body.diariaIntegral,
-      rnuVlParcial20: body.diariaParcial20,
-      rnuVlParcial40: body.diariaParcial40,
-      rnuStatus: body.reqStatus,
-      rnuDtSaque: null,
-      rnuDtPrest: null,      
-      rnuMunOri: body.codMunicipio,
-      rnuMunDes: body.des_mun_id_codigo,  
+      rnuVlParcial: totalVlParcial,   
  
     };
    
