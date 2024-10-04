@@ -91,7 +91,6 @@ export class S001RequisicaoService {
           this.processRequisicao(requisicao, params.chapa, UFESP),
         ),
       );
-
       return results;
     } catch (error) {
       console.log(error);
@@ -116,7 +115,8 @@ export class S001RequisicaoService {
       const saqueMes = await this.SaquesMesService.somaMesAtual(
         chapa,
         formatoYYMM,
-      );
+      );     
+
       const user = await this.funcSalarioService.findByCodigo(chapa);
       const salarioAtual = user?.salario || 0;
       const cargoufesp = await this.pcargoService.findOne(user.cargo);

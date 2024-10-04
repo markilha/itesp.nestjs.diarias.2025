@@ -1,24 +1,26 @@
+import { SaqueMesEntity } from "src/database/db_mysql/entities/saqueMes.entity";
+
 export class SaqueMesDto {
-  ITE_ID_CODIGO: number;
-  RRE_ID_CODIGO: number;
-  DIR_ID_CODIGO?: number;
   chapa: string;
-  SQE_DTSAQUE?: Date;
-  SQE_VLSAQUE?: number;
-  SQE_DTPREST?: Date;
-  SQE_VLPREST?: number;
-  TDE_ID_CODIGO: string;
-  SQE_TIPOSAQUE: string;
-  SQE_EFETIVO: string;
-  SQE_LOTE?: string;
-  SQE_ANOLOTE?: number;
-  MesPed?: string;
-  MesSaque?: string;
-  MesPrest?: string;
+  tdeidcodigo: number;
+  sqetiposaque: string;
+  messaque: string;
+  totsaque: number;
+
+  constructor(entity: SaqueMesEntity) {
+    this.chapa = entity.chapa;
+    this.tdeidcodigo = entity.tdeidcodigo;
+    this.sqetiposaque = entity.sqetiposaque;
+    this.messaque = entity.messaque;
+    this.totsaque = entity.totsaque;
+  }
 }
 
 export class FindAllParams {
-  chapa: string;
-  page: number;
-  limit: number;
+  chapa?: string; 
+  messaque?: string; 
+  page?: number; 
+  limit?: number; 
+  orderBy?: string;
+  orderDirection?: string;
 }
