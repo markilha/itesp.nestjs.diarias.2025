@@ -12,6 +12,7 @@ import { PpessoaModule } from './ppessoa/ppessoa.module';
 import { SaqueModule } from './saque/saque.module';
 import { EventosdiariasModule } from './eventosdiarias/eventosdiarias.module';
 import { SaquesMesModule } from './saques-mes/saques-mes.module';
+import { DiariaviagemModule } from './diariaviagem/diariaviagem.module';
 
 
 @Module({
@@ -28,7 +29,8 @@ import { SaquesMesModule } from './saques-mes/saques-mes.module';
     PpessoaModule,
     SaqueModule,
     EventosdiariasModule,
-    SaquesMesModule
+    SaquesMesModule,
+    DiariaviagemModule
   ],
   controllers: [],
   providers: [],

@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateSaqueDto, FindAllParams, SaqueDto, SaqueResultDto } from './saque.dto';
+import { CreateSaqueDto, FindAllParams, InsS009SaqueDto, SaqueDto, SaqueResultDto, SolitarDto } from './saque.dto';
 
 import { SaqueEntity } from 'src/database/db_mysql/entities/saque.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -60,44 +60,8 @@ export class SaqueService {
       );
     }
   }
-  
 
-  // async findAll(params: FindAllParams): Promise<SaqueDto[]> {
-  //   try {
-  //     const searchParams: FindOptionsWhere<SaqueDto> = {};
-  //     if (params.sqeIdCodigo) {
-  //       searchParams['sqeIdCodigo'] = params.sqeIdCodigo;
-  //     }
-
-  //     if (params.stsIdCodigo) {
-  //       searchParams['stsIdCodigo'] = params.stsIdCodigo;
-  //     }
-
-
-  //     if (params.page && params.limit) {
-  //       const page = params.page;
-  //       const limit = params.limit;
-  //       const skip = (page - 1) * limit;
-
-  //       return await this.saqueRepository.find({
-  //         where: searchParams,
-  //         skip,
-  //         take: limit,
-  //         relations: ['numerario', 'status'],
-  //       });
-  //     }
-
-  //     return await this.saqueRepository.find({
-  //       where: searchParams,
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new HttpException(
-  //       'Não foi possível buscar os saques',
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
+ 
 
   async findOne(codigo: number): Promise<SaqueDto> {
     try {
@@ -163,6 +127,64 @@ export class SaqueService {
       .getRawMany();
   
     return result as SaqueResultDto[];
+  }
+
+
+
+  // IN PAR1 VARCHAR(255), /* REEMBOLSO/COMPLEMENTO */
+  // IN PAR2 VARCHAR(255), /* SEM RECURSO */
+  // IN PAR3 VARCHAR(255), /* Tipo de despesa */
+  // IN PAR4 INT, /* ITE_ID_CODIGO */
+  // IN PAR5 INT, /* RRE_ID_CODIGO */
+  // IN PAR6 INT, /* DIR_ID_CODIGO */
+  // IN PAR7 DECIMAL(10,2), /* SQE_VLPREST */
+  // IN PAR8 DATE, /* SQE_DTPREST */
+  // IN PAR9 DECIMAL(10,2), /* SQE_VLSAQUE */
+  // IN PAR10 VARCHAR(255), /* SQE_TIPOSAQUE */
+  // IN PAR11 VARCHAR(255), /* SQE_EFETIVO */
+  // IN PAR12 VARCHAR(255), /* SQE_TERCEIRO */
+  // IN PAR13 INT, /* PES_ID_CODIGO */
+  // IN PAR14 VARCHAR(255), /* PES_PESSOA */
+  // IN PAR15 INT, /* STS_ID_CODIGO */
+  // IN PAR16 VARCHAR(255), /* SQE_USUARIO */
+  // IN PAR17 INT, /* REQ_ID_CODIGO */
+  // IN PAR18 DATE, /* RNU_DTINICIO */
+  // IN PAR19 TIME, /* RNU_HORAINICIO */
+  // IN PAR20 DATE, /* RNU_DTFIM */
+  // IN PAR21 TIME, /* RNU_HORAFIM */
+  // IN PAR22 INT, /* RNU_INTPREV */
+  // IN PAR23 INT, /* RNU_PARPREV */
+  // IN PAR24 INT, /* RNU_INTREAL */
+  // IN PAR25 INT, /* RNU_PARREAL */
+  // IN PAR26 VARCHAR(255), /* RNU_PACOTE */
+  // IN PAR27 VARCHAR(255), /* RNU_GOVERNADOR */
+  // IN PAR28 VARCHAR(255), /* RRE_JUSTIFICATIVA */
+  // IN PAR29 VARCHAR(255), /* REQ_STATUS */
+  // IN PAR30 DECIMAL(10,2), /* RNU_VLINTEGRAL */
+  // IN PAR31 DECIMAL(10,2), /* RNU_VLPARCIAL */
+  // IN PAR32 DECIMAL(10,2), /* RNU_VLBASE */
+
+
+
+  async solicitarSaque(params: SolitarDto): Promise<number> { 
+
+    const valorSaque = (params.diariaIntegral + params.diariaParcial ) || 0;
+   
+    await this.saqueRepository.query(
+      `CALL INS_S009_SAQUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @id);`,
+      [
+        'DIARIA', 'N',7, 1111111, 1111111, 5, null, null, valorSaque,
+        'N', 'S', 'N', null, null, 1, null, params.reqIdCodigo, 
+        params.reqDtSaida, params.reqHSaida, params.reqDtRetorno, params.reqHRet, params.reqIntegral, params.reqParcial, null, null, 
+        params.reqPacote, params.reqGovernador, params.reqMotivo, params.reqStatus, params.diariaIntegral, params.diariaParcial, params.diariaBase
+      ],
+    );
+
+    // Depois, pegamos o valor de @id com uma query separada
+    const result = await this.saqueRepository.query(`SELECT @id as id`);
+
+    // Retornamos o valor da variável @id
+    return result[0].id;
   }
   
 

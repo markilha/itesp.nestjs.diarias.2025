@@ -24,15 +24,5 @@ export class S001RequisicaoController {
     return await this.requisicao.findAll(params);
   }
 
-  @Post()
-  async createRequisicao(
-    @Body() requisicaoDto: RequisicaoDto,
-  ): Promise<RequisicaoEntity> {
-    return await this.requisicao.createRequisicao(requisicaoDto);
-  }
-
-  @Delete(':reqIdCodigo')
-  async deleteRequisicao(@Param('reqIdCodigo') reqIdCodigo: number): Promise<{ message: string }> {
-    return await this.requisicao.removeRequisicao(reqIdCodigo);
-  }
+ 
 }
