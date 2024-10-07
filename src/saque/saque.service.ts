@@ -1,15 +1,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateSaqueDto, FindAllParams, SaqueDto, SaqueResultDto } from './saque.dto';
+import { CreateSaqueDto, FindAllParams, InsS009SaqueDto, RetNumSaque, SaqueDto, SaqueResultDto, SolitarDto } from './saque.dto';
 
 import { SaqueEntity } from 'src/database/db_mysql/entities/saque.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
+import { DiariaviagemService } from 'src/diariaviagem/diariaviagem.service';
 
 @Injectable()
 export class SaqueService {
   constructor(
     @InjectRepository(SaqueEntity, 'mysqlConnection')
     private saqueRepository: Repository<SaqueEntity>,
+    private diariaviagemService: DiariaviagemService,
   ) {}
 
   async findAll(params: FindAllParams): Promise<SaqueDto[]> {
@@ -60,44 +62,8 @@ export class SaqueService {
       );
     }
   }
-  
 
-  // async findAll(params: FindAllParams): Promise<SaqueDto[]> {
-  //   try {
-  //     const searchParams: FindOptionsWhere<SaqueDto> = {};
-  //     if (params.sqeIdCodigo) {
-  //       searchParams['sqeIdCodigo'] = params.sqeIdCodigo;
-  //     }
-
-  //     if (params.stsIdCodigo) {
-  //       searchParams['stsIdCodigo'] = params.stsIdCodigo;
-  //     }
-
-
-  //     if (params.page && params.limit) {
-  //       const page = params.page;
-  //       const limit = params.limit;
-  //       const skip = (page - 1) * limit;
-
-  //       return await this.saqueRepository.find({
-  //         where: searchParams,
-  //         skip,
-  //         take: limit,
-  //         relations: ['numerario', 'status'],
-  //       });
-  //     }
-
-  //     return await this.saqueRepository.find({
-  //       where: searchParams,
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new HttpException(
-  //       'Não foi possível buscar os saques',
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
+ 
 
   async findOne(codigo: number): Promise<SaqueDto> {
     try {
@@ -163,6 +129,35 @@ export class SaqueService {
       .getRawMany();
   
     return result as SaqueResultDto[];
+  }
+
+
+  async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> { 
+
+    const diariaViagem = await this.diariaviagemService.findOne(params.reqIdCodigo, params.chapa);
+
+    if (!diariaViagem) {
+      throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
+    }  
+    // converter params = 0 para "N" e 1 para "S"
+    const pacote = params.reqPacote === 0 ? 'N' : 'S';
+   
+   
+    await this.saqueRepository.query(
+      `CALL INS_S009_SAQUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @id);`,
+      [
+        'DIARIA', 'N',diariaViagem.TDE_ID_CODIGO, diariaViagem.ITE_ID_CODIGO, diariaViagem.RRE_ID_CODIGO, diariaViagem.DIR_ID_CODIGO, null, null, diariaViagem.MDI_VALOR,
+        'N', 'S', null, null, null, 1, null, params.reqIdCodigo, 
+        diariaViagem.REQ_DTSAIDA, diariaViagem.REQ_HSAIDA, diariaViagem.REQ_DTRET, diariaViagem.REQ_HRET, diariaViagem.REQ_INTEGRAL, diariaViagem.REQ_PARCIAL, null, null, 
+        pacote, diariaViagem.REQ_GOVERNADOR, diariaViagem.REQ_MOTIVO, params.reqStatus, params.diariaIntegral, params.diariaParcial, params.diariaBase
+      ],
+    );
+
+    // Depois, pegamos o valor de @id com uma query separada
+    const result = await this.saqueRepository.query(`SELECT @id as id`);
+  
+    return { sqeIdCodigo: result[0].id };
+
   }
   
 

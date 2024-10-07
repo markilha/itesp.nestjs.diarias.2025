@@ -162,39 +162,6 @@ export class S001RequisicaoService {
     }
   }
 
-  async createRequisicao(
-    requisicaoDto: RequisicaoDto,
-  ): Promise<RequisicaoEntity> {
-    try {
-      const novaRequisicao = this.requisicaoRepository.create(requisicaoDto);
-      return await this.requisicaoRepository.save(novaRequisicao);
-    } catch (error) {
-      if (error.code === '23505') {
-        throw new HttpException('Requisição já existe', HttpStatus.CONFLICT);
-      } else {
-        throw new HttpException(
-          'Erro ao criar a requisição',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    }
-  }
 
-  async removeRequisicao(reqIdCodigo: number): Promise<{ message: string }> {
-    try {
-      const result = await this.requisicaoRepository.delete(reqIdCodigo);
-      if (result.affected === 0) {
-        throw new HttpException(
-          `Requisição com ID ${reqIdCodigo} não encontrada.`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      return { message: 'Requisição removida com sucesso.' };
-    } catch (error) {
-      throw new InternalServerErrorException(
-        'Erro ao remover a requisição',
-        error.message,
-      );
-    }
-  }
+
 }
