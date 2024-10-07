@@ -1,4 +1,7 @@
-# Documentação da API: **GET /usureq**
+# Documentação da API
+---
+
+## **GET /usureq**
 
 ## Descrição
 
@@ -21,11 +24,12 @@ GET http://\_baseurl/usureq
 
 ## Exemplo de Requisição
 
+````http
 GET http://\_baseurl/usureq?reqIdCodigo=1&chapa=000600&page=1&limit=50&order=reqIdCodigo&orderDirection=ASC
 
 ## Exemplo de Resposta
 
-```json
+``json
 [
     	{
 		"reqIdCodigo": 7796,
@@ -58,8 +62,12 @@ GET http://\_baseurl/usureq?reqIdCodigo=1&chapa=000600&page=1&limit=50&order=req
 	}
 ]
 
+````
 
-## POST http://_baseurl/saque/solicitar`
+# Documentação da API
+---
+
+## **POST /saque/solicitar**
 
 ### Descrição:
 Essa API é utilizada para solicitar o saque de diárias de viagem, contendo as informações sobre o código de requisição, a chapa do usuário e os valores referentes às diárias integral e parcial.
@@ -105,4 +113,4 @@ Body (JSON):
 
 
 
-```
+````
