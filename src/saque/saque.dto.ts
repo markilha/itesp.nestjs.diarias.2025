@@ -146,20 +146,17 @@ export class InsS009SaqueDto {
 }
 
 export class SolitarDto {
-  reqIdCodigo: number;       // Código da requisição
-  reqDtSaida: Date;          // Data de saída
-  reqHSaida: string;         // Hora de saída
-  reqDtRetorno: Date;        // Data de retorno
-  reqHRet: string;           // Hora de retorno
-  reqIntegral: number;       // Indica se é integral
-  reqParcial: number;        // Indica se é parcial
-  reqPacote: string;         // Código do pacote
-  reqGovernador: string;     // Governador (ex: "N" ou "S")
-  reqStatus: string;         // Status da requisição
-  diariaIntegral: number;    // Valor da diária integral
-  diariaParcial: number;     // Valor da diária parcial
-  diariaBase: number;        // Valor base da diária
-  reqMotivo: string;         // Motivo da requisição
+  reqIdCodigo: number;      
+  chapa: string;   
+  reqPacote: number;    
+  reqStatus: string;  
+  diariaIntegral: number;
+  diariaParcial: number;
+  diariaBase: number;    
+}
+
+export interface RetNumSaque{
+  sqeIdCodigo: string;  
 }
 
 

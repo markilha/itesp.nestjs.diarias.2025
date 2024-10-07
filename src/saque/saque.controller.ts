@@ -8,7 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { CreateSaqueDto, SaqueDto, SaqueResultDto, SolitarDto } from './saque.dto';
+import { CreateSaqueDto, RetNumSaque, SaqueDto, SaqueResultDto, SolitarDto } from './saque.dto';
 import { SaqueService } from './saque.service';
 import { FindAllParams } from 'src/ufesp/ufespDto';
 
@@ -66,7 +66,7 @@ export class SaqueController {
     return this.saqueService.create(createSaqueDto);
   }
   @Post('solicitar')
-  async solicitarSaque(@Body() params: SolitarDto): Promise<number> {
+  async solicitarSaque(@Body() params: SolitarDto): Promise<RetNumSaque> {
     return this.saqueService.solicitarSaque(params);
   }
 }

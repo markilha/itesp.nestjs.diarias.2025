@@ -7,6 +7,7 @@ import { DiariaViagemEntity } from 'src/database/db_mysql/entities/diariaViagem'
 @Module({
   imports:[TypeOrmModule.forFeature([DiariaViagemEntity], 'mysqlConnection')],
   providers: [DiariaviagemService],
-  controllers: [DiariaviagemController]
+  controllers: [DiariaviagemController],
+  exports: [DiariaviagemService]
 })
 export class DiariaviagemModule {}

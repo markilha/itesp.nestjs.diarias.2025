@@ -1,15 +1,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateSaqueDto, FindAllParams, InsS009SaqueDto, SaqueDto, SaqueResultDto, SolitarDto } from './saque.dto';
+import { CreateSaqueDto, FindAllParams, InsS009SaqueDto, RetNumSaque, SaqueDto, SaqueResultDto, SolitarDto } from './saque.dto';
 
 import { SaqueEntity } from 'src/database/db_mysql/entities/saque.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
+import { DiariaviagemService } from 'src/diariaviagem/diariaviagem.service';
 
 @Injectable()
 export class SaqueService {
   constructor(
     @InjectRepository(SaqueEntity, 'mysqlConnection')
     private saqueRepository: Repository<SaqueEntity>,
+    private diariaviagemService: DiariaviagemService,
   ) {}
 
   async findAll(params: FindAllParams): Promise<SaqueDto[]> {
@@ -130,61 +132,32 @@ export class SaqueService {
   }
 
 
+  async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> { 
 
-  // IN PAR1 VARCHAR(255), /* REEMBOLSO/COMPLEMENTO */
-  // IN PAR2 VARCHAR(255), /* SEM RECURSO */
-  // IN PAR3 VARCHAR(255), /* Tipo de despesa */
-  // IN PAR4 INT, /* ITE_ID_CODIGO */
-  // IN PAR5 INT, /* RRE_ID_CODIGO */
-  // IN PAR6 INT, /* DIR_ID_CODIGO */
-  // IN PAR7 DECIMAL(10,2), /* SQE_VLPREST */
-  // IN PAR8 DATE, /* SQE_DTPREST */
-  // IN PAR9 DECIMAL(10,2), /* SQE_VLSAQUE */
-  // IN PAR10 VARCHAR(255), /* SQE_TIPOSAQUE */
-  // IN PAR11 VARCHAR(255), /* SQE_EFETIVO */
-  // IN PAR12 VARCHAR(255), /* SQE_TERCEIRO */
-  // IN PAR13 INT, /* PES_ID_CODIGO */
-  // IN PAR14 VARCHAR(255), /* PES_PESSOA */
-  // IN PAR15 INT, /* STS_ID_CODIGO */
-  // IN PAR16 VARCHAR(255), /* SQE_USUARIO */
-  // IN PAR17 INT, /* REQ_ID_CODIGO */
-  // IN PAR18 DATE, /* RNU_DTINICIO */
-  // IN PAR19 TIME, /* RNU_HORAINICIO */
-  // IN PAR20 DATE, /* RNU_DTFIM */
-  // IN PAR21 TIME, /* RNU_HORAFIM */
-  // IN PAR22 INT, /* RNU_INTPREV */
-  // IN PAR23 INT, /* RNU_PARPREV */
-  // IN PAR24 INT, /* RNU_INTREAL */
-  // IN PAR25 INT, /* RNU_PARREAL */
-  // IN PAR26 VARCHAR(255), /* RNU_PACOTE */
-  // IN PAR27 VARCHAR(255), /* RNU_GOVERNADOR */
-  // IN PAR28 VARCHAR(255), /* RRE_JUSTIFICATIVA */
-  // IN PAR29 VARCHAR(255), /* REQ_STATUS */
-  // IN PAR30 DECIMAL(10,2), /* RNU_VLINTEGRAL */
-  // IN PAR31 DECIMAL(10,2), /* RNU_VLPARCIAL */
-  // IN PAR32 DECIMAL(10,2), /* RNU_VLBASE */
+    const diariaViagem = await this.diariaviagemService.findOne(params.reqIdCodigo, params.chapa);
 
-
-
-  async solicitarSaque(params: SolitarDto): Promise<number> { 
-
-    const valorSaque = (params.diariaIntegral + params.diariaParcial ) || 0;
+    if (!diariaViagem) {
+      throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
+    }  
+    // converter params = 0 para "N" e 1 para "S"
+    const pacote = params.reqPacote === 0 ? 'N' : 'S';
+   
    
     await this.saqueRepository.query(
       `CALL INS_S009_SAQUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @id);`,
       [
-        'DIARIA', 'N',7, 1111111, 1111111, 5, null, null, valorSaque,
-        'N', 'S', 'N', null, null, 1, null, params.reqIdCodigo, 
-        params.reqDtSaida, params.reqHSaida, params.reqDtRetorno, params.reqHRet, params.reqIntegral, params.reqParcial, null, null, 
-        params.reqPacote, params.reqGovernador, params.reqMotivo, params.reqStatus, params.diariaIntegral, params.diariaParcial, params.diariaBase
+        'DIARIA', 'N',diariaViagem.TDE_ID_CODIGO, diariaViagem.ITE_ID_CODIGO, diariaViagem.RRE_ID_CODIGO, diariaViagem.DIR_ID_CODIGO, null, null, diariaViagem.MDI_VALOR,
+        'N', 'S', null, null, null, 1, null, params.reqIdCodigo, 
+        diariaViagem.REQ_DTSAIDA, diariaViagem.REQ_HSAIDA, diariaViagem.REQ_DTRET, diariaViagem.REQ_HRET, diariaViagem.REQ_INTEGRAL, diariaViagem.REQ_PARCIAL, null, null, 
+        pacote, diariaViagem.REQ_GOVERNADOR, diariaViagem.REQ_MOTIVO, params.reqStatus, params.diariaIntegral, params.diariaParcial, params.diariaBase
       ],
     );
 
     // Depois, pegamos o valor de @id com uma query separada
     const result = await this.saqueRepository.query(`SELECT @id as id`);
+  
+    return { sqeIdCodigo: result[0].id };
 
-    // Retornamos o valor da variável @id
-    return result[0].id;
   }
   
 
