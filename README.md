@@ -159,14 +159,16 @@ Parâmetros da Query String:
 ]
 ```
 
+Parâmetros da Resposta String:
+
 | Campo           | Tipo    | Descrição                                          |
-| --------------- | ------- | -------------------------------------------------- | ------------------------- |
+| --------------- | ------- | -------------------------------------------------- |
 | `SQE_ID_CODIGO` | Inteiro | Código único do saque.                             |
-| `SQE_DTSAQUE`     | Date    | Data em que o saque foi realizado (pode ser nulo). |                           |
-| `SQE_VLSAQUE`     |         | String                                             | Valor do saque realizado. |
-| `SQE_DTPREST`     | Date    | Data de prestação de contas (pode ser nulo).       |
-| `REQ_ID_CODIGO`   | Inteiro | Código único da requisição de viagem.              |
-| `REQ_STATUS`      | String  | Status da requisição de viagem.                    |
-| `CHAPA`           | String  | Número da chapa do funcionário.                    |
-| `STS_DESCRICAO`   | String  | Descrição do status da solicitação de recurso.     |
-| `TDE_DESCRICAO`   | String  | Descrição do tipo de despesa (ex.: diárias).       |
+| `SQE_DTSAQUE`   | Date    | Data em que o saque foi realizado (pode ser nulo). |
+| `SQE_VLSAQUE`   | String  | Valor do saque realizado.                          |
+| `SQE_DTPREST`   | Date    | Data de prestação de contas (pode ser nulo).       |
+| `REQ_ID_CODIGO` | Inteiro | Código único da requisição de viagem.              |
+| `REQ_STATUS`    | String  | Status da requisição de viagem.                    |
+| `CHAPA`         | String  | Número da chapa do funcionário.                    |
+| `STS_DESCRICAO` | String  | Descrição do status da solicitação de recurso.     |
+| `TDE_DESCRICAO` | String  | Descrição do tipo de despesa (ex.: diárias).       |
