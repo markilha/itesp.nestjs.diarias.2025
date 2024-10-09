@@ -106,14 +106,77 @@ Body (JSON):
 }
 ````
 
+# API - Listagem de Saques para Viagens
+
+Esta API permite listar os saques realizados para viagens dos funcionários.
+
+## **Endpoint**
+## **GET /saque?SQE_ID_CODIGO=9162317&CHAPA=000081&REQ_ID_CODIGO=66223&STS_DESCRICAO=SOLICITACOES%20DE%20RECURSO&REQ_STATUS=AUTORIZADA&orderBy=SQE_DTSAQUE&orderDirection=ASC**
+
+Parâmetros da Query String:
+|Campo|Tipo|Obrigatório|Descrição|
+|SQE_ID_CODIGO|Number|Não|Código do saque.|
+|CHAPA|String|Não|Número da chapa do funcionário.|
+|REQ_ID_CODIGO|Number|Não|Código da requisição de viagem.|
+|STS_DESCRICAO|String|Não|Descrição do status da solicitação de recurso (ex.: "SOLICITACOES DE RECURSO").|
+|REQ_STATUS|String|Não|Status da requisição de viagem (ex.: "AUTORIZADA", "PLANEJAMENTO").|
+|orderBy|String|Não|Campo para ordenar o resultado (ex.: "SQE_DTSAQUE").|
+|orderDirection|String|Não|Direção da ordenação (ex.: "ASC" para ascendente ou "DESC" para descendente).|
 
 
 
 
+## **Exemplo de Resposta**
 
-
-
-
-
+```json
+[
+  {
+    "SQE_ID_CODIGO": 9162318,
+    "SQE_DTSAQUE": null,
+    "SQE_VLSAQUE": "675.00",
+    "SQE_DTPREST": null,
+    "REQ_ID_CODIGO": 66223,
+    "REQ_STATUS": "PLANEJAMENTO AUTORIZADO",
+    "CHAPA": "000081",
+    "STS_DESCRICAO": "SOLICITACOES DE RECURSO",
+    "TDE_DESCRICAO": "DIARIAS"
+  },
+  {
+    "SQE_ID_CODIGO": 9162317,
+    "SQE_DTSAQUE": null,
+    "SQE_VLSAQUE": "675.00",
+    "SQE_DTPREST": null,
+    "REQ_ID_CODIGO": 66223,
+    "REQ_STATUS": "PLANEJAMENTO AUTORIZADO",
+    "CHAPA": "000081",
+    "STS_DESCRICAO": "SOLICITACOES DE RECURSO",
+    "TDE_DESCRICAO": "DIARIAS"
+  }
+]
 
 ````
+|Campo|	Tipo|Descrição|
+|SQE_ID_CODIGO|	Inteiro	|Código único do saque.|
+|SQE_DTSAQUE|	Date	|Data em que o saque foi realizado (pode ser nulo).||
+|SQE_VLSAQUE|	|String	|Valor do saque realizado.|
+|SQE_DTPREST|	Date	|Data de prestação de contas (pode ser nulo).|
+|REQ_ID_CODIGO|	Inteiro |Código único da requisição de viagem.|
+|REQ_STATUS|	String	|Status da requisição de viagem.|
+|CHAPA|	String	        |Número da chapa do funcionário.|
+|STS_DESCRICAO|	String  |Descrição do status da solicitação de recurso.|
+|TDE_DESCRICAO|	String	|Descrição do tipo de despesa (ex.: diárias).|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
