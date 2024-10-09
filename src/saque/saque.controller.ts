@@ -8,7 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { CreateSaqueDto, RetNumSaque, SaqueDto, SaqueResultDto, SolitarDto } from './saque.dto';
+import { CreateSaqueDto, FindParamsSaque, RetNumSaque, SaqueDto, SaqueResultDto, SolitarDto } from './saque.dto';
 import { SaqueService } from './saque.service';
 import { FindAllParams } from 'src/ufesp/ufespDto';
 
@@ -17,7 +17,7 @@ export class SaqueController {
   constructor(private readonly saqueService: SaqueService) {}
 
   @Get()
-  async findAll(@Query() params: FindAllParams): Promise<SaqueDto[]> {
+  async findAll(@Query() params: FindParamsSaque): Promise<any> {
     return await this.saqueService.findAll(params);
   }
 

@@ -53,8 +53,7 @@ export class ReqnumerarioController {
     
     const createReqNumerarioDto: CreateReqnumerarioDto = {     
       reqIdCodigo: body.reqIdCodigo,     
-      sqeIdCodigo: null,
-      chapa: body.chapa,
+      sqeIdCodigo: null,    
       rnuMotivo: body.reqMotivo,
       rnuDtInicio: new Date(body.reqDtSaida), 
       rnuHoraInicio: body.reqHSaida,

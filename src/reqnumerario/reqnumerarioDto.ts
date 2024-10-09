@@ -2,7 +2,6 @@ import { ReqNumerarioEntity } from 'src/database/db_mysql/entities/ReqNumerario.
 
 export class ReturnReqnumerarioDto {
   rnuIdCodigo?: number;
-  chapa?: string;
   sqeIdCodigo?: number;
   reqIdCodigo?: number;
   iteIdCodigo?: number;
@@ -23,8 +22,7 @@ export class ReturnReqnumerarioDto {
   rnuVlParcial?: number;
   rnuVlBase?: number;
   constructor(reqnumerario: ReqNumerarioEntity) {
-    this.rnuIdCodigo = reqnumerario.rnuIdCodigo;
-    this.chapa = reqnumerario.chapa;
+    this.rnuIdCodigo = reqnumerario.rnuIdCodigo;    
     this.reqIdCodigo = reqnumerario.reqIdCodigo;
     this.sqeIdCodigo = reqnumerario.sqeIdCodigo;
     this.rnuDtInicio = reqnumerario.rnuDtInicio;
@@ -47,7 +45,6 @@ export class ReturnReqnumerarioDto {
 
 export class CreateReqnumerarioDto {
   rnuIdCodigo?: number;
-  chapa?: string;
   sqeIdCodigo?: number;
   reqIdCodigo?: number;
   iteIdCodigo?: number;
@@ -74,8 +71,7 @@ export class CreateReqnumerarioDto {
     totalVlParcial: number,
     vlBase: number,
   ) {
-    this.rnuIdCodigo = reqnumerario.rnuIdCodigo;
-    this.chapa = reqnumerario.chapa;
+    this.rnuIdCodigo = reqnumerario.rnuIdCodigo;   
     this.reqIdCodigo = reqnumerario.reqIdCodigo;
     this.sqeIdCodigo = reqnumerario.sqeIdCodigo;
     this.rnuDtInicio = reqnumerario.rnuDtInicio;

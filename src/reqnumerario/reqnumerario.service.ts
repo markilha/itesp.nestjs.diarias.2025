@@ -79,8 +79,7 @@ export class ReqnumerarioService {
       createReqnumerarioDto.sqeIdCodigo = saque.sqeIdCodigo;
 
       const existingReqNumerario = await this.mysqlRepository.findOne({
-        where: {
-          chapa: createReqnumerarioDto.chapa,
+        where: {         
           reqIdCodigo: createReqnumerarioDto.reqIdCodigo,
         },
       });   

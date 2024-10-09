@@ -5,15 +5,7 @@ import { SaqueEntity } from './saque.entity';
 export class ReqNumerarioEntity {
   @PrimaryGeneratedColumn({ name: 'RNU_ID_CODIGO' })
   rnuIdCodigo: number;
-  
-  @Column({
-    name: 'CHAPA',
-    nullable: true,
-    type: 'varchar',
-    length: 10,
-  })
-  chapa: string;
-
+    
   @Column({ name: 'SQE_ID_CODIGO', nullable: true, type: 'int' })
   sqeIdCodigo: number;
 

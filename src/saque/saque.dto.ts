@@ -30,9 +30,24 @@ export interface FindAllParams {
   sqeIdCodigo?: number;
   stsIdCodigo?: number;
   stsDescricao?: string;
+  CHAPA?: string;
   page?: number;
   limit?: number;
 }
+
+export interface FindParamsSaque {
+  REQ_ID_CODIGO?: number;
+  SQE_ID_CODIGO?: number;
+  CHAPA?: string;
+  STS_DESCRICAO?: string;
+  REQ_STATUS?: string;
+  page?: number;
+  limit?: number;
+  orderBy?: string;
+  orderDirection?: 'ASC' | 'DESC';
+
+}
+
 
 export class CreateSaqueDto {
   sqeIdCodigo?: number;
