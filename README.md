@@ -1,19 +1,15 @@
+
 # Documentação da API
 
----
-
-## **GET /usureq**
-
 ## Descrição
-
 Essa API permite buscar requisições de usuários filtrando pelos parâmetros de `reqIdCodigo` e `chapa`, além de possibilitar paginação e ordenação dos resultados.
 
-## Endpoint
-
-GET http://\_baseurl/usureq
+## **Endpoint**
+```http
+GET /usureq
+```
 
 ## Parâmetros de Consulta (Query Parameters)
-
 | Parâmetro     | Tipo   | Obrigatório | Descrição                                          | Exemplo         |
 | ------------- | ------ | ----------- | -------------------------------------------------- | --------------- |
 | `reqIdCodigo` | Number | Não         | Código da requisição.                              | `1`             |
@@ -24,11 +20,11 @@ GET http://\_baseurl/usureq
 | `orderBy`     | String | Não         | Direção da ordenação.                              | `"ASC"`         |
 
 ## Exemplo de Requisição
-
-GET http://\_baseurl/usureq?reqIdCodigo=1&chapa=000600&page=1&limit=50&order=reqIdCodigo&orderDirection=ASC
+```http
+GET /usureq?reqIdCodigo=1&chapa=000600&page=1&limit=50&order=reqIdCodigo&orderDirection=ASC
+```
 
 ## Exemplo de Resposta
-
 ```json
 [
   {
@@ -62,18 +58,18 @@ GET http://\_baseurl/usureq?reqIdCodigo=1&chapa=000600&page=1&limit=50&order=req
   }
 ]
 ```
-
+---
 # API - Listagem de Saques para Viagens
 
+**## Descrição**
 Esta API permite listar os saques realizados para viagens dos funcionários.
 
-## **Endpoint**
-
+**Endpoint**
 ```http
-GET /saque?SQE_ID_CODIGO=9162317&CHAPA=000081&REQ_ID_CODIGO=66223&STS_DESCRICAO=SOLICITACOES%20DE%20RECURSO&REQ_STATUS=AUTORIZADA&orderBy=SQE_DTSAQUE&orderDirection=ASC**
+GET /saque?SQE_ID_CODIGO=9162317&CHAPA=000081&REQ_ID_CODIGO=66223&STS_DESCRICAO=SOLICITACOES%20DE%20RECURSO&REQ_STATUS=AUTORIZADA&orderBy=SQE_DTSAQUE&orderDirection=ASC
 ```
 
-Parâmetros da Query String:
+## Parâmetros da Query String:
 
 | campo            | Tipo   | Obrigatório | Descrição                                                                       |
 | ---------------- | ------ | ----------- | ------------------------------------------------------------------------------- |
@@ -115,7 +111,7 @@ Parâmetros da Query String:
 ]
 ```
 
-Parâmetros da Resposta String:
+## Parâmetros da Resposta String:
 
 | Campo           | Tipo    | Descrição                                          |
 | --------------- | ------- | -------------------------------------------------- |
@@ -129,14 +125,14 @@ Parâmetros da Resposta String:
 | `STS_DESCRICAO` | String  | Descrição do status da solicitação de recurso.     |
 | `TDE_DESCRICAO` | String  | Descrição do tipo de despesa (ex.: diárias).       |
 
-# Documentação da API
 
 ---
 
-## **POST /saque/solicitar**
+```http
+POST /saque/solicitar
+```
 
 ### Descrição:
-
 Essa API é utilizada para solicitar o saque de diárias de viagem, contendo as informações sobre o código de requisição, a chapa do usuário e os valores referentes às diárias integral e parcial.
 
 ### Exemplo de Requisição:
@@ -144,8 +140,7 @@ Essa API é utilizada para solicitar o saque de diárias de viagem, contendo as 
 POST http://_baseurl/saque/solicitar`
 ```
 
-Body (JSON):
-
+## Body (JSON):
 ```json
 {
   "reqIdCodigo": 66223,
