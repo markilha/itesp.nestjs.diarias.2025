@@ -63,59 +63,15 @@ GET http://\_baseurl/usureq?reqIdCodigo=1&chapa=000600&page=1&limit=50&order=req
 ]
 ```
 
-# Documentação da API
-
----
-
-## **POST /saque/solicitar**
-
-### Descrição:
-
-Essa API é utilizada para solicitar o saque de diárias de viagem, contendo as informações sobre o código de requisição, a chapa do usuário e os valores referentes às diárias integral e parcial.
-
-### Exemplo de Requisição:
-
-POST http://\_baseurl/saque/solicitar`
-
-Body (JSON):
-
-```json
-{
-  "reqIdCodigo": 66223,
-  "chapa": "000081",
-  "reqpacote": "N",
-  "reqStatus": "AUTORIZADA",
-  "diariaIntegral": 0,
-  "diariaParcial": 49.5,
-  "diariaBase": 247.52
-}
-```
-
-| campo            | Tipo   | Obrigatório | Descrição                               |
-| ---------------- | ------ | ----------- | --------------------------------------- |
-| `reqIdCodigo`    | Number | Sim         | Código da requisição.                   |
-| `chapa`          | String | Sim         | Número da chapa do funcionário.         |
-| `reqpacote`      | string | Sim         | Se ha pacote ou não.                    |
-| `reqStatus`      | Number | Sim         | Número máximo de resultados por página. |
-| `diariaIntegral` | Number | Sim         | Valor total de diárias integral         |
-| `diariaParcial`  | Number | Sim         | Valor total de diárias parcial          |
-| `diariaBase`     | Number | Sim         | Valor base para calculo da diária       |
-
-## Exemplo de Resposta:
-
-```json
-{
-  "sqeIdCodigo": "9162317"
-}
-```
-
 # API - Listagem de Saques para Viagens
 
 Esta API permite listar os saques realizados para viagens dos funcionários.
 
 ## **Endpoint**
 
-## **GET /saque?SQE_ID_CODIGO=9162317&CHAPA=000081&REQ_ID_CODIGO=66223&STS_DESCRICAO=SOLICITACOES%20DE%20RECURSO&REQ_STATUS=AUTORIZADA&orderBy=SQE_DTSAQUE&orderDirection=ASC**
+```http
+GET /saque?SQE_ID_CODIGO=9162317&CHAPA=000081&REQ_ID_CODIGO=66223&STS_DESCRICAO=SOLICITACOES%20DE%20RECURSO&REQ_STATUS=AUTORIZADA&orderBy=SQE_DTSAQUE&orderDirection=ASC**
+```
 
 Parâmetros da Query String:
 
@@ -172,3 +128,52 @@ Parâmetros da Resposta String:
 | `CHAPA`         | String  | Número da chapa do funcionário.                    |
 | `STS_DESCRICAO` | String  | Descrição do status da solicitação de recurso.     |
 | `TDE_DESCRICAO` | String  | Descrição do tipo de despesa (ex.: diárias).       |
+
+# Documentação da API
+
+---
+
+## **POST /saque/solicitar**
+
+### Descrição:
+
+Essa API é utilizada para solicitar o saque de diárias de viagem, contendo as informações sobre o código de requisição, a chapa do usuário e os valores referentes às diárias integral e parcial.
+
+### Exemplo de Requisição:
+```http
+POST http://_baseurl/saque/solicitar`
+```
+
+Body (JSON):
+
+```json
+{
+  "reqIdCodigo": 66223,
+  "chapa": "000081",
+  "reqpacote": "N",
+  "reqStatus": "AUTORIZADA",
+  "diariaIntegral": 0,
+  "diariaParcial": 49.5,
+  "diariaBase": 247.52
+}
+```
+
+| campo            | Tipo   | Obrigatório | Descrição                               |
+| ---------------- | ------ | ----------- | --------------------------------------- |
+| `reqIdCodigo`    | Number | Sim         | Código da requisição.                   |
+| `chapa`          | String | Sim         | Número da chapa do funcionário.         |
+| `reqpacote`      | string | Sim         | Se ha pacote ou não.                    |
+| `reqStatus`      | Number | Sim         | Número máximo de resultados por página. |
+| `diariaIntegral` | Number | Sim         | Valor total de diárias integral         |
+| `diariaParcial`  | Number | Sim         | Valor total de diárias parcial          |
+| `diariaBase`     | Number | Sim         | Valor base para calculo da diária       |
+
+## Exemplo de Resposta:
+
+```json
+{
+  "sqeIdCodigo": "9162317"
+}
+```
+
+
