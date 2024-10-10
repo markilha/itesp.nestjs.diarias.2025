@@ -8,7 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { CreateSaqueDto, FindParamsSaque, RetNumSaque, SaqueDto, SaqueResultDto, SolitarDto } from './saque.dto';
+import { CreateSaqueDto, FindParamsSaque, RetNumSaque, SaqueDto, PrestacaoDto, SolitarDto } from './saque.dto';
 import { SaqueService } from './saque.service';
 import { FindAllParams } from 'src/ufesp/ufespDto';
 
@@ -18,14 +18,19 @@ export class SaqueController {
 
   @Get()
   async findAll(@Query() params: FindParamsSaque): Promise<any> {
+    if (!params.CHAPA) {
+      throw new HttpException(
+        'CHAPA não informada. Por favor, forneça uma CHAPA válida.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     return await this.saqueService.findAll(params);
   }
 
   @Get('prestacao')
   async findPrestacao(
-    @Query('chapa') chapa: string,
-  ): Promise<SaqueResultDto[]> { 
-    if (!chapa) {
+    @Query() params: FindParamsSaque): Promise<PrestacaoDto[]> { 
+    if (!params.CHAPA) {
       throw new HttpException(
         'CHAPA não informada. Por favor, forneça uma CHAPA válida.',
         HttpStatus.BAD_REQUEST,
@@ -33,7 +38,7 @@ export class SaqueController {
     }
 
     try {
-      const result = await this.saqueService.getSaqueData(chapa);
+      const result = await this.saqueService.findPrestacao(params);
       if (result.length === 0) {
         throw new HttpException(
           'Nenhum registro encontrado para a CHAPA fornecida.',
@@ -43,11 +48,16 @@ export class SaqueController {
       return result;
     } catch (error) {
       throw new HttpException(
-        'Erro ao buscar os dados de saque.',
+        error.message,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
+
+  // @Get('prestacao')
+  // async findPrestacao(@Query() params: FindParamsSaque): Promise<any> {
+  //   return await this.saqueService.findPrestacao(params);
+  // }
 
   @Get(':codigo')
   async findOne(@Param('codigo') codigo: number): Promise<SaqueDto> {

@@ -1,19 +1,27 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import {
   CreateSaqueDto,
-  FindAllParams,
   FindParamsSaque,
-  InsS009SaqueDto,
   RetNumSaque,
   SaqueDto,
-  SaqueResultDto,
+  PrestacaoDto,
   SolitarDto,
 } from './saque.dto';
 
 import { SaqueEntity } from 'src/database/db_mysql/entities/saque.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { DiariaviagemService } from 'src/diariaviagem/diariaviagem.service';
+import { calcularValores } from 'src/util/calculo_extorno';
+
+const tabs = {
+  tab01: 's009_reqnumerario',
+  tab02: 's009_itensreqrec',
+  tab03: 's001_requisicao',
+  tab04: 's009_status',
+  tab05: 's009_tipodesp',
+  tab06: 'v009_funcsalario',
+};
 
 @Injectable()
 export class SaqueService {
@@ -25,82 +33,72 @@ export class SaqueService {
 
   async findAll(params: FindParamsSaque): Promise<any> {
     try {
+      const chapa = params.CHAPA;
       const query = this.saqueRepository
         .createQueryBuilder('a')
         .select([
-          'a.SQE_ID_CODIGO',          
-          'a.SQE_DTSAQUE',          
+          'a.SQE_ID_CODIGO',
+          'a.SQE_DTSAQUE',
           'a.SQE_VLSAQUE',
           'a.SQE_DTPREST',
-          'b.REQ_ID_CODIGO',   
-          'd.REQ_STATUS',     
+          'b.REQ_ID_CODIGO',
+          'd.REQ_STATUS',
           'c.CHAPA',
-          'e.STS_DESCRICAO',          
+          'e.STS_DESCRICAO',
           'f.TDE_DESCRICAO',
+          'g.NOME',
         ])
-        .innerJoin(
-          's009_reqnumerario',
-          'b',
-          'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO',
-        )
-        .innerJoin('s009_itensreqrec', 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')    
-        .innerJoin('s001_requisicao', 'd', 'd.REQ_ID_CODIGO = b.REQ_ID_CODIGO')       
-        .innerJoin('s009_status', 'e', 'e.STS_ID_CODIGO = a.STS_ID_CODIGO')
-        .innerJoin('s009_tipodesp', 'f', 'f.TDE_ID_CODIGO = c.TDE_ID_CODIGO')
+        .innerJoin(tabs.tab01, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
+        .innerJoin(tabs.tab02, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
+        .innerJoin(tabs.tab03, 'd', 'd.REQ_ID_CODIGO = b.REQ_ID_CODIGO')
+        .innerJoin(tabs.tab04, 'e', 'e.STS_ID_CODIGO = a.STS_ID_CODIGO')
+        .innerJoin(tabs.tab05, 'f', 'f.TDE_ID_CODIGO = c.TDE_ID_CODIGO')
+        .innerJoin(tabs.tab06, 'g', 'g.CHAPA = c.CHAPA')
+        .where('c.CHAPA = :chapa', { chapa })
         .groupBy('a.SQE_ID_CODIGO')
-        .addGroupBy('c.RRE_ID_CODIGO')        
+        .addGroupBy('c.RRE_ID_CODIGO')
         .addGroupBy('c.CHAPA')
         .addGroupBy('a.SQE_DTSAQUE')
         .addGroupBy('a.SQE_VLSAQUE')
         .addGroupBy('a.SQE_DTPREST')
-        .addGroupBy('e.STS_DESCRICAO') 
-        .addGroupBy('b.REQ_ID_CODIGO')   
-        .addGroupBy('d.REQ_STATUS')      
-        .addGroupBy('f.TDE_DESCRICAO');
+        .addGroupBy('e.STS_DESCRICAO')
+        .addGroupBy('b.REQ_ID_CODIGO')
+        .addGroupBy('d.REQ_STATUS')
+        .addGroupBy('f.TDE_DESCRICAO')
+        .addGroupBy('g.NOME');
 
-        // Aplicar filtro condicional para 'SQE_ID_CODIGO', caso seja fornecido
-        if (params.SQE_ID_CODIGO) {
-         query.andWhere('a.SQE_ID_CODIGO = :SQE_ID_CODIGO', {
-           SQE_ID_CODIGO: params.SQE_ID_CODIGO,
-         });
-       }
-      // Aplicar filtro condicional para 'chapa', caso seja fornecido nos parâmetros
-      if (params.CHAPA) {
-        query.andWhere('c.CHAPA = :CHAPA', { CHAPA: params.CHAPA });
-      }
-      // Aplicar filtro condicional para 'REQ_ID_CODIGO', caso seja fornecido
-      if (params.REQ_ID_CODIGO) {
-        query.andWhere('b.REQ_ID_CODIGO = :REQ_ID_CODIGO', {
-          REQ_ID_CODIGO: params.REQ_ID_CODIGO,
-        });
-      }
-     
-      // Aplicar filtro condicional para 'STS_DESCRICAO', caso seja fornecido
-      if (params.STS_DESCRICAO) {
-        query.andWhere('e.STS_DESCRICAO = :STS_DESCRICAO', {
-          STS_DESCRICAO: params.STS_DESCRICAO,
-        });
-      }
-        // Aplicar filtro condicional para 'STS_DESCRICAO', caso seja fornecido
-        if (params.REQ_STATUS) {
-          query.andWhere('d.REQ_STATUS = :REQ_STATUS', {
-            REQ_STATUS: params.REQ_STATUS,
-          });
+      const conditions = [
+        { param: params.SQE_ID_CODIGO, tab: 'a', key: 'SQE_ID_CODIGO' },
+        { param: params.CHAPA, tab: 'c', key: 'CHAPA' },
+        { param: params.REQ_ID_CODIGO, tab: 'b', key: 'REQ_ID_CODIGO' },
+        { param: params.STS_DESCRICAO, tab: 'e', key: 'STS_DESCRICAO' },
+        { param: params.REQ_STATUS, tab: 'd', key: 'REQ_STATUS' },
+      ];
+
+      conditions.forEach(({ param, tab, key }) => {
+        if (param) {
+          query.andWhere(`${tab}.${key} = :${key}`, { [key]: param });
         }
+      });
+      // Paginação, caso fornecido nos parâmetros
+      if (params.page && params.limit) {
+        const offset = (params.page - 1) * params.limit;
+        query.skip(offset).take(params.limit);
+      }
 
-      
-      // Aplicar a ordenação
-    if (params.orderBy) {
-      query.orderBy(params.orderBy, params.orderDirection === 'DESC' ? 'DESC' : 'ASC');
-    } else {
-      query.orderBy('a.SQE_ID_CODIGO', 'ASC'); // Ordenação padrão
-    }
+      // Ordenação
+      if (params.orderBy) {
+        query.orderBy(params.orderBy, params.orderDirection === 'DESC' ? 'DESC' : 'ASC');
+      } else {
+        query.orderBy('SQE_ID_CODIGO', 'ASC'); // Ordenação padrão
+      }
 
-
+      // Execução da query e retorno dos resultados
       const result = await query.getRawMany();
       return result;
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      console.error('Erro na consulta findPrestacao:', error);
+      throw new HttpException('Erro ao buscar prestações', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -167,10 +165,7 @@ export class SaqueService {
         relations: ['numerario', 'status'],
       });
     } catch (error) {
-      throw new HttpException(
-        'Não foi possível busca o cargo',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Não foi possível busca o cargo', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -182,60 +177,111 @@ export class SaqueService {
       return newSaque;
     } catch (error) {
       console.log(error);
-      throw new HttpException(
-        'Não foi possível criar o saque',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Não foi possível criar o saque', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async getSaqueData(chapa: string): Promise<SaqueResultDto[]> {
-    const result = await this.saqueRepository
+  async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto[]> {
+    const chapa = params.CHAPA;
+
+    const query = this.saqueRepository
       .createQueryBuilder('a')
       .select([
-        'a.SQE_ID_CODIGO',
         'c.RRE_ID_CODIGO',
-        'b.RNU_ID_CODIGO',
-        'b.RNU_DTINICIO',
-        'c.CHAPA',
-        'v.NOME',
+        'a.ITE_ID_CODIGO',
+        'a.SQE_DTPREST',
+        'd.NOME',
         'b.REQ_ID_CODIGO',
+        'a.SQE_ID_CODIGO',
+        'e.TDE_DESCRICAO',
         'a.SQE_VLSAQUE',
-        'a.SQE_DTSAQUE',
-        'a.SQE_EFETIVO',
-        'a.STS_ID_CODIGO',
-        's.STS_DESCRICAO',
         'a.SQE_VLPREST',
-        'a.SQE_DTPEDIDO',
       ])
-      .innerJoin('s009_reqnumerario', 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
-      .innerJoin('s009_itensreqrec', 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
-      .innerJoin('v009_funcsalario', 'v', 'c.CHAPA = v.CHAPA')
-      .innerJoin('s009_status', 's', 'a.STS_ID_CODIGO = s.STS_ID_CODIGO')
+      .innerJoin(tabs.tab01, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
+      .innerJoin(tabs.tab02, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
+      .innerJoin(tabs.tab06, 'd', 'c.CHAPA = d.CHAPA')
+      .innerJoin(tabs.tab04, 's', 'a.STS_ID_CODIGO = s.STS_ID_CODIGO')
+      .innerJoin(tabs.tab05, 'e', 'c.TDE_ID_CODIGO = e.TDE_ID_CODIGO')
       .where('c.CHAPA = :chapa', { chapa })
       .groupBy('c.RRE_ID_CODIGO')
       .addGroupBy('b.RNU_ID_CODIGO')
       .addGroupBy('c.CHAPA')
-      .addGroupBy('v.NOME')
-      .addGroupBy('b.REQ_ID_CODIGO')
+      .addGroupBy('d.NOME')
       .addGroupBy('a.STS_ID_CODIGO')
       .addGroupBy('s.STS_DESCRICAO')
-      .getRawMany();
+      .addGroupBy('e.TDE_DESCRICAO')
+      .addGroupBy('c.IRR_VALOR_PREST')
+      .addGroupBy('c.IRR_VLSAQUE')
+      .addGroupBy('c.IRR_VLDEVOLUCAO')
+      .addGroupBy('c.IRR_COMPLEMENTO')
+      .addGroupBy('c.IRR_DATA_PREST');
 
-    return result as SaqueResultDto[];
+    const conditions = [
+      { param: params.SQE_ID_CODIGO, tab: 'a', key: 'SQE_ID_CODIGO' },
+      { param: params.ITE_ID_CODIGO, tab: 'a', key: 'ITE_ID_CODIGO' },
+      { param: params.CHAPA, tab: 'c', key: 'CHAPA' },
+      { param: params.REQ_ID_CODIGO, tab: 'b', key: 'REQ_ID_CODIGO' },
+      { param: params.STS_DESCRICAO, tab: 's', key: 'STS_DESCRICAO' },
+      { param: params.REQ_STATUS, tab: 'd', key: 'REQ_STATUS' },
+    ];
+
+    conditions.forEach(({ param, tab, key }) => {
+      if (param) {
+        query.andWhere(`${tab}.${key} = :${key}`, { [key]: param });
+      }
+    });
+
+    // Ordenação
+    if (params.orderBy) {
+      query.orderBy(params.orderBy, params.orderDirection === 'DESC' ? 'DESC' : 'ASC');
+    } else {
+      query.orderBy('SQE_ID_CODIGO', 'ASC');
+    }
+
+    const consulta = await query.getRawMany();
+
+    let result = [];
+
+    consulta.map((item) => {
+      const calc = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
+      //DE SQE_DTPREST FOR NULL, UNDERFINED OR EMPTY STRING,  RETURN 'Pendente' ou 'Realizada'
+      const STATUS = item.SQE_DTPREST ? 'Realizada' : 'Pendente';
+
+      const data = {
+        RRE_ID_CODIGO: item.RRE_ID_CODIGO,
+        ITE_ID_CODIGO: item.ITE_ID_CODIGO,
+        SQE_DTPREST: item.SQE_DTPREST,
+        NOME: item.NOME,
+        REQ_ID_CODIGO: item.REQ_ID_CODIGO,
+        SQE_ID_CODIGO: item.SQE_ID_CODIGO,
+        TDE_DESCRICAO: item.TDE_DESCRICAO,
+        SQE_VLSAQUE: Number(item.SQE_VLSAQUE) || 0,
+        SQE_VLPREST: Number(item.SQE_VLPREST) || 0,
+        VL_COMPLEMENTAR: calc.VL_COMPLEMENTAR,
+        VL_EXTORNO: calc.VL_EXTORNO,
+        STS_DESCRICAO: item.STS_DESCRICAO,
+        STATUS
+      };
+      result.push(new PrestacaoDto(data));
+    });
+
+    if (params.STATUS) {
+      if (params.STATUS === 'Realizada') {
+        result = result.filter((item) => item.SITUACAO === 'Realizada');
+      }
+      if (params.STATUS === 'Pendente') {
+        result = result.filter((item) => item.SITUACAO === 'Pendente');
+      }
+    }
+
+    return result;
   }
 
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
-    const diariaViagem = await this.diariaviagemService.findOne(
-      params.reqIdCodigo,
-      params.chapa,
-    );
+    const diariaViagem = await this.diariaviagemService.findOne(params.reqIdCodigo, params.chapa);
 
     if (!diariaViagem) {
-      throw new HttpException(
-        'Diária de viagem não encontrada',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
     }
 
     const pacote = params.reqPacote === 0 ? 'N' : 'S';

@@ -5,7 +5,7 @@ import { PFuncEntity } from 'src/database/db_mysql/entities/pfunc.entity';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { FindAllParams, RMPessoaDto } from './ppessoa.dto';
 import { returnRmDto } from './returnRmDto';
-import { FuncParams, returnFuncDto } from './returnFuncDto';
+
 
 @Injectable()
 export class PpessoaService {
@@ -45,6 +45,13 @@ export class PpessoaService {
     }   
 
     return rms.map((rm) => new returnRmDto(rm));
+  }
+  //findOne pelo codusuaril
+  async findOne(chapa: string): Promise<returnRmDto> {
+    const rm = await this.rmRepository.findOne({
+      where: { codusuario:chapa }     
+    });
+    return new returnRmDto(rm);
   }
 
 }

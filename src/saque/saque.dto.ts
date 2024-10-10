@@ -38,16 +38,16 @@ export interface FindAllParams {
 export interface FindParamsSaque {
   REQ_ID_CODIGO?: number;
   SQE_ID_CODIGO?: number;
+  ITE_ID_CODIGO?: number;
   CHAPA?: string;
   STS_DESCRICAO?: string;
   REQ_STATUS?: string;
+  STATUS?: string;
   page?: number;
   limit?: number;
   orderBy?: string;
   orderDirection?: 'ASC' | 'DESC';
-
 }
-
 
 export class CreateSaqueDto {
   sqeIdCodigo?: number;
@@ -64,7 +64,7 @@ export class CreateSaqueDto {
   sqeefetivo?: string;
   sqedtPedido?: string;
   sqelote?: number;
-  sqeanoLote?: number; 
+  sqeanoLote?: number;
   sqeterceiro?: string;
   pesidcodigo?: number;
   pespessoa?: string;
@@ -73,21 +73,30 @@ export class CreateSaqueDto {
   sqelistaSiafem?: string;
 }
 
-export class SaqueResultDto {
-  SQE_ID_CODIGO: number;
-  RRE_ID_CODIGO: number;
-  RNU_ID_CODIGO: number;
-  RNU_DTINICIO: Date;
-  CHAPA: string;
+export class PrestacaoDto {
+  SQE_DTPREST: string;
   NOME: string;
   REQ_ID_CODIGO: number;
+  SQE_ID_CODIGO: number;
+  TDE_DESCRICAO: string;
   SQE_VLSAQUE: number;
-  SQE_DTSAQUE: Date;
-  SQE_EFETIVO: boolean;
-  STS_ID_CODIGO: number;
-  STS_DESCRICAO: string;
   SQE_VLPREST: number;
-  SQE_DTPEDIDO: Date;
+  VL_COMPLEMENTAR: number;
+  VL_EXTORNO: number;
+  STATUS: string;
+
+  constructor(params: any) {
+    this.SQE_DTPREST = params.SQE_DTPREST;
+    this.NOME = params.NOME;
+    this.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
+    this.SQE_ID_CODIGO = params.SQE_ID_CODIGO;
+    this.TDE_DESCRICAO = params.TDE_DESCRICAO;
+    this.SQE_VLSAQUE = params.SQE_VLSAQUE;
+    this.SQE_VLPREST = params.SQE_VLPREST;
+    this.VL_COMPLEMENTAR = params.VL_COMPLEMENTAR;
+    this.VL_EXTORNO = params.VL_EXTORNO;
+    this.STATUS = params.STATUS;
+  }
 }
 
 export class InsS009SaqueDto {
@@ -98,7 +107,7 @@ export class InsS009SaqueDto {
   par5: number; // RRE_ID_CODIGO
   par6: number; // DIR_ID_CODIGO
   par7: number; // SQE_VLPREST
-  par8: Date;   // SQE_DTPREST
+  par8: Date; // SQE_DTPREST
   par9: number; // SQE_VLSAQUE
   par10: string; // SQE_TIPOSAQUE
   par11: string; // SQE_EFETIVO
@@ -108,10 +117,10 @@ export class InsS009SaqueDto {
   par15: number; // STS_ID_CODIGO
   par16: string; // SQE_USUARIO
   par17: number; // REQ_ID_CODIGO
-  par18: Date;   // RNU_DTINICIO
-  par19: string; // RNU_HORAINICIO 
-  par20: Date;   // RNU_DTFIM
-  par21: string; // RNU_HORAFIM 
+  par18: Date; // RNU_DTINICIO
+  par19: string; // RNU_HORAINICIO
+  par20: Date; // RNU_DTFIM
+  par21: string; // RNU_HORAFIM
   par22: number; // RNU_INTPREV
   par23: number; // RNU_PARPREV
   par24: number; // RNU_INTREAL
@@ -161,17 +170,15 @@ export class InsS009SaqueDto {
 }
 
 export class SolitarDto {
-  reqIdCodigo: number;      
-  chapa: string;   
-  reqPacote: number;    
-  reqStatus: string;  
+  reqIdCodigo: number;
+  chapa: string;
+  reqPacote: number;
+  reqStatus: string;
   diariaIntegral: number;
   diariaParcial: number;
-  diariaBase: number;    
+  diariaBase: number;
 }
 
-export interface RetNumSaque{
-  sqeIdCodigo: string;  
+export interface RetNumSaque {
+  sqeIdCodigo: string;
 }
-
-

@@ -11,7 +11,8 @@ import { PFuncEntity } from 'src/database/db_mysql/entities/pfunc.entity';
     TypeOrmModule.forFeature([PPessoaEntity, PFuncEntity],'mysqlConnection'),
   ],
   controllers: [PpessoaController],
-  providers: [PpessoaService]
+  providers: [PpessoaService],
+  exports: [PpessoaService]
 })
 export class PpessoaModule {}
 
