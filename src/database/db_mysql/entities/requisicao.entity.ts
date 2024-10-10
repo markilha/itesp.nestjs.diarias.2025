@@ -23,7 +23,7 @@ export class RequisicaoEntity {
   regIdCodigo: number;
 
   @Column({ name: 'COD_MUNICIP', type: 'int', nullable: true })
-  codMunicipio: number;
+  codMunicipio: number;  
 
   @Column({ name: 'REQ_DTREQ', type: 'varchar', length: 50, nullable: true })
   reqDtReq: string;

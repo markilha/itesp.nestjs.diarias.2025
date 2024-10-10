@@ -23,6 +23,7 @@ import { verificarDestino } from 'src/util/verificaDestino';
 import { Destino } from 'src/util/diariaDto';
 import { SaquesMesService } from 'src/saques-mes/saques-mes.service';
 
+
 @Injectable()
 export class S001RequisicaoService {
   constructor(
@@ -145,13 +146,16 @@ export class S001RequisicaoService {
       const salario50PorcentoNumber = Number(salario50PorcentoFormatado);
       const saldoRestante = salario50PorcentoNumber - (saqueMes + totalParcial + totalIntegral); //prettier-ignore
 
+   
+      
+
       return new ReturnRequisicaoDto(
         requisicao,
         diarias?.diariaIntegral,
         totalParcial,
         diarias?.diariaBase,
         salario50PorcentoNumber,
-        saldoRestante,
+        saldoRestante,       
       );
     } catch (error) {
       console.error(

@@ -196,12 +196,14 @@ export class SaqueService {
         'e.TDE_DESCRICAO',
         'a.SQE_VLSAQUE',
         'a.SQE_VLPREST',
+        'f.REQ_DTREQ'
       ])
       .innerJoin(tabs.tab01, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
-      .innerJoin(tabs.tab02, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
+      .innerJoin(tabs.tab02, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')      
       .innerJoin(tabs.tab06, 'd', 'c.CHAPA = d.CHAPA')
       .innerJoin(tabs.tab04, 's', 'a.STS_ID_CODIGO = s.STS_ID_CODIGO')
       .innerJoin(tabs.tab05, 'e', 'c.TDE_ID_CODIGO = e.TDE_ID_CODIGO')
+      .innerJoin(tabs.tab03, 'f', 'f.REQ_ID_CODIGO = b.REQ_ID_CODIGO')
       .where('c.CHAPA = :chapa', { chapa })
       .groupBy('c.RRE_ID_CODIGO')
       .addGroupBy('b.RNU_ID_CODIGO')
@@ -214,7 +216,8 @@ export class SaqueService {
       .addGroupBy('c.IRR_VLSAQUE')
       .addGroupBy('c.IRR_VLDEVOLUCAO')
       .addGroupBy('c.IRR_COMPLEMENTO')
-      .addGroupBy('c.IRR_DATA_PREST');
+      .addGroupBy('c.IRR_DATA_PREST')
+      .addGroupBy('f.REQ_DTREQ')
 
     const conditions = [
       { param: params.SQE_ID_CODIGO, tab: 'a', key: 'SQE_ID_CODIGO' },
@@ -243,8 +246,7 @@ export class SaqueService {
     let result = [];
 
     consulta.map((item) => {
-      const calc = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
-      //DE SQE_DTPREST FOR NULL, UNDERFINED OR EMPTY STRING,  RETURN 'Pendente' ou 'Realizada'
+      const calc = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);    
       const STATUS = item.SQE_DTPREST ? 'Realizada' : 'Pendente';
 
       const data = {
@@ -260,7 +262,8 @@ export class SaqueService {
         VL_COMPLEMENTAR: calc.VL_COMPLEMENTAR,
         VL_EXTORNO: calc.VL_EXTORNO,
         STS_DESCRICAO: item.STS_DESCRICAO,
-        STATUS
+        STATUS,
+        REQ_DTREQ: item.REQ_DTREQ,
       };
       result.push(new PrestacaoDto(data));
     });
@@ -276,7 +279,7 @@ export class SaqueService {
 
     return result;
   }
-
+ 
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
     const diariaViagem = await this.diariaviagemService.findOne(params.reqIdCodigo, params.chapa);
 

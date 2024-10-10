@@ -84,6 +84,8 @@ export class PrestacaoDto {
   VL_COMPLEMENTAR: number;
   VL_EXTORNO: number;
   STATUS: string;
+  REQ_DTREQ: string;
+
 
   constructor(params: any) {
     this.SQE_DTPREST = params.SQE_DTPREST;
@@ -96,6 +98,7 @@ export class PrestacaoDto {
     this.VL_COMPLEMENTAR = params.VL_COMPLEMENTAR;
     this.VL_EXTORNO = params.VL_EXTORNO;
     this.STATUS = params.STATUS;
+    this.REQ_DTREQ = params.REQ_DTREQ;
   }
 }
 

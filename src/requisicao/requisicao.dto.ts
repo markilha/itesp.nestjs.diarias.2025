@@ -27,6 +27,7 @@ export class RequisicaoDto {
   reqGovernador?: string;
 }
 
+
 export class ReturnRequisicaoDto {
   reqIdCodigo: number;
   chapa: string;
@@ -56,6 +57,9 @@ export class ReturnRequisicaoDto {
   diariaBase: number; 
   salario50Porcento: number;
   saldoDisponivel: number;
+  meioTransporte: string;
+  regDescricao: string;
+  traDescricao: string;
   usuMov: string; 
     constructor(
     userReqEntity: RequisicaoEntity,   
@@ -63,7 +67,7 @@ export class ReturnRequisicaoDto {
     diariaParcial?: number,    
     diariaBase?: number,
     salario50Porcento?: number,
-    saldoDisponivel?: number,   
+    saldoDisponivel?: number,  
    
   ) {
     this.reqIdCodigo = userReqEntity.reqIdCodigo;   
@@ -94,7 +98,9 @@ export class ReturnRequisicaoDto {
     this.diariaParcial = diariaParcial   
     this.diariaBase = diariaBase;    
     this.salario50Porcento = salario50Porcento;
-    this.saldoDisponivel = saldoDisponivel;    
+    this.saldoDisponivel = saldoDisponivel; 
+    this.regDescricao = userReqEntity.regDescricao;
+    this.traDescricao = userReqEntity.traDescricao;
   }
 
 }
