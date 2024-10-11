@@ -76,6 +76,7 @@ export class CreateSaqueDto {
 }
 
 export class PrestacaoDto {
+  SQE_DTSAQUE: string;
   SQE_DTPREST: string;
   NOME: string;
   REQ_ID_CODIGO: number;
@@ -87,9 +88,16 @@ export class PrestacaoDto {
   VL_EXTORNO: number;
   STATUS: string;
   REQ_DTREQ: string;
+  SQE_DTPEDIDO: string;
+  REQ_STATUS: string;
+  CHAPA: string;
+  STS_DESCRICAO: string;
+ 
 
 
   constructor(params: any) {
+    this.SQE_DTPEDIDO = params.SQE_DTPEDIDO;
+    this.SQE_DTSAQUE = params.SQE_DTSAQUE;
     this.SQE_DTPREST = params.SQE_DTPREST;
     this.NOME = params.NOME;
     this.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
@@ -101,6 +109,11 @@ export class PrestacaoDto {
     this.VL_EXTORNO = params.VL_EXTORNO;
     this.STATUS = params.STATUS;
     this.REQ_DTREQ = params.REQ_DTREQ;
+    this.REQ_STATUS = params.REQ_STATUS;
+    this.CHAPA = params.CHAPA;
+    this.STS_DESCRICAO = params.STS_DESCRICAO;
+   
+    
   }
 }
 

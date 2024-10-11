@@ -14,6 +14,7 @@ import { Repository } from 'typeorm';
 import { DiariaviagemService } from 'src/diariaviagem/diariaviagem.service';
 import { calcularValores } from 'src/util/calculo_extorno';
 import { formatDates } from 'src/util/formatStarDateEndDate';
+import { sortByField } from 'src/util/ordenar';
 const tabs = {
   tab01: 's009_reqnumerario',
   tab02: 's009_itensreqrec',
@@ -34,6 +35,7 @@ export class SaqueService {
   async findAll(params: FindParamsSaque): Promise<any> {
     try {
       const chapa = params.CHAPA;
+
       const query = this.saqueRepository
         .createQueryBuilder('a')
         .select([
@@ -81,16 +83,9 @@ export class SaqueService {
           query.andWhere(`${tab}.${key} = :${key}`, { [key]: param });
         }
       });
-
+      // Filtro por data de saque
       if (params.startDate && params.endDate) {
-        // verificar se as datas estão no formato correto
-
         const { startDate, endDate } = formatDates(params.startDate, params.endDate) || null;
-        console.log(startDate, endDate);
-
-        // const startDate = `${params.startDate} 00:00:00`;
-        // const endDate = `${params.endDate} 23:59:59`;
-
         query.andWhere(
           "STR_TO_DATE(a.SQE_DTSAQUE, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE(:startDate, '%d/%m/%Y %H:%i:%s') AND STR_TO_DATE(:endDate, '%d/%m/%Y %H:%i:%s')",
           {
@@ -99,13 +94,11 @@ export class SaqueService {
           },
         );
       }
-
       // Paginação, caso fornecido nos parâmetros
       if (params.page && params.limit) {
         const offset = (params.page - 1) * params.limit;
         query.skip(offset).take(params.limit);
       }
-
       // Ordenação
       if (params.orderBy) {
         query.orderBy(params.orderBy, params.orderDirection === 'DESC' ? 'DESC' : 'ASC');
@@ -113,8 +106,50 @@ export class SaqueService {
         query.orderBy('SQE_ID_CODIGO', 'ASC'); // Ordenação padrão
       }
 
-      // Execução da query e retorno dos resultados
-      const result = await query.getRawMany();
+      const consulta = await query.getRawMany();
+
+      let result = [];
+
+      consulta.map((item) => {
+
+        const calc = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
+        const STATUS = item.SQE_DTPREST ? 'Realizada' : 'Pendente';
+
+        const data = {
+          SQE_DTPEDIDO: item.SQE_DTPEDIDO,
+          SQE_DTSAQUE: item.SQE_DTSAQUE,
+          SQE_VLSAQUE: Number(item.SQE_VLSAQUE) || 0,
+          SQE_VLPREST: Number(item.SQE_VLPREST) || 0,
+          RRE_ID_CODIGO: item.RRE_ID_CODIGO,
+          ITE_ID_CODIGO: item.ITE_ID_CODIGO,
+          SQE_DTPREST: item.SQE_DTPREST,
+          NOME: item.NOME,
+          REQ_ID_CODIGO: item.REQ_ID_CODIGO,
+          SQE_ID_CODIGO: item.SQE_ID_CODIGO,
+          TDE_DESCRICAO: item.TDE_DESCRICAO,        
+          STS_DESCRICAO: item.STS_DESCRICAO,
+          REQ_DTREQ: item.REQ_DTREQ,
+          REQ_STATUS: item.REQ_STATUS,
+          CHAPA: item.CHAPA, 
+          VL_COMPLEMENTAR: calc.VL_COMPLEMENTAR,
+          VL_EXTORNO: calc.VL_EXTORNO,
+          STATUS
+        };
+        result.push(new PrestacaoDto(data));
+      });
+
+      if (params.STATUS) {
+        if (params.STATUS === 'Realizada') {
+          result = result.filter((item) => item.STATUS === 'Realizada');
+        }
+        if (params.STATUS === 'Pendente') {
+          result = result.filter((item) => item.STATUS === 'Pendente');
+        }
+      }
+
+      // Ordenação do resultado
+      sortByField(result, params.orderBy, params.orderDirection);
+
       return result;
     } catch (error) {
       console.error('Erro na consulta findPrestacao:', error);
@@ -122,60 +157,112 @@ export class SaqueService {
     }
   }
 
-  // async findAll(params: FindAllParams): Promise<SaqueDto[]> {
-  //   try {
-  //     const searchParams: FindOptionsWhere<SaqueDto> = {};
 
-  //     if (params.sqeIdCodigo) {
-  //       searchParams['sqeIdCodigo'] = params.sqeIdCodigo;
+  // async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto[]> {
+  //   const chapa = params.CHAPA;
+  //   const query = this.saqueRepository
+  //     .createQueryBuilder('a')
+  //     .select([
+  //       'a.SQE_DTSAQUE',       
+  //       'c.RRE_ID_CODIGO',
+  //       'a.ITE_ID_CODIGO',
+  //       'a.SQE_DTPREST',
+  //       'd.NOME',
+  //       'b.REQ_ID_CODIGO',
+  //       'a.SQE_ID_CODIGO',
+  //       'e.TDE_DESCRICAO',
+  //       'a.SQE_VLSAQUE',
+  //       'a.SQE_VLPREST',
+  //       'f.REQ_DTREQ',
+  //     ])
+  //     .innerJoin(tabs.tab01, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
+  //     .innerJoin(tabs.tab02, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
+  //     .innerJoin(tabs.tab06, 'd', 'c.CHAPA = d.CHAPA')
+  //     .innerJoin(tabs.tab04, 's', 'a.STS_ID_CODIGO = s.STS_ID_CODIGO')
+  //     .innerJoin(tabs.tab05, 'e', 'c.TDE_ID_CODIGO = e.TDE_ID_CODIGO')
+  //     .innerJoin(tabs.tab03, 'f', 'f.REQ_ID_CODIGO = b.REQ_ID_CODIGO')
+  //     .where('c.CHAPA = :chapa', { chapa })
+  //     .groupBy('c.RRE_ID_CODIGO')
+  //     .addGroupBy('b.RNU_ID_CODIGO')
+  //     .addGroupBy('c.CHAPA')
+  //     .addGroupBy('d.NOME')
+  //     .addGroupBy('a.STS_ID_CODIGO')
+  //     .addGroupBy('s.STS_DESCRICAO')
+  //     .addGroupBy('e.TDE_DESCRICAO')
+  //     .addGroupBy('c.IRR_VALOR_PREST')
+  //     .addGroupBy('c.IRR_VLSAQUE')
+  //     .addGroupBy('c.IRR_VLDEVOLUCAO')
+  //     .addGroupBy('c.IRR_COMPLEMENTO')
+  //     .addGroupBy('c.IRR_DATA_PREST')
+  //     .addGroupBy('f.REQ_DTREQ');
+
+  //   const conditions = [
+  //     { param: params.SQE_ID_CODIGO, tab: 'a', key: 'SQE_ID_CODIGO' },
+  //     { param: params.ITE_ID_CODIGO, tab: 'a', key: 'ITE_ID_CODIGO' },
+  //     { param: params.CHAPA, tab: 'c', key: 'CHAPA' },
+  //     { param: params.REQ_ID_CODIGO, tab: 'b', key: 'REQ_ID_CODIGO' },
+  //     { param: params.STS_DESCRICAO, tab: 's', key: 'STS_DESCRICAO' },
+  //     { param: params.REQ_STATUS, tab: 'd', key: 'REQ_STATUS' },
+  //   ];
+
+  //   conditions.forEach(({ param, tab, key }) => {
+  //     if (param) {
+  //       query.andWhere(`${tab}.${key} = :${key}`, { [key]: param });
   //     }
-
-  //     if (params.stsIdCodigo) {
-  //       searchParams['stsIdCodigo'] = params.stsIdCodigo;
-  //     }
-
-  //     const queryBuilder = this.saqueRepository
-  //       .createQueryBuilder('saque')
-  //       .leftJoinAndSelect('saque.status', 'status')
-  //       .leftJoinAndSelect('saque.numerario', 'numerario');
-
-  //     // Filtrar pela descrição do status, se fornecido
-  //     if (params.stsDescricao) {
-  //       queryBuilder.andWhere('status.stsDescricao = :statusDescricao', {
-  //         statusDescricao: params.stsDescricao,
-  //       });
-  //     }
-
-  //     // Adicionar os outros filtros
-  //     if (params.sqeIdCodigo) {
-  //       queryBuilder.andWhere('saque.sqeIdCodigo = :sqeIdCodigo', {
-  //         sqeIdCodigo: params.sqeIdCodigo,
-  //       });
-  //     }
-
-  //     if (params.stsIdCodigo) {
-  //       queryBuilder.andWhere('saque.stsIdCodigo = :stsIdCodigo', {
-  //         stsIdCodigo: params.stsIdCodigo,
-  //       });
-  //     }
-
-  //     // Paginação
-  //     if (params.page && params.limit) {
-  //       const page = params.page;
-  //       const limit = params.limit;
-  //       const skip = (page - 1) * limit;
-
-  //       queryBuilder.skip(skip).take(limit);
-  //     }
-
-  //     return await queryBuilder.getMany();
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new HttpException(
-  //       'Não foi possível buscar os saques',
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //   });
+  //   // Filtro por data de saque
+  //   if (params.startDate && params.endDate) {
+  //     const { startDate, endDate } = formatDates(params.startDate, params.endDate) || null;
+  //     query.andWhere(
+  //       "STR_TO_DATE(a.SQE_DTSAQUE, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE(:startDate, '%d/%m/%Y %H:%i:%s') AND STR_TO_DATE(:endDate, '%d/%m/%Y %H:%i:%s')",
+  //       {
+  //         startDate: startDate,
+  //         endDate: endDate,
+  //       },
   //     );
   //   }
+
+  //   const consulta = await query.getRawMany();
+
+  //   let result = [];
+
+  //   consulta.map((item) => {
+  //     const calc = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
+  //     const STATUS = item.SQE_DTPREST ? 'Realizada' : 'Pendente';
+
+  //     const data = {
+  //       SQE_DTSAQUE: item.SQE_DTSAQUE,
+  //       RRE_ID_CODIGO: item.RRE_ID_CODIGO,
+  //       ITE_ID_CODIGO: item.ITE_ID_CODIGO,
+  //       SQE_DTPREST: item.SQE_DTPREST,
+  //       NOME: item.NOME,
+  //       REQ_ID_CODIGO: item.REQ_ID_CODIGO,
+  //       SQE_ID_CODIGO: item.SQE_ID_CODIGO,
+  //       TDE_DESCRICAO: item.TDE_DESCRICAO,
+  //       SQE_VLSAQUE: Number(item.SQE_VLSAQUE) || 0,
+  //       SQE_VLPREST: Number(item.SQE_VLPREST) || 0,
+  //       VL_COMPLEMENTAR: calc.VL_COMPLEMENTAR,
+  //       VL_EXTORNO: calc.VL_EXTORNO,
+  //       STS_DESCRICAO: item.STS_DESCRICAO,
+  //       STATUS,
+  //       REQ_DTREQ: item.REQ_DTREQ,       
+  //     };
+  //     result.push(new PrestacaoDto(data));
+  //   });
+
+  //   if (params.STATUS) {
+  //     if (params.STATUS === 'Realizada') {
+  //       result = result.filter((item) => item.STATUS === 'Realizada');
+  //     }
+  //     if (params.STATUS === 'Pendente') {
+  //       result = result.filter((item) => item.STATUS === 'Pendente');
+  //     }
+  //   }
+
+  //   // Ordenação do resultado
+  //   sortByField(result, params.orderBy, params.orderDirection);
+
+  //   return result;
   // }
 
   async findOne(codigo: number): Promise<SaqueDto> {
@@ -199,105 +286,6 @@ export class SaqueService {
       console.log(error);
       throw new HttpException('Não foi possível criar o saque', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
-
-  async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto[]> {
-    const chapa = params.CHAPA;
-
-    const query = this.saqueRepository
-      .createQueryBuilder('a')
-      .select([
-        'c.RRE_ID_CODIGO',
-        'a.ITE_ID_CODIGO',
-        'a.SQE_DTPREST',
-        'd.NOME',
-        'b.REQ_ID_CODIGO',
-        'a.SQE_ID_CODIGO',
-        'e.TDE_DESCRICAO',
-        'a.SQE_VLSAQUE',
-        'a.SQE_VLPREST',
-        'f.REQ_DTREQ',
-      ])
-      .innerJoin(tabs.tab01, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
-      .innerJoin(tabs.tab02, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
-      .innerJoin(tabs.tab06, 'd', 'c.CHAPA = d.CHAPA')
-      .innerJoin(tabs.tab04, 's', 'a.STS_ID_CODIGO = s.STS_ID_CODIGO')
-      .innerJoin(tabs.tab05, 'e', 'c.TDE_ID_CODIGO = e.TDE_ID_CODIGO')
-      .innerJoin(tabs.tab03, 'f', 'f.REQ_ID_CODIGO = b.REQ_ID_CODIGO')
-      .where('c.CHAPA = :chapa', { chapa })
-      .groupBy('c.RRE_ID_CODIGO')
-      .addGroupBy('b.RNU_ID_CODIGO')
-      .addGroupBy('c.CHAPA')
-      .addGroupBy('d.NOME')
-      .addGroupBy('a.STS_ID_CODIGO')
-      .addGroupBy('s.STS_DESCRICAO')
-      .addGroupBy('e.TDE_DESCRICAO')
-      .addGroupBy('c.IRR_VALOR_PREST')
-      .addGroupBy('c.IRR_VLSAQUE')
-      .addGroupBy('c.IRR_VLDEVOLUCAO')
-      .addGroupBy('c.IRR_COMPLEMENTO')
-      .addGroupBy('c.IRR_DATA_PREST')
-      .addGroupBy('f.REQ_DTREQ');
-
-    const conditions = [
-      { param: params.SQE_ID_CODIGO, tab: 'a', key: 'SQE_ID_CODIGO' },
-      { param: params.ITE_ID_CODIGO, tab: 'a', key: 'ITE_ID_CODIGO' },
-      { param: params.CHAPA, tab: 'c', key: 'CHAPA' },
-      { param: params.REQ_ID_CODIGO, tab: 'b', key: 'REQ_ID_CODIGO' },
-      { param: params.STS_DESCRICAO, tab: 's', key: 'STS_DESCRICAO' },
-      { param: params.REQ_STATUS, tab: 'd', key: 'REQ_STATUS' },
-    ];
-
-    conditions.forEach(({ param, tab, key }) => {
-      if (param) {
-        query.andWhere(`${tab}.${key} = :${key}`, { [key]: param });
-      }
-    });
-
-    // Ordenação
-    if (params.orderBy) {
-      query.orderBy(params.orderBy, params.orderDirection === 'DESC' ? 'DESC' : 'ASC');
-    } else {
-      query.orderBy('SQE_ID_CODIGO', 'ASC');
-    }
-
-    const consulta = await query.getRawMany();
-
-    let result = [];
-
-    consulta.map((item) => {
-      const calc = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
-      const STATUS = item.SQE_DTPREST ? 'Realizada' : 'Pendente';
-
-      const data = {
-        RRE_ID_CODIGO: item.RRE_ID_CODIGO,
-        ITE_ID_CODIGO: item.ITE_ID_CODIGO,
-        SQE_DTPREST: item.SQE_DTPREST,
-        NOME: item.NOME,
-        REQ_ID_CODIGO: item.REQ_ID_CODIGO,
-        SQE_ID_CODIGO: item.SQE_ID_CODIGO,
-        TDE_DESCRICAO: item.TDE_DESCRICAO,
-        SQE_VLSAQUE: Number(item.SQE_VLSAQUE) || 0,
-        SQE_VLPREST: Number(item.SQE_VLPREST) || 0,
-        VL_COMPLEMENTAR: calc.VL_COMPLEMENTAR,
-        VL_EXTORNO: calc.VL_EXTORNO,
-        STS_DESCRICAO: item.STS_DESCRICAO,
-        STATUS,
-        REQ_DTREQ: item.REQ_DTREQ,
-      };
-      result.push(new PrestacaoDto(data));
-    });
-
-    if (params.STATUS) {
-      if (params.STATUS === 'Realizada') {
-        result = result.filter((item) => item.STATUS === 'Realizada');
-      }
-      if (params.STATUS === 'Pendente') {
-        result = result.filter((item) => item.STATUS === 'Pendente');
-      }
-    }
-
-    return result;
   }
 
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {

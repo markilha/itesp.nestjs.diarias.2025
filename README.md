@@ -88,7 +88,9 @@ GET /saque?SQE_ID_CODIGO=9162317&CHAPA=000081&REQ_ID_CODIGO=66223&STS_DESCRICAO=
 | `REQ_ID_CODIGO`  | Number | Não         | Código da requisição de viagem.                                                 |
 | `STS_DESCRICAO`  | String | Não         | Descrição do status da solicitação de recurso (ex.: "SOLICITACOES DE RECURSO"). |
 | `REQ_STATUS`     | String | Não         | Status da requisição de viagem (ex.: "AUTORIZADA", "PLANEJAMENTO").             |
-| `REQ_STATUS`     | String | Não         | Valor total de diárias integral                                                 |
+| `startDate`      | String | Não         | Início da data                                                                  |
+| `endDate`        | String | Não         | fim da data (orderBy ='SQE_DTSAQUE' OU orderBy ='SQE_DTPREST')                  |
+| `REQ_STATUS`     | String | Não         | Valor total de diárias integral (ex: AUTORIZADA PELO DIRETOR EXECUTIVO)         |
 | `orderBy`        | String | Não         | Campo para ordenar o resultado (ex.: "SQE_DTSAQUE").                            |
 | `orderDirection` | String | Não         | Direção da ordenação (ex.: "ASC" para ascendente ou "DESC" para descendente).   |
 
@@ -97,43 +99,44 @@ GET /saque?SQE_ID_CODIGO=9162317&CHAPA=000081&REQ_ID_CODIGO=66223&STS_DESCRICAO=
 ```json
 [
   {
-    "SQE_ID_CODIGO": 9162318,
-    "SQE_DTSAQUE": null,
-    "SQE_VLSAQUE": "675.00",
-    "SQE_DTPREST": null,
-    "REQ_ID_CODIGO": 66223,
-    "REQ_STATUS": "PLANEJAMENTO AUTORIZADO",
+    "SQE_DTPEDIDO": "05/10/12",
+    "SQE_DTSAQUE": "15/10/12",
+    "SQE_DTPREST": "11/10/2012 14:54:54",
+    "NOME": "Air de Souza",
+    "REQ_ID_CODIGO": 144864,
+    "SQE_ID_CODIGO": 57785,
+    "TDE_DESCRICAO": "DIARIAS",
+    "SQE_VLSAQUE": 387.24,
+    "SQE_VLPREST": 0,
+    "VL_COMPLEMENTAR": 0,
+    "VL_EXTORNO": 387.24,
+    "STATUS": "Realizada",
+    "REQ_STATUS": "AUTORIZADA PELO DIRETOR EXECUTIVO",
     "CHAPA": "000081",
-    "STS_DESCRICAO": "SOLICITACOES DE RECURSO",
-    "TDE_DESCRICAO": "DIARIAS"
-  },
-  {
-    "SQE_ID_CODIGO": 9162317,
-    "SQE_DTSAQUE": null,
-    "SQE_VLSAQUE": "675.00",
-    "SQE_DTPREST": null,
-    "REQ_ID_CODIGO": 66223,
-    "REQ_STATUS": "PLANEJAMENTO AUTORIZADO",
-    "CHAPA": "000081",
-    "STS_DESCRICAO": "SOLICITACOES DE RECURSO",
-    "TDE_DESCRICAO": "DIARIAS"
+    "STS_DESCRICAO": "SAQUE EFETUADO"
   }
 ]
 ```
 
 ## Parâmetros da Resposta String:
 
-| Campo           | Tipo    | Descrição                                          |
-| --------------- | ------- | -------------------------------------------------- |
-| `SQE_ID_CODIGO` | Inteiro | Código único do saque.                             |
-| `SQE_DTSAQUE`   | Date    | Data em que o saque foi realizado (pode ser nulo). |
-| `SQE_VLSAQUE`   | String  | Valor do saque realizado.                          |
-| `SQE_DTPREST`   | Date    | Data de prestação de contas (pode ser nulo).       |
-| `REQ_ID_CODIGO` | Inteiro | Código único da requisição de viagem.              |
-| `REQ_STATUS`    | String  | Status da requisição de viagem.                    |
-| `CHAPA`         | String  | Número da chapa do funcionário.                    |
-| `STS_DESCRICAO` | String  | Descrição do status da solicitação de recurso.     |
-| `TDE_DESCRICAO` | String  | Descrição do tipo de despesa (ex.: diárias).       |
+| Campo             | Tipo    | Descrição                                                |
+| ----------------- | ------- | -------------------------------------------------------- |
+| `SQE_ID_CODIGO`   | Inteiro | Código único do saque.                                   |
+| `SQE_DTPEDIDO`    | string  | Data de pedido do saque.                                 |
+| `SQE_DTSAQUE`     | string  | Data em que o saque foi realizado (pode ser nulo).       |
+| `SQE_VLSAQUE`     | number  | Valor do saque realizado.                                |
+| `SQE_VLPREST`     | number  | Valor da prestação realizado.                            |
+| `VL_COMPLEMENTAR` | number  | Resultado da subtração entre o SQE_VLSAQUE - SQE_VLPREST |
+| `VL_EXTORNO`      | number  | Se o SQE_VLSAQUE for maior que SQE_VLPREST               |
+| `NOME`            | string  | Nome do funcionário                                      |
+| `SQE_DTPREST`     | Date    | Data de prestação de contas (pode ser nulo).             |
+| `REQ_ID_CODIGO`   | Inteiro | Código único da requisição de viagem.                    |
+| `REQ_STATUS`      | String  | Status da requisição de viagem.                          |
+| `STATUS`          | String  | Status da prestação de conta                             |
+| `CHAPA`           | String  | Número da chapa do funcionário.                          |
+| `STS_DESCRICAO`   | String  | Descrição do status da solicitação de recurso.           |
+| `TDE_DESCRICAO`   | String  | Descrição do tipo de despesa (ex.: diárias).             |
 
 ---
 
@@ -182,61 +185,3 @@ POST http://_baseurl/saque/solicitar`
   "sqeIdCodigo": "9162317"
 }
 ```
-
-# API - Listagem da prestação de conta
-
-## Descrição
-
-Esta API permite listar os saques realizados para realizar a prestação de conta
-
-## Endpoint
-
-```http
-GET /saque/prestacao?ITE_ID_CODIGO=32399&REQ_ID_CODIGO&SQE_ID_CODIGO&CHAPA=001027&STS_DESCRICAO&STATUS&orderBy&orderDirection
-```
-
-## Parâmetros da Query String:
-
-| campo            | Tipo   | Obrigatório | Descrição                                                                       |
-| ---------------- | ------ | ----------- | ------------------------------------------------------------------------------- |
-| `SQE_ID_CODIGO`  | Number | Não         | Código do saque.                                                                |
-| `CHAPA`          | String | Sim         | Número da chapa do funcionário.                                                 |
-| `REQ_ID_CODIGO`  | Number | Não         | Código da requisição de viagem.                                                 |
-| `STS_DESCRICAO`  | String | Não         | Descrição do status da solicitação de recurso (ex.: "SOLICITACOES DE RECURSO"). |
-| `STATUS`         | String | Não         | Status da prestacão (ex.: "Pendente", "Realizada").                             |
-| `orderBy`        | String | Não         | Campo para ordenar o resultado (ex.: "SQE_DTSAQUE").                            |
-| `orderDirection` | String | Não         | Direção da ordenação (ex.: "ASC" para ascendente ou "DESC" para descendente).   |
-
-## Exemplo de Resposta
-
-```json
-[
-  {
-    "SQE_DTPREST": "21/10/2011 14:40:15",
-    "NOME": "Fulano de Almeida",
-    "REQ_ID_CODIGO": 125322,
-    "SQE_ID_CODIGO": 44299,
-    "TDE_DESCRICAO": "DIARIAS",
-    "SQE_VLSAQUE": 24.43,
-    "SQE_VLPREST": 24.43,
-    "VL_COMPLEMENTAR": 0,
-    "VL_EXTORNO": 0,
-    "STATUS": "Realizada"
-  }
-]
-```
-
-## Parâmetros da Resposta String:
-
-| Campo             | Tipo    | Descrição                                    |
-| ----------------- | ------- | -------------------------------------------- |
-| `SQE_DTPREST`     | Date    | Data de prestação de contas (pode ser nulo). |
-| `NOME`            | string  | Nome do funcionário                          |
-| `REQ_ID_CODIGO`   | Inteiro | Código único da requisição de viagem.        |
-| `SQE_ID_CODIGO`   | Inteiro | Código único do saque.                       |
-| `TDE_DESCRICAO`   | string  | Tipo de dispesa                              |
-| `SQE_VLSAQUE`     | number  | Valor do saque realizado.                    |
-| `SQE_VLPREST`     | number  | Valor do prestação realizado.                |
-| `VL_COMPLEMENTAR` | number  | Valor para reembolso                         |
-| `VL_EXTORNO`      | number  | Valor para devolução                         |
-| `STATUS`          | string  | Status da Prestação (Pendente ou Realizada)  |
