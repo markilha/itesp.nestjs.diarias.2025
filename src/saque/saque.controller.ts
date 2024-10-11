@@ -27,32 +27,32 @@ export class SaqueController {
     return await this.saqueService.findAll(params);
   }
 
-  @Get('prestacao')
-  async findPrestacao(
-    @Query() params: FindParamsSaque): Promise<PrestacaoDto[]> { 
-    if (!params.CHAPA) {
-      throw new HttpException(
-        'CHAPA não informada. Por favor, forneça uma CHAPA válida.',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+  // @Get('prestacao')
+  // async findPrestacao(
+  //   @Query() params: FindParamsSaque): Promise<PrestacaoDto[]> { 
+  //   if (!params.CHAPA) {
+  //     throw new HttpException(
+  //       'CHAPA não informada. Por favor, forneça uma CHAPA válida.',
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
 
-    try {
-      const result = await this.saqueService.findPrestacao(params);
-      if (result.length === 0) {
-        throw new HttpException(
-          'Nenhum registro encontrado para a CHAPA fornecida.',
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      return result;
-    } catch (error) {
-      throw new HttpException(
-        error.message,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
+  //   try {
+  //     const result = await this.saqueService.findPrestacao(params);
+  //     if (result.length === 0) {
+  //       throw new HttpException(
+  //         'Nenhum registro encontrado para a CHAPA fornecida.',
+  //         HttpStatus.NOT_FOUND,
+  //       );
+  //     }
+  //     return result;
+  //   } catch (error) {
+  //     throw new HttpException(
+  //       error.message,
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 
   // @Get('prestacao')
   // async findPrestacao(@Query() params: FindParamsSaque): Promise<any> {
