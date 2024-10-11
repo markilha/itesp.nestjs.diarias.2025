@@ -43,6 +43,8 @@ export interface FindParamsSaque {
   STS_DESCRICAO?: string;
   REQ_STATUS?: string;
   STATUS?: string;
+  startDate?: string;
+  endDate?: string;
   page?: number;
   limit?: number;
   orderBy?: string;

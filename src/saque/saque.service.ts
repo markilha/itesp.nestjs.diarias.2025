@@ -13,7 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DiariaviagemService } from 'src/diariaviagem/diariaviagem.service';
 import { calcularValores } from 'src/util/calculo_extorno';
-
+import { formatDates } from 'src/util/formatStarDateEndDate';
 const tabs = {
   tab01: 's009_reqnumerario',
   tab02: 's009_itensreqrec',
@@ -37,6 +37,7 @@ export class SaqueService {
       const query = this.saqueRepository
         .createQueryBuilder('a')
         .select([
+          'a.SQE_DTPEDIDO',
           'a.SQE_ID_CODIGO',
           'a.SQE_DTSAQUE',
           'a.SQE_VLSAQUE',
@@ -80,6 +81,25 @@ export class SaqueService {
           query.andWhere(`${tab}.${key} = :${key}`, { [key]: param });
         }
       });
+
+      if (params.startDate && params.endDate) {
+        // verificar se as datas estão no formato correto
+
+        const { startDate, endDate } = formatDates(params.startDate, params.endDate) || null;
+        console.log(startDate, endDate);
+
+        // const startDate = `${params.startDate} 00:00:00`;
+        // const endDate = `${params.endDate} 23:59:59`;
+
+        query.andWhere(
+          "STR_TO_DATE(a.SQE_DTSAQUE, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE(:startDate, '%d/%m/%Y %H:%i:%s') AND STR_TO_DATE(:endDate, '%d/%m/%Y %H:%i:%s')",
+          {
+            startDate: startDate,
+            endDate: endDate,
+          },
+        );
+      }
+
       // Paginação, caso fornecido nos parâmetros
       if (params.page && params.limit) {
         const offset = (params.page - 1) * params.limit;
@@ -196,10 +216,10 @@ export class SaqueService {
         'e.TDE_DESCRICAO',
         'a.SQE_VLSAQUE',
         'a.SQE_VLPREST',
-        'f.REQ_DTREQ'
+        'f.REQ_DTREQ',
       ])
       .innerJoin(tabs.tab01, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
-      .innerJoin(tabs.tab02, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')      
+      .innerJoin(tabs.tab02, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
       .innerJoin(tabs.tab06, 'd', 'c.CHAPA = d.CHAPA')
       .innerJoin(tabs.tab04, 's', 'a.STS_ID_CODIGO = s.STS_ID_CODIGO')
       .innerJoin(tabs.tab05, 'e', 'c.TDE_ID_CODIGO = e.TDE_ID_CODIGO')
@@ -217,7 +237,7 @@ export class SaqueService {
       .addGroupBy('c.IRR_VLDEVOLUCAO')
       .addGroupBy('c.IRR_COMPLEMENTO')
       .addGroupBy('c.IRR_DATA_PREST')
-      .addGroupBy('f.REQ_DTREQ')
+      .addGroupBy('f.REQ_DTREQ');
 
     const conditions = [
       { param: params.SQE_ID_CODIGO, tab: 'a', key: 'SQE_ID_CODIGO' },
@@ -246,7 +266,7 @@ export class SaqueService {
     let result = [];
 
     consulta.map((item) => {
-      const calc = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);    
+      const calc = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
       const STATUS = item.SQE_DTPREST ? 'Realizada' : 'Pendente';
 
       const data = {
@@ -270,16 +290,16 @@ export class SaqueService {
 
     if (params.STATUS) {
       if (params.STATUS === 'Realizada') {
-        result = result.filter((item) => item.SITUACAO === 'Realizada');
+        result = result.filter((item) => item.STATUS === 'Realizada');
       }
       if (params.STATUS === 'Pendente') {
-        result = result.filter((item) => item.SITUACAO === 'Pendente');
+        result = result.filter((item) => item.STATUS === 'Pendente');
       }
     }
 
     return result;
   }
- 
+
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
     const diariaViagem = await this.diariaviagemService.findOne(params.reqIdCodigo, params.chapa);
 
@@ -287,7 +307,7 @@ export class SaqueService {
       throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
     }
 
-    const pacote = params.reqPacote === 0 ? 'N' : 'S';
+    const pacote = params.reqPacote === 1 ? 'N' : 'S';
 
     await this.saqueRepository.query(
       `CALL INS_S009_SAQUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @id);`,
