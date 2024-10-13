@@ -60,14 +60,19 @@ export class ReturnRequisicaoDto {
   meioTransporte: string;
   regDescricao: string;
   traDescricao: string;
+  saqueMes: number;
+  valorSolicitado: number;
   usuMov: string; 
     constructor(
     userReqEntity: RequisicaoEntity,   
     diariaIntegral?: number,
     diariaParcial?: number,    
     diariaBase?: number,
+    saqueMes?: number,
+    valorSolicitado?: number,
     salario50Porcento?: number,
-    saldoDisponivel?: number,  
+    saldoDisponivel?: number, 
+   
    
   ) {
     this.reqIdCodigo = userReqEntity.reqIdCodigo;   
@@ -88,19 +93,20 @@ export class ReturnRequisicaoDto {
     this.reqEspecial = userReqEntity.reqEspecial;
     this.reqPacote = userReqEntity.reqPacote;
     this.reqGovernador = userReqEntity.reqGovernador;
-    this.transmeio = userReqEntity.traIdCodigo;
-    
+    this.transmeio = userReqEntity.traIdCodigo;    
     this.desLocal = userReqEntity.destino?.desLocal ?? null;
     this.desMunIdCodigo = userReqEntity.destino?.municipio?.munIdCodigo ?? 0; 
-    this.desMunNme = userReqEntity.destino?.municipio?.munCidade ?? '';  
-  
+    this.desMunNme = userReqEntity.destino?.municipio?.munCidade ?? '';    
     this.diariaIntegral = diariaIntegral;
     this.diariaParcial = diariaParcial   
-    this.diariaBase = diariaBase;    
+    this.diariaBase = diariaBase;   
+    this.saqueMes = saqueMes; 
+    this.valorSolicitado = valorSolicitado;
     this.salario50Porcento = salario50Porcento;
     this.saldoDisponivel = saldoDisponivel; 
     this.regDescricao = userReqEntity.regDescricao;
     this.traDescricao = userReqEntity.traDescricao;
+   
   }
 
 }

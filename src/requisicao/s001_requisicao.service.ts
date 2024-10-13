@@ -1,8 +1,4 @@
-import {  
-  HttpException,
-  HttpStatus,
-  Injectable, 
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RequisicaoEntity } from 'src/database/db_mysql/entities/requisicao.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
@@ -17,17 +13,18 @@ import { verificarDestino } from 'src/util/verificaDestino';
 import { Destino } from 'src/util/diariaDto';
 import { SaquesMesService } from 'src/saques-mes/saques-mes.service';
 import { DespesadiariaService } from 'src/despesadiaria/despesadiaria.service';
+import { formatDateToYYMM } from 'src/util/formatoYYMM';
 
 @Injectable()
 export class S001RequisicaoService {
   constructor(
     @InjectRepository(RequisicaoEntity, 'mysqlConnection')
     private requisicaoRepository: Repository<RequisicaoEntity>,
-    private ufespService: UfespService,   
+    private ufespService: UfespService,
     private funcSalarioService: FuncsalarioService,
     private diariaCalculada: DiariaService,
     private SaquesMesService: SaquesMesService,
-    private despesaDiaria : DespesadiariaService,
+    private despesaDiaria: DespesadiariaService,
   ) {}
 
   async findAll(params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
@@ -77,10 +74,9 @@ export class S001RequisicaoService {
           relations: ['transmeio', 'destino', 'destino.municipio'],
         });
       }
-      const UFESP = (await this.ufespService.findMostRecentValue()).ufeValor || 0;
 
       const results = await Promise.all(
-        requisicoes.map((requisicao) => this.processRequisicao(requisicao, params.chapa, UFESP)),
+        requisicoes.map((requisicao) => this.processRequisicao(requisicao, params.chapa)),
       );
 
       return results;
@@ -88,30 +84,27 @@ export class S001RequisicaoService {
       console.log(error);
       throw new HttpException('Erro ao buscar as requisições', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }  
+  }
 
   private async processRequisicao(
     requisicao: RequisicaoEntity,
     chapa: string,
-    UFESP: number,
   ): Promise<ReturnRequisicaoDto> {
-    try {
-      const data = new Date(requisicao.reqDtSaida);
-      const ano = String(data.getFullYear()).slice(-2);
-      const mes = String(data.getMonth() + 1).padStart(2, '0');
-      const formatoYYMM = `${ano}/${mes}`;
+    try {  
 
-      const saqueMes = await this.SaquesMesService.somaMesAtual(chapa, formatoYYMM);
+      const formatoYYMM = formatDateToYYMM(requisicao.reqDtSaida);
+      const saqueMes = await this.SaquesMesService.somaMesAtual(chapa, formatoYYMM);   
 
+      // Busca o valor da UFESP na data da requisição
+      const UFESP = (await this.ufespService.findValueByDate(requisicao.reqDtSaida)).ufeValor || 0;    
+
+      // Busca o salário do usuário
       const user = await this.funcSalarioService.findByCodigo(chapa);
       const salarioAtual = user?.salario || 0;
-      
+
       // Busca o indice da UFESP do cargo do usuário
       const UFESPcargo = await this.despesaDiaria.findOne(user.cargo);
-      
       const UFESPcargoValor = Number(UFESPcargo?.dtdValorMax) || 0;
-      console.log(UFESPcargoValor);
-      
 
       const reqIntegral = Number(requisicao.reqIntegral) || 0;
       const reqParcial = Number(requisicao.reqParcial) || 0;
@@ -124,25 +117,33 @@ export class S001RequisicaoService {
         destino as Destino,
         requisicao.reqPacote || 0,
         reqIntegral,
-        reqParcial>0 ? 1 : 0,
+        reqParcial > 0 ? 1 : 0,
         requisicao.reqHRet,
       );
 
-      const totalParcial = diarias?.diariaParcial40 + diarias?.diariaParcial20 || 0; //prettier-ignore
+      const totalParcial = diarias?.diariaParcial40 + diarias?.diariaParcial20 || 0;
       const totalIntegral = diarias?.diariaIntegral || 0;
+      const ValorSolicitado = (totalParcial + totalIntegral) || 0;
+
       const salario50Porcento = salarioAtual / 2 || 0;
-      const salario50PorcentoFormatado = salario50Porcento > 0 ? salario50Porcento.toFixed(2) : 0; //prettier-ignore
+      const salario50PorcentoFormatado = salario50Porcento > 0 ? salario50Porcento.toFixed(2) : 0;
       const salario50PorcentoNumber = Number(salario50PorcentoFormatado);
-      const saldoRestante = salario50PorcentoNumber - (saqueMes + totalParcial + totalIntegral); //prettier-ignore
+      
+      let saldoRestante = salario50PorcentoNumber - (saqueMes + ValorSolicitado);
+      saldoRestante = Number(saldoRestante ? saldoRestante.toFixed(2) : 0);
+      
 
       return new ReturnRequisicaoDto(
         requisicao,
         diarias?.diariaIntegral,
         totalParcial,
         diarias?.diariaBase,
+        saqueMes,
+        ValorSolicitado,
         salario50PorcentoNumber,
         saldoRestante,
       );
+
     } catch (error) {
       console.error(`Erro ao calcular diária: ${requisicao.regIdCodigo}`, error);
       return new ReturnRequisicaoDto(requisicao);

@@ -7,7 +7,7 @@ import { FindAllParams, UfespDto } from './ufespDto';
 @Injectable()
 export class UfespService {
   constructor(
-    @InjectRepository(UferpsEntity,'mysqlConnection')
+    @InjectRepository(UferpsEntity, 'mysqlConnection')
     private uferpsRepository: Repository<UferpsEntity>,
   ) {}
 
@@ -17,10 +17,7 @@ export class UfespService {
       return this.uferpsRepository.save(uferpsvalor);
     } catch (error) {
       console.log(error);
-      throw new HttpException(
-        'Erro ao criar a ufesp',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Erro ao criar a ufesp', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -30,10 +27,7 @@ export class UfespService {
       return this.uferpsRepository.findOneBy({ ufeIdCodigo: id });
     } catch (error) {
       console.log(error);
-      throw new HttpException(
-        'Erro ao atualizar a ufesp',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Erro ao atualizar a ufesp', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -42,10 +36,7 @@ export class UfespService {
       await this.uferpsRepository.delete(id);
     } catch (error) {
       console.log(error);
-      throw new HttpException(
-        'Erro ao remover a ufesp',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Erro ao remover a ufesp', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -81,4 +72,28 @@ export class UfespService {
       .addOrderBy('u.ufeDtInicio', 'DESC')
       .getOne();
   }
+
+  // Inserir uma data e retornar o valor da UFESP naquela data
+
+  async findValueByDate(dateString: string): Promise<UfespDto | undefined> {
+    const date = new Date(dateString);
+
+    // Primeiro, tenta encontrar o valor correspondente à data
+    let result = await this.uferpsRepository
+        .createQueryBuilder('u')
+        .where('u.ufeDtInicio <= :date', { date })
+        .andWhere('u.ufeDtFinal >= :date', { date })
+        .getOne();
+
+    // Se não encontrar, busca o valor anterior à data
+    if (!result) {
+        result = await this.uferpsRepository
+            .createQueryBuilder('u')
+            .where('u.ufeDtFinal < :date', { date })
+            .orderBy('u.ufeDtFinal', 'DESC') 
+            .getOne();
+    }
+
+    return result;
+}
 }
