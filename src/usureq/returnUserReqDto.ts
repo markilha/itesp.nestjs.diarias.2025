@@ -13,10 +13,10 @@ export class ReturnUserReqDto {
   reqHRet: string;
   reqKm: number;
   reqStatus: string;
-  reqDiaria: string;
-  reqIntegral: string;
-  reqParcial: string;
-  reqEspecial: string;
+  reqDiaria: number;
+  reqIntegral: number;
+  reqParcial: number;
+  reqEspecial: number;
   reqPacote: number;
   reqGovernador: string;
   transmeio: number;
@@ -89,7 +89,7 @@ export class ReturnRequiscaoDto {
   reqHRet: string;
   reqKm: number;
   reqStatus: string;
-  reqDiaria: string;
+  reqDiaria: number;
   reqIntegral: number;
   reqParcial: number;
   reqEspecial: number;

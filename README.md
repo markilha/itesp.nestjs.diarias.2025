@@ -76,7 +76,7 @@ Esta API permite listar os saques realizados para viagens dos funcionários.
 ## Endpoint
 
 ```http
-GET /saque?SQE_ID_CODIGO=9162317&CHAPA=000081&REQ_ID_CODIGO=66223&STS_DESCRICAO=SOLICITACOES%20DE%20RECURSO&REQ_STATUS=AUTORIZADA&orderBy=SQE_DTSAQUE&orderDirection=ASC
+GET saque?SQE_ID_CODIGO&CHAPA=000081&REQ_ID_CODIGO&STS_DESCRICAO&REQ_STATUS&startDate=01%2F09%2F2012%2000%3A00%3A00&endDate=30%2F03%2F2013%2023%3A59%3A59&orderBy=SQE_DTSAQUE&orderDirection=ASC
 ```
 
 ## Parâmetros da Query String:

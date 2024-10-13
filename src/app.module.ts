@@ -13,6 +13,8 @@ import { SaqueModule } from './saque/saque.module';
 import { EventosdiariasModule } from './eventosdiarias/eventosdiarias.module';
 import { SaquesMesModule } from './saques-mes/saques-mes.module';
 import { DiariaviagemModule } from './diariaviagem/diariaviagem.module';
+import { MotivodiariaModule } from './motivodiaria/motivodiaria.module';
+import { DespesadiariaModule } from './despesadiaria/despesadiaria.module';
 
 
 @Module({
@@ -30,9 +32,11 @@ import { DiariaviagemModule } from './diariaviagem/diariaviagem.module';
     SaqueModule,
     EventosdiariasModule,
     SaquesMesModule,
-    DiariaviagemModule
+    DiariaviagemModule,
+    MotivodiariaModule,
+    DespesadiariaModule
   ],
   controllers: [],
-  providers: [],
+
 })
 export class AppModule {}

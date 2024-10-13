@@ -1,18 +1,12 @@
-import {
-  BadRequestException,
+import {  
   HttpException,
   HttpStatus,
-  Injectable,
-  InternalServerErrorException,
+  Injectable, 
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RequisicaoEntity } from 'src/database/db_mysql/entities/requisicao.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import {
-  FindAllParams,
-  ReturnRequisicaoDto,
-  RequisicaoDto,
-} from './requisicao.dto';
+import { FindAllParams, ReturnRequisicaoDto, RequisicaoDto } from './requisicao.dto';
 
 import {} from './returnRequisicao.dto';
 import { UfespService } from 'src/ufesp/ufesp.service';
@@ -22,18 +16,18 @@ import { DiariaService } from 'src/util/diaria.service';
 import { verificarDestino } from 'src/util/verificaDestino';
 import { Destino } from 'src/util/diariaDto';
 import { SaquesMesService } from 'src/saques-mes/saques-mes.service';
-
+import { DespesadiariaService } from 'src/despesadiaria/despesadiaria.service';
 
 @Injectable()
 export class S001RequisicaoService {
   constructor(
     @InjectRepository(RequisicaoEntity, 'mysqlConnection')
     private requisicaoRepository: Repository<RequisicaoEntity>,
-    private ufespService: UfespService,
-    private pcargoService: PcargoService,
+    private ufespService: UfespService,   
     private funcSalarioService: FuncsalarioService,
     private diariaCalculada: DiariaService,
     private SaquesMesService: SaquesMesService,
+    private despesaDiaria : DespesadiariaService,
   ) {}
 
   async findAll(params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
@@ -56,8 +50,7 @@ export class S001RequisicaoService {
       const order: { [key: string]: 'ASC' | 'DESC' } = {};
       if (params.orderBy) {
         // Verifica se o campo de ordenação está presente e define a direção
-        order[params.orderBy] =
-          params.orderDirection === 'DESC' ? 'DESC' : 'ASC';
+        order[params.orderBy] = params.orderDirection === 'DESC' ? 'DESC' : 'ASC';
       } else {
         // Ordenação padrão se nenhum parâmetro for passado
         order['reqIdCodigo'] = 'ASC'; // Padrão: ordenar por 'reqIdCodigo'
@@ -84,23 +77,18 @@ export class S001RequisicaoService {
           relations: ['transmeio', 'destino', 'destino.municipio'],
         });
       }
-      const UFESP =
-        (await this.ufespService.findMostRecentValue()).ufeValor || 0;
+      const UFESP = (await this.ufespService.findMostRecentValue()).ufeValor || 0;
 
       const results = await Promise.all(
-        requisicoes.map((requisicao) =>
-          this.processRequisicao(requisicao, params.chapa, UFESP),
-        ),
+        requisicoes.map((requisicao) => this.processRequisicao(requisicao, params.chapa, UFESP)),
       );
+
       return results;
     } catch (error) {
       console.log(error);
-      throw new HttpException(
-        'Erro ao buscar as requisições',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Erro ao buscar as requisições', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
+  }  
 
   private async processRequisicao(
     requisicao: RequisicaoEntity,
@@ -113,29 +101,30 @@ export class S001RequisicaoService {
       const mes = String(data.getMonth() + 1).padStart(2, '0');
       const formatoYYMM = `${ano}/${mes}`;
 
-      const saqueMes = await this.SaquesMesService.somaMesAtual(
-        chapa,
-        formatoYYMM,
-      );     
+      const saqueMes = await this.SaquesMesService.somaMesAtual(chapa, formatoYYMM);
 
       const user = await this.funcSalarioService.findByCodigo(chapa);
       const salarioAtual = user?.salario || 0;
-      const cargoufesp = await this.pcargoService.findOne(user.cargo);
+      
+      // Busca o indice da UFESP do cargo do usuário
+      const UFESPcargo = await this.despesaDiaria.findOne(user.cargo);
+      
+      const UFESPcargoValor = Number(UFESPcargo?.dtdValorMax) || 0;
+      console.log(UFESPcargoValor);
+      
 
       const reqIntegral = Number(requisicao.reqIntegral) || 0;
       const reqParcial = Number(requisicao.reqParcial) || 0;
-      const destino = verificarDestino(
-        requisicao?.destino?.municipio?.munIdCodigo,
-      );
+      const destino = verificarDestino(requisicao?.destino?.municipio?.munIdCodigo);
 
       // Calcula as diárias com base no UFESP, cargo, destino e outras informações da requisição.
       const diarias = this.diariaCalculada.calcularDiaria(
         UFESP,
-        cargoufesp.ufesp || 0,
+        UFESPcargoValor,
         destino as Destino,
         requisicao.reqPacote || 0,
         reqIntegral,
-        reqParcial,
+        reqParcial>0 ? 1 : 0,
         requisicao.reqHRet,
       );
 
@@ -146,26 +135,17 @@ export class S001RequisicaoService {
       const salario50PorcentoNumber = Number(salario50PorcentoFormatado);
       const saldoRestante = salario50PorcentoNumber - (saqueMes + totalParcial + totalIntegral); //prettier-ignore
 
-   
-      
-
       return new ReturnRequisicaoDto(
         requisicao,
         diarias?.diariaIntegral,
         totalParcial,
         diarias?.diariaBase,
         salario50PorcentoNumber,
-        saldoRestante,       
+        saldoRestante,
       );
     } catch (error) {
-      console.error(
-        `Erro ao processar a requisição: ${requisicao.regIdCodigo}`,
-        error,
-      );      
+      console.error(`Erro ao calcular diária: ${requisicao.regIdCodigo}`, error);
       return new ReturnRequisicaoDto(requisicao);
     }
   }
-
-
-
 }

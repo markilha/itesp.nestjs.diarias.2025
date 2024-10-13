@@ -14,10 +14,10 @@ export class RequisicaoDto {
   reqHRetorno?: string;
   reqKm?: number;
   reqStatus?: string;
-  reqDiaria?: string;
-  reqIntegral?: string;
-  reqParcial?: string;
-  reqEspecial?: string;
+  reqDiaria?: number;
+  reqIntegral?: number;
+  reqParcial?: number;
+  reqEspecial?: number;
   traIdCodigo?: number;
   nmeMunic?: string;
   regDescricao?: string;
@@ -41,10 +41,10 @@ export class ReturnRequisicaoDto {
   reqHRet: string;
   reqKm: number; 
   reqStatus: string; 
-  reqDiaria: string; 
-  reqIntegral: string; 
-  reqParcial: string; 
-  reqEspecial: string; 
+  reqDiaria: number; 
+  reqIntegral: number; 
+  reqParcial: number; 
+  reqEspecial: number; 
   reqPacote: number; 
   reqGovernador: string | null; 
   transmeio: number; 
@@ -84,7 +84,7 @@ export class ReturnRequisicaoDto {
     this.reqStatus = userReqEntity.reqStatus;
     this.reqDiaria = userReqEntity.reqDiaria;
     this.reqIntegral = userReqEntity.reqIntegral;
-    this.reqParcial = userReqEntity.reqParcial;
+    this.reqParcial =  userReqEntity.reqParcial;
     this.reqEspecial = userReqEntity.reqEspecial;
     this.reqPacote = userReqEntity.reqPacote;
     this.reqGovernador = userReqEntity.reqGovernador;
@@ -105,81 +105,6 @@ export class ReturnRequisicaoDto {
 
 }
 
-
-
-// export class RequisicaoDto {
-//   @IsOptional()
-//   @IsNumber()
-//   readonly regIdCodigo?: number;
-
-//   @IsOptional()
-//   @IsNumber()
-//   readonly codMunicipio?: number;
-
-//   @IsOptional()
-//   @IsNumber()
-//   readonly traIdCodigo?: number;
-
-//   @IsOptional()
-//   @IsString()
-//   readonly reqDtReq?: string;
-
-//   @IsOptional()
-//   @IsDate()
-//   readonly reqDtSaida?: Date;
-
-//   @IsOptional()
-//   @IsString()
-//   readonly reqMotorista?: string;
-
-//   @IsOptional()
-//   @IsString()
-//   readonly reqHSaida?: string;
-
-//   @IsOptional()
-//   @IsDate()
-//   readonly reqDtRetorno?: Date;
-
-//   @IsOptional()
-//   @IsString()
-//   readonly reqMotivo?: string;
-
-//   @IsOptional()
-//   @IsString()
-//   readonly reqHRet?: string;
-
-//   @IsOptional()
-//   @IsNumber()
-//   readonly reqKm?: number;
-
-//   @IsOptional()
-//   @IsIn(['Pendente', 'Aprovado', 'Rejeitado']) // Exemplo de enum
-//   readonly reqStatus?: string;
-
-//   @IsOptional()
-//   @IsString()
-//   readonly reqDiaria?: string;
-
-//   @IsOptional()
-//   @IsNumber()
-//   readonly reqIntegral?: number;
-
-//   @IsOptional()
-//   @IsNumber()
-//   readonly reqParcial?: number;
-
-//   @IsOptional()
-//   @IsNumber()
-//   readonly reqEspecial?: number;
-
-//   @IsOptional()
-//   @IsString()
-//   readonly reqPacote?: string;
-
-//   @IsOptional()
-//   @IsString()
-//   readonly reqGovernador?: string;
-// }
 
 export enum RequisicaoStatus {
   FINALIZADA = 'FINALIZADA',  

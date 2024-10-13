@@ -3,12 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UsuReqEntity } from 'src/database/db_mysql/entities/usureq.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, UsureqDto, CreateUsureqDto } from './usureqDto';
-import { ReturnUserReqDto, ReturnRequiscaoDto } from './returnUserReqDto';
+import {  ReturnRequiscaoDto } from './returnUserReqDto';
 
 import { CreateUsuReqEntity } from 'src/database/db_mysql/entities/createUsureq.entity';
 import { DiariaService } from 'src/util/diaria.service';
-import { Destino, DiariaCalculadaDto } from 'src/util/diariaDto';
-import { verificarDestino } from 'src/util/verificaDestino';
+
 import { UfespService } from 'src/ufesp/ufesp.service';
 
 import { ReqnumerarioService } from 'src/reqnumerario/reqnumerario.service';

@@ -49,17 +49,17 @@ export class RequisicaoEntity {
   @Column({ name: 'REQ_STATUS', type: 'varchar', length: 50, nullable: true })
   reqStatus: string;
 
-  @Column({ name: 'REQ_DIARIA', type: 'varchar', length: 50, nullable: true })
-  reqDiaria: string;
+  @Column({ name: 'REQ_DIARIA', type: 'int',  nullable: true })
+  reqDiaria: number;
 
-  @Column({ name: 'REQ_INTEGRAL', type: 'varchar', length: 50, nullable: true })
-  reqIntegral: string;
+  @Column({ name: 'REQ_INTEGRAL', type: 'int', nullable: true })
+  reqIntegral: number;
 
-  @Column({ name: 'REQ_PARCIAL', type: 'varchar', length: 50, nullable: true })
-  reqParcial: string;
+  @Column({ name: 'REQ_PARCIAL', type: 'int',  nullable: true })
+  reqParcial: number;
 
-  @Column({ name: 'REQ_ESPECIAL', type: 'varchar', length: 50, nullable: true })
-  reqEspecial: string;
+  @Column({ name: 'REQ_ESPECIAL', type: 'int',  nullable: true })
+  reqEspecial: number;
 
   @Column({ name: 'TRA_ID_CODIGO', type: 'int', nullable: true })
   traIdCodigo: number;

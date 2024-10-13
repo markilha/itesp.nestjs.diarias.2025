@@ -9,9 +9,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { S001RequisicaoService } from './s001_requisicao.service';
-import { RequisicaoDto, FindAllParams } from './requisicao.dto';
+import {  FindAllParams } from './requisicao.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { RequisicaoEntity } from 'src/database/db_mysql/entities/requisicao.entity';
 import { ReturnRequisicaoDto } from './returnRequisicao.dto';
 
 @UseGuards(AuthGuard)
@@ -23,6 +22,5 @@ export class S001RequisicaoController {
   async findAll(@Query() params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
     return await this.requisicao.findAll(params);
   }
-
  
 }

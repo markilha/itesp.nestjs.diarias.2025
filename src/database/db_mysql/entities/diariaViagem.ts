@@ -77,14 +77,14 @@ export class DiariaViagemEntity {
     @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
     REQ_KM: number;
 
-    @Column({ type: 'varchar', length: 10, nullable: true })
-    REQ_INTEGRAL: string;
+    @Column({ type: 'int',  nullable: true })
+    REQ_INTEGRAL: number;
 
-    @Column({ type: 'varchar', length: 10, nullable: true })
-    REQ_PARCIAL: string;
+    @Column({ type: 'int',  nullable: true })
+    REQ_PARCIAL: number;
 
-    @Column({ type: 'varchar', length: 10, nullable: true })
-    REQ_ESPECIAL: string;
+    @Column({ type: 'int',  nullable: true })
+    REQ_ESPECIAL: number;
 
     @Column({ type: 'varchar', length: 100, nullable: true })
     TRA_DESCRICAO: string;
