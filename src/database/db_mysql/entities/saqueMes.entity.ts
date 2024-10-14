@@ -6,18 +6,18 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 export class SaqueMesEntity {
   
   @PrimaryColumn({ name: 'CHAPA', type: 'varchar', length: 10 })
-  chapa: string;
+  CHAPA: string;
 
   @PrimaryColumn({ name: 'TDE_ID_CODIGO', type: 'int'})
-  tdeidcodigo: number;
+  TDE_ID_CODIGO: number;
 
   @PrimaryColumn({ name: 'SQE_TIPOSAQUE', type: 'varchar' })
-  sqetiposaque: string;
+  SQE_TIPOSAQUE: string;
 
   @PrimaryColumn({ name: 'MESSAQUE', type: 'varchar' })
   messaque: string;
 
   @Column({ name: 'TotSaque', type: 'decimal', precision: 10, scale: 2 })
-  totsaque: number;
+  TotSaque: number;
 }
 

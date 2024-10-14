@@ -1,9 +1,7 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
-  HttpCode,
   Post,
   Query,
   UseGuards,
@@ -11,7 +9,7 @@ import {
 import { UsureqService } from './usureq.service';
 import { FindAllParams, UsureqDto } from './usureqDto';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { ReturnUserReqDto, ReturnRequiscaoDto } from './returnUserReqDto';
+import { ReturnRequiscaoDto } from './returnUserReqDto';
 
 
 @UseGuards(AuthGuard)
@@ -24,19 +22,12 @@ export class UsureqController {
     return await this.usureq.findAll(params);
   }
 
-  // @Get('saque')
-  // async findSaque(@Query() params: FindAllParams): Promise<ReturnUserReqDto> {
-  //   return await this.usureq.findSaque(params);
-  // }
+ 
 
   @Post()
   async create(@Body() usureqDto: UsureqDto): Promise<UsureqDto> {
     return await this.usureq.create(usureqDto);
   }
 
-  @Delete()
-  @HttpCode(200)
-  async deleteRequisicao(@Body() dto: UsureqDto): Promise<{ message: string }> {
-    return this.usureq.remove(dto);
-  }
+
 }

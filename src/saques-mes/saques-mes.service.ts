@@ -12,55 +12,82 @@ export class SaquesMesService {
     private saqueMes: Repository<SaqueMesEntity>,
   ) {}
 
+  // Método privado para construir a query base
+  private createBaseQueryBuilder() {
+    return this.saqueMes
+      .createQueryBuilder('a')
+      .select([
+        'd.CHAPA AS chapa',
+        'd.NOME AS nome',
+        'e.DESCRICAO AS descricao',
+        'f.FUNCAO AS funcao',
+        'a.MESSAQUE AS messaque',
+        "STR_TO_DATE(a.MESSAQUE, '%m/%Y') AS messaque2",
+        'a.TotSaque AS totSaque',
+        'IFNULL(b.TotSaqueEstCanc, 0) AS totSaqueEstCanc',
+        'c.mesdev AS mesDev',
+        'IFNULL(c.vl_devolucao, 0) AS vlDevolucao',
+        'IFNULL(f.SALARIO, 0) AS salario',
+      ])
+      .leftJoin(
+        'v009_saqueestcanc_mes',
+        'b',
+        'a.CHAPA = b.CHAPA AND a.MESSAQUE = b.MESSAQUE AND a.TDE_ID_CODIGO = b.TDE_ID_CODIGO',
+      )
+      .leftJoin(
+        'v009_devoltot_mes',
+        'c',
+        'a.CHAPA = c.chapa AND a.MESSAQUE = c.mesdev AND a.TDE_ID_CODIGO = c.tde_id_codigo',
+      )
+      .innerJoin('pfunc', 'd', 'a.CHAPA = d.CHAPA')
+      .innerJoin('psecao', 'e', 'd.CODSECAO = e.CODIGO')
+      .leftJoin('v009_funcsalario', 'f', 'd.CHAPA = f.CHAPA')
+      .where('a.TDE_ID_CODIGO = :codigo', { codigo: 7 });
+  }
 
+  // Método privado para aplicar filtros comuns
+  private applyFilters(query, params: FindAllParams) {
+    if (params.CHAPA) {
+      query.andWhere('a.CHAPA = :chapa', { chapa: params.CHAPA });
+    }
 
+    if (params.messaque) {
+      query.andWhere('a.MESSAQUE = :messaque', { messaque: params.messaque });
+    }
+
+    if (params.page && params.limit) {
+      const page = params.page;
+      const limit = params.limit;
+      const skip = (page - 1) * limit;
+      query.skip(skip).take(limit);
+    }
+
+    return query;
+  }
+
+  // Método público para buscar todos os registros
   async findAll(params: FindAllParams): Promise<SaqueMesDto[]> {
-    try {
-      const searchParams: FindOptionsWhere<SaqueMesEntity> = {};
+    const query = this.createBaseQueryBuilder();
+    this.applyFilters(query, params);
 
-      if (params.chapa) {
-        searchParams['chapa'] = params.chapa;
-      }
-   
-      let saqueMesEntities: SaqueMesEntity[];
+    const result = await query.getRawMany();
+    return result;
+  }
 
-      if (params.page && params.limit) {
-        const page = params.page;
-        const limit = params.limit;
-        const skip = (page - 1) * limit;
+  // Método público para buscar um registro específico
+  async findOne(chapa: string, messaque: string): Promise<SaqueMesDto | null> {
+    const query = this.createBaseQueryBuilder()
+      .andWhere('a.CHAPA = :chapa', { chapa })
+      .andWhere('a.MESSAQUE = :messaque', { messaque })
+      .limit(1);
 
-        saqueMesEntities = await this.saqueMes.find({
-          where: searchParams,
-          skip,
-          take: limit,
-        });
-      } else {
-        saqueMesEntities = await this.saqueMes.find({
-          where: searchParams,
-        });
-      }     
-
-      return saqueMesEntities.map((entity) => new SaqueMesDto(entity));
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    const result = await query.getRawOne();
+    if (!result) {
+      throw new HttpException('Registro não encontrado', HttpStatus.NOT_FOUND);
     }
-  } 
- 
-  async somaMesAtual(chapa?: string, AnoMes?: string): Promise<number> {
-    try {
-      const query = this.saqueMes
-        .createQueryBuilder('saque')
-        .select('SUM(saque.totsaque)', 'total')
-        .where('saque.messaque COLLATE utf8mb4_unicode_ci = :AnoMes', {
-          AnoMes,
-        });
-      if (chapa) {
-        query.andWhere('saque.chapa = :chapa', { chapa });
-      }
-      const result = await query.getRawOne();
-      return parseFloat(result.total || '0');
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+
+    result.TotalSaqueMes = result.totSaque - result.totSaqueEstCanc - result.vlDevolucao;
+
+    return result;
   }
 }

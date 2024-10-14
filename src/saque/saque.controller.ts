@@ -8,9 +8,9 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { CreateSaqueDto, FindParamsSaque, RetNumSaque, SaqueDto, PrestacaoDto, SolitarDto } from './saque.dto';
+import {  FindParamsSaque, RetNumSaque,  PrestacaoDto, SolitarDto } from './saque.dto';
 import { SaqueService } from './saque.service';
-import { FindAllParams } from 'src/ufesp/ufespDto';
+
 
 @Controller('saque')
 export class SaqueController {
@@ -27,54 +27,21 @@ export class SaqueController {
     return await this.saqueService.findAll(params);
   }
 
-  // @Get('prestacao')
-  // async findPrestacao(
-  //   @Query() params: FindParamsSaque): Promise<PrestacaoDto[]> { 
-  //   if (!params.CHAPA) {
-  //     throw new HttpException(
-  //       'CHAPA não informada. Por favor, forneça uma CHAPA válida.',
-  //       HttpStatus.BAD_REQUEST,
-  //     );
-  //   }
-
-  //   try {
-  //     const result = await this.saqueService.findPrestacao(params);
-  //     if (result.length === 0) {
-  //       throw new HttpException(
-  //         'Nenhum registro encontrado para a CHAPA fornecida.',
-  //         HttpStatus.NOT_FOUND,
-  //       );
-  //     }
-  //     return result;
-  //   } catch (error) {
-  //     throw new HttpException(
-  //       error.message,
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
-
-  // @Get('prestacao')
-  // async findPrestacao(@Query() params: FindParamsSaque): Promise<any> {
-  //   return await this.saqueService.findPrestacao(params);
-  // }
-
-  @Get(':codigo')
-  async findOne(@Param('codigo') codigo: number): Promise<SaqueDto> {
-    const saque = await this.saqueService.findOne(codigo);
-    if (!saque) {
+  @Get('prestacao')
+  async findPrestacao(
+    @Query() params: FindParamsSaque): Promise<PrestacaoDto> { 
+    if (!params.SQE_ID_CODIGO) {
       throw new HttpException(
-        'Saque Não encontrado',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        'Saque id não informado. Por favor, forneça uma Saque id válido.',
+        HttpStatus.BAD_REQUEST,
       );
     }
-    return saque;
-  }
+   
+    return await this.saqueService.findPrestacao(params);
 
-  @Post()
-  async create(@Body() createSaqueDto: CreateSaqueDto): Promise<SaqueDto> {
-    return this.saqueService.create(createSaqueDto);
+    
   }
+  
   @Post('solicitar')
   async solicitarSaque(@Body() params: SolitarDto): Promise<RetNumSaque> {
     return this.saqueService.solicitarSaque(params);

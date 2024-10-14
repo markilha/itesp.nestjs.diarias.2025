@@ -1,23 +1,25 @@
 import { SaqueMesEntity } from "src/database/db_mysql/entities/saqueMes.entity";
 
 export class SaqueMesDto {
-  chapa: string;
-  tdeidcodigo: number;
-  sqetiposaque: string;
+  CHAPA: string;
+  TDE_ID_CODIGO: number;
+  SQE_TIPOSAQUE: string;
   messaque: string;
-  totsaque: number;
+  totSaque: number;
+  TotalSaqueMes: number;
 
-  constructor(entity: SaqueMesEntity) {
-    this.chapa = entity.chapa;
-    this.tdeidcodigo = entity.tdeidcodigo;
-    this.sqetiposaque = entity.sqetiposaque;
+  constructor(entity: SaqueMesEntity, totalSaqueMes: number) {      
+    this.CHAPA = entity.CHAPA;
+    this.TDE_ID_CODIGO = entity.TDE_ID_CODIGO;
+    this.SQE_TIPOSAQUE = entity.SQE_TIPOSAQUE;
     this.messaque = entity.messaque;
-    this.totsaque = entity.totsaque;
+    this.totSaque = entity.TotSaque;
+    this.TotalSaqueMes = totalSaqueMes;
   }
 }
 
 export class FindAllParams {
-  chapa?: string; 
+  CHAPA?: string; 
   messaque?: string; 
   page?: number; 
   limit?: number; 

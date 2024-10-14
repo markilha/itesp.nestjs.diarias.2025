@@ -74,6 +74,9 @@ export class S001RequisicaoService {
           relations: ['transmeio', 'destino', 'destino.municipio'],
         });
       }
+      if (!requisicoes || requisicoes.length === 0) {
+        return [];
+      }
 
       const results = await Promise.all(
         requisicoes.map((requisicao) => this.processRequisicao(requisicao, params.chapa)),
@@ -81,8 +84,7 @@ export class S001RequisicaoService {
 
       return results;
     } catch (error) {
-      console.log(error);
-      throw new HttpException('Erro ao buscar as requisições', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -90,13 +92,17 @@ export class S001RequisicaoService {
     requisicao: RequisicaoEntity,
     chapa: string,
   ): Promise<ReturnRequisicaoDto> {
-    try {  
-
+    try {
       const formatoYYMM = formatDateToYYMM(requisicao.reqDtSaida);
-      const saqueMes = await this.SaquesMesService.somaMesAtual(chapa, formatoYYMM);   
+
+      // Busca o valor do saque do usuário no mês da requisição
+      const saqueSalario = await this.SaquesMesService.findOne(chapa, formatoYYMM);
+      console.log(saqueSalario);
+
+      const saqueMes = Number(saqueSalario?.totSaque) || 0;
 
       // Busca o valor da UFESP na data da requisição
-      const UFESP = (await this.ufespService.findValueByDate(requisicao.reqDtSaida)).ufeValor || 0;    
+      const UFESP = (await this.ufespService.findValueByDate(requisicao.reqDtSaida)).ufeValor || 0;
 
       // Busca o salário do usuário
       const user = await this.funcSalarioService.findByCodigo(chapa);
@@ -106,6 +112,7 @@ export class S001RequisicaoService {
       const UFESPcargo = await this.despesaDiaria.findOne(user.cargo);
       const UFESPcargoValor = Number(UFESPcargo?.dtdValorMax) || 0;
 
+      // Busca o valor da diária base do usuário
       const reqIntegral = Number(requisicao.reqIntegral) || 0;
       const reqParcial = Number(requisicao.reqParcial) || 0;
       const destino = verificarDestino(requisicao?.destino?.municipio?.munIdCodigo);
@@ -123,15 +130,14 @@ export class S001RequisicaoService {
 
       const totalParcial = diarias?.diariaParcial40 + diarias?.diariaParcial20 || 0;
       const totalIntegral = diarias?.diariaIntegral || 0;
-      const ValorSolicitado = (totalParcial + totalIntegral) || 0;
+      const ValorSolicitado = totalParcial + totalIntegral || 0;
 
       const salario50Porcento = salarioAtual / 2 || 0;
       const salario50PorcentoFormatado = salario50Porcento > 0 ? salario50Porcento.toFixed(2) : 0;
       const salario50PorcentoNumber = Number(salario50PorcentoFormatado);
-      
+
       let saldoRestante = salario50PorcentoNumber - (saqueMes + ValorSolicitado);
       saldoRestante = Number(saldoRestante ? saldoRestante.toFixed(2) : 0);
-      
 
       return new ReturnRequisicaoDto(
         requisicao,
@@ -143,7 +149,6 @@ export class S001RequisicaoService {
         salario50PorcentoNumber,
         saldoRestante,
       );
-
     } catch (error) {
       console.error(`Erro ao calcular diária: ${requisicao.regIdCodigo}`, error);
       return new ReturnRequisicaoDto(requisicao);

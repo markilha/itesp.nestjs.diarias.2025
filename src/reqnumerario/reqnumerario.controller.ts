@@ -41,40 +41,5 @@ export class ReqnumerarioController {
   @Get()
   async findAll(@Query() params: FindAllParams): Promise<ReturnReqnumerarioDto[]> {
     return await this.reqnumerarioService.findAll(params);
-  }
-
-  @Post()
-  async createReqNumerario(@Body() body: Requisicao) {   
-
-    const parcial20 = body.diariaParcial20 || 0;
-    const parcial40 = body.diariaParcial40 || 0;
-
-    const totalVlParcial = (parcial20 + parcial40);
-    
-    const createReqNumerarioDto: CreateReqnumerarioDto = {     
-      reqIdCodigo: body.reqIdCodigo,     
-      sqeIdCodigo: null,    
-      rnuMotivo: body.reqMotivo,
-      rnuDtInicio: new Date(body.reqDtSaida), 
-      rnuHoraInicio: body.reqHSaida,
-      rnuDtFim: new Date(body.reqDtRetorno),
-      rnuHoraFim: body.reqHRet,    
-      rnuPacote: body.reqPacote,
-      rnuIntPrev: body.reqIntegral.toString() || null, 
-      rnuParPrev: body.reqParcial.toString() || null, 
-      rnuIntReal: null,
-      rnuParReal: null,
-      rnuGovernador: body.reqGovernador || null,   
-      rnuVlBase: body.diariaBase,
-      rnuVlIntegral:body.diariaIntegral,
-      rnuVlParcial: totalVlParcial,   
- 
-    };
-   
-    return this.reqnumerarioService.create(createReqNumerarioDto);
-  }
-  @Get('totalmes/:chapa')
-  async findOne(@Param('chapa') chapa: string): Promise<number> {
-    return await this.reqnumerarioService.findTotalReNumerarioMesAtual(chapa);
-  }
+  } 
 }

@@ -53,54 +53,7 @@ export class ReqnumerarioService {
     }
   }
 
-  async create(
-    createReqnumerarioDto: CreateReqnumerarioDto,
-  ): Promise<ReqNumerarioEntity> {
-    try {
-      
-      const dataAtual = new Date();
-      const dataFormatada = dataAtual.toLocaleDateString('pt-BR', {
-        timeZone: 'UTC',
-      });
-
-      const saqueDados = new SaqueEntity();
-      saqueDados.sqeVlSaque =
-        createReqnumerarioDto.rnuVlIntegral +
-        createReqnumerarioDto.rnuVlParcial        
-      saqueDados.sqeDtPedido = dataFormatada;
-
-      const saque = await this.saqueRepository.create(saqueDados);
-
-
-      if(!saque){
-        throw new HttpException('Erro ao salvar o saque', HttpStatus.BAD_REQUEST);
-      }
-
-      createReqnumerarioDto.sqeIdCodigo = saque.sqeIdCodigo;
-
-      const existingReqNumerario = await this.mysqlRepository.findOne({
-        where: {         
-          reqIdCodigo: createReqnumerarioDto.reqIdCodigo,
-        },
-      });   
-
-
-
-      const reqNumerario = this.mysqlRepository.create(createReqnumerarioDto);      
-
-      if (existingReqNumerario) {
-        throw new HttpException('Requisição já existe', HttpStatus.BAD_REQUEST);
-      }
-
-      return await this.mysqlRepository.save(reqNumerario);
-    } catch (error) {     
-      throw new HttpException(
-        error.response || 'Erro ao salvar a requisição',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        error,
-      );
-    }
-  }
+ 
 
   async findTotalReNumerarioMesAtual(chapa: string): Promise<number> {
     try {

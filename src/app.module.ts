@@ -17,6 +17,7 @@ import { MotivodiariaModule } from './motivodiaria/motivodiaria.module';
 import { DespesadiariaModule } from './despesadiaria/despesadiaria.module';
 
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }), 
@@ -34,7 +35,7 @@ import { DespesadiariaModule } from './despesadiaria/despesadiaria.module';
     SaquesMesModule,
     DiariaviagemModule,
     MotivodiariaModule,
-    DespesadiariaModule
+    DespesadiariaModule, 
   ],
   controllers: [],
 

@@ -9,15 +9,14 @@ import { DiariaService } from 'src/util/diaria.service';
 import { SaquesMesModule } from 'src/saques-mes/saques-mes.module';
 import { DespesadiariaModule } from 'src/despesadiaria/despesadiaria.module';
 
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([RequisicaoEntity], 'mysqlConnection'),
-    UfespModule,
-  
+    UfespModule,  
     FuncsalarioModule,
     SaquesMesModule,
-    DespesadiariaModule
-   
+    DespesadiariaModule   
   ],
   controllers: [S001RequisicaoController],
   providers: [S001RequisicaoService,DiariaService],

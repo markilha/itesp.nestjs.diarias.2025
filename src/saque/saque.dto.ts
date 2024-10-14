@@ -2,29 +2,7 @@ import { ReqNumerarioEntity } from 'src/database/db_mysql/entities/ReqNumerario.
 import { SaqueEntity } from 'src/database/db_mysql/entities/saque.entity';
 import { StatusEntity } from 'src/database/db_mysql/entities/status.entity';
 
-export class SaqueDto {
-  sqeIdCodigo?: number;
-  stsIdCodigo?: number;
-  sqeDtSaque?: string | null;
-  sqeVlPrest?: number | null;
-  sqeDtPrest?: string | null;
-  sqeVlSaque?: number | null;
-  sqeEfetivo?: string | null;
-  sqeDtPedido?: string | null;
-  numerario?: ReqNumerarioEntity;
-  status?: StatusEntity;
 
-  constructor(SaqueEntity: SaqueEntity) {
-    this.sqeIdCodigo = SaqueEntity.sqeIdCodigo;
-    this.stsIdCodigo = SaqueEntity.stsIdCodigo;
-    this.sqeDtSaque = SaqueEntity.sqeDtSaque;
-    this.sqeVlPrest = SaqueEntity.sqeVlPrest;
-    this.sqeDtPrest = SaqueEntity.sqeDtPrest;
-    this.sqeVlSaque = SaqueEntity.sqeVlSaque;
-    this.sqeEfetivo = SaqueEntity.sqeEfetivo;
-    this.sqeDtPedido = SaqueEntity.sqeDtPedido;
-  }
-}
 
 export interface FindAllParams {
   sqeIdCodigo?: number;
@@ -75,7 +53,7 @@ export class CreateSaqueDto {
   sqelistaSiafem?: string;
 }
 
-export class PrestacaoDto {
+export class SaqueDto {
   SQE_DTSAQUE: string;
   SQE_DTPREST: string;
   NOME: string;
@@ -92,8 +70,6 @@ export class PrestacaoDto {
   REQ_STATUS: string;
   CHAPA: string;
   STS_DESCRICAO: string;
- 
-
 
   constructor(params: any) {
     this.SQE_DTPEDIDO = params.SQE_DTPEDIDO;
@@ -116,6 +92,86 @@ export class PrestacaoDto {
     
   }
 }
+
+
+export class PrestacaoDto {
+  NOME: string;
+  REQ_ID_CODIGO: number;
+  SQE_ID_CODIGO: number;
+  CHAPA: string;
+  SQE_VLPREST: number;
+  REQ_DTREQ: string;
+  TIPO_DESPESA: string;
+  TRA_DESCRICAO: string;
+  TIPO_SAQUE: string;
+  NME_MUNIC: string;
+  REG_DESCRICAO: string;
+  MUN_CIDADE: string;
+  DES_LOCAL: string;
+  REQ_DTSAIDA: Date;
+  REQ_DTRET: Date;
+  REQ_HSAIDA: string;
+  REQ_HRET: string;
+  REQ_INTEGRAL: number;
+  REQ_PARCIAL: number;
+  REQ_PACOTE: string;
+  REQ_GOVERNADOR: string;
+
+
+  SQE_DTSAQUE: string;
+  SQE_DTPREST: string;
+  TDE_DESCRICAO: string;
+  SQE_VLSAQUE: number;
+  VL_COMPLEMENTAR: number;
+  VL_EXTORNO: number;
+  STATUS: string;
+
+  SQE_DTPEDIDO: string;
+  REQ_STATUS: string;
+ 
+  STS_DESCRICAO: string;
+
+  constructor(params: any) {
+    this.NOME = params.NOME;
+    this.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
+    this.SQE_ID_CODIGO = params.SQE_ID_CODIGO;
+    this.CHAPA = params.CHAPA;
+    this.SQE_DTPREST = params.SQE_DTPREST;
+    this.STATUS = params.STATUS;
+    this.REQ_DTREQ = params.REQ_DTREQ;
+    this.TIPO_DESPESA = 'Diarias'
+    this.TRA_DESCRICAO = params.TRA_DESCRICAO;
+    this.TIPO_SAQUE = 'Viagem';
+    this.NME_MUNIC = params.NME_MUNIC;
+    this.REG_DESCRICAO = params.REG_DESCRICAO;
+    this.MUN_CIDADE = params.MUN_CIDADE;
+    this.DES_LOCAL = params.DES_LOCAL;
+    this.REQ_DTSAIDA = params.REQ_DTSAIDA;
+    this.REQ_DTRET = params.REQ_DTRET;
+    this.REQ_HSAIDA = params.REQ_HSAIDA;
+    this.REQ_HRET = params.REQ_HRET;
+    this.REQ_INTEGRAL = params.REQ_INTEGRAL;
+    this.REQ_PARCIAL = params.REQ_PARCIAL;
+    this.REQ_PACOTE = params.REQ_PACOTE;
+    this.REQ_GOVERNADOR = params.REQ_GOVERNADOR;
+
+
+    this.SQE_DTPEDIDO = params.SQE_DTPEDIDO;
+    this.SQE_DTSAQUE = params.SQE_DTSAQUE;   
+    this.TDE_DESCRICAO = params.TDE_DESCRICAO;
+    this.SQE_VLSAQUE = params.SQE_VLSAQUE;
+    this.SQE_VLPREST = params.SQE_VLPREST;
+    this.VL_COMPLEMENTAR = params.VL_COMPLEMENTAR;
+    this.VL_EXTORNO = params.VL_EXTORNO;  
+   
+    this.REQ_STATUS = params.REQ_STATUS;
+   
+    this.STS_DESCRICAO = params.STS_DESCRICAO;
+   
+    
+  }
+}
+
 
 export class InsS009SaqueDto {
   par1: string; // REEMBOLSO/COMPLEMENTO
