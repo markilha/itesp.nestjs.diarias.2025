@@ -15,6 +15,7 @@ import { SaquesMesModule } from './saques-mes/saques-mes.module';
 import { DiariaviagemModule } from './diariaviagem/diariaviagem.module';
 import { MotivodiariaModule } from './motivodiaria/motivodiaria.module';
 import { DespesadiariaModule } from './despesadiaria/despesadiaria.module';
+import { ItinirarioModule } from './itinirario/itinirario.module';
 
 
 
@@ -35,7 +36,8 @@ import { DespesadiariaModule } from './despesadiaria/despesadiaria.module';
     SaquesMesModule,
     DiariaviagemModule,
     MotivodiariaModule,
-    DespesadiariaModule, 
+    DespesadiariaModule,
+    ItinirarioModule, 
   ],
   controllers: [],
 

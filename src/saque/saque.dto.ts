@@ -7,7 +7,7 @@ import { StatusEntity } from 'src/database/db_mysql/entities/status.entity';
 export interface FindAllParams {
   sqeIdCodigo?: number;
   stsIdCodigo?: number;
-  stsDescricao?: string;
+  stsDescricao?: string; 
   CHAPA?: string;
   page?: number;
   limit?: number;
@@ -21,6 +21,7 @@ export interface FindParamsSaque {
   STS_DESCRICAO?: string;
   REQ_STATUS?: string;
   STATUS?: string;
+  usePrestDate?: string;
   startDate?: string;
   endDate?: string;
   page?: number;
@@ -116,6 +117,8 @@ export class PrestacaoDto {
   REQ_PARCIAL: number;
   REQ_PACOTE: string;
   REQ_GOVERNADOR: string;
+  REQ_MOTIVO: string;
+  CTR_STATUS: string;
 
 
   SQE_DTSAQUE: string;
@@ -154,6 +157,8 @@ export class PrestacaoDto {
     this.REQ_PARCIAL = params.REQ_PARCIAL;
     this.REQ_PACOTE = params.REQ_PACOTE;
     this.REQ_GOVERNADOR = params.REQ_GOVERNADOR;
+    this.REQ_MOTIVO = params.REQ_MOTIVO;
+    this.CTR_STATUS = params.CTR_STATUS;
 
 
     this.SQE_DTPEDIDO = params.SQE_DTPEDIDO;

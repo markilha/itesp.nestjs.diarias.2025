@@ -22,17 +22,9 @@ const tabs = {
   tab10: 'S000_REGIONAL',
   tab11: 'S001_DESTINO',
   tab12: 'S001_MUNIC_DETRAN',
+  tab13: 's001_ctrafego',
 };
 
-// const meioT = [
-//   {
-//     1: 'Veículo',
-//     2: 'Avião',
-//     3: 'Ônibus',
-//     4: 'Veículo Especial',
-//     5: 'Veículo Particular',
-//   },
-// ];
 
 @Injectable()
 export class SaqueService {
@@ -45,8 +37,7 @@ export class SaqueService {
   async findAll(params: FindParamsSaque): Promise<SaqueDto[]> {
     try {
       const chapa = params.CHAPA;
-
-      const query = this.saqueRepository
+      const subquery = this.saqueRepository
         .createQueryBuilder('a')
         .select([
           'a.SQE_DTPEDIDO',
@@ -90,33 +81,51 @@ export class SaqueService {
 
       conditions.forEach(({ param, tab, key }) => {
         if (param) {
-          query.andWhere(`${tab}.${key} = :${key}`, { [key]: param });
+          subquery.andWhere(`${tab}.${key} = :${key}`, { [key]: param });
         }
       });
-      // Filtro por data de saque
+     
+      // conventer usePrestDate para boolean
+      const prestDate = params.usePrestDate === 'true' ? true : false;
+      const dataColumn = prestDate ? 'a.SQE_DTPREST' : 'a.SQE_DTSAQUE';
+     
+
+      // Filtro por data (saque ou prestação)
       if (params.startDate && params.endDate) {
         const { startDate, endDate } = formatDates(params.startDate, params.endDate) || null;
-        query.andWhere(
-          "STR_TO_DATE(a.SQE_DTSAQUE, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE(:startDate, '%d/%m/%Y %H:%i:%s') AND STR_TO_DATE(:endDate, '%d/%m/%Y %H:%i:%s')",
+        subquery.andWhere(
+          `STR_TO_DATE(${dataColumn}, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE(:startDate, '%d/%m/%Y %H:%i:%s') AND STR_TO_DATE(:endDate, '%d/%m/%Y %H:%i:%s')`,
           {
             startDate: startDate,
             endDate: endDate,
           },
         );
       }
-      // Paginação, caso fornecido nos parâmetros
+
+      // Ordenação
+      if (params.orderBy) {
+        subquery.orderBy(params.orderBy, params.orderDirection === 'DESC' ? 'DESC' : 'ASC');
+      } else {
+        subquery.orderBy('SQE_ID_CODIGO', 'ASC'); // Ordenação padrão
+      }
+
+      // Consulta principal que usa a subconsulta e aplica paginação
+      const query = this.saqueRepository
+        .createQueryBuilder()
+        .select('*')
+        .from('(' + subquery.getQuery() + ')', 'sub') // Usa a subquery
+        .setParameters(subquery.getParameters());
+
+      // Aplicando paginação
       if (params.page && params.limit) {
         const offset = (params.page - 1) * params.limit;
         query.skip(offset).take(params.limit);
       }
-      // Ordenação
-      if (params.orderBy) {
-        query.orderBy(params.orderBy, params.orderDirection === 'DESC' ? 'DESC' : 'ASC');
-      } else {
-        query.orderBy('SQE_ID_CODIGO', 'ASC'); // Ordenação padrão
-      }
 
-      const consulta = await query.getRawMany();
+      const consulta = await subquery.getRawMany();
+      if (!consulta.length) {
+        return [];
+      }
 
       let result = [];
 
@@ -197,6 +206,8 @@ export class SaqueService {
         'f.REQ_PARCIAL',
         'f.REQ_PACOTE',
         'f.REQ_GOVERNADOR',
+        'f.REQ_MOTIVO',
+        'n.CTR_STATUS',
       ])
       .innerJoin(tabs.tab01, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
       .innerJoin(tabs.tab02, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
@@ -207,6 +218,7 @@ export class SaqueService {
       .innerJoin(tabs.tab10, 'j', 'j.REG_ID_CODIGO = f.REG_ID_CODIGO')
       .innerJoin(tabs.tab11, 'l', 'l.REQ_ID_CODIGO = f.REQ_ID_CODIGO')
       .innerJoin(tabs.tab12, 'm', 'm.MUN_ID_CODIGO = l.MUN_ID_CODIGO')
+      .innerJoin(tabs.tab13, 'n', 'n.REQ_ID_CODIGO = f.REQ_ID_CODIGO')
 
       .where('a.SQE_ID_CODIGO = :sqeidcodigo', { sqeidcodigo })
       .groupBy('c.RRE_ID_CODIGO')
@@ -232,7 +244,9 @@ export class SaqueService {
       .addGroupBy('f.REQ_INTEGRAL')
       .addGroupBy('f.REQ_PARCIAL')
       .addGroupBy('f.REQ_PACOTE')
-      .addGroupBy('f.REQ_GOVERNADOR');
+      .addGroupBy('f.REQ_GOVERNADOR')
+      .addGroupBy('f.REQ_MOTIVO')
+      .addGroupBy('n.CTR_STATUS');
 
     const conditions = [{ param: params.SQE_ID_CODIGO, tab: 'a', key: 'SQE_ID_CODIGO' }];
 
@@ -264,8 +278,10 @@ export class SaqueService {
       REQ_PARCIAL: consulta[0].REQ_PARCIAL > 0 ? 1 : 0,
       REQ_PACOTE: consulta[0].REQ_PACOTE === 1 ? 'N' : 'S',
       REQ_GOVERNADOR: consulta[0].REQ_GOVERNADOR,
+      REQ_MOTIVO: consulta[0].REQ_MOTIVO,
+      CTR_STATUS: consulta[0].CTR_STATUS,
     });
-  } 
+  }
 
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
     const diariaViagem = await this.diariaviagemService.findOne(params.reqIdCodigo, params.chapa);
