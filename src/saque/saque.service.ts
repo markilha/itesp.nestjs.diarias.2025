@@ -8,7 +8,6 @@ import { DiariaviagemService } from 'src/diariaviagem/diariaviagem.service';
 import { calcularValores } from 'src/util/calculo_extorno';
 import { formatDates } from 'src/util/formatStarDateEndDate';
 import { sortByField } from 'src/util/ordenar';
-import { subQuarters } from 'date-fns';
 
 const tabs = {
   tab01: 's009_reqnumerario',
@@ -26,7 +25,6 @@ const tabs = {
   tab13: 's001_ctrafego',
 };
 
-
 @Injectable()
 export class SaqueService {
   constructor(
@@ -37,9 +35,10 @@ export class SaqueService {
 
   async findAll(params: FindParamsSaque): Promise<SaqueDto[]> {
     try {
-      const chapa = params.CHAPA;
-      const subquery = this.saqueRepository
-        .createQueryBuilder('a')
+      const chapa = params.CHAPA;      
+  
+      const query = this.saqueRepository.createQueryBuilder('a');
+      query
         .select([
           'a.SQE_DTPEDIDO',
           'a.SQE_ID_CODIGO',
@@ -59,7 +58,6 @@ export class SaqueService {
         .innerJoin(tabs.tab04, 'e', 'e.STS_ID_CODIGO = a.STS_ID_CODIGO')
         .innerJoin(tabs.tab05, 'f', 'f.TDE_ID_CODIGO = c.TDE_ID_CODIGO')
         .innerJoin(tabs.tab06, 'g', 'g.CHAPA = c.CHAPA')
-        .where('c.CHAPA = :chapa', { chapa })
         .groupBy('a.SQE_ID_CODIGO')
         .addGroupBy('c.RRE_ID_CODIGO')
         .addGroupBy('c.CHAPA')
@@ -71,68 +69,49 @@ export class SaqueService {
         .addGroupBy('d.REQ_STATUS')
         .addGroupBy('f.TDE_DESCRICAO')
         .addGroupBy('g.NOME')
-        
-
-      const conditions = [
-        { param: params.SQE_ID_CODIGO, tab: 'a', key: 'SQE_ID_CODIGO' },
-        { param: params.CHAPA, tab: 'c', key: 'CHAPA' },
-        { param: params.REQ_ID_CODIGO, tab: 'b', key: 'REQ_ID_CODIGO' },
-        { param: params.STS_DESCRICAO, tab: 'e', key: 'STS_DESCRICAO' },
-        { param: params.REQ_STATUS, tab: 'd', key: 'REQ_STATUS' },
-      ];
-
-      conditions.forEach(({ param, tab, key }) => {
-        if (param) {
-          subquery.andWhere(`${tab}.${key} = :${key}`, { [key]: param });
-        }
-      });
-     
-     
-
-      // Filtro por data (saque ou prestação)
+        .where('c.CHAPA = :chapa', { chapa });
+  
+      // Aplicação de filtros
+      if (params.REQ_ID_CODIGO) {
+        query.andWhere('b.REQ_ID_CODIGO = :REQ_ID_CODIGO', { REQ_ID_CODIGO: params.REQ_ID_CODIGO });
+      }
+      if (params.SQE_ID_CODIGO) {
+        query.andWhere('a.SQE_ID_CODIGO = :SQE_ID_CODIGO', { SQE_ID_CODIGO: params.SQE_ID_CODIGO });
+      }
+      if (params.STS_DESCRICAO) {
+        query.andWhere('e.STS_DESCRICAO = :STS_DESCRICAO', { STS_DESCRICAO: params.STS_DESCRICAO });
+      }
+      if (params.REQ_STATUS) {
+        query.andWhere('d.REQ_STATUS = :REQ_STATUS', { REQ_STATUS: params.REQ_STATUS });
+      }
       if (params.startDate && params.endDate) {
-        
-      // conventer usePrestDate para boolean
-      const prestDate = params.usePrestDate === 'true' ? true : false;
-
-      const dataColumn = prestDate ? 'a.SQE_DTPREST' : 'a.SQE_DTSAQUE';
+        const prestDate = params.usePrestDate === 'true';
+        const dataColumn = prestDate ? 'a.SQE_DTPREST' : 'a.SQE_DTSAQUE';
         const { startDate, endDate } = formatDates(params.startDate, params.endDate) || null;
-        subquery.andWhere(
+        query.andWhere(
           `STR_TO_DATE(${dataColumn}, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE(:startDate, '%d/%m/%Y %H:%i:%s') AND STR_TO_DATE(:endDate, '%d/%m/%Y %H:%i:%s')`,
-          {
-            startDate: startDate,
-            endDate: endDate,
-          },
+          { startDate, endDate },
         );
       }
-
+  
       // Ordenação
       if (params.orderBy) {
-        subquery.orderBy(params.orderBy, params.orderDirection === 'DESC' ? 'DESC' : 'ASC');
+        query.orderBy(params.orderBy, params.orderDirection === 'DESC' ? 'DESC' : 'ASC');
       } else {
-        subquery.orderBy('SQE_ID_CODIGO', 'ASC'); // Ordenação padrão
+        query.orderBy('SQE_ID_CODIGO', 'ASC'); // Ordenação padrão
       }
-
-     
-      // Aplicando paginação
-      if (params.page && params.limit) {
-        const offset = (params.page - 1) * params.limit;
-        subquery.skip(offset).take(params.limit);
-      }
-
-      const consulta = await subquery.getRawMany();
+  
+      const consulta = await query.getRawMany();
       if (!consulta.length) {
         return [];
       }
-      
-
-      let result = [];
-
-      consulta.map((item) => {
+  
+      // Processar resultados
+      let result = consulta.map((item) => {
         const calc = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
         const STATUS = item.SQE_DTPREST ? 'Realizada' : 'Pendente';
-
-        const data = {
+  
+        return new SaqueDto({
           SQE_DTPEDIDO: item.SQE_DTPEDIDO,
           SQE_DTSAQUE: item.SQE_DTSAQUE,
           SQE_VLSAQUE: Number(item.SQE_VLSAQUE) || 0,
@@ -151,28 +130,30 @@ export class SaqueService {
           VL_COMPLEMENTAR: calc.VL_COMPLEMENTAR,
           VL_EXTORNO: calc.VL_EXTORNO,
           STATUS,
-        };
-        result.push(new SaqueDto(data));
+        });
       });
-
+  
+      // Filtros adicionais
       if (params.STATUS) {
-        if (params.STATUS === 'Realizada') {
-          result = result.filter((item) => item.STATUS === 'Realizada');
-        }
-        if (params.STATUS === 'Pendente') {
-          result = result.filter((item) => item.STATUS === 'Pendente');
-        }
+        result = result.filter((item) => item.STATUS === params.STATUS);
       }
-
-      // Ordenação do resultado
-      sortByField(result, params.orderBy, params.orderDirection);
-
-      return result;
+  
+      // Aplicando paginação
+      const page = params.page || 1; 
+      const limit = params.limit || 100; 
+      const startIndex = (page - 1) * limit;
+      const endIndex = page * limit;
+  
+      const paginatedResults = result.slice(startIndex, endIndex);
+  
+      // Retornando resultados paginados
+      return paginatedResults;
     } catch (error) {
-      console.error('Erro na consulta findPrestacao:', error);
-      throw new HttpException('Erro ao buscar prestações', HttpStatus.INTERNAL_SERVER_ERROR);
+      console.error('Erro na consulta findSaque:', error);
+      throw new HttpException('Erro ao buscar Saques', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  
 
   async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto> {
     const sqeidcodigo = params.SQE_ID_CODIGO;
