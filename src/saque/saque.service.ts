@@ -115,14 +115,15 @@ export class SaqueService {
         .select('*')
         .from('(' + subquery.getQuery() + ')', 'sub') // Usa a subquery
         .setParameters(subquery.getParameters());
+        
 
-      // Aplicando paginação
+      //Aplicando paginação
       if (params.page && params.limit) {
         const offset = (params.page - 1) * params.limit;
         query.skip(offset).take(params.limit);
       }
 
-      const consulta = await subquery.getRawMany();
+      const consulta = await query.getRawMany();
       if (!consulta.length) {
         return [];
       }
