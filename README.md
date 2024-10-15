@@ -85,21 +85,21 @@ GET /saque?CHAPA=000081&SQE_ID_CODIGO&REQ_ID_CODIGO&STS_DESCRICAO&REQ_STATUS&STA
 
 ## Parâmetros da Query String:
 
-| campo            | Tipo    | Obrigatório | Descrição                                                                       |
-| ---------------- | ------- | ----------- | ------------------------------------------------------------------------------- |
-| `SQE_ID_CODIGO`  | Number  | Não         | Código do saque.                                                                |
-| `CHAPA`          | String  | Não         | Número da chapa do funcionário.                                                 |
-| `REQ_ID_CODIGO`  | Number  | Não         | Código da requisição de viagem.                                                 |
-| `STS_DESCRICAO`  | String  | Não         | Descrição do status da solicitação de recurso (ex.: "SOLICITACOES DE RECURSO"). |
-| `REQ_STATUS`     | String  | Não         | Status da requisição de viagem (ex.: "AUTORIZADA", "PLANEJAMENTO").             |
-| `usePrestDate`   | boolean | Não         | Se verdadeiro escolha filtar pela data da Prestação, false, data do saque       |
-| `startDate`      | String  | Não         | Início da data                                                                  |
-| `endDate`        | String  | Não         | fim da data (orderBy ='SQE_DTSAQUE' OU orderBy ='SQE_DTPREST')                  |
-| `REQ_STATUS`     | String  | Não         | Valor total de diárias integral (ex: AUTORIZADA PELO DIRETOR EXECUTIVO)         |
-| `page`           | number  | Não         | numera da página                                                                |
-| `limit`          | number  | Não         | limit de páginas                                                                |
-| `orderBy`        | String  | Não         | Campo para ordenar o resultado (ex.: "SQE_DTSAQUE").                            |
-| `orderDirection` | String  | Não         | Direção da ordenação (ex.: "ASC" para ascendente ou "DESC" para descendente).   |
+| campo            | Tipo    | Obrigatório | Descrição                                                                                  |
+| ---------------- | ------- | ----------- | ------------------------------------------------------------------------------------------ |
+| `SQE_ID_CODIGO`  | Number  | Não         | Código do saque.                                                                           |
+| `CHAPA`          | String  | Não         | Número da chapa do funcionário.                                                            |
+| `REQ_ID_CODIGO`  | Number  | Não         | Código da requisição de viagem.                                                            |
+| `STS_DESCRICAO`  | String  | Não         | Descrição do status da solicitação de recurso (ex.: "SOLICITACOES DE RECURSO").            |
+| `REQ_STATUS`     | String  | Não         | Status da requisição de viagem (ex.: "AUTORIZADA", "PLANEJAMENTO").                        |
+| `usePrestDate`   | boolean | Não         | Se verdadeiro, filtrar pela data de Prestação; caso contrário, filtrar pela data do Saque. |
+| `startDate`      | String  | Não         | Início da data                                                                             |
+| `endDate`        | String  | Não         | fim da data (orderBy ='SQE_DTSAQUE' OU orderBy ='SQE_DTPREST')                             |
+| `REQ_STATUS`     | String  | Não         | Valor total de diárias integral (ex: AUTORIZADA PELO DIRETOR EXECUTIVO)                    |
+| `page`           | number  | Não         | numero da página atual                                                                     |
+| `limit`          | number  | Não         | limit de páginas                                                                           |
+| `orderBy`        | String  | Não         | Campo para ordenar o resultado (ex.: "SQE_DTSAQUE").                                       |
+| `orderDirection` | String  | Não         | Direção da ordenação (ex.: "ASC" para ascendente ou "DESC" para descendente).              |
 
 ## Exemplo de Resposta
 
