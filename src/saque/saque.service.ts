@@ -8,6 +8,7 @@ import { DiariaviagemService } from 'src/diariaviagem/diariaviagem.service';
 import { calcularValores } from 'src/util/calculo_extorno';
 import { formatDates } from 'src/util/formatStarDateEndDate';
 import { sortByField } from 'src/util/ordenar';
+import { subQuarters } from 'date-fns';
 
 const tabs = {
   tab01: 's009_reqnumerario',
@@ -69,7 +70,8 @@ export class SaqueService {
         .addGroupBy('b.REQ_ID_CODIGO')
         .addGroupBy('d.REQ_STATUS')
         .addGroupBy('f.TDE_DESCRICAO')
-        .addGroupBy('g.NOME');
+        .addGroupBy('g.NOME')
+        
 
       const conditions = [
         { param: params.SQE_ID_CODIGO, tab: 'a', key: 'SQE_ID_CODIGO' },
@@ -85,13 +87,15 @@ export class SaqueService {
         }
       });
      
-      // conventer usePrestDate para boolean
-      const prestDate = params.usePrestDate === 'true' ? true : false;
-      const dataColumn = prestDate ? 'a.SQE_DTPREST' : 'a.SQE_DTSAQUE';
      
 
       // Filtro por data (saque ou prestação)
       if (params.startDate && params.endDate) {
+        
+      // conventer usePrestDate para boolean
+      const prestDate = params.usePrestDate === 'true' ? true : false;
+
+      const dataColumn = prestDate ? 'a.SQE_DTPREST' : 'a.SQE_DTSAQUE';
         const { startDate, endDate } = formatDates(params.startDate, params.endDate) || null;
         subquery.andWhere(
           `STR_TO_DATE(${dataColumn}, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE(:startDate, '%d/%m/%Y %H:%i:%s') AND STR_TO_DATE(:endDate, '%d/%m/%Y %H:%i:%s')`,
@@ -109,24 +113,18 @@ export class SaqueService {
         subquery.orderBy('SQE_ID_CODIGO', 'ASC'); // Ordenação padrão
       }
 
-      // Consulta principal que usa a subconsulta e aplica paginação
-      const query = this.saqueRepository
-        .createQueryBuilder()
-        .select('*')
-        .from('(' + subquery.getQuery() + ')', 'sub') // Usa a subquery
-        .setParameters(subquery.getParameters());
-        
-
-      //Aplicando paginação
+     
+      // Aplicando paginação
       if (params.page && params.limit) {
         const offset = (params.page - 1) * params.limit;
-        query.skip(offset).take(params.limit);
+        subquery.skip(offset).take(params.limit);
       }
 
-      const consulta = await query.getRawMany();
+      const consulta = await subquery.getRawMany();
       if (!consulta.length) {
         return [];
       }
+      
 
       let result = [];
 
