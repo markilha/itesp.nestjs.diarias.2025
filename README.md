@@ -175,6 +175,8 @@ POST http://_baseurl/saque/solicitar`
 }
 ```
 
+## Parâmetros da Query String:
+
 | campo            | Tipo   | Obrigatório | Descrição                               |
 | ---------------- | ------ | ----------- | --------------------------------------- |
 | `reqIdCodigo`    | Number | Sim         | Código da requisição.                   |
@@ -192,3 +194,104 @@ POST http://_baseurl/saque/solicitar`
   "sqeIdCodigo": "9162317"
 }
 ```
+
+---
+
+# API - Prestação de Conta calculo
+
+## Descrição
+
+Esta API calcula a prestação de conta com base no dia de retorna da viagem.
+
+## Endpoint
+
+```http
+GET /saque/prestacao?SQE_ID_CODIGO=117485
+```
+
+## Parâmetros da Query String:
+
+| campo           | Tipo   | Obrigatório | Descrição        |
+| --------------- | ------ | ----------- | ---------------- |
+| `SQE_ID_CODIGO` | Number | Sim         | Código do saque. |
+
+## Exemplo de Resposta:
+
+```json
+{
+  "NOME": "Fulano de souza",
+  "REQ_ID_CODIGO": 235585,
+  "SQE_ID_CODIGO": 117485,
+  "SQE_DTPREST": "19/05/2017 15:10:43",
+  "STATUS": "Realizada",
+  "REQ_DTREQ": "09/05/2017 10:44:59",
+  "TIPO_DESPESA": "Diarias",
+  "TRA_DESCRICAO": "VEICULO",
+  "TIPO_SAQUE": "Viagem",
+  "NME_MUNIC": "CAPAO BONITO",
+  "REG_DESCRICAO": "SUDOESTE - SOROCABA",
+  "MUN_CIDADE": "ITAPETININGA",
+  "DES_LOCAL": "ETEC",
+  "REQ_DTSAIDA": "2017-05-15 00:00:00",
+  "REQ_DTRET": "2017-05-19 00:00:00",
+  "REQ_HSAIDA": "13:00:00",
+  "REQ_HRET": "17:00:00",
+  "REQ_INTEGRAL": 4,
+  "REQ_PARCIAL": 1,
+  "REQ_PACOTE": "S",
+  "REQ_GOVERNADOR": "N",
+  "REQ_MOTIVO": "Levantamento Topográfico Cadastral Georreferenciado da Escola Técnica.",
+  "CTR_STATUS": "FINALIZADO",
+  "ITI_DTSAIDA": "2017-05-15",
+  "ITI_HSAIDA": "13:00:00",
+  "ITI_DTCHEGADA": "2017-05-19",
+  "ITI_HCHEGADA": "15:00:00",
+  "INTREAL": 4,
+  "PARREAL": 20,
+  "VLINTEGRAL": 350.98,
+  "VLPARCIAL": 35.1,
+  "VLBASE": 87.75,
+  "SQE_VLSAQUE": 386.08,
+  "VLCOMPLEMENTAR": 0,
+  "VLEXTORNO": 0,
+  "VLPREST": 386.08
+}
+```
+
+## Parâmetros da Resposta String:
+
+| Campo            | Tipo    | Descrição                                                                |
+| ---------------- | ------- | ------------------------------------------------------------------------ |
+| `NOME`           | string  | Nome do funcionário                                                      |
+| `REQ_ID_CODIGO`  | Inteiro | Código único da requisição de viagem.                                    |
+| `SQE_ID_CODIGO`  | Inteiro | Código único do saque.                                                   |
+| `SQE_DTPREST`    | Date    | Data de prestação de contas (pode ser nulo).                             |
+| `STATUS`         | String  | Status da prestação de conta                                             |
+| `REQ_DTREQ`      | Date    | Data de retorno previsto na requesição                                   |
+| `NME_MUNIC`      | String  | Municipio de Origem                                                      |
+| `REG_DESCRICAO`  | String  | Regional de Origem                                                       |
+| `MUN_CIDADE`     | String  | Municipio de Destino                                                     |
+| `DES_LOCAL`      | String  | Local de Destino                                                         |
+| `REQ_DTSAIDA`    | Date    | Data de saída previsto na requesição                                     |
+| `REQ_DTRET`      | Date    | Data de retorno previsto na requesição                                   |
+| `REQ_HSAIDA`     | String  | Hora de saída previsto na requesição                                     |
+| `REQ_HRET`       | String  | Hora de retorn previsto na requesição                                    |
+| `REQ_INTEGRAL`   | Number  | Quantidade diária integral prevista na requisição                        |
+| `REQ_PARCIAL`    | Number  | Quantidade diária parcial Prevista na equisição                          |
+| `REQ_PACOTE`     | String  | Requisição com pacote ('S','N')                                          |
+| `REQ_GOVERNADOR` | String  | Equipe de apoio ao governador ('S','N')                                  |
+| `REQ_MOTIVO`     | String  | Justificativa da viagem                                                  |
+| `CTR_STATUS`     | String  | Estatus do controle de tráfico ('FINALIZADO','CANCELADO','LIBERADO'....) |
+| `ITI_DTSAIDA`    | Date    | Data de saída no controle de tráfico                                     |
+| `ITI_HSAIDA`     | String  | Hora de retorno no controle de tráfico                                   |
+| `ITI_DTCHEGADA`  | Date    | Data de retorno no controle de tráfico                                   |
+| `ITI_HCHEGADA`   | String  | Hora de retorno no controle de tráfico                                   |
+| `INTREAL`        | Number  | Quantidade real diária integral calculado                                |
+| `PARREAL`        | Number  | Quantidade real diária parcial calculado                                 |
+| `VLINTEGRAL`     | Number  | Valor real diária integral calculado                                     |
+| `VLPARCIAL`      | Number  | Valor real diária parcial calculado                                      |
+| `VLBASE`         | Number  | Valor unitário da diária                                                 |
+| `SQE_VLSAQUE`    | number  | Valor do saque realizado.                                                |
+| `VLCOMPLEMENTAR` | number  | Resultado da subtração entre o SQE_VLSAQUE - SQE_VLPREST                 |
+| `VLEXTORNO`      | number  | Se o SQE_VLSAQUE for maior que SQE_VLPREST                               |
+| `VLPREST`        | number  | Valor total da prestação de conta.                                       |
