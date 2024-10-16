@@ -119,20 +119,23 @@ export class PrestacaoDto {
   REQ_GOVERNADOR: string;
   REQ_MOTIVO: string;
   CTR_STATUS: string;
-
-
-  SQE_DTSAQUE: string;
-  SQE_DTPREST: string;
-  TDE_DESCRICAO: string;
-  SQE_VLSAQUE: number;
-  VL_COMPLEMENTAR: number;
-  VL_EXTORNO: number;
   STATUS: string;
-
-  SQE_DTPEDIDO: string;
-  REQ_STATUS: string;
+  ITI_DTSAIDA: Date;
+  ITI_HSAIDA: string;
+  ITI_DTCHEGADA: Date;
+  ITI_HCHEGADA: string;
+  INTREAL: number;
+  PARREAL: number;
+  VLINTEGRAL:number;
+  VLPARCIAL: number; 
+  VLBASE: number;
+  SQE_VLSAQUE: number;
+  VLPREST: number;
+  VLCOMPLEMENTAR: number;
+  VLEXTORNO: number;
+  SQE_DTPREST: string;
+  REQ_STATUS: string; 
  
-  STS_DESCRICAO: string;
 
   constructor(params: any) {
     this.NOME = params.NOME;
@@ -159,21 +162,21 @@ export class PrestacaoDto {
     this.REQ_GOVERNADOR = params.REQ_GOVERNADOR;
     this.REQ_MOTIVO = params.REQ_MOTIVO;
     this.CTR_STATUS = params.CTR_STATUS;
-
-
-    this.SQE_DTPEDIDO = params.SQE_DTPEDIDO;
-    this.SQE_DTSAQUE = params.SQE_DTSAQUE;   
-    this.TDE_DESCRICAO = params.TDE_DESCRICAO;
-    this.SQE_VLSAQUE = params.SQE_VLSAQUE;
-    this.SQE_VLPREST = params.SQE_VLPREST;
-    this.VL_COMPLEMENTAR = params.VL_COMPLEMENTAR;
-    this.VL_EXTORNO = params.VL_EXTORNO;  
-   
+    this.ITI_DTSAIDA = params.ITI_DTSAIDA;
+    this.ITI_HSAIDA = params.ITI_HSAIDA;
+    this.ITI_DTCHEGADA = params.ITI_DTCHEGADA;
+    this.ITI_HCHEGADA = params.ITI_HCHEGADA;
+    this.INTREAL = params.INTREAL;     
+    this.PARREAL = params.PARREAL;
+    this.VLINTEGRAL = params.VLINTEGRAL;
+    this.VLPARCIAL = params.VLPARCIAL;   
+    this.VLBASE = params.VLBASE;
+    this.SQE_VLSAQUE = params.SQE_VLSAQUE;   
+    this.VLCOMPLEMENTAR = params.VLCOMPLEMENTAR;
+    this.VLEXTORNO = params.VLEXTORNO;
     this.REQ_STATUS = params.REQ_STATUS;
-   
-    this.STS_DESCRICAO = params.STS_DESCRICAO;
-   
-    
+    this.VLPREST = params.VLPREST;
+
   }
 }
 

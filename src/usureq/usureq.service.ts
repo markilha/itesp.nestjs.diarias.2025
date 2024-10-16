@@ -6,7 +6,7 @@ import { FindAllParams, UsureqDto, CreateUsureqDto } from './usureqDto';
 import {  ReturnRequiscaoDto } from './returnUserReqDto';
 
 import { CreateUsuReqEntity } from 'src/database/db_mysql/entities/createUsureq.entity';
-import { DiariaService } from 'src/util/diaria.service';
+
 
 import { UfespService } from 'src/ufesp/ufesp.service';
 
@@ -37,10 +37,8 @@ export class UsureqService {
 
     @InjectRepository(CreateUsuReqEntity, 'mysqlConnection')
     private mysqlRepository: Repository<CreateUsuReqEntity>,
-    private diariaCalculada: DiariaService,
-    private ufespService: UfespService,
-    private reqNumerarioService: ReqnumerarioService,
-    private pcargoService: PcargoService,
+  
+   
   ) {}
 
   async findAll(params: FindAllParams): Promise<ReturnRequiscaoDto[]> {

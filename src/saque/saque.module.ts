@@ -5,13 +5,19 @@ import { SaqueEntity } from '../database/db_mysql/entities/saque.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DiariaviagemModule } from 'src/diariaviagem/diariaviagem.module';
 import { PpessoaModule } from 'src/ppessoa/ppessoa.module';
+import { ItinirarioModule } from 'src/itinirario/itinirario.module';
+import { UfespModule } from 'src/ufesp/ufesp.module';
+import { DespesadiariaModule } from 'src/despesadiaria/despesadiaria.module';
 
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([SaqueEntity], 'mysqlConnection'),
     DiariaviagemModule,
-    PpessoaModule
+    PpessoaModule,
+    ItinirarioModule,
+    UfespModule,
+    DespesadiariaModule
   ],
   providers: [SaqueService],
   controllers: [SaqueController],

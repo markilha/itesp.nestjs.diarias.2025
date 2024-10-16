@@ -4,7 +4,7 @@ import { UsuReqEntity } from 'src/database/db_mysql/entities/usureq.entity';
 import { UsureqController } from './usureq.controller';
 import { UsureqService } from './usureq.service';
 import { CreateUsuReqEntity } from 'src/database/db_mysql/entities/createUsureq.entity';
-import { DiariaService } from 'src/util/diaria.service';
+
 import { UfespModule } from 'src/ufesp/ufesp.module';
 import { ReqnumerarioModule } from 'src/reqnumerario/reqnumerario.module';
 import { PcargoModule } from 'src/pcargo/pcargo.module';
@@ -19,7 +19,7 @@ import { PcargoModule } from 'src/pcargo/pcargo.module';
     PcargoModule
   ],
   controllers: [UsureqController],
-  providers: [UsureqService, DiariaService],
+  providers: [UsureqService],
  
 })
 export class UsureqModule {}

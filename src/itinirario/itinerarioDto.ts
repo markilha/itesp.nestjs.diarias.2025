@@ -24,6 +24,13 @@ export class ItinerarioDto {
   }
 }
 
+export class retornoItinerarioDto {
+  ITI_DTSAIDA: Date;
+  ITI_HSAIDA: string;
+  ITI_DTCHEGADA: Date;
+  ITI_HCHEGADA: string;
+}
+
 export interface FindAllParams {
   REQ_ID_CODIGO?: number;
   page?: number;

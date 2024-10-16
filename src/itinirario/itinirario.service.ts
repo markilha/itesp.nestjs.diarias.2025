@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ItinerarioEntity } from 'src/database/db_mysql/entities/itinerario.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, ItinerarioDto } from './itinerarioDto';
+import { FindAllParams, ItinerarioDto, retornoItinerarioDto } from './itinerarioDto';
 
 @Injectable()
 export class ItinirarioService {
@@ -39,8 +39,9 @@ export class ItinirarioService {
     }
   }
 
-  async findUltimo(reqIdCodigo: number): Promise<ItinerarioDto> {
-    return this.itinerarioRepository
+  async findUltimo(reqIdCodigo: number): Promise<retornoItinerarioDto> {
+    // Consulta para buscar a primeira saída (menor data e hora de saída)
+    const primeiroRegistro = await this.itinerarioRepository
       .createQueryBuilder('itinerario')
       .select([
         'itinerario.ITI_ID_CODIGO',
@@ -48,14 +49,53 @@ export class ItinirarioService {
         'itinerario.ITI_LOCAL',
         'itinerario.ITI_DTSAIDA',
         'itinerario.ITI_HSAIDA',
+      ])
+      .where('itinerario.REQ_ID_CODIGO = :reqIdCodigo', { reqIdCodigo })
+      .orderBy('itinerario.ITI_DTSAIDA', 'ASC')
+      .addOrderBy('itinerario.ITI_HSAIDA', 'ASC')
+      .limit(1)
+      .getOne();
+  
+    // Consulta para buscar a última chegada (maior data e hora de chegada)
+    const ultimoRegistro = await this.itinerarioRepository
+      .createQueryBuilder('itinerario')
+      .select([
         'itinerario.ITI_DTCHEGADA',
         'itinerario.ITI_HCHEGADA',
-        'itinerario.ITI_KM',
       ])
       .where('itinerario.REQ_ID_CODIGO = :reqIdCodigo', { reqIdCodigo })
       .orderBy('itinerario.ITI_DTCHEGADA', 'DESC')
       .addOrderBy('itinerario.ITI_HCHEGADA', 'DESC')
       .limit(1)
       .getOne();
+  
+    // Combine os resultados
+    return {
+      ITI_DTSAIDA: primeiroRegistro?.ITI_DTSAIDA,
+      ITI_HSAIDA: primeiroRegistro?.ITI_HSAIDA,
+      ITI_DTCHEGADA: ultimoRegistro?.ITI_DTCHEGADA,
+      ITI_HCHEGADA: ultimoRegistro?.ITI_HCHEGADA,
+    };
   }
+  
+
+  // async findUltimo(reqIdCodigo: number): Promise<ItinerarioDto> {
+  //   return this.itinerarioRepository
+  //     .createQueryBuilder('itinerario')
+  //     .select([
+  //       'itinerario.ITI_ID_CODIGO',
+  //       'itinerario.MUN_ID_CODIGO',
+  //       'itinerario.ITI_LOCAL',
+  //       'itinerario.ITI_DTSAIDA',
+  //       'itinerario.ITI_HSAIDA',
+  //       'itinerario.ITI_DTCHEGADA',
+  //       'itinerario.ITI_HCHEGADA',
+  //       'itinerario.ITI_KM',
+  //     ])
+  //     .where('itinerario.REQ_ID_CODIGO = :reqIdCodigo', { reqIdCodigo })
+  //     .orderBy('itinerario.ITI_DTCHEGADA', 'DESC')
+  //     .addOrderBy('itinerario.ITI_HCHEGADA', 'DESC')
+  //     .limit(1)
+  //     .getOne();
+  // }
 }

@@ -2,18 +2,19 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RequisicaoEntity } from 'src/database/db_mysql/entities/requisicao.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, ReturnRequisicaoDto, RequisicaoDto } from './requisicao.dto';
+import { FindAllParams, ReturnRequisicaoDto} from './requisicao.dto';
 
 import {} from './returnRequisicao.dto';
 import { UfespService } from 'src/ufesp/ufesp.service';
-import { PcargoService } from 'src/pcargo/pcargo.service';
+
 import { FuncsalarioService } from 'src/funcsalario/funcsalario.service';
-import { DiariaService } from 'src/util/diaria.service';
+
 import { verificarDestino } from 'src/util/verificaDestino';
 import { Destino } from 'src/util/diariaDto';
 import { SaquesMesService } from 'src/saques-mes/saques-mes.service';
 import { DespesadiariaService } from 'src/despesadiaria/despesadiaria.service';
 import { formatDateToYYMM } from 'src/util/formatoYYMM';
+import { calcularDiariaValores } from 'src/util/calculo_dia_retorno';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -21,8 +22,7 @@ export class S001RequisicaoService {
     @InjectRepository(RequisicaoEntity, 'mysqlConnection')
     private requisicaoRepository: Repository<RequisicaoEntity>,
     private ufespService: UfespService,
-    private funcSalarioService: FuncsalarioService,
-    private diariaCalculada: DiariaService,
+    private funcSalarioService: FuncsalarioService,   
     private SaquesMesService: SaquesMesService,
     private despesaDiaria: DespesadiariaService,
   ) {}
@@ -97,7 +97,7 @@ export class S001RequisicaoService {
 
       // Busca o valor do saque do usuário no mês da requisição
       const saqueSalario = await this.SaquesMesService.findOne(chapa, formatoYYMM);
-      console.log(saqueSalario);
+     
 
       const saqueMes = Number(saqueSalario?.totSaque) || 0;
 
@@ -118,7 +118,7 @@ export class S001RequisicaoService {
       const destino = verificarDestino(requisicao?.destino?.municipio?.munIdCodigo);
 
       // Calcula as diárias com base no UFESP, cargo, destino e outras informações da requisição.
-      const diarias = this.diariaCalculada.calcularDiaria(
+      const diarias = calcularDiariaValores(
         UFESP,
         UFESPcargoValor,
         destino as Destino,
@@ -128,8 +128,8 @@ export class S001RequisicaoService {
         requisicao.reqHRet,
       );
 
-      const totalParcial = diarias?.diariaParcial40 + diarias?.diariaParcial20 || 0;
-      const totalIntegral = diarias?.diariaIntegral || 0;
+      const totalParcial = diarias?.VL_DIARIA_PARCIAL_20 + diarias?.VL_DIARIA_PARCIAL_40 || 0;
+      const totalIntegral = diarias?.VL_DIARIA_INTEGRAL || 0;
       const ValorSolicitado = totalParcial + totalIntegral || 0;
 
       const salario50Porcento = salarioAtual / 2 || 0;
@@ -141,9 +141,9 @@ export class S001RequisicaoService {
 
       return new ReturnRequisicaoDto(
         requisicao,
-        diarias?.diariaIntegral,
+        diarias?.VL_DIARIA_INTEGRAL,
         totalParcial,
-        diarias?.diariaBase,
+        diarias?.VL_DIARIA_BASE,
         saqueMes,
         ValorSolicitado,
         salario50PorcentoNumber,

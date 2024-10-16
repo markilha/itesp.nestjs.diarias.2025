@@ -5,7 +5,7 @@ import { S001RequisicaoService } from './s001_requisicao.service';
 import { RequisicaoEntity } from 'src/database/db_mysql/entities/requisicao.entity';
 import { UfespModule } from 'src/ufesp/ufesp.module';
 import { FuncsalarioModule } from 'src/funcsalario/funcsalario.module';
-import { DiariaService } from 'src/util/diaria.service';
+
 import { SaquesMesModule } from 'src/saques-mes/saques-mes.module';
 import { DespesadiariaModule } from 'src/despesadiaria/despesadiaria.module';
 
@@ -19,6 +19,6 @@ import { DespesadiariaModule } from 'src/despesadiaria/despesadiaria.module';
     DespesadiariaModule   
   ],
   controllers: [S001RequisicaoController],
-  providers: [S001RequisicaoService,DiariaService],
+  providers: [S001RequisicaoService],
 })
 export class S001RequisicaoModule {}
