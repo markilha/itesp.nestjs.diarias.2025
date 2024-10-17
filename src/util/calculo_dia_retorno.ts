@@ -7,6 +7,7 @@ export interface DiariaCalculada {
     VL_DIARIA_PARCIAL_40: number;
     VL_DIARIA_PARCIAL_20: number;
     VL_DIARIA_BASE: number;
+    VL_DIARIA: number;
   }
   
 
@@ -86,6 +87,7 @@ export function calcularDiariaIntegral(
           diariaBase = diariaBase;
           break;
       }
+      let diaria = diariaBase
 
       let diariaParcial40 = 0;
       let diariaParcial20 = 0;
@@ -117,6 +119,7 @@ export function calcularDiariaIntegral(
        VL_DIARIA_PARCIAL_40: diariaParcial40,
        VL_DIARIA_PARCIAL_20: diariaParcial20,
        VL_DIARIA_BASE: diariaBase,
+       VL_DIARIA: diaria
       };
     } catch (error) {
      

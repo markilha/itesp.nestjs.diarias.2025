@@ -162,7 +162,9 @@ export class S001RequisicaoService {
         ValorSolicitado,
         salario50PorcentoNumber,
         saldoRestante,
-        diariaParcPorc
+        diariaParcPorc,
+        diarias?.VL_DIARIA
+        
       );
     } catch (error) {
       console.error(`Erro ao gerar lista : ${requisicao.regIdCodigo}`, error);

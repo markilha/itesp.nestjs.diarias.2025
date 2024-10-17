@@ -63,6 +63,7 @@ export class ReturnRequisicaoDto {
   saqueMes: number;
   valorSolicitado: number;
   diariaParcPorc: number;
+  vlDiaria: number;
   usuMov: string; 
     constructor(
     userReqEntity: RequisicaoEntity,   
@@ -73,7 +74,8 @@ export class ReturnRequisicaoDto {
     valorSolicitado?: number,
     salario50Porcento?: number,
     saldoDisponivel?: number, 
-    diariaParcPorc?: number
+    diariaParcPorc?: number,
+    vlDiaria?: number
    
    
   ) {
@@ -83,7 +85,7 @@ export class ReturnRequisicaoDto {
     this.reqDtReq = userReqEntity.reqDtReq;
     this.reqDtSaida = userReqEntity.reqDtSaida;
     this.reqHSaida = userReqEntity.reqHSaida;
-    this.reqDtRetorno = userReqEntity.reqHRet;
+    this.reqDtRetorno = userReqEntity.reqDtReq;
     this.reqMotivo = userReqEntity.reqMotivo;
     this.reqHRet = userReqEntity.reqHRet;
     this.reqKm = userReqEntity.reqKm;
@@ -106,6 +108,7 @@ export class ReturnRequisicaoDto {
     this.regDescricao = userReqEntity.regDescricao;
     this.traDescricao = userReqEntity.traDescricao;
     this.diariaParcPorc = diariaParcPorc;
+    this.vlDiaria = vlDiaria;
    
   }
 
