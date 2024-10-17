@@ -16,6 +16,8 @@ import { DespesadiariaService } from 'src/despesadiaria/despesadiaria.service';
 import { formatDateToYYMM } from 'src/util/formatoYYMM';
 import { calcularDiariaValores } from 'src/util/calculo_dia_retorno';
 
+
+
 @Injectable()
 export class S001RequisicaoService {
   constructor(
@@ -135,6 +137,15 @@ export class S001RequisicaoService {
       const totalIntegral = diarias?.VL_DIARIA_INTEGRAL || 0;
       const ValorSolicitado = totalParcial + totalIntegral || 0;
 
+      let diariaParcPorc = 0;
+
+      if (diarias?.VL_DIARIA_PARCIAL_20 > 0) {
+        diariaParcPorc = 20;
+      } else if (diarias?.VL_DIARIA_PARCIAL_40 > 0) {
+        diariaParcPorc = 40;
+      }
+    
+
       const salario50Porcento = salarioAtual / 2 || 0;
       const salario50PorcentoFormatado = salario50Porcento > 0 ? salario50Porcento.toFixed(2) : 0;
       const salario50PorcentoNumber = Number(salario50PorcentoFormatado);
@@ -151,6 +162,7 @@ export class S001RequisicaoService {
         ValorSolicitado,
         salario50PorcentoNumber,
         saldoRestante,
+        diariaParcPorc
       );
     } catch (error) {
       console.error(`Erro ao gerar lista : ${requisicao.regIdCodigo}`, error);

@@ -45,7 +45,7 @@ export class ReturnRequisicaoDto {
   reqIntegral: number; 
   reqParcial: number; 
   reqEspecial: number; 
-  reqPacote: number; 
+  reqPacote: string; 
   reqGovernador: string | null; 
   transmeio: number; 
   municipio: number;
@@ -62,6 +62,7 @@ export class ReturnRequisicaoDto {
   traDescricao: string;
   saqueMes: number;
   valorSolicitado: number;
+  diariaParcPorc: number;
   usuMov: string; 
     constructor(
     userReqEntity: RequisicaoEntity,   
@@ -72,12 +73,12 @@ export class ReturnRequisicaoDto {
     valorSolicitado?: number,
     salario50Porcento?: number,
     saldoDisponivel?: number, 
+    diariaParcPorc?: number
    
    
   ) {
     this.reqIdCodigo = userReqEntity.reqIdCodigo;   
-    this.chapa = userReqEntity.chapa;
-    this.municipio = userReqEntity.codMunicipio;
+    this.chapa = userReqEntity.chapa;   
     this.oriMunicipio = userReqEntity.nmeMunic;     
     this.reqDtReq = userReqEntity.reqDtReq;
     this.reqDtSaida = userReqEntity.reqDtSaida;
@@ -86,14 +87,12 @@ export class ReturnRequisicaoDto {
     this.reqMotivo = userReqEntity.reqMotivo;
     this.reqHRet = userReqEntity.reqHRet;
     this.reqKm = userReqEntity.reqKm;
-    this.reqStatus = userReqEntity.reqStatus;
-    this.reqDiaria = userReqEntity.reqDiaria;
-    this.reqIntegral = userReqEntity.reqIntegral;
-    this.reqParcial =  userReqEntity.reqParcial;
-    this.reqEspecial = userReqEntity.reqEspecial;
-    this.reqPacote = userReqEntity.reqPacote;
-    this.reqGovernador = userReqEntity.reqGovernador;
-    this.transmeio = userReqEntity.traIdCodigo;    
+    this.reqStatus = userReqEntity.reqStatus;   
+    this.reqIntegral = Number(userReqEntity.reqIntegral) || 0;
+    this.reqParcial =  userReqEntity.reqParcial > 0 ? 1 : 0;
+    this.reqEspecial = Number(userReqEntity.reqEspecial) || 0;
+    this.reqPacote = userReqEntity.reqPacote === 1 ? 'N' : 'S';
+    this.reqGovernador = userReqEntity.reqGovernador;    
     this.desLocal = userReqEntity.destino?.desLocal ?? null;
     this.desMunIdCodigo = userReqEntity.destino?.municipio?.munIdCodigo ?? 0; 
     this.desMunNme = userReqEntity.destino?.municipio?.munCidade ?? '';    
@@ -106,6 +105,7 @@ export class ReturnRequisicaoDto {
     this.saldoDisponivel = saldoDisponivel; 
     this.regDescricao = userReqEntity.regDescricao;
     this.traDescricao = userReqEntity.traDescricao;
+    this.diariaParcPorc = diariaParcPorc;
    
   }
 
