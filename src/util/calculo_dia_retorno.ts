@@ -119,6 +119,7 @@ export function calcularDiariaIntegral(
        VL_DIARIA_BASE: diariaBase,
       };
     } catch (error) {
+     
       throw new Error(`Erro ao calcular diária: ${error.message}`);
     }
   }

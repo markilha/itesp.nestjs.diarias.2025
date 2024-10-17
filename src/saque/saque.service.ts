@@ -203,6 +203,7 @@ export class SaqueService {
         'f.REQ_MOTIVO',
         'n.CTR_STATUS',
       ])
+      .distinct(true) 
       .innerJoin(tabs.tab01, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
       .innerJoin(tabs.tab02, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
       .innerJoin(tabs.tab03, 'f', 'f.REQ_ID_CODIGO = b.REQ_ID_CODIGO')
@@ -215,33 +216,33 @@ export class SaqueService {
       .innerJoin(tabs.tab13, 'n', 'n.REQ_ID_CODIGO = f.REQ_ID_CODIGO')
 
       .where('a.SQE_ID_CODIGO = :sqeidcodigo', { sqeidcodigo })
-      .groupBy('c.RRE_ID_CODIGO')
-      .addGroupBy('b.RNU_ID_CODIGO')
-      .addGroupBy('c.CHAPA')
-      .addGroupBy('c.IRR_VALOR_PREST')
-      .addGroupBy('c.IRR_VLSAQUE')
-      .addGroupBy('c.IRR_VLDEVOLUCAO')
-      .addGroupBy('c.IRR_COMPLEMENTO')
-      .addGroupBy('c.IRR_DATA_PREST')
-      .addGroupBy('f.REQ_DTREQ')
-      .addGroupBy('g.TRA_DESCRICAO')
-      .addGroupBy('h.NOME')
-      .addGroupBy('h.CARGO')
-      .addGroupBy('i.NME_MUNIC')
-      .addGroupBy('j.REG_DESCRICAO')
-      .addGroupBy('l.MUN_ID_CODIGO')
-      .addGroupBy('m.MUN_CIDADE')
-      .addGroupBy('l.DES_LOCAL')
-      .addGroupBy('f.REQ_DTSAIDA')
-      .addGroupBy('f.REQ_DTRET')
-      .addGroupBy('f.REQ_HSAIDA')
-      .addGroupBy('f.REQ_HRET')
-      .addGroupBy('f.REQ_INTEGRAL')
-      .addGroupBy('f.REQ_PARCIAL')
-      .addGroupBy('f.REQ_PACOTE')
-      .addGroupBy('f.REQ_GOVERNADOR')
-      .addGroupBy('f.REQ_MOTIVO')
-      .addGroupBy('n.CTR_STATUS');
+      // .groupBy('c.RRE_ID_CODIGO')
+      // .addGroupBy('b.RNU_ID_CODIGO')
+      // .addGroupBy('c.CHAPA')
+      // .addGroupBy('c.IRR_VALOR_PREST')
+      // .addGroupBy('c.IRR_VLSAQUE')
+      // .addGroupBy('c.IRR_VLDEVOLUCAO')
+      // .addGroupBy('c.IRR_COMPLEMENTO')
+      // .addGroupBy('c.IRR_DATA_PREST')
+      // .addGroupBy('f.REQ_DTREQ')
+      // .addGroupBy('g.TRA_DESCRICAO')
+      // .addGroupBy('h.NOME')
+      // .addGroupBy('h.CARGO')
+      // .addGroupBy('i.NME_MUNIC')
+      // .addGroupBy('j.REG_DESCRICAO')
+      // .addGroupBy('l.MUN_ID_CODIGO')
+      // .addGroupBy('m.MUN_CIDADE')
+      // .addGroupBy('l.DES_LOCAL')
+      // .addGroupBy('f.REQ_DTSAIDA')
+      // .addGroupBy('f.REQ_DTRET')
+      // .addGroupBy('f.REQ_HSAIDA')
+      // .addGroupBy('f.REQ_HRET')
+      // .addGroupBy('f.REQ_INTEGRAL')
+      // .addGroupBy('f.REQ_PARCIAL')
+      // .addGroupBy('f.REQ_PACOTE')
+      // .addGroupBy('f.REQ_GOVERNADOR')
+      // .addGroupBy('f.REQ_MOTIVO')
+      // .addGroupBy('n.CTR_STATUS');
 
     const conditions = [{ param: params.SQE_ID_CODIGO, tab: 'a', key: 'SQE_ID_CODIGO' }];
 
@@ -250,8 +251,10 @@ export class SaqueService {
         query.andWhere(`${tab}.${key} = :${key}`, { [key]: param });
       }
     });
+   
 
     const consulta = await query.getRawMany();
+    
   
     const STATUS = consulta[0].SQE_DTPREST ? 'Realizada' : 'Pendente';
     const itinerario = await this.itinerarioService.findUltimo(consulta[0].REQ_ID_CODIGO);

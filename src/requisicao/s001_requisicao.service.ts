@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RequisicaoEntity } from 'src/database/db_mysql/entities/requisicao.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, ReturnRequisicaoDto} from './requisicao.dto';
+import { FindAllParams, ReturnRequisicaoDto } from './requisicao.dto';
 
 import {} from './returnRequisicao.dto';
 import { UfespService } from 'src/ufesp/ufesp.service';
@@ -22,7 +22,7 @@ export class S001RequisicaoService {
     @InjectRepository(RequisicaoEntity, 'mysqlConnection')
     private requisicaoRepository: Repository<RequisicaoEntity>,
     private ufespService: UfespService,
-    private funcSalarioService: FuncsalarioService,   
+    private funcSalarioService: FuncsalarioService,
     private SaquesMesService: SaquesMesService,
     private despesaDiaria: DespesadiariaService,
   ) {}
@@ -96,10 +96,13 @@ export class S001RequisicaoService {
       const formatoYYMM = formatDateToYYMM(requisicao.reqDtSaida);
 
       // Busca o valor do saque do usuário no mês da requisição
-      const saqueSalario = await this.SaquesMesService.findOne(chapa, formatoYYMM);
-     
-
-      const saqueMes = Number(saqueSalario?.totSaque) || 0;
+      let saqueMes = 0;
+      try {
+        const saqueSalario = await this.SaquesMesService.findOne(chapa, formatoYYMM);
+        saqueMes = Number(saqueSalario?.totSaque) || 0;
+      } catch (error) {
+        console.warn(`Erro ao buscar saque do mês para chapa ${chapa}:`, error);       
+      }
 
       // Busca o valor da UFESP na data da requisição
       const UFESP = (await this.ufespService.findValueByDate(requisicao.reqDtSaida)).ufeValor || 0;
@@ -150,7 +153,7 @@ export class S001RequisicaoService {
         saldoRestante,
       );
     } catch (error) {
-      console.error(`Erro ao calcular diária: ${requisicao.regIdCodigo}`, error);
+      console.error(`Erro ao gerar lista : ${requisicao.regIdCodigo}`, error);
       return new ReturnRequisicaoDto(requisicao);
     }
   }
