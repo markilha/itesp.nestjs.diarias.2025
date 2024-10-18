@@ -1,5 +1,4 @@
-import { Entity,  JoinColumn,  ManyToOne,  OneToOne,  PrimaryColumn } from 'typeorm';
-import { RequisicaoEntity } from './requisicao.entity';
+import { Entity,  JoinColumn,  OneToOne,  PrimaryColumn } from 'typeorm';
 import { FuncSalarioEntity } from './funcsalario.entity';
 
 @Entity({ name: 's001_usureq', schema: 'dev_itesp_diarias' })
@@ -16,9 +15,6 @@ export class UsuReqEntity {
   @PrimaryColumn({ name: 'USU_MOV', type: 'varchar', length: 1 })
   usuMov: string;
 
-  @ManyToOne(() => RequisicaoEntity, (requi) => requi.usereq)
-  @JoinColumn({ name: 'REQ_ID_CODIGO', referencedColumnName: 'reqIdCodigo' })
-  requisicao?: RequisicaoEntity;
 
   @OneToOne(() => FuncSalarioEntity, (pfun) => pfun.usureq)
   @JoinColumn({ name: 'CHAPA', referencedColumnName: 'chapa' })

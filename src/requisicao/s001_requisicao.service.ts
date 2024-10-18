@@ -15,8 +15,8 @@ import { SaquesMesService } from 'src/saques-mes/saques-mes.service';
 import { DespesadiariaService } from 'src/despesadiaria/despesadiaria.service';
 import { formatDateToYYMM } from 'src/util/formatoYYMM';
 import { calcularDiariaValores } from 'src/util/calculo_dia_retorno';
-
-
+import { ItinirarioService } from 'src/itinirario/itinirario.service';
+import { retornoItinerarioDto } from 'src/itinirario/itinerarioDto';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -27,6 +27,7 @@ export class S001RequisicaoService {
     private funcSalarioService: FuncsalarioService,
     private SaquesMesService: SaquesMesService,
     private despesaDiaria: DespesadiariaService,
+    private itinirarioService: ItinirarioService,
   ) {}
 
   async findAll(params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
@@ -44,15 +45,11 @@ export class S001RequisicaoService {
       if (params.chapa) {
         searchParams.chapa = params.chapa;
       }
-
-      // Configuração da ordenação baseada na query string
       const order: { [key: string]: 'ASC' | 'DESC' } = {};
       if (params.orderBy) {
-        // Verifica se o campo de ordenação está presente e define a direção
         order[params.orderBy] = params.orderDirection === 'DESC' ? 'DESC' : 'ASC';
       } else {
-        // Ordenação padrão se nenhum parâmetro for passado
-        order['reqIdCodigo'] = 'ASC'; // Padrão: ordenar por 'reqIdCodigo'
+        order['reqIdCodigo'] = 'ASC';
       }
 
       let requisicoes: RequisicaoEntity[];
@@ -67,13 +64,13 @@ export class S001RequisicaoService {
           skip,
           take: limit,
           order,
-          relations: ['transmeio', 'destino', 'destino.municipio'],
+          relations: [ 'destino'],
         });
       } else {
         requisicoes = await this.requisicaoRepository.find({
           where: searchParams,
           order,
-          relations: ['transmeio', 'destino', 'destino.municipio'],
+          relations: ['destino'],
         });
       }
       if (!requisicoes || requisicoes.length === 0) {
@@ -103,7 +100,7 @@ export class S001RequisicaoService {
         const saqueSalario = await this.SaquesMesService.findOne(chapa, formatoYYMM);
         saqueMes = Number(saqueSalario?.totSaque) || 0;
       } catch (error) {
-        console.warn(`Erro ao buscar saque do mês para chapa ${chapa}:`, error);       
+        console.warn(`Erro ao buscar saque do mês para chapa ${chapa}:`, error);
       }
 
       // Busca o valor da UFESP na data da requisição
@@ -136,6 +133,8 @@ export class S001RequisicaoService {
       const totalParcial = diarias?.VL_DIARIA_PARCIAL_20 + diarias?.VL_DIARIA_PARCIAL_40 || 0;
       const totalIntegral = diarias?.VL_DIARIA_INTEGRAL || 0;
       const ValorSolicitado = totalParcial + totalIntegral || 0;
+      const dirariaBase = diarias?.VL_DIARIA_BASE || 0;
+      const vlDiaria = diarias?.VL_DIARIA || 0;
 
       let diariaParcPorc = 0;
 
@@ -144,7 +143,6 @@ export class S001RequisicaoService {
       } else if (diarias?.VL_DIARIA_PARCIAL_40 > 0) {
         diariaParcPorc = 40;
       }
-    
 
       const salario50Porcento = salarioAtual / 2 || 0;
       const salario50PorcentoFormatado = salario50Porcento > 0 ? salario50Porcento.toFixed(2) : 0;
@@ -153,19 +151,43 @@ export class S001RequisicaoService {
       let saldoRestante = salario50PorcentoNumber - (saqueMes + ValorSolicitado);
       saldoRestante = Number(saldoRestante ? saldoRestante.toFixed(2) : 0);
 
-      return new ReturnRequisicaoDto(
-        requisicao,
-        diarias?.VL_DIARIA_INTEGRAL,
-        totalParcial,
-        diarias?.VL_DIARIA_BASE,
-        saqueMes,
-        ValorSolicitado,
-        salario50PorcentoNumber,
-        saldoRestante,
-        diariaParcPorc,
-        diarias?.VL_DIARIA
-        
-      );
+      let itinirario = new retornoItinerarioDto();
+      itinirario = await this.itinirarioService.findUltimo(requisicao.reqIdCodigo);
+
+      return new ReturnRequisicaoDto({
+        reqIdCodigo: requisicao.reqIdCodigo,
+        chapa: requisicao.chapa,
+        oriMunicipio: requisicao.nmeMunic,
+        reqDtReq: requisicao.reqDtReq,
+        reqDtSaida: requisicao.reqDtSaida,
+        reqHSaida: requisicao.reqHSaida,
+        reqDtRetorno: requisicao.reqDtReq,
+        reqMotivo: requisicao.reqMotivo,
+        reqHRet: requisicao.reqHRet,
+        reqKm: requisicao.reqKm,
+        reqStatus: requisicao.reqStatus,
+        reqIntegral: Number(requisicao.reqIntegral) || 0,
+        reqParcial: requisicao.reqParcial > 0 ? 1 : 0,
+        reqEspecial: Number(requisicao.reqEspecial) || 0,
+        reqPacote: requisicao.reqPacote === 1 ? 'N' : 'S',
+        reqGovernador: requisicao.reqGovernador,
+        desLocal: requisicao.destino?.desLocal ?? null,
+        desMunIdCodigo: requisicao.destino?.municipio?.munIdCodigo ?? 0,
+        desMunNme: requisicao.destino?.municipio?.munCidade ?? '',
+        diariaIntegral: totalIntegral,
+        diariaParcial: totalParcial,
+        diariaBase: dirariaBase,
+        saqueMes: saqueMes,
+        valorSolicitado: ValorSolicitado,
+        salario50Porcento: salario50PorcentoNumber,
+        saldoDisponivel: saldoRestante,
+        regDescricao: requisicao.regDescricao,
+        traDescricao: requisicao.traDescricao,
+        diariaParcPorc: diariaParcPorc,
+        vlDiaria: vlDiaria,
+      });
+
+
     } catch (error) {
       console.error(`Erro ao gerar lista : ${requisicao.regIdCodigo}`, error);
       return new ReturnRequisicaoDto(requisicao);

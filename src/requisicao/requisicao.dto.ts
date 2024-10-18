@@ -27,7 +27,6 @@ export class RequisicaoDto {
   reqGovernador?: string;
 }
 
-
 export class ReturnRequisicaoDto {
   reqIdCodigo: number;
   chapa: string;
@@ -65,54 +64,46 @@ export class ReturnRequisicaoDto {
   diariaParcPorc: number;
   vlDiaria: number;
   usuMov: string; 
+  
     constructor(
-    userReqEntity: RequisicaoEntity,   
-    diariaIntegral?: number,
-    diariaParcial?: number,    
-    diariaBase?: number,
-    saqueMes?: number,
-    valorSolicitado?: number,
-    salario50Porcento?: number,
-    saldoDisponivel?: number, 
-    diariaParcPorc?: number,
-    vlDiaria?: number
-   
-   
+    params: any,    
   ) {
-    this.reqIdCodigo = userReqEntity.reqIdCodigo;   
-    this.chapa = userReqEntity.chapa;   
-    this.oriMunicipio = userReqEntity.nmeMunic;     
-    this.reqDtReq = userReqEntity.reqDtReq;
-    this.reqDtSaida = userReqEntity.reqDtSaida;
-    this.reqHSaida = userReqEntity.reqHSaida;
-    this.reqDtRetorno = userReqEntity.reqDtReq;
-    this.reqMotivo = userReqEntity.reqMotivo;
-    this.reqHRet = userReqEntity.reqHRet;
-    this.reqKm = userReqEntity.reqKm;
-    this.reqStatus = userReqEntity.reqStatus;   
-    this.reqIntegral = Number(userReqEntity.reqIntegral) || 0;
-    this.reqParcial =  userReqEntity.reqParcial > 0 ? 1 : 0;
-    this.reqEspecial = Number(userReqEntity.reqEspecial) || 0;
-    this.reqPacote = userReqEntity.reqPacote === 1 ? 'N' : 'S';
-    this.reqGovernador = userReqEntity.reqGovernador;    
-    this.desLocal = userReqEntity.destino?.desLocal ?? null;
-    this.desMunIdCodigo = userReqEntity.destino?.municipio?.munIdCodigo ?? 0; 
-    this.desMunNme = userReqEntity.destino?.municipio?.munCidade ?? '';    
-    this.diariaIntegral = diariaIntegral;
-    this.diariaParcial = diariaParcial   
-    this.diariaBase = diariaBase;   
-    this.saqueMes = saqueMes; 
-    this.valorSolicitado = valorSolicitado;
-    this.salario50Porcento = salario50Porcento;
-    this.saldoDisponivel = saldoDisponivel; 
-    this.regDescricao = userReqEntity.regDescricao;
-    this.traDescricao = userReqEntity.traDescricao;
-    this.diariaParcPorc = diariaParcPorc;
-    this.vlDiaria = vlDiaria;
+    this.reqIdCodigo = params.reqIdCodigo;   
+    this.chapa = params.chapa;   
+    this.oriMunicipio = params.nmeMunic;     
+    this.reqDtReq = params.reqDtReq;
+    this.reqDtSaida = params.reqDtSaida;
+    this.reqHSaida = params.reqHSaida;
+    this.reqDtRetorno = params.reqDtReq;
+    this.reqMotivo = params.reqMotivo;
+    this.reqHRet = params.reqHRet;
+    this.reqKm = params.reqKm;
+    this.reqStatus = params.reqStatus;   
+    this.reqIntegral = Number(params.reqIntegral) || 0;
+    this.reqParcial =  params.reqParcial > 0 ? 1 : 0;
+    this.reqEspecial = Number(params.reqEspecial) || 0;
+    this.reqPacote = params.reqPacote === 1 ? 'N' : 'S';
+    this.reqGovernador = params.reqGovernador;    
+    this.desLocal = params.destino?.desLocal ?? null;
+    this.desMunIdCodigo = params.destino?.municipio?.munIdCodigo ?? 0; 
+    this.desMunNme = params.destino?.municipio?.munCidade ?? '';    
+    this.diariaIntegral = params.diariaIntegral;
+    this.diariaParcial = params.diariaParcial   
+    this.diariaBase = params.diariaBase;   
+    this.saqueMes = params.saqueMes; 
+    this.valorSolicitado = params.valorSolicitado;
+    this.salario50Porcento = params.salario50Porcento;
+    this.saldoDisponivel = params.saldoDisponivel; 
+    this.regDescricao = params.regDescricao;
+    this.traDescricao = params.traDescricao;
+    this.diariaParcPorc =params.diariaParcPorc;
+    this.vlDiaria = params.vlDiaria;
    
   }
 
 }
+
+
 
 
 export enum RequisicaoStatus {

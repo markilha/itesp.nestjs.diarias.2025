@@ -119,7 +119,15 @@ export class DiariaviagemService {
         where: { REQ_ID_CODIGO: requisicao, CHAPA: chapa },
       });
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      if (error.name === 'EntityNotFoundError') {       
+        throw new HttpException('Diária de Viagem não encontrada', HttpStatus.NOT_FOUND);
+      } else {       
+        throw new HttpException(
+          'Erro interno no servidor ao buscar a Diária de Viagem',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
+  
 }

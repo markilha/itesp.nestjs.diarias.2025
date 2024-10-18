@@ -78,3 +78,4 @@ export function calcularDiaria(
     throw new Error(`Erro ao calcular diária: ${error.message}`);
   }
 }
+

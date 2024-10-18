@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToOne } from 'typeorm';
+
 
 @Entity('s001_itinerario', { schema: 'dev_itesp_diarias' })
 export class ItinerarioEntity {

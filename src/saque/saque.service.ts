@@ -63,8 +63,7 @@ export class SaqueService {
           'c.CHAPA',
           'e.STS_DESCRICAO',
           'f.TDE_DESCRICAO',
-          'g.NOME'
-          
+          'g.NOME',
         ])
         .innerJoin(tabs.tab01, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
         .innerJoin(tabs.tab02, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
@@ -168,13 +167,15 @@ export class SaqueService {
     }
   }
 
+
+
   async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto> {
     const sqeidcodigo = params.SQE_ID_CODIGO;
 
     const query = this.saqueRepository
       .createQueryBuilder('a')
       .select([
-        'a.SQE_DTSAQUE',        
+        'a.SQE_DTSAQUE',
         'c.RRE_ID_CODIGO',
         'a.ITE_ID_CODIGO',
         'a.SQE_DTPREST',
@@ -189,7 +190,7 @@ export class SaqueService {
         'h.CARGO',
         'i.NME_MUNIC',
         'j.REG_DESCRICAO',
-        'l.MUN_ID_CODIGO',        
+        'l.MUN_ID_CODIGO',
         'm.MUN_CIDADE',
         'l.DES_LOCAL',
         'f.REQ_DTSAIDA',
@@ -203,7 +204,7 @@ export class SaqueService {
         'f.REQ_MOTIVO',
         'n.CTR_STATUS',
       ])
-      .distinct(true) 
+      .distinct(true)
       .innerJoin(tabs.tab01, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
       .innerJoin(tabs.tab02, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
       .innerJoin(tabs.tab03, 'f', 'f.REQ_ID_CODIGO = b.REQ_ID_CODIGO')
@@ -214,35 +215,34 @@ export class SaqueService {
       .innerJoin(tabs.tab11, 'l', 'l.REQ_ID_CODIGO = f.REQ_ID_CODIGO')
       .innerJoin(tabs.tab12, 'm', 'm.MUN_ID_CODIGO = l.MUN_ID_CODIGO')
       .innerJoin(tabs.tab13, 'n', 'n.REQ_ID_CODIGO = f.REQ_ID_CODIGO')
-
-      .where('a.SQE_ID_CODIGO = :sqeidcodigo', { sqeidcodigo })
-      // .groupBy('c.RRE_ID_CODIGO')
-      // .addGroupBy('b.RNU_ID_CODIGO')
-      // .addGroupBy('c.CHAPA')
-      // .addGroupBy('c.IRR_VALOR_PREST')
-      // .addGroupBy('c.IRR_VLSAQUE')
-      // .addGroupBy('c.IRR_VLDEVOLUCAO')
-      // .addGroupBy('c.IRR_COMPLEMENTO')
-      // .addGroupBy('c.IRR_DATA_PREST')
-      // .addGroupBy('f.REQ_DTREQ')
-      // .addGroupBy('g.TRA_DESCRICAO')
-      // .addGroupBy('h.NOME')
-      // .addGroupBy('h.CARGO')
-      // .addGroupBy('i.NME_MUNIC')
-      // .addGroupBy('j.REG_DESCRICAO')
-      // .addGroupBy('l.MUN_ID_CODIGO')
-      // .addGroupBy('m.MUN_CIDADE')
-      // .addGroupBy('l.DES_LOCAL')
-      // .addGroupBy('f.REQ_DTSAIDA')
-      // .addGroupBy('f.REQ_DTRET')
-      // .addGroupBy('f.REQ_HSAIDA')
-      // .addGroupBy('f.REQ_HRET')
-      // .addGroupBy('f.REQ_INTEGRAL')
-      // .addGroupBy('f.REQ_PARCIAL')
-      // .addGroupBy('f.REQ_PACOTE')
-      // .addGroupBy('f.REQ_GOVERNADOR')
-      // .addGroupBy('f.REQ_MOTIVO')
-      // .addGroupBy('n.CTR_STATUS');
+      .where('a.SQE_ID_CODIGO = :sqeidcodigo', { sqeidcodigo });
+    // .groupBy('c.RRE_ID_CODIGO')
+    // .addGroupBy('b.RNU_ID_CODIGO')
+    // .addGroupBy('c.CHAPA')
+    // .addGroupBy('c.IRR_VALOR_PREST')
+    // .addGroupBy('c.IRR_VLSAQUE')
+    // .addGroupBy('c.IRR_VLDEVOLUCAO')
+    // .addGroupBy('c.IRR_COMPLEMENTO')
+    // .addGroupBy('c.IRR_DATA_PREST')
+    // .addGroupBy('f.REQ_DTREQ')
+    // .addGroupBy('g.TRA_DESCRICAO')
+    // .addGroupBy('h.NOME')
+    // .addGroupBy('h.CARGO')
+    // .addGroupBy('i.NME_MUNIC')
+    // .addGroupBy('j.REG_DESCRICAO')
+    // .addGroupBy('l.MUN_ID_CODIGO')
+    // .addGroupBy('m.MUN_CIDADE')
+    // .addGroupBy('l.DES_LOCAL')
+    // .addGroupBy('f.REQ_DTSAIDA')
+    // .addGroupBy('f.REQ_DTRET')
+    // .addGroupBy('f.REQ_HSAIDA')
+    // .addGroupBy('f.REQ_HRET')
+    // .addGroupBy('f.REQ_INTEGRAL')
+    // .addGroupBy('f.REQ_PARCIAL')
+    // .addGroupBy('f.REQ_PACOTE')
+    // .addGroupBy('f.REQ_GOVERNADOR')
+    // .addGroupBy('f.REQ_MOTIVO')
+    // .addGroupBy('n.CTR_STATUS');
 
     const conditions = [{ param: params.SQE_ID_CODIGO, tab: 'a', key: 'SQE_ID_CODIGO' }];
 
@@ -251,11 +251,9 @@ export class SaqueService {
         query.andWhere(`${tab}.${key} = :${key}`, { [key]: param });
       }
     });
-   
 
     const consulta = await query.getRawMany();
-    
-  
+
     const STATUS = consulta[0].SQE_DTPREST ? 'Realizada' : 'Pendente';
     const itinerario = await this.itinerarioService.findUltimo(consulta[0].REQ_ID_CODIGO);
 
@@ -271,34 +269,37 @@ export class SaqueService {
       itinerario.ITI_DTSAIDA,
       itinerario.ITI_HSAIDA,
       itinerario.ITI_DTCHEGADA,
-      itinerario.ITI_HCHEGADA,  
+      itinerario.ITI_HCHEGADA,
     );
-   
 
-         // Busca o valor da UFESP na data da requisição
-         const UFESP = (await this.ufespService.findValueByDate(consulta[0].REQ_DTSAIDA)).ufeValor || 0;    
-         // Busca o indice da UFESP do cargo do usuário
-         const UFESPcargo = await this.despesaDiaria.findOne(consulta[0].CARGO);
-         const UFESPcargoValor = Number(UFESPcargo?.dtdValorMax) || 0;
-         //buscar destino
-        const destino = verificarDestino(consulta[0].MUN_ID_CODIGO);        
-         
-         
+    // Busca o valor da UFESP na data da requisição
+    const UFESP = (await this.ufespService.findValueByDate(consulta[0].REQ_DTSAIDA)).ufeValor || 0;
+    // Busca o indice da UFESP do cargo do usuário
+    const UFESPcargo = await this.despesaDiaria.findOne(consulta[0].CARGO);
+    const UFESPcargoValor = Number(UFESPcargo?.dtdValorMax) || 0;
+    //buscar destino
+    const destino = verificarDestino(consulta[0].MUN_ID_CODIGO);
 
-  const calcDiraria =  calcularDiariaValores(
-    UFESP,
-    UFESPcargoValor,
+    const calcDiraria = calcularDiariaValores(
+      UFESP,
+      UFESPcargoValor,
       destino as Destino,
       consulta[0].REQ_PACOTE,
       diariaIntegral,
       diariaParcial > 0 ? 1 : 0,
       itinerario.ITI_HCHEGADA,
     );
-    const somaParcial = (calcDiraria.VL_DIARIA_PARCIAL_40 + calcDiraria.VL_DIARIA_PARCIAL_20); 
-    const somaDiarias =  DataUtils.arredondar(calcDiraria.VL_DIARIA_INTEGRAL + somaParcial);
+    const somaParcial = calcDiraria.VL_DIARIA_PARCIAL_40 + calcDiraria.VL_DIARIA_PARCIAL_20;
+    const somaDiarias = DataUtils.arredondar(calcDiraria.VL_DIARIA_INTEGRAL + somaParcial);
     const valorComplementar = calcularValores(consulta[0].SQE_VLSAQUE, somaDiarias);
-   
-    
+
+    let diariaParcPorc = 0;
+
+    if (calcDiraria?.VL_DIARIA_PARCIAL_20 > 0) {
+      diariaParcPorc = 20;
+    } else if (calcDiraria?.VL_DIARIA_PARCIAL_40 > 0) {
+      diariaParcPorc = 40;
+    }
 
     return new PrestacaoDto({
       NOME: consulta[0].NOME,
@@ -328,7 +329,7 @@ export class SaqueService {
       ITI_HSAIDA: itinerario.ITI_HSAIDA,
       ITI_DTCHEGADA: itinerario.ITI_DTCHEGADA,
       ITI_HCHEGADA: itinerario.ITI_HCHEGADA,
-      PARREAL: diariaParcial,
+      PARREAL: diariaParcial > 0 ? 1 : 0,
       INTREAL: diariaIntegral,
       VLINTEGRAL: calcDiraria.VL_DIARIA_INTEGRAL,
       VLPARCIAL: somaParcial,
@@ -337,18 +338,23 @@ export class SaqueService {
       VLPREST: somaDiarias,
       VLCOMPLEMENTAR: valorComplementar.VL_COMPLEMENTAR,
       VLEXTORNO: valorComplementar.VL_EXTORNO,
-
+      VLDIARIA: calcDiraria.VL_DIARIA,
+      PORCDIARIA: diariaParcPorc,
     });
   }
 
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
+   
+
     const diariaViagem = await this.diariaviagemService.findOne(params.reqIdCodigo, params.chapa);
+    
+    
 
     if (!diariaViagem) {
       throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
     }
 
-    const pacote = params.reqPacote === 0 ? 'N' : 'S';
+  
 
     await this.saqueRepository.query(
       `CALL INS_S009_SAQUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @id);`,
@@ -378,7 +384,7 @@ export class SaqueService {
         diariaViagem.REQ_PARCIAL,
         null,
         null,
-        pacote,
+        params.reqPacote,
         diariaViagem.REQ_GOVERNADOR,
         diariaViagem.REQ_MOTIVO,
         params.reqStatus,

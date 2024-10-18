@@ -88,8 +88,7 @@ export class SaqueDto {
     this.REQ_DTREQ = params.REQ_DTREQ;
     this.REQ_STATUS = params.REQ_STATUS;
     this.CHAPA = params.CHAPA;
-    this.STS_DESCRICAO = params.STS_DESCRICAO;
-   
+    this.STS_DESCRICAO = params.STS_DESCRICAO;  
     
   }
 }
@@ -133,6 +132,8 @@ export class PrestacaoDto {
   VLPREST: number;
   VLCOMPLEMENTAR: number;
   VLEXTORNO: number;
+  VLDIARIA: number;
+  PORCDIARIA: number;
   SQE_DTPREST: string;
   REQ_STATUS: string; 
  
@@ -176,9 +177,113 @@ export class PrestacaoDto {
     this.VLEXTORNO = params.VLEXTORNO;
     this.REQ_STATUS = params.REQ_STATUS;
     this.VLPREST = params.VLPREST;
+    this.VLDIARIA = params.VLDIARIA;
+    this.PORCDIARIA = params.PORCDIARIA;
 
   }
 }
+
+export class SaquePrestDto {
+  SQE_DTSAQUE: string;
+  SQE_DTPREST: string;
+  NOME: string;
+  REQ_ID_CODIGO: number;
+  SQE_ID_CODIGO: number;
+  TDE_DESCRICAO: string;
+  SQE_VLSAQUE: number;
+  SQE_VLPREST: number;
+  VL_COMPLEMENTAR: number;
+  VL_EXTORNO: number;
+  STATUS: string;
+  REQ_DTREQ: string;
+  SQE_DTPEDIDO: string;
+  REQ_STATUS: string;
+  CHAPA: string;
+  STS_DESCRICAO: string;
+  TIPO_DESPESA: string;
+  TRA_DESCRICAO: string;
+  TIPO_SAQUE: string;
+  NME_MUNIC: string;
+  REG_DESCRICAO: string;
+  MUN_CIDADE: string;
+  DES_LOCAL: string;
+  REQ_DTSAIDA: Date;
+  REQ_DTRET: Date;
+  REQ_HSAIDA: string;
+  REQ_HRET: string;
+  REQ_INTEGRAL: number;
+  REQ_PARCIAL: number;
+  REQ_PACOTE: string;
+  REQ_GOVERNADOR: string;
+  REQ_MOTIVO: string;
+  CTR_STATUS: string; 
+  ITI_DTSAIDA: Date;
+  ITI_HSAIDA: string;
+  ITI_DTCHEGADA: Date;
+  ITI_HCHEGADA: string;
+  INTREAL: number;
+  PARREAL: number;
+  VLINTEGRAL:number;
+  VLPARCIAL: number; 
+  VLBASE: number; 
+  VLPREST: number;
+  VLCOMPLEMENTAR: number;
+  VLEXTORNO: number;
+  VLDIARIA: number;
+  PORCDIARIA: number;
+
+  constructor(params: any) {
+    this.SQE_DTPEDIDO = params.SQE_DTPEDIDO;
+    this.SQE_DTSAQUE = params.SQE_DTSAQUE;
+    this.SQE_DTPREST = params.SQE_DTPREST;
+    this.NOME = params.NOME;
+    this.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
+    this.SQE_ID_CODIGO = params.SQE_ID_CODIGO;
+    this.TDE_DESCRICAO = params.TDE_DESCRICAO;
+    this.SQE_VLSAQUE = params.SQE_VLSAQUE;
+    this.SQE_VLPREST = params.SQE_VLPREST;
+    this.VL_COMPLEMENTAR = params.VL_COMPLEMENTAR;
+    this.VL_EXTORNO = params.VL_EXTORNO;
+    this.REQ_DTREQ = params.REQ_DTREQ;
+    this.REQ_STATUS = params.REQ_STATUS;
+    this.CHAPA = params.CHAPA;
+    this.STS_DESCRICAO = params.STS_DESCRICAO;
+    this.STATUS = params.STATUS;
+    this.TIPO_DESPESA = 'Diarias';
+    this.TRA_DESCRICAO = params.TRA_DESCRICAO;
+    this.TIPO_SAQUE = 'Viagem';
+    this.NME_MUNIC = params.NME_MUNIC;
+    this.REG_DESCRICAO = params.REG_DESCRICAO;
+    this.MUN_CIDADE = params.MUN_CIDADE;
+    this.DES_LOCAL = params.DES_LOCAL;
+    this.REQ_DTSAIDA = params.REQ_DTSAIDA;
+    this.REQ_DTRET = params.REQ_DTRET;
+    this.REQ_HSAIDA = params.REQ_HSAIDA;
+    this.REQ_HRET = params.REQ_HRET;
+    this.REQ_INTEGRAL = params.REQ_INTEGRAL;
+    this.REQ_PARCIAL = params.REQ_PARCIAL;
+    this.REQ_PACOTE = params.REQ_PACOTE;
+    this.REQ_GOVERNADOR = params.REQ_GOVERNADOR;
+    this.REQ_MOTIVO = params.REQ_MOTIVO;
+    this.CTR_STATUS = params.CTR_STATUS;
+    this.ITI_DTSAIDA = params.ITI_DTSAIDA;
+    this.ITI_HSAIDA = params.ITI_HSAIDA;
+    this.ITI_DTCHEGADA = params.ITI_DTCHEGADA;
+    this.ITI_HCHEGADA = params.ITI_HCHEGADA;
+    this.INTREAL = params.INTREAL;
+    this.PARREAL = params.PARREAL;
+    this.VLINTEGRAL = params.VLINTEGRAL;
+    this.VLPARCIAL = params.VLPARCIAL;
+    this.VLBASE = params.VLBASE;
+    this.VLCOMPLEMENTAR = params.VLCOMPLEMENTAR;
+    this.VLEXTORNO = params.VLEXTORNO;
+    this.VLPREST = params.VLPREST;
+    this.VLDIARIA = params.VLDIARIA;
+    this.PORCDIARIA = params.PORCDIARIA;   
+    
+  }
+}
+
 
 
 export class InsS009SaqueDto {
