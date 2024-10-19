@@ -11,9 +11,7 @@ import { SaqueService } from 'src/saque/saque.service';
 export class ReqnumerarioService {
   constructor(
     @InjectRepository(ReqNumerarioEntity, 'mysqlConnection')
-    private readonly mysqlRepository: Repository<ReqNumerarioEntity>,
-
-    private readonly saqueRepository: SaqueService,
+    private readonly mysqlRepository: Repository<ReqNumerarioEntity>
   ) {}
 
   async findAll(params: FindAllParams): Promise<ReturnReqnumerarioDto[]> {
@@ -48,6 +46,21 @@ export class ReqnumerarioService {
     } catch (error) {
       throw new HttpException(
         'Erro ao buscar as requisições',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  //find one pelo sqe_id_codigo
+  async findOne(sqeIdCodigo: number): Promise<ReturnReqnumerarioDto> {
+    try {
+      const reqnumerario = await this.mysqlRepository.findOne({
+        where: { sqeIdCodigo},
+      });
+      return new ReturnReqnumerarioDto(reqnumerario);
+    } catch (error) {
+      throw new HttpException(
+        'Erro ao buscar numerario',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

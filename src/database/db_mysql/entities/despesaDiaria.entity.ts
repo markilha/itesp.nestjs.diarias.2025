@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToOne, JoinColumn } from 'typeorm';
+import { FuncSalarioEntity } from './funcsalario.entity';
 
 @Entity('V009_DESPESADIARIA')
 export class DespesaDiariaEntity {
@@ -25,4 +26,9 @@ export class DespesaDiariaEntity {
 
   @Column({ name: 'DES_DESCRICAO', type: 'varchar', length: 60, nullable: true })
   desDescricao: string;
+
+  @OneToOne(() => FuncSalarioEntity, (desp) => desp.despesaDiaria) 
+  funcsalario: FuncSalarioEntity;
+
+
 }

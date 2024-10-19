@@ -1,5 +1,5 @@
 
-import { RequisicaoEntity } from 'src/database/db_mysql/entities/requisicao.entity';
+
 
 export class RequisicaoDto {
   reqIdCodigo?: number;

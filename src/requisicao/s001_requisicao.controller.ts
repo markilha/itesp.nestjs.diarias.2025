@@ -1,10 +1,6 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get, 
-  Param,
-  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -19,8 +15,8 @@ export class S001RequisicaoController {
   constructor(private readonly requisicao: S001RequisicaoService) {}
 
   @Get()
-  async findAll(@Query() params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
-    return await this.requisicao.findAll(params);
+  async find(@Query() params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
+    return await this.requisicao.find(params);
   }
  
 }

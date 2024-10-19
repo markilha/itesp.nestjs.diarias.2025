@@ -18,6 +18,8 @@ import { DespesadiariaModule } from 'src/despesadiaria/despesadiaria.module';
     ItinirarioModule,
     UfespModule,
     DespesadiariaModule
+  
+  
   ],
   providers: [SaqueService],
   controllers: [SaqueController],

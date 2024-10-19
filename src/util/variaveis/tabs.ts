@@ -1,0 +1,17 @@
+export enum tabs {
+    s009_reqnumerario = 's009_reqnumerario',
+    s009_itensreqrec = 's009_itensreqrec',
+    s001_requisicao = 's001_requisicao',
+    s009_status = 's009_status',
+    s009_tipodesp = 's009_tipodesp',
+    v009_funcsalario = 'v009_funcsalario',
+    v009_requisicao = 'v009_requisicao',
+    S001_TRANSMEIO = 'S001_TRANSMEIO',
+    municipios_ibge_igc = 'MUNICIPIOS_IBGE_IGC',
+    s000_regional = 'S000_REGIONAL',
+    s001_destino = 'S001_DESTINO',
+    s001_munic_detran = 'S001_MUNIC_DETRAN',
+    s001_ctrafego = 's001_ctrafego',
+    s009_reqrecursos = 's009_reqrecursos',
+    s009_prazos = 's009_prazos',
+  }

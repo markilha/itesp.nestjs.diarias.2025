@@ -4,19 +4,16 @@ import { RequisicaoEntity } from 'src/database/db_mysql/entities/requisicao.enti
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, ReturnRequisicaoDto } from './requisicao.dto';
 
-import {} from './returnRequisicao.dto';
 import { UfespService } from 'src/ufesp/ufesp.service';
-
-import { FuncsalarioService } from 'src/funcsalario/funcsalario.service';
-
 import { verificarDestino } from 'src/util/verificaDestino';
 import { Destino } from 'src/util/diariaDto';
 import { SaquesMesService } from 'src/saques-mes/saques-mes.service';
-import { DespesadiariaService } from 'src/despesadiaria/despesadiaria.service';
 import { formatDateToYYMM } from 'src/util/formatoYYMM';
 import { calcularDiariaValores } from 'src/util/calculo_dia_retorno';
 import { ItinirarioService } from 'src/itinirario/itinirario.service';
 import { retornoItinerarioDto } from 'src/itinirario/itinerarioDto';
+import { calcularSalario50 } from 'src/util/variaveis/calculo_50';
+import { logger } from 'src/util/logs/log';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -24,27 +21,20 @@ export class S001RequisicaoService {
     @InjectRepository(RequisicaoEntity, 'mysqlConnection')
     private requisicaoRepository: Repository<RequisicaoEntity>,
     private ufespService: UfespService,
-    private funcSalarioService: FuncsalarioService,
     private SaquesMesService: SaquesMesService,
-    private despesaDiaria: DespesadiariaService,
     private itinirarioService: ItinirarioService,
   ) {}
 
-  async findAll(params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
+  async find(params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
     try {
       const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
-      if (params.reqIdCodigo) {
-        searchParams.reqIdCodigo = params.reqIdCodigo;
-      }
-      if (params.codMunicipio) {
-        searchParams.codMunicipio = params.codMunicipio;
-      }
-      if (params.reqStatus) {
-        searchParams.reqStatus = params.reqStatus;
-      }
-      if (params.chapa) {
-        searchParams.chapa = params.chapa;
-      }
+      const fields = ['reqIdCodigo', 'codMunicipio', 'reqStatus', 'chapa'];
+      fields.forEach((field) => {
+        if (params[field]) {
+          searchParams[field] = params[field];
+        }
+      });
+
       const order: { [key: string]: 'ASC' | 'DESC' } = {};
       if (params.orderBy) {
         order[params.orderBy] = params.orderDirection === 'DESC' ? 'DESC' : 'ASC';
@@ -64,13 +54,13 @@ export class S001RequisicaoService {
           skip,
           take: limit,
           order,
-          relations: [ 'destino'],
+          relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
         });
       } else {
         requisicoes = await this.requisicaoRepository.find({
           where: searchParams,
           order,
-          relations: ['destino'],
+          relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
         });
       }
       if (!requisicoes || requisicoes.length === 0) {
@@ -93,67 +83,42 @@ export class S001RequisicaoService {
   ): Promise<ReturnRequisicaoDto> {
     try {
       const formatoYYMM = formatDateToYYMM(requisicao.reqDtSaida);
+      let saqueSalario = null;
 
-      // Busca o valor do saque do usuário no mês da requisição
-      let saqueMes = 0;
-      try {
-        const saqueSalario = await this.SaquesMesService.findOne(chapa, formatoYYMM);
-        saqueMes = Number(saqueSalario?.totSaque) || 0;
+      try {        
+       saqueSalario = await this.SaquesMesService.findOne(chapa, formatoYYMM)
       } catch (error) {
-        console.warn(`Erro ao buscar saque do mês para chapa ${chapa}:`, error);
+        
+        logger.error(`Erro ao buscar saque do mês para chapa (${chapa}): `, error);
+        
       }
 
-      // Busca o valor da UFESP na data da requisição
-      const UFESP = (await this.ufespService.findValueByDate(requisicao.reqDtSaida)).ufeValor || 0;
+      const ufespResponse = await this.ufespService.findValueByDate(requisicao.reqDtSaida)
+      
+      const saqueMes = Number(saqueSalario?.totSaque) || 0;
+      const UFESP = ufespResponse?.ufeValor || 0;
 
-      // Busca o salário do usuário
-      const user = await this.funcSalarioService.findByCodigo(chapa);
-      const salarioAtual = user?.salario || 0;
+      const salarioAtual = requisicao?.funcSalario?.salario || 0;
+      const UFESPcargoValor = Number(requisicao?.funcSalario?.despesaDiaria?.dtdValorMax) || 0;
 
-      // Busca o indice da UFESP do cargo do usuário
-      const UFESPcargo = await this.despesaDiaria.findOne(user.cargo);
-      const UFESPcargoValor = Number(UFESPcargo?.dtdValorMax) || 0;
+      const destino = verificarDestino(requisicao?.destino?.municipio?.munIdCodigo) as Destino;
 
-      // Busca o valor da diária base do usuário
-      const reqIntegral = Number(requisicao.reqIntegral) || 0;
-      const reqParcial = Number(requisicao.reqParcial) || 0;
-      const destino = verificarDestino(requisicao?.destino?.municipio?.munIdCodigo);
-
-      // Calcula as diárias com base no UFESP, cargo, destino e outras informações da requisição.
+      // Cálculo das diárias
       const diarias = calcularDiariaValores(
         UFESP,
         UFESPcargoValor,
-        destino as Destino,
+        destino,
         requisicao.reqPacote || 0,
-        reqIntegral,
-        reqParcial > 0 ? 1 : 0,
+        requisicao.reqIntegral || 0,
+        requisicao.reqParcial > 0 ? 1 : 0,
         requisicao.reqHRet,
       );
 
-      const totalParcial = diarias?.VL_DIARIA_PARCIAL_20 + diarias?.VL_DIARIA_PARCIAL_40 || 0;
-      const totalIntegral = diarias?.VL_DIARIA_INTEGRAL || 0;
-      const ValorSolicitado = totalParcial + totalIntegral || 0;
-      const dirariaBase = diarias?.VL_DIARIA_BASE || 0;
-      const vlDiaria = diarias?.VL_DIARIA || 0;
+      const salario50PorcentoNumber = calcularSalario50(salarioAtual);
+      let saldoRestante = salario50PorcentoNumber - (saqueMes + (diarias?.VL_DIARIA_TOTAL || 0));
+      saldoRestante = parseFloat(saldoRestante.toFixed(2)) || 0;
 
-      let diariaParcPorc = 0;
-
-      if (diarias?.VL_DIARIA_PARCIAL_20 > 0) {
-        diariaParcPorc = 20;
-      } else if (diarias?.VL_DIARIA_PARCIAL_40 > 0) {
-        diariaParcPorc = 40;
-      }
-
-      const salario50Porcento = salarioAtual / 2 || 0;
-      const salario50PorcentoFormatado = salario50Porcento > 0 ? salario50Porcento.toFixed(2) : 0;
-      const salario50PorcentoNumber = Number(salario50PorcentoFormatado);
-
-      let saldoRestante = salario50PorcentoNumber - (saqueMes + ValorSolicitado);
-      saldoRestante = Number(saldoRestante ? saldoRestante.toFixed(2) : 0);
-
-      let itinirario = new retornoItinerarioDto();
-      itinirario = await this.itinirarioService.findUltimo(requisicao.reqIdCodigo);
-
+      // Retorna o DTO
       return new ReturnRequisicaoDto({
         reqIdCodigo: requisicao.reqIdCodigo,
         chapa: requisicao.chapa,
@@ -174,22 +139,21 @@ export class S001RequisicaoService {
         desLocal: requisicao.destino?.desLocal ?? null,
         desMunIdCodigo: requisicao.destino?.municipio?.munIdCodigo ?? 0,
         desMunNme: requisicao.destino?.municipio?.munCidade ?? '',
-        diariaIntegral: totalIntegral,
-        diariaParcial: totalParcial,
-        diariaBase: dirariaBase,
+        diariaIntegral: diarias?.VL_DIARIA_INTEGRAL || 0,
+        diariaParcial: diarias?.VL_DIARIA_PARCIAL || 0,
+        diariaBase: diarias?.VL_DIARIA_BASE || 0,
         saqueMes: saqueMes,
-        valorSolicitado: ValorSolicitado,
+        valorSolicitado: diarias?.VL_DIARIA_TOTAL || 0,
         salario50Porcento: salario50PorcentoNumber,
         saldoDisponivel: saldoRestante,
         regDescricao: requisicao.regDescricao,
         traDescricao: requisicao.traDescricao,
-        diariaParcPorc: diariaParcPorc,
-        vlDiaria: vlDiaria,
+        diariaParcPorc: diarias?.PARPERC || 0,
+        vlDiaria: diarias?.VL_DIARIA || 0,
       });
-
-
     } catch (error) {
-      console.error(`Erro ao gerar lista : ${requisicao.regIdCodigo}`, error);
+      console.warn(`Erro ao buscar saque do mês para chapa ${chapa}:`, error);
+      logger.error(`REQUISIÇÃO : ${requisicao.regIdCodigo}`, error);
       return new ReturnRequisicaoDto(requisicao);
     }
   }

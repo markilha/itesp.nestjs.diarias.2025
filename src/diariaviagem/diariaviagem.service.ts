@@ -50,9 +50,7 @@ export class DiariaviagemService {
         query.orderBy('REQ_ID_CODIGO', 'ASC'); 
       }
 
-      const consulta = await query.getRawMany();
-      //converter string number
-
+      const consulta = await query.getRawMany();     
 
       const result = consulta.map((item) => {
         const parc = item.a_REQ_PARCIAL>0 ? 1 : 0;

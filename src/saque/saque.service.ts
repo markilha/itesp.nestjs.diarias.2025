@@ -18,22 +18,9 @@ import { UfespService } from 'src/ufesp/ufesp.service';
 import { DespesadiariaService } from 'src/despesadiaria/despesadiaria.service';
 import { verificarDestino } from 'src/util/verificaDestino';
 import { DataUtils } from 'src/util/DataUtils';
+import { tabs } from 'src/util/variaveis/tabs';
 
-const tabs = {
-  tab01: 's009_reqnumerario',
-  tab02: 's009_itensreqrec',
-  tab03: 's001_requisicao',
-  tab04: 's009_status',
-  tab05: 's009_tipodesp',
-  tab06: 'v009_funcsalario',
-  tab07: 'v009_requisicao',
-  tab08: 'S001_TRANSMEIO',
-  tab09: 'MUNICIPIOS_IBGE_IGC',
-  tab10: 'S000_REGIONAL',
-  tab11: 'S001_DESTINO',
-  tab12: 'S001_MUNIC_DETRAN',
-  tab13: 's001_ctrafego',
-};
+
 
 @Injectable()
 export class SaqueService {
@@ -55,6 +42,8 @@ export class SaqueService {
         .select([
           'a.SQE_DTPEDIDO',
           'a.SQE_ID_CODIGO',
+          'a.SQE_EFETIVO',
+          'a.SQE_TIPOSAQUE',
           'a.SQE_DTSAQUE',
           'a.SQE_VLSAQUE',
           'a.SQE_DTPREST',
@@ -64,25 +53,30 @@ export class SaqueService {
           'e.STS_DESCRICAO',
           'f.TDE_DESCRICAO',
           'g.NOME',
+          'j.PRA_ATIVO',
         ])
-        .innerJoin(tabs.tab01, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
-        .innerJoin(tabs.tab02, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
-        .innerJoin(tabs.tab03, 'd', 'd.REQ_ID_CODIGO = b.REQ_ID_CODIGO')
-        .innerJoin(tabs.tab04, 'e', 'e.STS_ID_CODIGO = a.STS_ID_CODIGO')
-        .innerJoin(tabs.tab05, 'f', 'f.TDE_ID_CODIGO = c.TDE_ID_CODIGO')
-        .innerJoin(tabs.tab06, 'g', 'g.CHAPA = c.CHAPA')
-        .groupBy('a.SQE_ID_CODIGO')
-        .addGroupBy('c.RRE_ID_CODIGO')
-        .addGroupBy('c.CHAPA')
-        .addGroupBy('a.SQE_DTSAQUE')
-        .addGroupBy('a.SQE_VLSAQUE')
-        .addGroupBy('a.SQE_DTPREST')
-        .addGroupBy('e.STS_DESCRICAO')
-        .addGroupBy('b.REQ_ID_CODIGO')
-        .addGroupBy('d.REQ_STATUS')
-        .addGroupBy('f.TDE_DESCRICAO')
-        .addGroupBy('g.NOME')
+        .distinct(true)
+        .innerJoin(tabs.s009_reqnumerario, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
+        .innerJoin(tabs.s009_reqrecursos, 'i', 'a.RRE_ID_CODIGO = i.RRE_ID_CODIGO')
+        .innerJoin(tabs.s009_prazos, 'j', 'i.PRA_ID_CODIGO = j.PRA_ID_CODIGO')
+        .innerJoin(tabs.s009_itensreqrec, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
+        .innerJoin(tabs.s001_requisicao, 'd', 'd.REQ_ID_CODIGO = b.REQ_ID_CODIGO')
+        .innerJoin(tabs.s009_status, 'e', 'e.STS_ID_CODIGO = a.STS_ID_CODIGO')
+        .innerJoin(tabs.s009_tipodesp, 'f', 'f.TDE_ID_CODIGO = c.TDE_ID_CODIGO')
+        .innerJoin(tabs.v009_funcsalario, 'g', 'g.CHAPA = c.CHAPA')
+
         .where('c.CHAPA = :chapa', { chapa });
+      // .groupBy('a.SQE_ID_CODIGO')
+      // .addGroupBy('c.RRE_ID_CODIGO')
+      // .addGroupBy('c.CHAPA')
+      // .addGroupBy('a.SQE_DTSAQUE')
+      // .addGroupBy('a.SQE_VLSAQUE')
+      // .addGroupBy('a.SQE_DTPREST')
+      // .addGroupBy('e.STS_DESCRICAO')
+      // .addGroupBy('b.REQ_ID_CODIGO')
+      // .addGroupBy('d.REQ_STATUS')
+      // .addGroupBy('f.TDE_DESCRICAO')
+      // .addGroupBy('g.NOME')
 
       // Aplicação de filtros
       if (params.REQ_ID_CODIGO) {
@@ -122,7 +116,14 @@ export class SaqueService {
       // Processar resultados
       let result = consulta.map((item) => {
         const calc = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
-        const STATUS = item.SQE_DTPREST ? 'Realizada' : 'Pendente';
+        // const STATUS = item.SQE_DTPREST ? 'Realizada' : 'Pendente';
+        const STATUS =
+          ['S', 'C', 'R', 'E'].includes(item.SQE_EFETIVO) &&
+          item.SQE_TIPOSAQUE === 'N' &&
+          item.PRA_ATIVO != 'N' &&
+          (item.SQE_DTPREST === null || item.SQE_VLPREST === 0)
+            ? 'Pendente'
+            : 'Realizada';
 
         return new SaqueDto({
           SQE_DTPEDIDO: item.SQE_DTPEDIDO,
@@ -143,6 +144,8 @@ export class SaqueService {
           VL_COMPLEMENTAR: calc.VL_COMPLEMENTAR,
           VL_EXTORNO: calc.VL_EXTORNO,
           STATUS,
+          SQE_EFETIVO: item.SQE_EFETIVO,
+          PRA_ATIVO: item.PRA_ATIVO,
         });
       });
 
@@ -166,8 +169,6 @@ export class SaqueService {
       throw new HttpException('Erro ao buscar Saques', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
-
 
   async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto> {
     const sqeidcodigo = params.SQE_ID_CODIGO;
@@ -203,18 +204,21 @@ export class SaqueService {
         'f.REQ_GOVERNADOR',
         'f.REQ_MOTIVO',
         'n.CTR_STATUS',
+        'p.PRA_ATIVO',
       ])
       .distinct(true)
-      .innerJoin(tabs.tab01, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
-      .innerJoin(tabs.tab02, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
-      .innerJoin(tabs.tab03, 'f', 'f.REQ_ID_CODIGO = b.REQ_ID_CODIGO')
-      .innerJoin(tabs.tab08, 'g', 'g.TRA_ID_CODIGO = f.TRA_ID_CODIGO')
-      .innerJoin(tabs.tab06, 'h', 'h.CHAPA = c.CHAPA')
-      .innerJoin(tabs.tab09, 'i', 'i.COD_MUNICIP = f.COD_MUNICIP')
-      .innerJoin(tabs.tab10, 'j', 'j.REG_ID_CODIGO = f.REG_ID_CODIGO')
-      .innerJoin(tabs.tab11, 'l', 'l.REQ_ID_CODIGO = f.REQ_ID_CODIGO')
-      .innerJoin(tabs.tab12, 'm', 'm.MUN_ID_CODIGO = l.MUN_ID_CODIGO')
-      .innerJoin(tabs.tab13, 'n', 'n.REQ_ID_CODIGO = f.REQ_ID_CODIGO')
+      .innerJoin(tabs.s009_reqrecursos, 'o', 'a.RRE_ID_CODIGO = o.RRE_ID_CODIGO')
+      .innerJoin(tabs.s009_prazos, 'p', 'o.PRA_ID_CODIGO = p.PRA_ID_CODIGO')
+      .innerJoin(tabs.s009_reqnumerario, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
+      .innerJoin(tabs.s009_itensreqrec, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
+      .innerJoin(tabs.s001_requisicao, 'f', 'f.REQ_ID_CODIGO = b.REQ_ID_CODIGO')
+      .innerJoin(tabs.S001_TRANSMEIO, 'g', 'g.TRA_ID_CODIGO = f.TRA_ID_CODIGO')
+      .innerJoin(tabs.v009_funcsalario, 'h', 'h.CHAPA = c.CHAPA')
+      .innerJoin(tabs.municipios_ibge_igc, 'i', 'i.COD_MUNICIP = f.COD_MUNICIP')
+      .innerJoin(tabs.s000_regional, 'j', 'j.REG_ID_CODIGO = f.REG_ID_CODIGO')
+      .innerJoin(tabs.s001_destino, 'l', 'l.REQ_ID_CODIGO = f.REQ_ID_CODIGO')
+      .innerJoin(tabs.s001_munic_detran, 'm', 'm.MUN_ID_CODIGO = l.MUN_ID_CODIGO')
+      .innerJoin(tabs.s001_ctrafego, 'n', 'n.REQ_ID_CODIGO = f.REQ_ID_CODIGO')
       .where('a.SQE_ID_CODIGO = :sqeidcodigo', { sqeidcodigo });
     // .groupBy('c.RRE_ID_CODIGO')
     // .addGroupBy('b.RNU_ID_CODIGO')
@@ -254,7 +258,14 @@ export class SaqueService {
 
     const consulta = await query.getRawMany();
 
-    const STATUS = consulta[0].SQE_DTPREST ? 'Realizada' : 'Pendente';
+    //const STATUS = consulta[0].SQE_DTPREST ? 'Realizada' : 'Pendente';
+    const STATUS =
+    ['S', 'C', 'R', 'E'].includes(consulta[0].SQE_EFETIVO) &&
+    consulta[0].SQE_TIPOSAQUE === 'N' &&
+    consulta[0].PRA_ATIVO != 'N' &&
+    (consulta[0].SQE_DTPREST === null || consulta[0].SQE_VLPREST === 0)
+      ? 'Pendente'
+      : 'Realizada';
     const itinerario = await this.itinerarioService.findUltimo(consulta[0].REQ_ID_CODIGO);
 
     // if (!itinerario) {
@@ -340,27 +351,22 @@ export class SaqueService {
       VLEXTORNO: valorComplementar.VL_EXTORNO,
       VLDIARIA: calcDiraria.VL_DIARIA,
       PORCDIARIA: diariaParcPorc,
+      PRA_ATIVO: consulta[0].PRA_ATIVO,
     });
   }
 
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
-   
-
     const diariaViagem = await this.diariaviagemService.findOne(params.reqIdCodigo, params.chapa);
-    
-    
 
     if (!diariaViagem) {
       throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
     }
 
-  
-
     await this.saqueRepository.query(
       `CALL INS_S009_SAQUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @id);`,
       [
         'DIARIA',
-        'N',
+        'S',
         diariaViagem.TDE_ID_CODIGO,
         diariaViagem.ITE_ID_CODIGO,
         diariaViagem.RRE_ID_CODIGO,

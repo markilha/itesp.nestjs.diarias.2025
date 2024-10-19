@@ -71,6 +71,8 @@ export class SaqueDto {
   REQ_STATUS: string;
   CHAPA: string;
   STS_DESCRICAO: string;
+  SQE_EFETIVO: string;
+  PRA_ATIVO: string;
 
   constructor(params: any) {
     this.SQE_DTPEDIDO = params.SQE_DTPEDIDO;
@@ -89,6 +91,8 @@ export class SaqueDto {
     this.REQ_STATUS = params.REQ_STATUS;
     this.CHAPA = params.CHAPA;
     this.STS_DESCRICAO = params.STS_DESCRICAO;  
+    this.SQE_EFETIVO = params.SQE_EFETIVO;
+    this.PRA_ATIVO = params.PRA_ATIVO;
     
   }
 }
@@ -136,6 +140,7 @@ export class PrestacaoDto {
   PORCDIARIA: number;
   SQE_DTPREST: string;
   REQ_STATUS: string; 
+  PRA_ATIVO: string;
  
 
   constructor(params: any) {
@@ -179,6 +184,7 @@ export class PrestacaoDto {
     this.VLPREST = params.VLPREST;
     this.VLDIARIA = params.VLDIARIA;
     this.PORCDIARIA = params.PORCDIARIA;
+    this.PRA_ATIVO = params.PRA_ATIVO
 
   }
 }
