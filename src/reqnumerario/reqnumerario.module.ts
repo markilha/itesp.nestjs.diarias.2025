@@ -3,12 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ReqnumerarioController } from './reqnumerario.controller';
 import { ReqnumerarioService } from './reqnumerario.service';
-import { ReqNumerarioEntity } from 'src/database/db_mysql/entities/ReqNumerario.entity';
+import { ReqNumerarioEntity } from 'src/database/db_oracle/entities/reqnumerario.entity';
 
 
 @Module({
     imports: [       
-        TypeOrmModule.forFeature([ReqNumerarioEntity],"mysqlConnection")   
+        TypeOrmModule.forFeature([ReqNumerarioEntity],"oracleConnection")   
     ],
     controllers: [ReqnumerarioController],
     providers: [ReqnumerarioService],

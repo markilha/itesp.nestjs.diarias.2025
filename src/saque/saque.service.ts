@@ -405,7 +405,7 @@ export class SaqueService {
       return { sqeIdCodigo: result[0].id };
     } catch (error) {
       console.error('Erro ao solicitar saque:', error);
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException('Erro ao solicitar saque:', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

@@ -17,6 +17,7 @@ import { MotivodiariaModule } from './motivodiaria/motivodiaria.module';
 import { DespesadiariaModule } from './despesadiaria/despesadiaria.module';
 import { ItinirarioModule } from './itinirario/itinirario.module';
 import { UsureqModule } from './usureq/usureq.module';
+import { DbOraModule } from './database/db_oracle/db.ora.module';
 
 
 
@@ -24,6 +25,7 @@ import { UsureqModule } from './usureq/usureq.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }), 
     DbUsersModule,
+    DbOraModule,
     AuthModule,      
     ReqnumerarioModule,  
     UfespModule,
