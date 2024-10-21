@@ -19,6 +19,7 @@ import { DespesadiariaService } from 'src/despesadiaria/despesadiaria.service';
 import { verificarDestino } from 'src/util/verificaDestino';
 import { DataUtils } from 'src/util/DataUtils';
 import { tabs } from 'src/util/variaveis/tabs';
+import { MotivodiariaService } from 'src/motivodiaria/motivodiaria.service';
 
 
 
@@ -27,7 +28,7 @@ export class SaqueService {
   constructor(
     @InjectRepository(SaqueEntity, 'mysqlConnection')
     private saqueRepository: Repository<SaqueEntity>,
-    private diariaviagemService: DiariaviagemService,
+    private motivoDiaria: MotivodiariaService,
     private itinerarioService: ItinirarioService,
     private ufespService: UfespService,
     private despesaDiaria: DespesadiariaService,
@@ -356,9 +357,9 @@ export class SaqueService {
   }
 
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
-    const diariaViagem = await this.diariaviagemService.findOne(params.reqIdCodigo, params.chapa);
+    const MD = await this.motivoDiaria.findOne( params.chapa, params.reqIdCodigo);
 
-    if (!diariaViagem) {
+    if (!MD) {
       throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
     }
 
@@ -367,13 +368,13 @@ export class SaqueService {
       [
         'DIARIA',
         'S',
-        diariaViagem.TDE_ID_CODIGO,
-        diariaViagem.ITE_ID_CODIGO,
-        diariaViagem.RRE_ID_CODIGO,
-        diariaViagem.DIR_ID_CODIGO,
+        MD.TDE_ID_CODIGO,
+        MD.ITE_ID_CODIGO,
+        MD.RRE_ID_CODIGO,
+        MD.DIR_ID_CODIGO,
         null,
         null,
-        diariaViagem.MDI_VALOR,
+        MD.MDI_VALOR,
         'N',
         'S',
         null,
@@ -382,18 +383,18 @@ export class SaqueService {
         1,
         null,
         params.reqIdCodigo,
-        diariaViagem.REQ_DTSAIDA,
-        diariaViagem.REQ_HSAIDA,
-        diariaViagem.REQ_DTRET,
-        diariaViagem.REQ_HRET,
-        diariaViagem.REQ_INTEGRAL,
-        diariaViagem.REQ_PARCIAL,
+        MD.REQ_DTSAIDA,
+        MD.REQ_HSAIDA,
+        MD.REQ_DTRET,
+        MD.REQ_HRET,
+        MD.REQ_INTEGRAL,
+        MD.REQ_PARCIAL,
         null,
         null,
-        params.reqPacote,
-        diariaViagem.REQ_GOVERNADOR,
-        diariaViagem.REQ_MOTIVO,
-        params.reqStatus,
+        MD.REQ_PACOTE,
+        MD.REQ_GOVERNADOR,
+        MD.REQ_MOTIVO,
+        MD.REQ_STATUS,
         params.diariaIntegral,
         params.diariaParcial,
         params.diariaBase,

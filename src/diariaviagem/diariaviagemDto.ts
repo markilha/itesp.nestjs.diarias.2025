@@ -1,3 +1,4 @@
+import { AnyNsRecord } from 'dns';
 import { DiariaViagemEntity } from 'src/database/db_mysql/entities/diariaViagem';
 
 export class DiariaviagemDto {
@@ -67,6 +68,9 @@ export class DiariaviagemDto {
     this.REQ_GOVERNADOR = item.REQ_GOVERNADOR;
   }
 }
+
+
+
 
 
 export class FindAllParams {

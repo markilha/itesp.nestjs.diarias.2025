@@ -8,6 +8,7 @@ import { PpessoaModule } from 'src/ppessoa/ppessoa.module';
 import { ItinirarioModule } from 'src/itinirario/itinirario.module';
 import { UfespModule } from 'src/ufesp/ufesp.module';
 import { DespesadiariaModule } from 'src/despesadiaria/despesadiaria.module';
+import { MotivodiariaModule } from 'src/motivodiaria/motivodiaria.module';
 
 
 @Module({
@@ -17,7 +18,8 @@ import { DespesadiariaModule } from 'src/despesadiaria/despesadiaria.module';
     PpessoaModule,
     ItinirarioModule,
     UfespModule,
-    DespesadiariaModule
+    DespesadiariaModule,
+    MotivodiariaModule,
   
   
   ],
