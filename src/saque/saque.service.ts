@@ -21,8 +21,6 @@ import { DataUtils } from 'src/util/DataUtils';
 import { tabs } from 'src/util/variaveis/tabs';
 import { MotivodiariaService } from 'src/motivodiaria/motivodiaria.service';
 
-
-
 @Injectable()
 export class SaqueService {
   constructor(
@@ -261,12 +259,12 @@ export class SaqueService {
 
     //const STATUS = consulta[0].SQE_DTPREST ? 'Realizada' : 'Pendente';
     const STATUS =
-    ['S', 'C', 'R', 'E'].includes(consulta[0].SQE_EFETIVO) &&
-    consulta[0].SQE_TIPOSAQUE === 'N' &&
-    consulta[0].PRA_ATIVO != 'N' &&
-    (consulta[0].SQE_DTPREST === null || consulta[0].SQE_VLPREST === 0)
-      ? 'Pendente'
-      : 'Realizada';
+      ['S', 'C', 'R', 'E'].includes(consulta[0].SQE_EFETIVO) &&
+      consulta[0].SQE_TIPOSAQUE === 'N' &&
+      consulta[0].PRA_ATIVO != 'N' &&
+      (consulta[0].SQE_DTPREST === null || consulta[0].SQE_VLPREST === 0)
+        ? 'Pendente'
+        : 'Realizada';
     const itinerario = await this.itinerarioService.findUltimo(consulta[0].REQ_ID_CODIGO);
 
     // if (!itinerario) {
@@ -357,52 +355,57 @@ export class SaqueService {
   }
 
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
-    const MD = await this.motivoDiaria.findOne( params.chapa, params.reqIdCodigo);
+    try {
+      const MD = await this.motivoDiaria.findOne(params.chapa, params.reqIdCodigo);
 
-    if (!MD) {
-      throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
+      if (!MD) {
+        throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
+      }
+
+      await this.saqueRepository.query(
+        `CALL INS_S009_SAQUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @id);`,
+        [
+          'DIARIA',
+          'S',
+          MD.TDE_ID_CODIGO,
+          MD.ITE_ID_CODIGO,
+          MD.RRE_ID_CODIGO,
+          MD.DIR_ID_CODIGO,
+          null,
+          null,
+          MD.MDI_VALOR,
+          'N',
+          'S',
+          null,
+          null,
+          null,
+          1,
+          null,
+          params.reqIdCodigo,
+          MD.REQ_DTSAIDA,
+          MD.REQ_HSAIDA,
+          MD.REQ_DTRET,
+          MD.REQ_HRET,
+          MD.REQ_INTEGRAL,
+          MD.REQ_PARCIAL,
+          null,
+          null,
+          MD.REQ_PACOTE,
+          MD.REQ_GOVERNADOR,
+          MD.REQ_MOTIVO,
+          MD.REQ_STATUS,
+          params.diariaIntegral,
+          params.diariaParcial,
+          params.diariaBase,
+        ],
+      );
+
+      const result = await this.saqueRepository.query(`SELECT @id as id`);
+
+      return { sqeIdCodigo: result[0].id };
+    } catch (error) {
+      console.error('Erro ao solicitar saque:', error);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-    await this.saqueRepository.query(
-      `CALL INS_S009_SAQUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @id);`,
-      [
-        'DIARIA',
-        'S',
-        MD.TDE_ID_CODIGO,
-        MD.ITE_ID_CODIGO,
-        MD.RRE_ID_CODIGO,
-        MD.DIR_ID_CODIGO,
-        null,
-        null,
-        MD.MDI_VALOR,
-        'N',
-        'S',
-        null,
-        null,
-        null,
-        1,
-        null,
-        params.reqIdCodigo,
-        MD.REQ_DTSAIDA,
-        MD.REQ_HSAIDA,
-        MD.REQ_DTRET,
-        MD.REQ_HRET,
-        MD.REQ_INTEGRAL,
-        MD.REQ_PARCIAL,
-        null,
-        null,
-        MD.REQ_PACOTE,
-        MD.REQ_GOVERNADOR,
-        MD.REQ_MOTIVO,
-        MD.REQ_STATUS,
-        params.diariaIntegral,
-        params.diariaParcial,
-        params.diariaBase,
-      ],
-    );
-
-    const result = await this.saqueRepository.query(`SELECT @id as id`);
-
-    return { sqeIdCodigo: result[0].id };
   }
 }
