@@ -13,7 +13,7 @@ import { calcularDiariaValores } from 'src/util/calculo_dia_retorno';
 import { ItinirarioService } from 'src/itinirario/itinirario.service';
 import { retornoItinerarioDto } from 'src/itinirario/itinerarioDto';
 import { calcularSalario50 } from 'src/util/variaveis/calculo_50';
-import { logger } from 'src/util/logs/log';
+import { logger } from 'src/util/savelogs/SaveLogs';
 
 @Injectable()
 export class S001RequisicaoService {
