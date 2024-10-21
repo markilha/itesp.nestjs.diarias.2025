@@ -124,9 +124,9 @@ export function calcularDiariaValores(
       VL_DIARIA_PARCIAL_40: diariaParcial40,
       VL_DIARIA_PARCIAL_20: diariaParcial20,
       VL_DIARIA_BASE: diariaBase,
-      VL_DIARIA: diaria,
+      VL_DIARIA:DataUtils.arredondar(diaria),
       VL_DIARIA_PARCIAL: Number(diariaParcial40 + diariaParcial20) || 0,
-      VL_DIARIA_TOTAL: Number(diariaParcial40 + diariaParcial20 + diariaIntegral) || 0,
+      VL_DIARIA_TOTAL: DataUtils.arredondar( Number(diariaParcial40 + diariaParcial20 + diariaIntegral) || 0),
       PARPERC: porcentagem,
     };
   } catch (error) {

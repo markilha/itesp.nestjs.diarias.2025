@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column, OneToOne } from 'typeorm';
+import { Requisicao_Entity } from './requisicao_.entity';
 
 
 @Entity('s001_transmeio', { schema: 'dev_itesp_diarias' })
@@ -12,5 +13,8 @@ export class TransMeioEntity {
 
   @Column({ name: 'TRA_TIPO', type: 'char', length: 1, nullable: true })
   traTipo: string;
+
+  @OneToOne(() => Requisicao_Entity, (req) => req.transmeio)
+  requisicao?: Requisicao_Entity; 
 
 }

@@ -84,9 +84,9 @@ export class ReturnRequisicaoDto {
     this.reqEspecial = Number(params.reqEspecial) || 0;
     this.reqPacote = params.reqPacote === 1 ? 'N' : 'S';
     this.reqGovernador = params.reqGovernador;    
-    this.desLocal = params.destino?.desLocal ?? null;
-    this.desMunIdCodigo = params.destino?.municipio?.munIdCodigo ?? 0; 
-    this.desMunNme = params.destino?.municipio?.munCidade ?? '';    
+    this.desLocal = params.desLocal;
+    this.desMunIdCodigo = params.desMunIdCodigo; 
+    this.desMunNme = params.desMunNme;    
     this.diariaIntegral = params.diariaIntegral;
     this.diariaParcial = params.diariaParcial   
     this.diariaBase = params.diariaBase;   

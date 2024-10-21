@@ -1,4 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Index, OneToOne, JoinColumn } from 'typeorm';
+import { UsuReqEntity } from './usureq.entity';
+import { TransMeioEntity } from './transmeio.entity';
 
 @Entity('s001_requisicao') // Nome da tabela
 @Index('idx_req_id_codigo', ['reqIdCodigo']) // Definindo o índice
@@ -59,4 +61,13 @@ export class Requisicao_Entity {
 
   @Column({ name: 'REQ_GOVERNADOR', type: 'varchar', length: 50, nullable: true })
   reqGovernador: string;
+
+  @OneToOne(() => UsuReqEntity, (req) => req.requisicao)  
+  usureq?: UsuReqEntity; 
+
+  @OneToOne(() => TransMeioEntity, (req) => req.requisicao)
+  @JoinColumn({ name: 'TRA_ID_CODIGO', referencedColumnName: 'traIdCodigo' })
+  transmeio?: TransMeioEntity; 
+
+ 
 }

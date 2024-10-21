@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm';
 import { RequisicaoDestinoEntity } from './requisicaoDestino.entity';
 import { FuncSalarioEntity } from './funcsalario.entity';
+import { UsuReqEntity } from './usureq.entity';
 
 @Entity('v009_requisicao', { schema: 'dev_itesp_diarias' })
 export class RequisicaoEntity {
@@ -77,4 +78,9 @@ export class RequisicaoEntity {
   @OneToOne(() => FuncSalarioEntity, (muni) => muni.requisicao)
   @JoinColumn({ name: 'CHAPA', referencedColumnName: 'chapa' })
   funcSalario: FuncSalarioEntity;
+
+  @OneToOne(() => UsuReqEntity, (req) => req.requisicao)  
+  usureq?: UsuReqEntity; 
+
+
 }

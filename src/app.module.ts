@@ -16,6 +16,7 @@ import { DiariaviagemModule } from './diariaviagem/diariaviagem.module';
 import { MotivodiariaModule } from './motivodiaria/motivodiaria.module';
 import { DespesadiariaModule } from './despesadiaria/despesadiaria.module';
 import { ItinirarioModule } from './itinirario/itinirario.module';
+import { UsureqModule } from './usureq/usureq.module';
 
 
 
@@ -36,7 +37,9 @@ import { ItinirarioModule } from './itinirario/itinirario.module';
     DiariaviagemModule,
     MotivodiariaModule,
     DespesadiariaModule,
-    ItinirarioModule, 
+    ItinirarioModule,
+   
+    UsureqModule, 
   ],
   controllers: [],
 

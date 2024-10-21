@@ -14,4 +14,6 @@ export enum tabs {
     s001_ctrafego = 's001_ctrafego',
     s009_reqrecursos = 's009_reqrecursos',
     s009_prazos = 's009_prazos',
+    s009_saque = 's009_saque',
+    ppessoa = 'ppessoa',
   }

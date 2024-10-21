@@ -34,7 +34,7 @@ export class FuncSalarioEntity {
   @Column({ name: 'reg_descricao', type: 'varchar', length: 255 })
   regDescricao: string;
 
-  @OneToOne(() => UsuReqEntity, (usu) => usu.pfunc)  
+  @OneToOne(() => UsuReqEntity, (usu) => usu.funcsalario)  
   usureq?: UsuReqEntity;  
 
   @OneToOne(() => RequisicaoEntity, (req) => req.funcSalario) 
