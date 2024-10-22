@@ -1,13 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ItinerarioEntity } from 'src/database/db_mysql/entities/itinerario.entity';
+import { ItinerarioEntity } from 'src/database/db_oracle/entities/itinerario.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, ItinerarioDto, retornoItinerarioDto } from './itinerarioDto';
 
 @Injectable()
 export class ItinirarioService {
   constructor(
-    @InjectRepository(ItinerarioEntity, 'mysqlConnection')
+    @InjectRepository(ItinerarioEntity, 'oracleConnection')
     private readonly itinerarioRepository: Repository<ItinerarioEntity>,
   ) {}
 

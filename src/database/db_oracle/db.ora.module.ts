@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
-    TypeOrmModule.forRootAsync({ 
+    TypeOrmModule.forRootAsync({       
       name: 'oracleConnection',   
       useFactory: async (configService: ConfigService) => ({        
         type: 'oracle',
@@ -17,6 +17,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         synchronize: false,
       }),
       inject: [ConfigService],
+      
     }),
   ],
 })

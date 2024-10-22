@@ -1,19 +1,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PcargoEntity } from 'src/database/db_mysql/entities/pcargoEntity';
+import { PcargoEntity } from 'src/database/db_oracle/entities/pcargo.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, PcargoDto } from './pcargoDto';
 
 @Injectable()
 export class PcargoService {
   constructor(
-    @InjectRepository(PcargoEntity, 'mysqlConnection')
+    @InjectRepository(PcargoEntity, 'oracleConnection')
     private pcargoRepository: Repository<PcargoEntity>,
   ) {}
 
-  async findAll(params: FindAllParams): Promise<PcargoDto[]> {  
-   
-    
+  async findAll(params: FindAllParams): Promise<PcargoDto[]> {     
     try {
       const searchParams: FindOptionsWhere<PcargoDto> = {};
       if (params.codigo) {
@@ -36,6 +34,7 @@ export class PcargoService {
         where: searchParams,
       });
     } catch (error) {
+      console.log(error);
       throw new HttpException('Não foi possível buscar cargos', HttpStatus.INTERNAL_SERVER_ERROR);   
     }
   }

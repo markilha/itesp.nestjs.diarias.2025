@@ -18,8 +18,25 @@ export class SaqueMesDto {
   }
 }
 
+// SaqueEfetMes.dto.ts
+export class SaqueEfetMesDto {
+  CHAPA: string;            // Chapa do funcionário
+  NOME: string;             // Nome do funcionário
+  DESCRICAO: string;        // Descrição da seção
+  FUNCAO: string;          // Função do funcionário
+  MESSAQUE: string;         // Mês do saque
+  totSaque: number;        // Total de saques
+  totSaqueEstCanc: number; // Total de saques cancelados
+  mesDev: string;          // Mês de devolução
+  vlDevolucao: number;     // Valor da devolução
+  salario: number;         // Salário do funcionário
+
+  
+}
+
+
 export class FindAllParams {
-  CHAPA?: string; 
+  chapa?: string; 
   messaque?: string; 
   page?: number; 
   limit?: number; 

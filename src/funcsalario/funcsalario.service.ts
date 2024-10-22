@@ -1,20 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
-import { FuncSalarioEntity } from 'src/database/db_mysql/entities/funcsalario.entity';
+import { FuncSalarioEntity } from 'src/database/db_oracle/entities/funcsalario.entity';
 import { FindAllParams } from './funcsalarioDto';
 
 @Injectable()
 export class FuncsalarioService {
   constructor(
-    @InjectRepository(FuncSalarioEntity, 'mysqlConnection')
+    @InjectRepository(FuncSalarioEntity, 'oracleConnection')
     private funcSalarioRepository: Repository<FuncSalarioEntity>,
   ) {}
 
 
 
   async findAll(params: FindAllParams): Promise<FuncSalarioEntity[]> {
-    const searchParams: FindOptionsWhere<FuncSalarioEntity> = {};
+    const searchParams: FindOptionsWhere<FuncSalarioEntity> = {}; 
 
     if (params.nome) {
         searchParams['nome'] = ILike(`%${params.nome}%`);
@@ -40,6 +40,8 @@ export class FuncsalarioService {
       where: searchParams,
     });
   }
+
+
 
   async findByCodigo(chapa: string): Promise<FuncSalarioEntity> {
     const pfuncao = await this.funcSalarioRepository.findOne({

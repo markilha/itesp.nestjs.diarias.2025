@@ -1,13 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UferpsEntity } from 'src/database/db_mysql/entities/UferpsEntity';
+import { UferpsEntity } from 'src/database/db_oracle/entities/UferpsEntity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, UfespDto } from './ufespDto';
 
 @Injectable()
 export class UfespService {
   constructor(
-    @InjectRepository(UferpsEntity, 'mysqlConnection')
+    @InjectRepository(UferpsEntity, 'oracleConnection')
     private uferpsRepository: Repository<UferpsEntity>,
   ) {}
 

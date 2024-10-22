@@ -75,12 +75,12 @@ export class SaqueDto {
   PRA_ATIVO: string;
 
   constructor(params: any) {
+    this.SQE_ID_CODIGO = params.SQE_ID_CODIGO;
     this.SQE_DTPEDIDO = params.SQE_DTPEDIDO;
     this.SQE_DTSAQUE = params.SQE_DTSAQUE;
     this.SQE_DTPREST = params.SQE_DTPREST;
     this.NOME = params.NOME;
-    this.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
-    this.SQE_ID_CODIGO = params.SQE_ID_CODIGO;
+    this.REQ_ID_CODIGO = params.REQ_ID_CODIGO;   
     this.TDE_DESCRICAO = params.TDE_DESCRICAO;
     this.SQE_VLSAQUE = params.SQE_VLSAQUE;
     this.SQE_VLPREST = params.SQE_VLPREST;

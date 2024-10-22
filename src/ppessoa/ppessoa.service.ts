@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PPessoaEntity } from 'src/database/db_mysql/entities/ppessoa.entity';
-import { PFuncEntity } from 'src/database/db_mysql/entities/pfunc.entity';
+import { PPessoaEntity } from 'src/database/db_oracle/entities/ppessoa.entity';
+import { PFuncEntity } from 'src/database/db_oracle/entities/pfunc.entity';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { FindAllParams, RMPessoaDto } from './ppessoa.dto';
 import { returnRmDto } from './returnRmDto';
@@ -10,10 +10,10 @@ import { returnRmDto } from './returnRmDto';
 @Injectable()
 export class PpessoaService {
   constructor(
-    @InjectRepository(PPessoaEntity, 'mysqlConnection')
+    @InjectRepository(PPessoaEntity, 'oracleConnection')
     private rmRepository: Repository<PPessoaEntity>,
     
-    @InjectRepository(PFuncEntity, 'mysqlConnection')
+    @InjectRepository(PFuncEntity, 'oracleConnection')
     private funcRepository: Repository<PFuncEntity>,
   ) {}
 

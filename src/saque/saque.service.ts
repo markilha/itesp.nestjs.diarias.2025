@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { FindParamsSaque, RetNumSaque, SaqueDto, PrestacaoDto, SolitarDto } from './saque.dto';
 
-import { SaqueEntity } from 'src/database/db_mysql/entities/saque.entity';
+import { SaqueEntity } from 'src/database/db_oracle/entities/saque.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DiariaviagemService } from 'src/diariaviagem/diariaviagem.service';
@@ -24,98 +24,106 @@ import { MotivodiariaService } from 'src/motivodiaria/motivodiaria.service';
 @Injectable()
 export class SaqueService {
   constructor(
-    @InjectRepository(SaqueEntity, 'mysqlConnection')
+    @InjectRepository(SaqueEntity, 'oracleConnection')
     private saqueRepository: Repository<SaqueEntity>,
     private motivoDiaria: MotivodiariaService,
     private itinerarioService: ItinirarioService,
     private ufespService: UfespService,
     private despesaDiaria: DespesadiariaService,
-  ) {}
+  ) {} 
 
   async findAll(params: FindParamsSaque): Promise<SaqueDto[]> {
     try {
       const chapa = params.CHAPA;
+      const orderByField = params.orderBy || 'a.SQE_DTPEDIDO';
+      const orderDirection = params.orderDirection || 'ASC';
 
-      const query = this.saqueRepository.createQueryBuilder('a');
-      query
-        .select([
-          'a.SQE_DTPEDIDO',
-          'a.SQE_ID_CODIGO',
-          'a.SQE_EFETIVO',
-          'a.SQE_TIPOSAQUE',
-          'a.SQE_DTSAQUE',
-          'a.SQE_VLSAQUE',
-          'a.SQE_DTPREST',
-          'b.REQ_ID_CODIGO',
-          'd.REQ_STATUS',
-          'c.CHAPA',
-          'e.STS_DESCRICAO',
-          'f.TDE_DESCRICAO',
-          'g.NOME',
-          'j.PRA_ATIVO',
-        ])
-        .distinct(true)
-        .innerJoin(tabs.s009_reqnumerario, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
-        .innerJoin(tabs.s009_reqrecursos, 'i', 'a.RRE_ID_CODIGO = i.RRE_ID_CODIGO')
-        .innerJoin(tabs.s009_prazos, 'j', 'i.PRA_ID_CODIGO = j.PRA_ID_CODIGO')
-        .innerJoin(tabs.s009_itensreqrec, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
-        .innerJoin(tabs.s001_requisicao, 'd', 'd.REQ_ID_CODIGO = b.REQ_ID_CODIGO')
-        .innerJoin(tabs.s009_status, 'e', 'e.STS_ID_CODIGO = a.STS_ID_CODIGO')
-        .innerJoin(tabs.s009_tipodesp, 'f', 'f.TDE_ID_CODIGO = c.TDE_ID_CODIGO')
-        .innerJoin(tabs.v009_funcsalario, 'g', 'g.CHAPA = c.CHAPA')
+      const page = params.page || 1;
+      const itemsPerPage = params.limit || 100;
+      const offset = (page - 1) * itemsPerPage;
 
-        .where('c.CHAPA = :chapa', { chapa });
-      // .groupBy('a.SQE_ID_CODIGO')
-      // .addGroupBy('c.RRE_ID_CODIGO')
-      // .addGroupBy('c.CHAPA')
-      // .addGroupBy('a.SQE_DTSAQUE')
-      // .addGroupBy('a.SQE_VLSAQUE')
-      // .addGroupBy('a.SQE_DTPREST')
-      // .addGroupBy('e.STS_DESCRICAO')
-      // .addGroupBy('b.REQ_ID_CODIGO')
-      // .addGroupBy('d.REQ_STATUS')
-      // .addGroupBy('f.TDE_DESCRICAO')
-      // .addGroupBy('g.NOME')
+      const filterConditions: string[] = [];
+      const filterValues: any[] = [];
 
-      // Aplicação de filtros
-      if (params.REQ_ID_CODIGO) {
-        query.andWhere('b.REQ_ID_CODIGO = :REQ_ID_CODIGO', { REQ_ID_CODIGO: params.REQ_ID_CODIGO });
-      }
+      // Adiciona o filtro de CHAPA
+      filterConditions.push('b.CHAPA = :chapa');
+      filterValues.push(chapa);
+
+      // Verifica e adiciona cada filtro dinamicamente
       if (params.SQE_ID_CODIGO) {
-        query.andWhere('a.SQE_ID_CODIGO = :SQE_ID_CODIGO', { SQE_ID_CODIGO: params.SQE_ID_CODIGO });
+        filterConditions.push('a.SQE_ID_CODIGO = :SQE_ID_CODIGO');
+        filterValues.push(params.SQE_ID_CODIGO);
+      }
+      if (params.REQ_ID_CODIGO) {
+        filterConditions.push('d.REQ_ID_CODIGO = :REQ_ID_CODIGO');
+        filterValues.push(params.REQ_ID_CODIGO);
       }
       if (params.STS_DESCRICAO) {
-        query.andWhere('e.STS_DESCRICAO = :STS_DESCRICAO', { STS_DESCRICAO: params.STS_DESCRICAO });
+        filterConditions.push('b.STS_DESCRICAO = :STS_DESCRICAO');
+        filterValues.push(params.STS_DESCRICAO);
       }
       if (params.REQ_STATUS) {
-        query.andWhere('d.REQ_STATUS = :REQ_STATUS', { REQ_STATUS: params.REQ_STATUS });
+        filterConditions.push('d.REQ_STATUS = :REQ_STATUS');
+        filterValues.push(params.REQ_STATUS);
       }
+
+      // Verifica se as datas foram fornecidas e adiciona os filtros
       if (params.startDate && params.endDate) {
         const prestDate = params.usePrestDate === 'true';
         const dataColumn = prestDate ? 'a.SQE_DTPREST' : 'a.SQE_DTSAQUE';
-        const { startDate, endDate } = formatDates(params.startDate, params.endDate) || null;
-        query.andWhere(
-          `STR_TO_DATE(${dataColumn}, '%d/%m/%Y %H:%i:%s') BETWEEN STR_TO_DATE(:startDate, '%d/%m/%Y %H:%i:%s') AND STR_TO_DATE(:endDate, '%d/%m/%Y %H:%i:%s')`,
-          { startDate, endDate },
+        // Formata as datas de entrada
+        const { startDate, endDate } = formatDates(params.startDate, params.endDate) || {};
+        // Adiciona a condição de filtro com o formato de data correto
+        filterConditions.push(
+          `TO_DATE(
+          CASE 
+            WHEN LENGTH(${dataColumn}) = 8 THEN ${dataColumn} || ' 00:00:00' -- Para o formato DD/MM/YY
+            ELSE ${dataColumn}
+          END,
+          'DD/MM/YYYY HH24:MI:SS'
+        ) BETWEEN TO_DATE(TRIM(:startDate), 'DD/MM/YYYY HH24:MI:SS') 
+        AND TO_DATE(TRIM(:endDate), 'DD/MM/YYYY HH24:MI:SS')`,
         );
+
+        // Adiciona os valores de filtro
+        filterValues.push(startDate);
+        filterValues.push(endDate);
       }
 
-      // Ordenação
-      if (params.orderBy) {
-        query.orderBy(params.orderBy, params.orderDirection === 'DESC' ? 'DESC' : 'ASC');
-      } else {
-        query.orderBy('SQE_ID_CODIGO', 'ASC'); // Ordenação padrão
-      }
+      // Monta a cláusula WHERE
+      const whereClause =
+        filterConditions.length > 0 ? `WHERE ${filterConditions.join(' AND ')}` : '';
 
-      const consulta = await query.getRawMany();
-      if (!consulta.length) {
-        return [];
-      }
+      const result = await this.saqueRepository.query(
+        `
+        SELECT
+          a.SQE_DTPEDIDO as SQE_DTPEDIDO,
+          a.SQE_ID_CODIGO as SQE_ID_CODIGO,
+          a.SQE_EFETIVO as SQE_EFETIVO,
+          a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,
+          a.SQE_DTSAQUE as SQE_DTSAQUE,
+          a.SQE_VLSAQUE as SQE_VLSAQUE,
+          a.SQE_DTPREST ,
+          b.CHAPA as CHAPA,
+          b.NOME as NOME,     
+          b.TDE_DESCRICAO as TDE_DESCRICAO,
+          b.STS_DESCRICAO as STS_DESCRICAO,
+          b.PRA_ATIVO as PRA_ATIVO,
+          c.REQ_ID_CODIGO as REQ_ID_CODIGO,
+          d.REQ_STATUS as REQ_STATUS
+        FROM FINANCEIRO.s009_saque a
+          INNER JOIN FINANCEIRO.V009_ITENSREQREC b ON a.ITE_ID_CODIGO = b.ITE_ID_CODIGO 
+          INNER JOIN FINANCEIRO.s009_reqnumerario c ON a.SQE_ID_CODIGO = c.SQE_ID_CODIGO
+          INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO
+         ${whereClause}
+        ORDER BY ${orderByField} ${orderDirection}
+        OFFSET :offset ROWS FETCH NEXT :itemsPerPage ROWS ONLY
+      `,
+        [...filterValues, offset, itemsPerPage],
+      );
 
-      // Processar resultados
-      let result = consulta.map((item) => {
+      let consulta = result.map((item: any) => {
         const calc = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
-        // const STATUS = item.SQE_DTPREST ? 'Realizada' : 'Pendente';
         const STATUS =
           ['S', 'C', 'R', 'E'].includes(item.SQE_EFETIVO) &&
           item.SQE_TIPOSAQUE === 'N' &&
@@ -125,6 +133,7 @@ export class SaqueService {
             : 'Realizada';
 
         return new SaqueDto({
+          SQE_ID_CODIGO: item.SQE_ID_CODIGO,
           SQE_DTPEDIDO: item.SQE_DTPEDIDO,
           SQE_DTSAQUE: item.SQE_DTSAQUE,
           SQE_VLSAQUE: Number(item.SQE_VLSAQUE) || 0,
@@ -134,7 +143,6 @@ export class SaqueService {
           SQE_DTPREST: item.SQE_DTPREST,
           NOME: item.NOME,
           REQ_ID_CODIGO: item.REQ_ID_CODIGO,
-          SQE_ID_CODIGO: item.SQE_ID_CODIGO,
           TDE_DESCRICAO: item.TDE_DESCRICAO,
           STS_DESCRICAO: item.STS_DESCRICAO,
           REQ_DTREQ: item.REQ_DTREQ,
@@ -150,19 +158,10 @@ export class SaqueService {
 
       // Filtros adicionais
       if (params.STATUS) {
-        result = result.filter((item) => item.STATUS === params.STATUS);
+        consulta = consulta.filter((item: any) => item.STATUS === params.STATUS);
       }
 
-      // Aplicando paginação
-      const page = params.page || 1;
-      const limit = params.limit || 100;
-      const startIndex = (page - 1) * limit;
-      const endIndex = page * limit;
-
-      const paginatedResults = result.slice(startIndex, endIndex);
-
-      // Retornando resultados paginados
-      return paginatedResults;
+      return consulta;
     } catch (error) {
       console.error('Erro na consulta findSaque:', error);
       throw new HttpException('Erro ao buscar Saques', HttpStatus.INTERNAL_SERVER_ERROR);

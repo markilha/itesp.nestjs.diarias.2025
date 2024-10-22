@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { RequisicaoEntity } from 'src/database/db_mysql/entities/requisicao.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, ReturnRequisicaoDto } from './requisicao.dto';
-
 import { UfespService } from 'src/ufesp/ufesp.service';
 import { verificarDestino } from 'src/util/verificaDestino';
 import { Destino } from 'src/util/diariaDto';
@@ -11,7 +10,6 @@ import { SaquesMesService } from 'src/saques-mes/saques-mes.service';
 import { formatDateToYYMM } from 'src/util/formatoYYMM';
 import { calcularDiariaValores } from 'src/util/calculo_dia_retorno';
 import { ItinirarioService } from 'src/itinirario/itinirario.service';
-import { retornoItinerarioDto } from 'src/itinirario/itinerarioDto';
 import { calcularSalario50 } from 'src/util/variaveis/calculo_50';
 import { logger } from 'src/util/savelogs/SaveLogs';
 
@@ -89,17 +87,9 @@ export class S001RequisicaoService {
       let salario50PorcentoNumber = 0;
       let saqueSalario = null;
       let saldoRestante = 0;
-      let destino = '' as Destino;
+      let destino = '' as Destino;     
 
-      const formatoYYMM = formatDateToYYMM(requisicao.reqDtSaida);
-
-      // Busca o valor do saque do mês
-      try {
-        saqueSalario = await this.SaquesMesService.findOne(chapa, formatoYYMM);
-      } catch (error) {
-        logger.error(`Erro ao buscar saque do mês para chapa (${chapa}): `, error);
-      }
-
+    
       // Busca o valor da UFESP na data da requisição
       try {
         UFESP = (await this.ufespService.findValueByDate(requisicao.reqDtSaida)).ufeValor || 0;
@@ -109,9 +99,9 @@ export class S001RequisicaoService {
 
       // Busca o valor do saque do mês
       try {
-        const formatoYYMM = formatDateToYYMM(requisicao.reqDtSaida);
-        saqueSalario = await this.SaquesMesService.findOne(requisicao.chapa, formatoYYMM);
-        saqueMes = Number(saqueSalario?.totSaque) || 0;
+        const formatoYYMM = formatDateToYYMM(requisicao.reqDtSaida);  
+        saqueSalario = await this.SaquesMesService.findOne(requisicao.chapa, formatoYYMM);       
+        saqueMes = Number(saqueSalario[0]?.TotalSaqueMes) || 0;       
       } catch (error) {
         logger.error(`Erro ao buscar saque do mês para chapa (${requisicao.chapa}): `, error);
       }

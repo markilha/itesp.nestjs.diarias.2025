@@ -17,3 +17,22 @@ export enum tabs {
     s009_saque = 's009_saque',
     ppessoa = 'ppessoa',
   }
+  export enum tabsOracle {
+    s009_reqnumerario = 'Financeiro.S009_REQNUMERARIO',
+    s009_itensreqrec = 'Financeiro.S009_ITENSREQREC',
+    s001_requisicao = 'TRANSPORTE.S001_REQUISICAO',
+    s009_status = 'Financeiro.S009_STATUS',
+    s009_tipodesp = 'Financeiro.S009_TIPODESP',
+    v009_funcsalario = 'Financeiro.V009_FUNCSALARIO',
+    v009_requisicao = 'Financeiro.V009_REQUISICAO',
+    S001_TRANSMEIO = 'TRANSPORTE.S001_TRANSMEIO',
+    municipios_ibge_igc = 'COMUM.MUNICIPIOS_IBGE_IGC',
+    s000_regional = 'COMUN.S000_REGIONAL',
+    s001_destino = 'TRANSPORTE.S001_DESTINO',
+    s001_munic_detran = 'S001_MUNIC_DETRAN',
+    s001_ctrafego = 'TRANSPORTE.S001_CTRAFEGO',
+    s009_reqrecursos = 'Financeiro.S009_REQRECURSOS',
+    s009_prazos = 'Financeiro.S009_PRAZOS',
+    s009_saque = 'Financeiro.S009_SAQUE',
+    ppessoa = 'RM.PPESSOA',
+}

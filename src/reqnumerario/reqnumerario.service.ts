@@ -66,39 +66,39 @@ export class ReqnumerarioService {
 
  
 
-  async findTotalReNumerarioMesAtual(chapa: string): Promise<number> {
-    try {
-      const dataAtual = new Date();
-      const primeiroDiaMes = new Date(
-        dataAtual.getFullYear(),
-        dataAtual.getMonth(),
-        1,
-      );
-      const ultimoDiaMes = new Date(
-        dataAtual.getFullYear(),
-        dataAtual.getMonth() + 1,
-        0,
-      );
+  // async findTotalReNumerarioMesAtual(chapa: string): Promise<number> {
+  //   try {
+  //     const dataAtual = new Date();
+  //     const primeiroDiaMes = new Date(
+  //       dataAtual.getFullYear(),
+  //       dataAtual.getMonth(),
+  //       1,
+  //     );
+  //     const ultimoDiaMes = new Date(
+  //       dataAtual.getFullYear(),
+  //       dataAtual.getMonth() + 1,
+  //       0,
+  //     );
 
-      const total = await this.mysqlRepository
-        .createQueryBuilder('s009_reqnumerario')
-        .select(
-          'SUM(COALESCE(s009_reqnumerario.RNU_VLINTEGRAL, 0) + COALESCE(s009_reqnumerario.RNU_VLPARCIAL, 0))',
-          'total',
-        )
-        .where('s009_reqnumerario.RNU_DTINICIO BETWEEN :inicio AND :fim', {
-          inicio: primeiroDiaMes,
-          fim: ultimoDiaMes,
-        })
-        .andWhere('s009_reqnumerario.CHAPA = :chapa', { chapa })
-        .getRawOne();
+  //     const total = await this.mysqlRepository
+  //       .createQueryBuilder('s009_reqnumerario')
+  //       .select(
+  //         'SUM(COALESCE(s009_reqnumerario.RNU_VLINTEGRAL, 0) + COALESCE(s009_reqnumerario.RNU_VLPARCIAL, 0))',
+  //         'total',
+  //       )
+  //       .where('s009_reqnumerario.RNU_DTINICIO BETWEEN :inicio AND :fim', {
+  //         inicio: primeiroDiaMes,
+  //         fim: ultimoDiaMes,
+  //       })
+  //       .andWhere('s009_reqnumerario.CHAPA = :chapa', { chapa })
+  //       .getRawOne();
 
-      return total.total || 0;
-    } catch (error) {
-      throw new HttpException(
-        error.response || 'Erro ao buscar o total de requisições',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
+  //     return total.total || 0;
+  //   } catch (error) {
+  //     throw new HttpException(
+  //       error.response || 'Erro ao buscar o total de requisições',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 }

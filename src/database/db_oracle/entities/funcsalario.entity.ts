@@ -1,34 +1,36 @@
 import { Entity, Column, ViewEntity, PrimaryColumn } from 'typeorm';
 
-@Entity('ss09_funcsalario', { schema: 'FINANCEIRO' })
+@Entity('V009_FUNCSALARIO', { schema: 'FINANCEIRO' })
 export class FuncSalarioEntity {
-  @PrimaryColumn({ name: 'chapa' })
+  @PrimaryColumn({ name: 'CHAPA' })
   chapa: string;
 
-  @Column({ name: 'codsecao' })
+  @Column({ name: 'CODSECAO' })
   codsecao: string;
 
-  @Column({ name: 'nome' })
+  @Column({ name: 'NOME' })
   nome: string;
 
-  @Column({ name: 'funcao' })
+  @Column({ name: 'FUNCAO' })
   funcao: string;
 
-  @Column({ name: 'codfuncao' })
+  @Column({ name: 'CODFUNCAO' })
   codfuncao: string;
 
-  @Column({ name: 'cargo' })
+  @Column({ name: 'CARGO' })
   cargo: string;
 
-  @Column({ name: 'salario' })
+  @Column({ name: 'SALARIO' })
   salario: number;
 
-  @Column({ name: 'setor' })
+  @Column({ name: 'SETOR' })
   setor: string;
 
-  @Column({ name: 'reg_id_codigo' })
+  @Column({ name: 'REG_ID_CODIGO' })
   regIdCodigo: string;
 
-  @Column({ name: 'reg_descricao' })
+  @Column({ name: 'REG_DESCRICAO' })
   regDescricao: string;
 }
+
+
