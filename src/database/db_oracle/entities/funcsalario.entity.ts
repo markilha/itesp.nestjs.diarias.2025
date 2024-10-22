@@ -1,4 +1,6 @@
-import { Entity, Column, ViewEntity, PrimaryColumn } from 'typeorm';
+import { Entity, Column, ViewEntity, PrimaryColumn, OneToOne, JoinColumn } from 'typeorm';
+import { RequisicaoEntity } from './requisicao.entity';
+import { DespesaDiariaEntity } from './despesaDiaria.entity';
 
 @Entity('V009_FUNCSALARIO', { schema: 'FINANCEIRO' })
 export class FuncSalarioEntity {
@@ -31,6 +33,14 @@ export class FuncSalarioEntity {
 
   @Column({ name: 'REG_DESCRICAO' })
   regDescricao: string;
+
+  
+  @OneToOne(() => RequisicaoEntity, (req) => req.funcSalario) 
+  requisicao: RequisicaoEntity;
+
+  @OneToOne(() => DespesaDiariaEntity, (func) => func.funcsalario)
+  @JoinColumn({ name: 'CARGO', referencedColumnName: 'cargo' })
+  despesaDiaria: DespesaDiariaEntity;
 }
 
 

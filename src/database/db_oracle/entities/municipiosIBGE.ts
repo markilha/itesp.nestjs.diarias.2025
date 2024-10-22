@@ -9,6 +9,4 @@ export class MunicipiosIbgIEntity {
   @Column({ name: 'NME_MUNIC', type: 'varchar2', length: 50, nullable: true })
   nmeMunic: string;
 
-  @OneToOne(() => RequisicaoEntity, (muni) => muni.municipio_partida) 
-  requisicao: RequisicaoEntity;
 }

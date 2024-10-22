@@ -13,6 +13,4 @@ export class TransMeioEntity {
   @Column({ name: 'TRA_TIPO', type: 'char', length: 1, nullable: true })
   traTipo: string;
 
-  @OneToOne(() => RequisicaoEntity, (requi) => requi.transmeio)
-  requisicao: RequisicaoEntity;
 }

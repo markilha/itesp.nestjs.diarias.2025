@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RequisicaoEntity } from 'src/database/db_mysql/entities/requisicao.entity';
+
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, ReturnRequisicaoDto } from './requisicao.dto';
 import { UfespService } from 'src/ufesp/ufesp.service';
@@ -12,11 +12,12 @@ import { calcularDiariaValores } from 'src/util/calculo_dia_retorno';
 import { ItinirarioService } from 'src/itinirario/itinirario.service';
 import { calcularSalario50 } from 'src/util/variaveis/calculo_50';
 import { logger } from 'src/util/savelogs/SaveLogs';
+import { RequisicaoEntity } from 'src/database/db_oracle/entities/requisicao.entity';
 
 @Injectable()
 export class S001RequisicaoService {
   constructor(
-    @InjectRepository(RequisicaoEntity, 'mysqlConnection')
+    @InjectRepository(RequisicaoEntity, 'oracleConnection')
     private requisicaoRepository: Repository<RequisicaoEntity>,
     private ufespService: UfespService,
     private SaquesMesService: SaquesMesService,
@@ -74,6 +75,8 @@ export class S001RequisicaoService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+
 
   private async processRequisicao(
     requisicao: RequisicaoEntity,
