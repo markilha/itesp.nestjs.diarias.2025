@@ -2,12 +2,10 @@ import { ReqNumerarioEntity } from 'src/database/db_mysql/entities/ReqNumerario.
 import { SaqueEntity } from 'src/database/db_mysql/entities/saque.entity';
 import { StatusEntity } from 'src/database/db_mysql/entities/status.entity';
 
-
-
 export interface FindAllParams {
   sqeIdCodigo?: number;
   stsIdCodigo?: number;
-  stsDescricao?: string; 
+  stsDescricao?: string;
   CHAPA?: string;
   page?: number;
   limit?: number;
@@ -80,7 +78,7 @@ export class SaqueDto {
     this.SQE_DTSAQUE = params.SQE_DTSAQUE;
     this.SQE_DTPREST = params.SQE_DTPREST;
     this.NOME = params.NOME;
-    this.REQ_ID_CODIGO = params.REQ_ID_CODIGO;   
+    this.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
     this.TDE_DESCRICAO = params.TDE_DESCRICAO;
     this.SQE_VLSAQUE = params.SQE_VLSAQUE;
     this.SQE_VLPREST = params.SQE_VLPREST;
@@ -90,13 +88,11 @@ export class SaqueDto {
     this.REQ_DTREQ = params.REQ_DTREQ;
     this.REQ_STATUS = params.REQ_STATUS;
     this.CHAPA = params.CHAPA;
-    this.STS_DESCRICAO = params.STS_DESCRICAO;  
+    this.STS_DESCRICAO = params.STS_DESCRICAO;
     this.SQE_EFETIVO = params.SQE_EFETIVO;
     this.PRA_ATIVO = params.PRA_ATIVO;
-    
   }
 }
-
 
 export class PrestacaoDto {
   NOME: string;
@@ -129,8 +125,8 @@ export class PrestacaoDto {
   ITI_HCHEGADA: string;
   INTREAL: number;
   PARREAL: number;
-  VLINTEGRAL:number;
-  VLPARCIAL: number; 
+  VLINTEGRAL: number;
+  VLPARCIAL: number;
   VLBASE: number;
   SQE_VLSAQUE: number;
   VLPREST: number;
@@ -139,10 +135,9 @@ export class PrestacaoDto {
   VLDIARIA: number;
   PORCDIARIA: number;
   SQE_DTPREST: string;
-  REQ_STATUS: string; 
+  REQ_STATUS: string;
   PRA_ATIVO: string;
   UFESP: number;
- 
 
   constructor(params: any) {
     this.NOME = params.NOME;
@@ -152,7 +147,7 @@ export class PrestacaoDto {
     this.SQE_DTPREST = params.SQE_DTPREST;
     this.STATUS = params.STATUS;
     this.REQ_DTREQ = params.REQ_DTREQ;
-    this.TIPO_DESPESA = 'Diarias'
+    this.TIPO_DESPESA = 'Diarias';
     this.TRA_DESCRICAO = params.TRA_DESCRICAO;
     this.TIPO_SAQUE = 'Viagem';
     this.NME_MUNIC = params.NME_MUNIC;
@@ -173,12 +168,12 @@ export class PrestacaoDto {
     this.ITI_HSAIDA = params.ITI_HSAIDA;
     this.ITI_DTCHEGADA = params.ITI_DTCHEGADA;
     this.ITI_HCHEGADA = params.ITI_HCHEGADA;
-    this.INTREAL = params.INTREAL;     
+    this.INTREAL = params.INTREAL;
     this.PARREAL = params.PARREAL;
     this.VLINTEGRAL = params.VLINTEGRAL;
-    this.VLPARCIAL = params.VLPARCIAL;   
+    this.VLPARCIAL = params.VLPARCIAL;
     this.VLBASE = params.VLBASE;
-    this.SQE_VLSAQUE = params.SQE_VLSAQUE;   
+    this.SQE_VLSAQUE = params.SQE_VLSAQUE;
     this.VLCOMPLEMENTAR = params.VLCOMPLEMENTAR;
     this.VLEXTORNO = params.VLEXTORNO;
     this.REQ_STATUS = params.REQ_STATUS;
@@ -187,7 +182,6 @@ export class PrestacaoDto {
     this.PORCDIARIA = params.PORCDIARIA;
     this.PRA_ATIVO = params.PRA_ATIVO;
     this.UFESP = params.UFESP;
-
   }
 }
 
@@ -224,16 +218,16 @@ export class SaquePrestDto {
   REQ_PACOTE: string;
   REQ_GOVERNADOR: string;
   REQ_MOTIVO: string;
-  CTR_STATUS: string; 
+  CTR_STATUS: string;
   ITI_DTSAIDA: Date;
   ITI_HSAIDA: string;
   ITI_DTCHEGADA: Date;
   ITI_HCHEGADA: string;
   INTREAL: number;
   PARREAL: number;
-  VLINTEGRAL:number;
-  VLPARCIAL: number; 
-  VLBASE: number; 
+  VLINTEGRAL: number;
+  VLPARCIAL: number;
+  VLBASE: number;
   VLPREST: number;
   VLCOMPLEMENTAR: number;
   VLEXTORNO: number;
@@ -287,47 +281,48 @@ export class SaquePrestDto {
     this.VLEXTORNO = params.VLEXTORNO;
     this.VLPREST = params.VLPREST;
     this.VLDIARIA = params.VLDIARIA;
-    this.PORCDIARIA = params.PORCDIARIA;   
-    
+    this.PORCDIARIA = params.PORCDIARIA;
   }
 }
 
-
-
 export class InsS009SaqueDto {
+  // Parâmetros gerais
   par1: string; // REEMBOLSO/COMPLEMENTO
   par2: string; // SEM RECURSO
-  par3: string; // Tipo de despesa
+  par3: string; // tipo de despesa
+  // Parâmetros de SAQUE
   par4: number; // ITE_ID_CODIGO
   par5: number; // RRE_ID_CODIGO
   par6: number; // DIR_ID_CODIGO
   par7: number; // SQE_VLPREST
-  par8: Date; // SQE_DTPREST
+  par8: string; // SQE_DTPREST (assumido como VARCHAR2)
   par9: number; // SQE_VLSAQUE
-  par10: string; // SQE_TIPOSAQUE
-  par11: string; // SQE_EFETIVO
-  par12: string; // SQE_TERCEIRO
+  par10: string; // SQE_TIPOSAQUE (assumido como CHAR)
+  par11: string; // SQE_EFETIVO (assumido como CHAR)
+  par12: string; // SQE_TERCEIRO (assumido como CHAR)
   par13: number; // PES_ID_CODIGO
-  par14: string; // PES_PESSOA
+  par14: string; // PES_PESSOA (assumido como CHAR)
   par15: number; // STS_ID_CODIGO
   par16: string; // SQE_USUARIO
+  // Parâmetros de NUMERARIO
   par17: number; // REQ_ID_CODIGO
   par18: Date; // RNU_DTINICIO
   par19: string; // RNU_HORAINICIO
   par20: Date; // RNU_DTFIM
   par21: string; // RNU_HORAFIM
-  par22: number; // RNU_INTPREV
-  par23: number; // RNU_PARPREV
-  par24: number; // RNU_INTREAL
-  par25: number; // RNU_PARREAL
+  par22: string; // RNU_INTPREV
+  par23: string; // RNU_PARPREV
+  par24: string; // RNU_INTREAL
+  par25: string; // RNU_PARREAL
   par26: string; // RNU_PACOTE
   par27: string; // RNU_GOVERNADOR
-  par28: string; // RRE_JUSTIFICATIVA
+  par28: string; // RRE_JUSTIFICATIVA (assumido como CHAR)
+  // Parâmetros de REQUISIÇÃO DE TRANSPORTE
   par29: string; // REQ_STATUS
+  // Parâmetros de NUMERARIO - INCLUSÃO DE VALORES EM 30/03/2010
   par30: number; // RNU_VLINTEGRAL
   par31: number; // RNU_VLPARCIAL
   par32: number; // RNU_VLBASE
-
   constructor(params: any) {
     this.par1 = params.par1;
     this.par2 = params.par2;

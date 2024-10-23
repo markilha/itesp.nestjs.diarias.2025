@@ -1,5 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { FindParamsSaque, RetNumSaque, SaqueDto, PrestacaoDto, SolitarDto } from './saque.dto';
+import {
+  FindParamsSaque,
+  RetNumSaque,
+  SaqueDto,
+  PrestacaoDto,
+  SolitarDto,
+  InsS009SaqueDto,
+} from './saque.dto';
 
 import { SaqueEntity } from 'src/database/db_oracle/entities/saque.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,6 +28,10 @@ import { DataUtils } from 'src/util/DataUtils';
 import { tabs } from 'src/util/variaveis/tabs';
 import { MotivodiariaService } from 'src/motivodiaria/motivodiaria.service';
 import { retornoItinerarioDto } from 'src/itinirario/itinerarioDto';
+
+function getObjectValues(obj: Record<string, any>): any[] {
+  return Object.values(obj);
+}
 
 @Injectable()
 export class SaqueService {
@@ -337,56 +348,67 @@ export class SaqueService {
     }
   }
 
+
+
+
+
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
     try {
       const MD = await this.motivoDiaria.findOne(params.chapa, params.reqIdCodigo);
       if (!MD) {
         throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
-      }  
+      }
 
-     const result =  await this.saqueRepository.query(
-       `CALL INS_S009_SAQUE(
+      const saqueDto = new InsS009SaqueDto({
+        par1: 'REEMBOLSO', // REEMBOLSO/COMPLEMENTO
+        par2: 'S', // SEM RECURSO
+        par3: '7', // tipo de despesa
+        //SAQUE
+        par4: MD.ITE_ID_CODIGO, // ITE_ID_CODIGO
+        par5: MD.RRE_ID_CODIGO, // RRE_ID_CODIGO
+        par6: MD.DIR_ID_CODIGO, // DIR_ID_CODIGO
+        par7: null, // SQE_VLPREST (não informado)
+        par8: null, // SQE_DTPREST (não informado)
+        par9: MD.MDI_VALOR, // SQE_VLSAQUE
+        par10: 'N', // SQE_TIPOSAQUE
+        par11: 'S', // SQE_EFETIVO
+        par12: null, // SQE_TERCEIRO (não informado)
+        par13: null, // PES_ID_CODIGO (supondo 1)
+        par14: null, // PES_PESSOA (não informado)
+        par15: null, // STS_ID_CODIGO (não informado)
+        par16: null, // SQE_USUARIO (exemplo)
+        //NUMERARIO
+        par17: params.reqIdCodigo, // REQ_ID_CODIGO
+        par18: MD.REQ_DTSAIDA, // RNU_DTINICIO
+        par19: MD.REQ_HSAIDA, // RNU_HORAINICIO
+        par20: MD.REQ_DTRET, // RNU_DTFIM
+        par21: MD.REQ_HRET, // RNU_HORAFIM
+        par22: MD.REQ_INTEGRAL, // RNU_INTPREV
+        par23: MD.REQ_PARCIAL, // RNU_PARPREV
+        par24: null, // RNU_INTREAL (não informado)
+        par25: null, // RNU_PARREAL (não informado)
+        par26: MD.REQ_PACOTE, // RNU_PACOTE
+        par27: MD.REQ_GOVERNADOR, // RNU_GOVERNADOR
+        //REEMBOLSO
+        par28: MD.REQ_MOTIVO, // RRE_JUSTIFICATIVA
+        //REQUISICAO
+        par29: MD.REQ_STATUS, // REQ_STATUS
+        //NUMERARIO
+        par30: params.diariaIntegral, // RNU_VLINTEGRAL
+        par31: params.diariaParcial, // RNU_VLPARCIAL
+        par32: params.diariaBase, // RNU_VLBASE
+      });
+
+      const valuesArray = getObjectValues(saqueDto);    
+
+      const result = await this.saqueRepository.query(
+        `CALL INS_S009_SAQUE(
           :PAR1, :PAR2, :PAR3, :PAR4, :PAR5, :PAR6, :PAR7, :PAR8, :PAR9, :PAR10,
           :PAR11, :PAR12, :PAR13, :PAR14, :PAR15, :PAR16, :PAR17, TO_DATE(:PAR18, 'YYYY-MM-DD'), 
           :PAR19, TO_DATE(:PAR20, 'YYYY-MM-DD'), :PAR21, :PAR22, :PAR23, :PAR24, 
           :PAR25, :PAR26, :PAR27, :PAR28, :PAR29, :PAR30, :PAR31, :PAR32)`,
-        [
-          'DIARIA',
-          'S',
-          MD.TDE_ID_CODIGO,
-          MD.ITE_ID_CODIGO,
-          MD.RRE_ID_CODIGO,
-          MD.DIR_ID_CODIGO,
-          null,
-          null,
-          MD.MDI_VALOR,
-          'N',
-          'S',
-          null,
-          null,
-          null,
-          1,
-          null,
-          params.reqIdCodigo,
-          MD.REQ_DTSAIDA,
-          MD.REQ_HSAIDA,
-          MD.REQ_DTRET,
-          MD.REQ_HRET,
-          MD.REQ_INTEGRAL,
-          MD.REQ_PARCIAL,
-          null,
-          null,
-          MD.REQ_PACOTE,
-          MD.REQ_GOVERNADOR,
-          MD.REQ_MOTIVO,
-          MD.REQ_STATUS,
-          params.diariaIntegral,
-          params.diariaParcial,
-          params.diariaBase          
-        ],
-      );
-
-     // const result = await this.saqueRepository.query(`SELECT @id as id`);
+          valuesArray,
+      );    
 
       return { sqeIdCodigo: result[0].id };
     } catch (error) {
