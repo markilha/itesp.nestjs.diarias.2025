@@ -9,10 +9,7 @@ import {  FindAllParams, motivoDiariaDto } from './motivodiariaDto';
 export class MotivodiariaController {
   constructor(private readonly requisicao: MotivodiariaService) {}
 
-  @Get()
-  async findAll(@Query() params: FindAllParams): Promise<motivoDiariaDto[]> {
-    return await this.requisicao.findAll(params);
-  }
+ 
 
   @Get('findone')
   async findOne(@Query() params: FindAllParams): Promise<motivoDiariaDto> {
