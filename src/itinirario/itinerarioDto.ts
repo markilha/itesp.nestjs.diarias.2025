@@ -25,7 +25,7 @@ export class ItinerarioDto {
 }
 
 export class retornoItinerarioDto {
-  ITI_DTSAIDA: Date;
+  ITI_DTSAIDA: Date ;
   ITI_HSAIDA: string;
   ITI_DTCHEGADA: Date;
   ITI_HCHEGADA: string;

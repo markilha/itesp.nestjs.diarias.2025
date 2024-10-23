@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { FindParamsSaque, RetNumSaque, SaqueDto, PrestacaoDto, SolitarDto } from './saque.dto';
+import { FindParamsSaque, RetNumSaque, SaqueDto, PrestacaoDto, SolitarDto} from './saque.dto';
 
 import { SaqueEntity } from 'src/database/db_oracle/entities/saque.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,6 +20,7 @@ import { verificarDestino } from 'src/util/verificaDestino';
 import { DataUtils } from 'src/util/DataUtils';
 import { tabs } from 'src/util/variaveis/tabs';
 import { MotivodiariaService } from 'src/motivodiaria/motivodiaria.service';
+import { retornoItinerarioDto } from 'src/itinirario/itinerarioDto';
 
 @Injectable()
 export class SaqueService {
@@ -30,7 +31,7 @@ export class SaqueService {
     private itinerarioService: ItinirarioService,
     private ufespService: UfespService,
     private despesaDiaria: DespesadiariaService,
-  ) {} 
+  ) {}
 
   async findAll(params: FindParamsSaque): Promise<SaqueDto[]> {
     try {
@@ -168,190 +169,361 @@ export class SaqueService {
     }
   }
 
-  async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto> {
-    const sqeidcodigo = params.SQE_ID_CODIGO;
+  async findPrestacao(params: FindParamsSaque): Promise<any> {
+    try {
+      const sqeIdCodigo = params.SQE_ID_CODIGO;
+      let UFESP = 0;
+      let itinerario: retornoItinerarioDto;
+      let UFESPcargoValor = 0;
+      let destino = "";
+      let pacote = 0;     
+      const consulta = await this.saqueRepository.query(
+        `
+        SELECT
+          a.SQE_DTPEDIDO as SQE_DTPEDIDO,
+          a.SQE_ID_CODIGO as SQE_ID_CODIGO,
+          a.SQE_EFETIVO as SQE_EFETIVO,
+          a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,
+          a.SQE_DTSAQUE as SQE_DTSAQUE,
+          a.SQE_VLSAQUE as SQE_VLSAQUE,
+          a.SQE_DTPREST ,
+          b.CHAPA as CHAPA,
+          b.NOME as NOME,     
+          b.TDE_DESCRICAO as TDE_DESCRICAO,
+          b.STS_DESCRICAO as STS_DESCRICAO,
+          b.PRA_ATIVO as PRA_ATIVO,
+          c.REQ_ID_CODIGO as REQ_ID_CODIGO,         
+          d.REQ_STATUS as REQ_STATUS,
+          d.REQ_DTSAIDA as REQ_DTSAIDA,
+          d.REQ_PACOTE as REQ_PACOTE,
+          d.REQ_INTEGRAL as REQ_INTEGRAL,
+          d.REQ_PARCIAL as REQ_PARCIAL,
+          e.MUN_ID_CODIGO as MUN_ID_CODIGO,
+          f.CARGO as CARGO
+        FROM FINANCEIRO.s009_saque a
+          INNER JOIN FINANCEIRO.V009_ITENSREQREC b ON a.ITE_ID_CODIGO = b.ITE_ID_CODIGO 
+          INNER JOIN FINANCEIRO.s009_reqnumerario c ON a.SQE_ID_CODIGO = c.SQE_ID_CODIGO
+          INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO
+          INNER JOIN TRANSPORTE.s001_destino e ON c.REQ_ID_CODIGO = e.REQ_ID_CODIGO
+          INNER JOIN FINANCEIRO.V009_FUNCSALARIO f ON b.CHAPA = f.CHAPA
+          WHERE a.SQE_ID_CODIGO = :sqeIdCodigo           
+      `,
+        [sqeIdCodigo],
+      );
 
-    const query = this.saqueRepository
-      .createQueryBuilder('a')
-      .select([
-        'a.SQE_DTSAQUE',
-        'c.RRE_ID_CODIGO',
-        'a.ITE_ID_CODIGO',
-        'a.SQE_DTPREST',
-        'b.REQ_ID_CODIGO',
-        'a.SQE_ID_CODIGO',
-        'a.SQE_VLSAQUE',
-        'a.SQE_VLPREST',
-        'f.REQ_DTREQ',
-        'f.REQ_DTREQ',
-        'g.TRA_DESCRICAO',
-        'h.NOME',
-        'h.CARGO',
-        'i.NME_MUNIC',
-        'j.REG_DESCRICAO',
-        'l.MUN_ID_CODIGO',
-        'm.MUN_CIDADE',
-        'l.DES_LOCAL',
-        'f.REQ_DTSAIDA',
-        'f.REQ_DTRET',
-        'f.REQ_HSAIDA',
-        'f.REQ_HRET',
-        'f.REQ_INTEGRAL',
-        'f.REQ_PARCIAL',
-        'f.REQ_PACOTE',
-        'f.REQ_GOVERNADOR',
-        'f.REQ_MOTIVO',
-        'n.CTR_STATUS',
-        'p.PRA_ATIVO',
-      ])
-      .distinct(true)
-      .innerJoin(tabs.s009_reqrecursos, 'o', 'a.RRE_ID_CODIGO = o.RRE_ID_CODIGO')
-      .innerJoin(tabs.s009_prazos, 'p', 'o.PRA_ID_CODIGO = p.PRA_ID_CODIGO')
-      .innerJoin(tabs.s009_reqnumerario, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
-      .innerJoin(tabs.s009_itensreqrec, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
-      .innerJoin(tabs.s001_requisicao, 'f', 'f.REQ_ID_CODIGO = b.REQ_ID_CODIGO')
-      .innerJoin(tabs.S001_TRANSMEIO, 'g', 'g.TRA_ID_CODIGO = f.TRA_ID_CODIGO')
-      .innerJoin(tabs.v009_funcsalario, 'h', 'h.CHAPA = c.CHAPA')
-      .innerJoin(tabs.municipios_ibge_igc, 'i', 'i.COD_MUNICIP = f.COD_MUNICIP')
-      .innerJoin(tabs.s000_regional, 'j', 'j.REG_ID_CODIGO = f.REG_ID_CODIGO')
-      .innerJoin(tabs.s001_destino, 'l', 'l.REQ_ID_CODIGO = f.REQ_ID_CODIGO')
-      .innerJoin(tabs.s001_munic_detran, 'm', 'm.MUN_ID_CODIGO = l.MUN_ID_CODIGO')
-      .innerJoin(tabs.s001_ctrafego, 'n', 'n.REQ_ID_CODIGO = f.REQ_ID_CODIGO')
-      .where('a.SQE_ID_CODIGO = :sqeidcodigo', { sqeidcodigo });
-    // .groupBy('c.RRE_ID_CODIGO')
-    // .addGroupBy('b.RNU_ID_CODIGO')
-    // .addGroupBy('c.CHAPA')
-    // .addGroupBy('c.IRR_VALOR_PREST')
-    // .addGroupBy('c.IRR_VLSAQUE')
-    // .addGroupBy('c.IRR_VLDEVOLUCAO')
-    // .addGroupBy('c.IRR_COMPLEMENTO')
-    // .addGroupBy('c.IRR_DATA_PREST')
-    // .addGroupBy('f.REQ_DTREQ')
-    // .addGroupBy('g.TRA_DESCRICAO')
-    // .addGroupBy('h.NOME')
-    // .addGroupBy('h.CARGO')
-    // .addGroupBy('i.NME_MUNIC')
-    // .addGroupBy('j.REG_DESCRICAO')
-    // .addGroupBy('l.MUN_ID_CODIGO')
-    // .addGroupBy('m.MUN_CIDADE')
-    // .addGroupBy('l.DES_LOCAL')
-    // .addGroupBy('f.REQ_DTSAIDA')
-    // .addGroupBy('f.REQ_DTRET')
-    // .addGroupBy('f.REQ_HSAIDA')
-    // .addGroupBy('f.REQ_HRET')
-    // .addGroupBy('f.REQ_INTEGRAL')
-    // .addGroupBy('f.REQ_PARCIAL')
-    // .addGroupBy('f.REQ_PACOTE')
-    // .addGroupBy('f.REQ_GOVERNADOR')
-    // .addGroupBy('f.REQ_MOTIVO')
-    // .addGroupBy('n.CTR_STATUS');
-
-    const conditions = [{ param: params.SQE_ID_CODIGO, tab: 'a', key: 'SQE_ID_CODIGO' }];
-
-    conditions.forEach(({ param, tab, key }) => {
-      if (param) {
-        query.andWhere(`${tab}.${key} = :${key}`, { [key]: param });
+      if (!consulta || consulta.length === 0) {
+        throw new HttpException('Saque não encontrado', HttpStatus.NOT_FOUND);        
       }
-    });
 
-    const consulta = await query.getRawMany();
+      pacote = Number(consulta[0].REQ_PACOTE);
 
-    //const STATUS = consulta[0].SQE_DTPREST ? 'Realizada' : 'Pendente';
-    const STATUS =
-      ['S', 'C', 'R', 'E'].includes(consulta[0].SQE_EFETIVO) &&
-      consulta[0].SQE_TIPOSAQUE === 'N' &&
-      consulta[0].PRA_ATIVO != 'N' &&
-      (consulta[0].SQE_DTPREST === null || consulta[0].SQE_VLPREST === 0)
-        ? 'Pendente'
-        : 'Realizada';
-    const itinerario = await this.itinerarioService.findUltimo(consulta[0].REQ_ID_CODIGO);
+      
 
-    // if (!itinerario) {
-    //   throw new HttpException('Itinerário não encontrado', HttpStatus.NOT_FOUND
-    //   );
-    // }
+      const STATUS =
+        ['S', 'C', 'R', 'E'].includes(consulta[0].SQE_EFETIVO) &&
+        consulta[0].SQE_TIPOSAQUE === 'N' &&
+        consulta[0].PRA_ATIVO != 'N' &&
+        (consulta[0].SQE_DTPREST === null || consulta[0].SQE_VLPREST === 0)
+          ? 'Pendente'
+          : 'Realizada';
 
-    //Quantidade de diárias parciais
-    const diariaParcial = calcularDiariaParcial(itinerario.ITI_HCHEGADA);
-    //Quantidade de diárias integrais
-    const diariaIntegral = calcularDiariaIntegral(
-      itinerario.ITI_DTSAIDA,
-      itinerario.ITI_HSAIDA,
-      itinerario.ITI_DTCHEGADA,
-      itinerario.ITI_HCHEGADA,
-    );
+      try {
+        itinerario = await this.itinerarioService.findUltimo(consulta[0].REQ_ID_CODIGO);
+      } catch (error) {
+        console.error('Erro ao buscar itinerário:', error);
+      }
 
-    // Busca o valor da UFESP na data da requisição
-    const UFESP = (await this.ufespService.findValueByDate(consulta[0].REQ_DTSAIDA)).ufeValor || 0;
-    // Busca o indice da UFESP do cargo do usuário
-    const UFESPcargo = await this.despesaDiaria.findOne(consulta[0].CARGO);
-    const UFESPcargoValor = Number(UFESPcargo?.dtdValorMax) || 0;
-    //buscar destino
-    const destino = verificarDestino(consulta[0].MUN_ID_CODIGO);
+      //Quantidade de diárias parciais
+      let diariaParcial = calcularDiariaParcial(itinerario.ITI_HCHEGADA);
+      diariaParcial = diariaParcial > 0 ? 1 : 0
+      //Quantidade de diárias integrais
+      const diariaIntegral = calcularDiariaIntegral(
+        itinerario.ITI_DTSAIDA,
+        itinerario.ITI_HSAIDA,
+        itinerario.ITI_DTCHEGADA,
+        itinerario.ITI_HCHEGADA,
+      );
 
-    const calcDiraria = calcularDiariaValores(
-      UFESP,
-      UFESPcargoValor,
-      destino as Destino,
-      consulta[0].REQ_PACOTE,
-      diariaIntegral,
-      diariaParcial > 0 ? 1 : 0,
-      itinerario.ITI_HCHEGADA,
-    );
-    const somaParcial = calcDiraria.VL_DIARIA_PARCIAL_40 + calcDiraria.VL_DIARIA_PARCIAL_20;
-    const somaDiarias = DataUtils.arredondar(calcDiraria.VL_DIARIA_INTEGRAL + somaParcial);
-    const valorComplementar = calcularValores(consulta[0].SQE_VLSAQUE, somaDiarias);
+      // Busca o valor da UFESP na data da requisição
+      try {
+        UFESP = (await this.ufespService.findValueByDate(consulta[0].REQ_DTSAIDA)).ufeValor || 0;
+      } catch (error) {
+        console.error('Erro ao buscar UFESP:', error);
+      } 
 
-    let diariaParcPorc = 0;
+      // Busca o indice da UFESP do cargo do usuário
+      try {        
+        const UFESPcargo = await this.despesaDiaria.findOne(consulta[0].CARGO);      
+         UFESPcargoValor = Number(UFESPcargo?.dtdValorMax) || 0;
+      } catch (error) {       
+        throw new HttpException('Erro ao buscar UFESP do cargo', HttpStatus.INTERNAL_SERVER_ERROR);        
+      }
 
-    if (calcDiraria?.VL_DIARIA_PARCIAL_20 > 0) {
-      diariaParcPorc = 20;
-    } else if (calcDiraria?.VL_DIARIA_PARCIAL_40 > 0) {
-      diariaParcPorc = 40;
+      //buscar destino
+      try { 
+          destino = verificarDestino(consulta[0].MUN_ID_CODIGO); 
+      } catch (error) {       
+        throw new HttpException('Erro ao buscar UFESP do cargo', HttpStatus.INTERNAL_SERVER_ERROR);        
+      }
+
+      const calcDiraria = calcularDiariaValores(
+        UFESP,
+        UFESPcargoValor,
+        destino as Destino,
+        pacote,
+        diariaIntegral,
+        diariaParcial,
+        itinerario.ITI_HCHEGADA,
+      );    
+      
+
+      const somaParcial = calcDiraria.VL_DIARIA_PARCIAL_40 + calcDiraria.VL_DIARIA_PARCIAL_20;
+    
+      const somaDiarias = DataUtils.arredondar(calcDiraria.VL_DIARIA_INTEGRAL + somaParcial);
+     
+
+      const valorComplementar = calcularValores(consulta[0].SQE_VLSAQUE, somaDiarias);
+
+      let diariaParcPorc = 0;
+
+      if (calcDiraria?.VL_DIARIA_PARCIAL_20 > 0) {
+        diariaParcPorc = 20;
+      } else if (calcDiraria?.VL_DIARIA_PARCIAL_40 > 0) {
+        diariaParcPorc = 40;
+      }
+
+      return new PrestacaoDto({
+        NOME: consulta[0].NOME,
+        REQ_ID_CODIGO: consulta[0].REQ_ID_CODIGO,
+        SQE_ID_CODIGO: consulta[0].SQE_ID_CODIGO,
+        CHAPA: consulta[0].CHAPA,
+        SQE_DTPREST: consulta[0].SQE_DTPREST,
+        SQE_VLPREST: consulta[0].IRR_VALOR_PREST,
+        REQ_DTREQ: consulta[0].REQ_DTREQ,
+        TRA_DESCRICAO: consulta[0].TRA_DESCRICAO,
+        NME_MUNIC: consulta[0].NME_MUNIC,
+        REG_DESCRICAO: consulta[0].REG_DESCRICAO,
+        MUN_CIDADE: consulta[0].MUN_CIDADE,
+        DES_LOCAL: consulta[0].DES_LOCAL,
+        REQ_DTSAIDA: consulta[0].REQ_DTSAIDA,
+        REQ_DTRET: consulta[0].REQ_DTRET,
+        REQ_HSAIDA: consulta[0].REQ_HSAIDA,
+        REQ_HRET: consulta[0].REQ_HRET,
+        REQ_INTEGRAL: Number(consulta[0].REQ_INTEGRAL) || 0,
+        REQ_PARCIAL: consulta[0].REQ_PARCIAL > 0 ? 1 : 0,
+        REQ_PACOTE: pacote === 0 ? 'S' : 'N',
+        REQ_GOVERNADOR: consulta[0].REQ_GOVERNADOR,
+        REQ_MOTIVO: consulta[0].REQ_MOTIVO,
+        CTR_STATUS: consulta[0].CTR_STATUS,
+        STATUS: STATUS,
+        ITI_DTSAIDA: itinerario.ITI_DTSAIDA,
+        ITI_HSAIDA: itinerario.ITI_HSAIDA,
+        ITI_DTCHEGADA: itinerario.ITI_DTCHEGADA,
+        ITI_HCHEGADA: itinerario.ITI_HCHEGADA,
+        SQE_VLSAQUE: Number(consulta[0].SQE_VLSAQUE) || 0,
+        PARREAL: diariaParcial,
+        INTREAL: diariaIntegral,
+        VLINTEGRAL: calcDiraria.VL_DIARIA_INTEGRAL,
+        VLPARCIAL: somaParcial,
+        VLBASE: calcDiraria.VL_DIARIA_BASE,
+         VLPREST: somaDiarias,
+        VLCOMPLEMENTAR: valorComplementar.VL_COMPLEMENTAR,
+        VLEXTORNO: valorComplementar.VL_EXTORNO,
+        VLDIARIA: calcDiraria.VL_DIARIA,
+        PORCDIARIA: diariaParcPorc,
+        PRA_ATIVO: consulta[0].PRA_ATIVO,
+        UFESP: UFESP,
+      });
+    } catch (error) {
+      console.error('Erro na consulta findSaque:', error);
+      return new HttpException('Erro ao buscar Saques', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-    return new PrestacaoDto({
-      NOME: consulta[0].NOME,
-      REQ_ID_CODIGO: consulta[0].REQ_ID_CODIGO,
-      SQE_ID_CODIGO: consulta[0].SQE_ID_CODIGO,
-      CHAPA: consulta[0].CHAPA,
-      SQE_DTPREST: consulta[0].SQE_DTPREST,
-      STATUS: STATUS,
-      SQE_VLPREST: consulta[0].IRR_VALOR_PREST,
-      REQ_DTREQ: consulta[0].REQ_DTREQ,
-      TRA_DESCRICAO: consulta[0].TRA_DESCRICAO,
-      NME_MUNIC: consulta[0].NME_MUNIC,
-      REG_DESCRICAO: consulta[0].REG_DESCRICAO,
-      MUN_CIDADE: consulta[0].MUN_CIDADE,
-      DES_LOCAL: consulta[0].DES_LOCAL,
-      REQ_DTSAIDA: consulta[0].REQ_DTSAIDA,
-      REQ_DTRET: consulta[0].REQ_DTRET,
-      REQ_HSAIDA: consulta[0].REQ_HSAIDA,
-      REQ_HRET: consulta[0].REQ_HRET,
-      REQ_INTEGRAL: Number(consulta[0].REQ_INTEGRAL) || 0,
-      REQ_PARCIAL: consulta[0].REQ_PARCIAL > 0 ? 1 : 0,
-      REQ_PACOTE: consulta[0].REQ_PACOTE === 0 ? 'S' : 'N',
-      REQ_GOVERNADOR: consulta[0].REQ_GOVERNADOR,
-      REQ_MOTIVO: consulta[0].REQ_MOTIVO,
-      CTR_STATUS: consulta[0].CTR_STATUS,
-      ITI_DTSAIDA: itinerario.ITI_DTSAIDA,
-      ITI_HSAIDA: itinerario.ITI_HSAIDA,
-      ITI_DTCHEGADA: itinerario.ITI_DTCHEGADA,
-      ITI_HCHEGADA: itinerario.ITI_HCHEGADA,
-      PARREAL: diariaParcial > 0 ? 1 : 0,
-      INTREAL: diariaIntegral,
-      VLINTEGRAL: calcDiraria.VL_DIARIA_INTEGRAL,
-      VLPARCIAL: somaParcial,
-      VLBASE: calcDiraria.VL_DIARIA_BASE,
-      SQE_VLSAQUE: Number(consulta[0].SQE_VLSAQUE) || 0,
-      VLPREST: somaDiarias,
-      VLCOMPLEMENTAR: valorComplementar.VL_COMPLEMENTAR,
-      VLEXTORNO: valorComplementar.VL_EXTORNO,
-      VLDIARIA: calcDiraria.VL_DIARIA,
-      PORCDIARIA: diariaParcPorc,
-      PRA_ATIVO: consulta[0].PRA_ATIVO,
-    });
   }
+
+  // async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto> {
+  //   const sqeidcodigo = params.SQE_ID_CODIGO;
+
+  //   const query = this.saqueRepository
+  //     .createQueryBuilder('a')
+  //     .select([
+  //       'a.SQE_DTSAQUE',
+  //       'c.RRE_ID_CODIGO',
+  //       'a.ITE_ID_CODIGO',
+  //       'a.SQE_DTPREST',
+  //       'b.REQ_ID_CODIGO',
+  //       'a.SQE_ID_CODIGO',
+  //       'a.SQE_VLSAQUE',
+  //       'a.SQE_VLPREST',
+  //       'f.REQ_DTREQ',
+  //       'f.REQ_DTREQ',
+  //       'g.TRA_DESCRICAO',
+  //       'h.NOME',
+  //       'h.CARGO',
+  //       'i.NME_MUNIC',
+  //       'j.REG_DESCRICAO',
+  //       'l.MUN_ID_CODIGO',
+  //       'm.MUN_CIDADE',
+  //       'l.DES_LOCAL',
+  //       'f.REQ_DTSAIDA',
+  //       'f.REQ_DTRET',
+  //       'f.REQ_HSAIDA',
+  //       'f.REQ_HRET',
+  //       'f.REQ_INTEGRAL',
+  //       'f.REQ_PARCIAL',
+  //       'f.REQ_PACOTE',
+  //       'f.REQ_GOVERNADOR',
+  //       'f.REQ_MOTIVO',
+  //       'n.CTR_STATUS',
+  //       'p.PRA_ATIVO',
+  //     ])
+  //     .distinct(true)
+  //     .innerJoin(tabs.s009_reqrecursos, 'o', 'a.RRE_ID_CODIGO = o.RRE_ID_CODIGO')
+  //     .innerJoin(tabs.s009_prazos, 'p', 'o.PRA_ID_CODIGO = p.PRA_ID_CODIGO')
+  //     .innerJoin(tabs.s009_reqnumerario, 'b', 'a.SQE_ID_CODIGO = b.SQE_ID_CODIGO')
+  //     .innerJoin(tabs.s009_itensreqrec, 'c', 'a.ITE_ID_CODIGO = c.ITE_ID_CODIGO')
+  //     .innerJoin(tabs.s001_requisicao, 'f', 'f.REQ_ID_CODIGO = b.REQ_ID_CODIGO')
+  //     .innerJoin(tabs.S001_TRANSMEIO, 'g', 'g.TRA_ID_CODIGO = f.TRA_ID_CODIGO')
+  //     .innerJoin(tabs.v009_funcsalario, 'h', 'h.CHAPA = c.CHAPA')
+  //     .innerJoin(tabs.municipios_ibge_igc, 'i', 'i.COD_MUNICIP = f.COD_MUNICIP')
+  //     .innerJoin(tabs.s000_regional, 'j', 'j.REG_ID_CODIGO = f.REG_ID_CODIGO')
+  //     .innerJoin(tabs.s001_destino, 'l', 'l.REQ_ID_CODIGO = f.REQ_ID_CODIGO')
+  //     .innerJoin(tabs.s001_munic_detran, 'm', 'm.MUN_ID_CODIGO = l.MUN_ID_CODIGO')
+  //     .innerJoin(tabs.s001_ctrafego, 'n', 'n.REQ_ID_CODIGO = f.REQ_ID_CODIGO')
+  //     .where('a.SQE_ID_CODIGO = :sqeidcodigo', { sqeidcodigo });
+  //   // .groupBy('c.RRE_ID_CODIGO')
+  //   // .addGroupBy('b.RNU_ID_CODIGO')
+  //   // .addGroupBy('c.CHAPA')
+  //   // .addGroupBy('c.IRR_VALOR_PREST')
+  //   // .addGroupBy('c.IRR_VLSAQUE')
+  //   // .addGroupBy('c.IRR_VLDEVOLUCAO')
+  //   // .addGroupBy('c.IRR_COMPLEMENTO')
+  //   // .addGroupBy('c.IRR_DATA_PREST')
+  //   // .addGroupBy('f.REQ_DTREQ')
+  //   // .addGroupBy('g.TRA_DESCRICAO')
+  //   // .addGroupBy('h.NOME')
+  //   // .addGroupBy('h.CARGO')
+  //   // .addGroupBy('i.NME_MUNIC')
+  //   // .addGroupBy('j.REG_DESCRICAO')
+  //   // .addGroupBy('l.MUN_ID_CODIGO')
+  //   // .addGroupBy('m.MUN_CIDADE')
+  //   // .addGroupBy('l.DES_LOCAL')
+  //   // .addGroupBy('f.REQ_DTSAIDA')
+  //   // .addGroupBy('f.REQ_DTRET')
+  //   // .addGroupBy('f.REQ_HSAIDA')
+  //   // .addGroupBy('f.REQ_HRET')
+  //   // .addGroupBy('f.REQ_INTEGRAL')
+  //   // .addGroupBy('f.REQ_PARCIAL')
+  //   // .addGroupBy('f.REQ_PACOTE')
+  //   // .addGroupBy('f.REQ_GOVERNADOR')
+  //   // .addGroupBy('f.REQ_MOTIVO')
+  //   // .addGroupBy('n.CTR_STATUS');
+
+  //   const conditions = [{ param: params.SQE_ID_CODIGO, tab: 'a', key: 'SQE_ID_CODIGO' }];
+
+  //   conditions.forEach(({ param, tab, key }) => {
+  //     if (param) {
+  //       query.andWhere(`${tab}.${key} = :${key}`, { [key]: param });
+  //     }
+  //   });
+
+  //   const consulta = await query.getRawMany();
+
+  //   //const STATUS = consulta[0].SQE_DTPREST ? 'Realizada' : 'Pendente';
+  //   const STATUS =
+  //     ['S', 'C', 'R', 'E'].includes(consulta[0].SQE_EFETIVO) &&
+  //     consulta[0].SQE_TIPOSAQUE === 'N' &&
+  //     consulta[0].PRA_ATIVO != 'N' &&
+  //     (consulta[0].SQE_DTPREST === null || consulta[0].SQE_VLPREST === 0)
+  //       ? 'Pendente'
+  //       : 'Realizada';
+  //   const itinerario = await this.itinerarioService.findUltimo(consulta[0].REQ_ID_CODIGO);
+
+  //   // if (!itinerario) {
+  //   //   throw new HttpException('Itinerário não encontrado', HttpStatus.NOT_FOUND
+  //   //   );
+  //   // }
+
+  //   //Quantidade de diárias parciais
+  //   const diariaParcial = calcularDiariaParcial(itinerario.ITI_HCHEGADA);
+  //   //Quantidade de diárias integrais
+  //   const diariaIntegral = calcularDiariaIntegral(
+  //     itinerario.ITI_DTSAIDA,
+  //     itinerario.ITI_HSAIDA,
+  //     itinerario.ITI_DTCHEGADA,
+  //     itinerario.ITI_HCHEGADA,
+  //   );
+
+  //   // Busca o valor da UFESP na data da requisição
+  //   const UFESP = (await this.ufespService.findValueByDate(consulta[0].REQ_DTSAIDA)).ufeValor || 0;
+  //   // Busca o indice da UFESP do cargo do usuário
+  //   const UFESPcargo = await this.despesaDiaria.findOne(consulta[0].CARGO);
+  //   const UFESPcargoValor = Number(UFESPcargo?.dtdValorMax) || 0;
+  //   //buscar destino
+  //   const destino = verificarDestino(consulta[0].MUN_ID_CODIGO);
+
+  //   const calcDiraria = calcularDiariaValores(
+  //     UFESP,
+  //     UFESPcargoValor,
+  //     destino as Destino,
+  //     consulta[0].REQ_PACOTE,
+  //     diariaIntegral,
+  //     diariaParcial > 0 ? 1 : 0,
+  //     itinerario.ITI_HCHEGADA,
+  //   );
+  //   const somaParcial = calcDiraria.VL_DIARIA_PARCIAL_40 + calcDiraria.VL_DIARIA_PARCIAL_20;
+  //   const somaDiarias = DataUtils.arredondar(calcDiraria.VL_DIARIA_INTEGRAL + somaParcial);
+  //   const valorComplementar = calcularValores(consulta[0].SQE_VLSAQUE, somaDiarias);
+
+  //   let diariaParcPorc = 0;
+
+  //   if (calcDiraria?.VL_DIARIA_PARCIAL_20 > 0) {
+  //     diariaParcPorc = 20;
+  //   } else if (calcDiraria?.VL_DIARIA_PARCIAL_40 > 0) {
+  //     diariaParcPorc = 40;
+  //   }
+
+  //   return new PrestacaoDto({
+  //     NOME: consulta[0].NOME,
+  //     REQ_ID_CODIGO: consulta[0].REQ_ID_CODIGO,
+  //     SQE_ID_CODIGO: consulta[0].SQE_ID_CODIGO,
+  //     CHAPA: consulta[0].CHAPA,
+  //     SQE_DTPREST: consulta[0].SQE_DTPREST,
+  //     STATUS: STATUS,
+  //     SQE_VLPREST: consulta[0].IRR_VALOR_PREST,
+  //     REQ_DTREQ: consulta[0].REQ_DTREQ,
+  //     TRA_DESCRICAO: consulta[0].TRA_DESCRICAO,
+  //     NME_MUNIC: consulta[0].NME_MUNIC,
+  //     REG_DESCRICAO: consulta[0].REG_DESCRICAO,
+  //     MUN_CIDADE: consulta[0].MUN_CIDADE,
+  //     DES_LOCAL: consulta[0].DES_LOCAL,
+  //     REQ_DTSAIDA: consulta[0].REQ_DTSAIDA,
+  //     REQ_DTRET: consulta[0].REQ_DTRET,
+  //     REQ_HSAIDA: consulta[0].REQ_HSAIDA,
+  //     REQ_HRET: consulta[0].REQ_HRET,
+  //     REQ_INTEGRAL: Number(consulta[0].REQ_INTEGRAL) || 0,
+  //     REQ_PARCIAL: consulta[0].REQ_PARCIAL > 0 ? 1 : 0,
+  //     REQ_PACOTE: consulta[0].REQ_PACOTE === 0 ? 'S' : 'N',
+  //     REQ_GOVERNADOR: consulta[0].REQ_GOVERNADOR,
+  //     REQ_MOTIVO: consulta[0].REQ_MOTIVO,
+  //     CTR_STATUS: consulta[0].CTR_STATUS,
+  //     ITI_DTSAIDA: itinerario.ITI_DTSAIDA,
+  //     ITI_HSAIDA: itinerario.ITI_HSAIDA,
+  //     ITI_DTCHEGADA: itinerario.ITI_DTCHEGADA,
+  //     ITI_HCHEGADA: itinerario.ITI_HCHEGADA,
+  //     PARREAL: diariaParcial > 0 ? 1 : 0,
+  //     INTREAL: diariaIntegral,
+  //     VLINTEGRAL: calcDiraria.VL_DIARIA_INTEGRAL,
+  //     VLPARCIAL: somaParcial,
+  //     VLBASE: calcDiraria.VL_DIARIA_BASE,
+  //     SQE_VLSAQUE: Number(consulta[0].SQE_VLSAQUE) || 0,
+  //     VLPREST: somaDiarias,
+  //     VLCOMPLEMENTAR: valorComplementar.VL_COMPLEMENTAR,
+  //     VLEXTORNO: valorComplementar.VL_EXTORNO,
+  //     VLDIARIA: calcDiraria.VL_DIARIA,
+  //     PORCDIARIA: diariaParcPorc,
+  //     PRA_ATIVO: consulta[0].PRA_ATIVO,
+  //   });
+  // }
 
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
     try {

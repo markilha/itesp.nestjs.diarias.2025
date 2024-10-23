@@ -33,7 +33,7 @@ export class SaqueController {
       throw new HttpException(
         'Saque id não informado. Por favor, forneça uma Saque id válido.',
         HttpStatus.BAD_REQUEST,
-      );
+      );      
     }
 
     return await this.saqueService.findPrestacao(params);

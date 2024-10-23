@@ -70,6 +70,7 @@ export function calcularDiariaValores(
     let diariaBase: number;
     // Artigo 2.º - Definir base conforme o cargo
     diariaBase = cargoUfesp * UFESP;
+   
     // Artigo 3.º - Ajuste da base conforme o destino
     switch (destino) {
       case Destino.DF_MANaus:
@@ -88,7 +89,7 @@ export function calcularDiariaValores(
         diariaBase = diariaBase;
         break;
     }
-    let diaria = diariaBase;
+    let diaria = diariaBase;   
 
     let diariaParcial40 = 0;
     let diariaParcial20 = 0;

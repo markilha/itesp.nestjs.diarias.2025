@@ -141,6 +141,7 @@ export class PrestacaoDto {
   SQE_DTPREST: string;
   REQ_STATUS: string; 
   PRA_ATIVO: string;
+  UFESP: number;
  
 
   constructor(params: any) {
@@ -184,7 +185,8 @@ export class PrestacaoDto {
     this.VLPREST = params.VLPREST;
     this.VLDIARIA = params.VLDIARIA;
     this.PORCDIARIA = params.PORCDIARIA;
-    this.PRA_ATIVO = params.PRA_ATIVO
+    this.PRA_ATIVO = params.PRA_ATIVO;
+    this.UFESP = params.UFESP;
 
   }
 }
