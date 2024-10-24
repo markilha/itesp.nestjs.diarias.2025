@@ -58,3 +58,20 @@ export class returnRmDto {
     
   }
 }
+
+export class FuncionarioDto {
+  CHAPA: string;        // Exemplo: '000081'
+  NOME: string;         // Exemplo: 'AIR DE SOUZA'
+  DESCFUNC: string;     // Exemplo: 'Pratico de Desenvolvimento III C'
+  CPF: string;          // Exemplo: '04514171867'
+  ORGAO: string;        // Exemplo: 'SEFAZ'
+  constructor(item: any) {
+    this.CHAPA = item.CHAPA;
+    this.NOME = item.NOME;
+    this.DESCFUNC = item.DESCFUNC;
+    this.CPF = item.CPF;
+    this.ORGAO = item.ORGAO;
+  } 
+
+}
+

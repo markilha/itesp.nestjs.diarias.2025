@@ -137,6 +137,7 @@ export class PrestacaoDto {
   REQ_STATUS: string;
   PRA_ATIVO: string;
   UFESP: number;
+  VLDEVOLUCAO: number;
 
   constructor(params: any) {
     this.NOME = params.NOME;
@@ -181,6 +182,7 @@ export class PrestacaoDto {
     this.PORCDIARIA = params.PORCDIARIA;
     this.PRA_ATIVO = params.PRA_ATIVO;
     this.UFESP = params.UFESP;
+    this.VLDEVOLUCAO = params.VLDEVOLUCAO;
   }
 }
 

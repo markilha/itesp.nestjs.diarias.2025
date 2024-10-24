@@ -30,15 +30,13 @@ import { MotivodiariaService } from 'src/motivodiaria/motivodiaria.service';
 import { retornoItinerarioDto } from 'src/itinirario/itinerarioDto';
 import * as oracledb from 'oracledb';
 
-
 function formatDateToString(date) {
-  const day = String(date.getUTCDate()).padStart(2, '0');   
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0'); 
-  const year = date.getUTCFullYear();                       
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const year = date.getUTCFullYear();
 
-  return `${day}-${month}-${year}`;                        
+  return `${day}-${month}-${year}`;
 }
-
 
 function getObjectValues(obj: Record<string, any>): any[] {
   return Object.values(obj);
@@ -348,6 +346,7 @@ export class SaqueService {
         VLPREST: somaDiarias,
         VLCOMPLEMENTAR: valorComplementar.VL_COMPLEMENTAR,
         VLEXTORNO: valorComplementar.VL_EXTORNO,
+        VLDEVOLUCAO: valorComplementar.VL_DEVOLUCAO,
         VLDIARIA: calcDiraria.VL_DIARIA,
         PORCDIARIA: diariaParcPorc,
         PRA_ATIVO: consulta[0].PRA_ATIVO,
@@ -361,13 +360,10 @@ export class SaqueService {
 
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
     try {
-
       const MD = await this.motivoDiaria.findOne(params.chapa, params.reqIdCodigo);
       if (!MD) {
         throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
       }
-
-      console.log(MD.REQ_DTSAIDA);
 
       const saqueDto = new InsS009SaqueDto({
         par1: 'REEMBOLSO',
@@ -387,7 +383,7 @@ export class SaqueService {
         par15: null,
         par16: null,
         par17: params.reqIdCodigo,
-        par18: formatDateToString(MD.REQ_DTSAIDA), 
+        par18: formatDateToString(MD.REQ_DTSAIDA),
         par19: MD.REQ_HSAIDA,
         par20: formatDateToString(MD.REQ_DTRET),
         par21: MD.REQ_HRET,
@@ -401,8 +397,8 @@ export class SaqueService {
         par29: MD.REQ_STATUS,
         par30: params.diariaIntegral,
         par31: params.diariaParcial,
-        par32: params.diariaBase      
-      });      
+        par32: params.diariaBase,
+      });
 
       const valuesArray = getObjectValues(saqueDto);
 
@@ -413,15 +409,14 @@ export class SaqueService {
         :par19, TO_DATE(:par20, 'DD-MM-YYYY'), :par21, :par22, :par23, :par24,
         :par25, :par26, :par27, :par28, :par29, :par30, :par31, :par32, :id
       )
-    `;   
-       
-    const result = await this.saqueRepository.query(query, [
-      ...valuesArray,
-      { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }      
-    ]);      
-    
-      return { sqeIdCodigo: result[0]};
+    `;
 
+      const result = await this.saqueRepository.query(query, [
+        ...valuesArray,
+        { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+      ]);
+
+      return { sqeIdCodigo: result[0] };
     } catch (error) {
       console.error('Erro ao solicitar saque:', error);
       throw new HttpException(
@@ -430,5 +425,4 @@ export class SaqueService {
       );
     }
   }
-
 }

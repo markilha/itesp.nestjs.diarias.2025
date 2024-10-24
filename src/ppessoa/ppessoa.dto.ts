@@ -71,6 +71,7 @@ export class RMPessoaDto {
   }
 
   export interface FindAllParams {
+    chapa: string;
     nome: string; 
     page?: number;
     limit?: number;
