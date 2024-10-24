@@ -1,6 +1,5 @@
-import { ReqNumerarioEntity } from 'src/database/db_mysql/entities/ReqNumerario.entity';
-import { SaqueEntity } from 'src/database/db_mysql/entities/saque.entity';
-import { StatusEntity } from 'src/database/db_mysql/entities/status.entity';
+import { IsNotEmpty, IsOptional, IsNumber, IsString, IsDate, MaxLength, IsEnum } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export interface FindAllParams {
   sqeIdCodigo?: number;
@@ -323,6 +322,7 @@ export class InsS009SaqueDto {
   par30: number; // RNU_VLINTEGRAL
   par31: number; // RNU_VLPARCIAL
   par32: number; // RNU_VLBASE
+ 
   constructor(params: any) {
     this.par1 = params.par1;
     this.par2 = params.par2;
@@ -356,6 +356,7 @@ export class InsS009SaqueDto {
     this.par30 = params.par30;
     this.par31 = params.par31;
     this.par32 = params.par32;
+ 
   }
 }
 
@@ -371,4 +372,222 @@ export class SolitarDto {
 
 export interface RetNumSaque {
   sqeIdCodigo: string;
+}
+
+
+
+
+export enum TipoOperacao {
+  REEMBOLSO = 'REEMBOLSO',
+  COMPLEMENTO = 'COMPLEMENTO'
+}
+
+export class SolicitaSaqueDto {
+  @ApiProperty({ enum: TipoOperacao, description: 'Tipo de operação (REEMBOLSO ou COMPLEMENTO)' })
+  @IsNotEmpty()
+  @IsEnum(TipoOperacao)
+  tipoOperacao: TipoOperacao;
+
+  @ApiProperty({ description: 'Indica se não há recurso (S ou N)' })
+  @IsNotEmpty()
+  @MaxLength(1)
+  @IsString()
+  semRecurso: 'S' | 'N';
+
+  @ApiProperty({ description: 'Tipo de despesa' })
+  @IsNotEmpty()
+  @IsString()
+  tipoDespesa: string;
+
+  @ApiProperty({ description: 'Código do item' })
+  @IsNotEmpty()
+  @IsNumber()
+  iteIdCodigo: number;
+
+  @ApiProperty({ description: 'Código do reembolso' })
+  @IsNotEmpty()
+  @IsNumber()
+  rreIdCodigo: number;
+
+  @ApiProperty({ description: 'Código do diretor' })
+  @IsNotEmpty()
+  @IsNumber()
+  dirIdCodigo: number;
+
+  @ApiPropertyOptional({ description: 'Valor da prestação' })
+  @IsOptional()
+  @IsNumber()
+  sqeVlprest?: number;
+
+  @ApiPropertyOptional({ description: 'Data da prestação' })
+  @IsOptional()
+  @IsString()
+  sqeDtprest?: string;
+
+  @ApiProperty({ description: 'Valor do saque' })
+  @IsNotEmpty()
+  @IsNumber()
+  sqeVlsaque: number;
+
+  @ApiProperty({ description: 'Tipo de saque' })
+  @IsNotEmpty()
+  @MaxLength(1)
+  @IsString()
+  sqeTiposaque: string;
+
+  @ApiProperty({ description: 'Efetivo ou não' })
+  @IsNotEmpty()
+  @MaxLength(1)
+  @IsString()
+  sqeEfetivo: 'S' | 'N';
+
+  @ApiPropertyOptional({ description: 'Código de terceiro' })
+  @IsOptional()
+  @MaxLength(1)
+  @IsString()
+  sqeTerceiro?: string;
+
+  @ApiPropertyOptional({ description: 'Código da pessoa' })
+  @IsOptional()
+  @IsNumber()
+  pesIdCodigo?: number;
+
+  @ApiPropertyOptional({ description: 'Pessoa' })
+  @IsOptional()
+  @MaxLength(1)
+  @IsString()
+  pesPessoa?: string;
+
+  @ApiPropertyOptional({ description: 'Código de status' })
+  @IsOptional()
+  @IsNumber()
+  stsIdCodigo?: number;
+
+  @ApiPropertyOptional({ description: 'Usuário' })
+  @IsOptional()
+  @IsString()
+  sqeUsuario?: string;
+
+  @ApiProperty({ description: 'Código da requisição' })
+  @IsNotEmpty()
+  @IsNumber()
+  reqIdCodigo: number;
+
+  @ApiProperty({ description: 'Data de início da requisição' })
+  @IsNotEmpty()
+  @IsDate()
+  rnuDtinicio: Date;
+
+  @ApiProperty({ description: 'Hora de início da requisição' })
+  @IsNotEmpty()
+  @MaxLength(10)
+  @IsString()
+  rnuHorainicio: string;
+
+  @ApiProperty({ description: 'Data de fim da requisição' })
+  @IsNotEmpty()
+  @IsDate()
+  rnuDtfim: Date;
+
+  @ApiProperty({ description: 'Hora de fim da requisição' })
+  @IsNotEmpty()
+  @MaxLength(10)
+  @IsString()
+  rnuHorafim: string;
+
+  @ApiProperty({ description: 'Indicador de integralidade' })
+  @IsNotEmpty()
+  @MaxLength(5)
+  @IsString()
+  rnuIntprev: string;
+
+  @ApiProperty({ description: 'Indicador de parcialidade' })
+  @IsNotEmpty()
+  @MaxLength(5)
+  @IsString()
+  rnuParprev: string;
+
+  @ApiPropertyOptional({ description: 'Inteiro real' })
+  @IsOptional()
+  @MaxLength(5)
+  @IsString()
+  rnuIntreal?: string;
+
+  @ApiPropertyOptional({ description: 'Parcial real' })
+  @IsOptional()
+  @MaxLength(5)
+  @IsString()
+  rnuParreal?: string;
+
+  @ApiProperty({ description: 'Indicador de pacote' })
+  @IsNotEmpty()
+  @MaxLength(1)
+  @IsString()
+  rnuPacote: 'S' | 'N';
+
+  @ApiProperty({ description: 'Indicador de governador' })
+  @IsNotEmpty()
+  @MaxLength(1)
+  @IsString()
+  rnuGovernador: 'S' | 'N';
+
+  @ApiProperty({ description: 'Justificativa do reembolso' })
+  @IsNotEmpty()
+  @MaxLength(1000)
+  @IsString()
+  rreJustificativa: string;
+
+  @ApiProperty({ description: 'Status da requisição' })
+  @IsNotEmpty()
+  @IsString()
+  reqStatus: string;
+
+  @ApiProperty({ description: 'Valor da diária integral' })
+  @IsNotEmpty()
+  @IsNumber()
+  rnuVlintegral: number;
+
+  @ApiProperty({ description: 'Valor da diária parcial' })
+  @IsNotEmpty()
+  @IsNumber()
+  rnuVlparcial: number;
+
+  @ApiProperty({ description: 'Valor base' })
+  @IsNotEmpty()
+  @IsNumber()
+  rnuVlbase: number;
+  constructor(params: any) {
+    this.tipoOperacao = params.tipoOperacao;
+    this.semRecurso = params.semRecurso;
+    this.tipoDespesa = params.tipoDespesa;
+    this.iteIdCodigo = params.iteIdCodigo;
+    this.rreIdCodigo = params.rreIdCodigo;
+    this.dirIdCodigo = params.dirIdCodigo;
+    this.sqeVlprest = params.sqeVlprest;
+    this.sqeDtprest = params.sqeDtprest;
+    this.sqeVlsaque = params.sqeVlsaque;
+    this.sqeTiposaque = params.sqeTiposaque;
+    this.sqeEfetivo = params.sqeEfetivo;
+    this.sqeTerceiro = params.sqeTerceiro;
+    this.pesIdCodigo = params.pesIdCodigo;
+    this.pesPessoa = params.pesPessoa;
+    this.stsIdCodigo = params.stsIdCodigo;
+    this.sqeUsuario = params.sqeUsuario;
+    this.reqIdCodigo = params.reqIdCodigo;
+    this.rnuDtinicio = params.rnuDtinicio;
+    this.rnuHorainicio = params.rnuHorainicio;
+    this.rnuDtfim = params.rnuDtfim;
+    this.rnuHorafim = params.rnuHorafim;
+    this.rnuIntprev = params.rnuIntprev;
+    this.rnuParprev = params.rnuParprev;
+    this.rnuIntreal = params.rnuIntreal;
+    this.rnuParreal = params.rnuParreal;
+    this.rnuPacote = params.rnuPacote;
+    this.rnuGovernador = params.rnuGovernador;
+    this.rreJustificativa = params.rreJustificativa;
+    this.reqStatus = params.reqStatus;
+    this.rnuVlintegral = params.rnuVlintegral;
+    this.rnuVlparcial = params.rnuVlparcial;
+    this.rnuVlbase = params.rnuVlbase;
+  }
 }

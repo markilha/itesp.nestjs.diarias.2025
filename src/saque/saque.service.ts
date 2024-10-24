@@ -25,9 +25,20 @@ import { UfespService } from 'src/ufesp/ufesp.service';
 import { DespesadiariaService } from 'src/despesadiaria/despesadiaria.service';
 import { verificarDestino } from 'src/util/verificaDestino';
 import { DataUtils } from 'src/util/DataUtils';
-import { tabs } from 'src/util/variaveis/tabs';
+
 import { MotivodiariaService } from 'src/motivodiaria/motivodiaria.service';
 import { retornoItinerarioDto } from 'src/itinirario/itinerarioDto';
+import * as oracledb from 'oracledb';
+
+
+function formatDateToString(date) {
+  const day = String(date.getUTCDate()).padStart(2, '0');   
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0'); 
+  const year = date.getUTCFullYear();                       
+
+  return `${day}-${month}-${year}`;                        
+}
+
 
 function getObjectValues(obj: Record<string, any>): any[] {
   return Object.values(obj);
@@ -348,72 +359,76 @@ export class SaqueService {
     }
   }
 
-
-
-
-
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
     try {
+
       const MD = await this.motivoDiaria.findOne(params.chapa, params.reqIdCodigo);
       if (!MD) {
         throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
       }
 
+      console.log(MD.REQ_DTSAIDA);
+
       const saqueDto = new InsS009SaqueDto({
-        par1: 'REEMBOLSO', // REEMBOLSO/COMPLEMENTO
-        par2: 'S', // SEM RECURSO
-        par3: '7', // tipo de despesa
-        //SAQUE
-        par4: MD.ITE_ID_CODIGO, // ITE_ID_CODIGO
-        par5: MD.RRE_ID_CODIGO, // RRE_ID_CODIGO
-        par6: MD.DIR_ID_CODIGO, // DIR_ID_CODIGO
-        par7: null, // SQE_VLPREST (não informado)
-        par8: null, // SQE_DTPREST (não informado)
-        par9: MD.MDI_VALOR, // SQE_VLSAQUE
-        par10: 'N', // SQE_TIPOSAQUE
-        par11: 'S', // SQE_EFETIVO
-        par12: null, // SQE_TERCEIRO (não informado)
-        par13: null, // PES_ID_CODIGO (supondo 1)
-        par14: null, // PES_PESSOA (não informado)
-        par15: null, // STS_ID_CODIGO (não informado)
-        par16: null, // SQE_USUARIO (exemplo)
-        //NUMERARIO
-        par17: params.reqIdCodigo, // REQ_ID_CODIGO
-        par18: MD.REQ_DTSAIDA, // RNU_DTINICIO
-        par19: MD.REQ_HSAIDA, // RNU_HORAINICIO
-        par20: MD.REQ_DTRET, // RNU_DTFIM
-        par21: MD.REQ_HRET, // RNU_HORAFIM
-        par22: MD.REQ_INTEGRAL, // RNU_INTPREV
-        par23: MD.REQ_PARCIAL, // RNU_PARPREV
-        par24: null, // RNU_INTREAL (não informado)
-        par25: null, // RNU_PARREAL (não informado)
-        par26: MD.REQ_PACOTE, // RNU_PACOTE
-        par27: MD.REQ_GOVERNADOR, // RNU_GOVERNADOR
-        //REEMBOLSO
-        par28: MD.REQ_MOTIVO, // RRE_JUSTIFICATIVA
-        //REQUISICAO
-        par29: MD.REQ_STATUS, // REQ_STATUS
-        //NUMERARIO
-        par30: params.diariaIntegral, // RNU_VLINTEGRAL
-        par31: params.diariaParcial, // RNU_VLPARCIAL
-        par32: params.diariaBase, // RNU_VLBASE
-      });
+        par1: 'REEMBOLSO',
+        par2: 'S',
+        par3: '7',
+        par4: MD.ITE_ID_CODIGO,
+        par5: MD.RRE_ID_CODIGO,
+        par6: MD.DIR_ID_CODIGO,
+        par7: null,
+        par8: null,
+        par9: MD.MDI_VALOR,
+        par10: 'N',
+        par11: 'S',
+        par12: null,
+        par13: null,
+        par14: null,
+        par15: null,
+        par16: null,
+        par17: params.reqIdCodigo,
+        par18: formatDateToString(MD.REQ_DTSAIDA), 
+        par19: MD.REQ_HSAIDA,
+        par20: formatDateToString(MD.REQ_DTRET),
+        par21: MD.REQ_HRET,
+        par22: MD.REQ_INTEGRAL,
+        par23: MD.REQ_PARCIAL,
+        par24: null,
+        par25: null,
+        par26: MD.REQ_PACOTE,
+        par27: MD.REQ_GOVERNADOR,
+        par28: MD.REQ_MOTIVO,
+        par29: MD.REQ_STATUS,
+        par30: params.diariaIntegral,
+        par31: params.diariaParcial,
+        par32: params.diariaBase      
+      });      
 
-      const valuesArray = getObjectValues(saqueDto);    
+      const valuesArray = getObjectValues(saqueDto);
 
-      const result = await this.saqueRepository.query(
-        `CALL INS_S009_SAQUE(
-          :PAR1, :PAR2, :PAR3, :PAR4, :PAR5, :PAR6, :PAR7, :PAR8, :PAR9, :PAR10,
-          :PAR11, :PAR12, :PAR13, :PAR14, :PAR15, :PAR16, :PAR17, TO_DATE(:PAR18, 'YYYY-MM-DD'), 
-          :PAR19, TO_DATE(:PAR20, 'YYYY-MM-DD'), :PAR21, :PAR22, :PAR23, :PAR24, 
-          :PAR25, :PAR26, :PAR27, :PAR28, :PAR29, :PAR30, :PAR31, :PAR32)`,
-          valuesArray,
-      );    
+      const query = `
+      CALL INS_S009_SAQUE(
+        :par1, :par2, TO_CHAR(:par3), :par4, :par5, :par6, :par7, :par8, :par9, :par10,
+        :par11, :par12, :par13, :par14, :par15, :par16, :par17, TO_DATE(:par18, 'DD-MM-YYYY'), 
+        :par19, TO_DATE(:par20, 'DD-MM-YYYY'), :par21, :par22, :par23, :par24,
+        :par25, :par26, :par27, :par28, :par29, :par30, :par31, :par32, :id
+      )
+    `;   
+       
+    const result = await this.saqueRepository.query(query, [
+      ...valuesArray,
+      { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }      
+    ]);      
+    
+      return { sqeIdCodigo: result[0]};
 
-      return { sqeIdCodigo: result[0].id };
     } catch (error) {
       console.error('Erro ao solicitar saque:', error);
-      throw new HttpException('Erro ao solicitar saque:', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        `Erro ao solicitar saque: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
+
 }

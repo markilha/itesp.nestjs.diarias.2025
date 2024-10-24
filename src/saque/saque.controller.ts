@@ -11,7 +11,10 @@ import {
 import { FindParamsSaque, RetNumSaque, PrestacaoDto, SolitarDto } from './saque.dto';
 import { SaqueService } from './saque.service';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
+
+@ApiTags('saque')
 @Controller('saque')
 export class SaqueController {
   constructor(private readonly saqueService: SaqueService) {}
@@ -41,6 +44,10 @@ export class SaqueController {
   
   @UseGuards(AuthGuard)
   @Post('solicitar')
+  @ApiOperation({ summary: 'Solicita um novo saque' })
+  @ApiResponse({ status: 201, description: 'Saque solicitado com sucesso'})
+  @ApiResponse({ status: 404, description: 'Diária de viagem não encontrada' })
+  @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
   async solicitarSaque(@Body() params: SolitarDto): Promise<RetNumSaque> {
     return this.saqueService.solicitarSaque(params);
   }
