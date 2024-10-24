@@ -122,22 +122,31 @@ export class PrestacaoDto {
   ITI_HSAIDA: string;
   ITI_DTCHEGADA: Date;
   ITI_HCHEGADA: string;
+  //DIARIAS-QUANTIDADES
+  INTPREV: number;
+  PARPREV: number;
   INTREAL: number;
-  PARREAL: number;
-  VLINTEGRAL: number;
-  VLPARCIAL: number;
+  PARREAL: number;  
+  //DIARIAS-VALORES
+  VLINTPREV: number;
+  VLPARPREV: number;
+  VLINTREAL: number;
+  VLPARREAL: number;
   VLBASE: number;
   SQE_VLSAQUE: number;
   VLPREST: number;
-  VLCOMPLEMENTAR: number;
-  VLEXTORNO: number;
+  VLCOMPLEMENTARINT: number;
+  VLCOMPLEMENTARPAR: number;
+  VLDEVOLUCAOINT: number;
+  VLDEVOLUCAOPAR: number;
   VLDIARIA: number;
-  PORCDIARIA: number;
+  PORCDIARIARETORNO: number;
   SQE_DTPREST: string;
   REQ_STATUS: string;
+  //PARAMETROS
   PRA_ATIVO: string;
-  UFESP: number;
-  VLDEVOLUCAO: number;
+  UFESP: number; 
+  TRA_ID_CODIGO: number;
 
   constructor(params: any) {
     this.NOME = params.NOME;
@@ -168,21 +177,27 @@ export class PrestacaoDto {
     this.ITI_HSAIDA = params.ITI_HSAIDA;
     this.ITI_DTCHEGADA = params.ITI_DTCHEGADA;
     this.ITI_HCHEGADA = params.ITI_HCHEGADA;
+    this.INTPREV = params.INTPREV;
+    this.PARPREV = params.PARPREV;
     this.INTREAL = params.INTREAL;
     this.PARREAL = params.PARREAL;
-    this.VLINTEGRAL = params.VLINTEGRAL;
-    this.VLPARCIAL = params.VLPARCIAL;
+    this.VLINTPREV = params.VLINTPREV;
+    this.VLPARPREV = params.VLPARPREV;
+    this.VLINTREAL = params.VLINTREAL;
+    this.VLPARREAL = params.VLPARREAL;
     this.VLBASE = params.VLBASE;
     this.SQE_VLSAQUE = params.SQE_VLSAQUE;
-    this.VLCOMPLEMENTAR = params.VLCOMPLEMENTAR;
-    this.VLEXTORNO = params.VLEXTORNO;
+    this.VLCOMPLEMENTARINT = params.VLCOMPLEMENTARINT;
+    this.VLCOMPLEMENTARPAR = params.VLCOMPLEMENTARPAR;
+    this.VLDEVOLUCAOINT = params.VLDEVOLUCAOINT;
+    this.VLDEVOLUCAOPAR = params.VLDEVOLUCAOPAR;   
     this.REQ_STATUS = params.REQ_STATUS;
     this.VLPREST = params.VLPREST;
     this.VLDIARIA = params.VLDIARIA;
-    this.PORCDIARIA = params.PORCDIARIA;
+    this.PORCDIARIARETORNO = params.PORCDIARIARETORNO;
     this.PRA_ATIVO = params.PRA_ATIVO;
-    this.UFESP = params.UFESP;
-    this.VLDEVOLUCAO = params.VLDEVOLUCAO;
+    this.UFESP = params.UFESP;    
+    this.TRA_ID_CODIGO = params.TRA_ID_CODIGO;
   }
 }
 
@@ -592,4 +607,23 @@ export class SolicitaSaqueDto {
     this.rnuVlparcial = params.rnuVlparcial;
     this.rnuVlbase = params.rnuVlbase;
   }
+}
+
+
+export interface DiariaCalculadaDto {
+  VL_DIARIA_INTEGRAL: number;
+  VL_DIARIA_PARCIAL_40: number;
+  VL_DIARIA_PARCIAL_20: number;
+  VL_DIARIA_BASE: number;
+  VL_DIARIA: number;
+  VL_DIARIA_PARCIAL: number;
+  VL_DIARIA_TOTAL: number;
+  PARPERC: number;
+}
+
+export interface DateTimeParams {
+  dataSaida: Date;
+  horaSaida: string;
+  dataChegada: Date;
+  horaChegada: string;
 }

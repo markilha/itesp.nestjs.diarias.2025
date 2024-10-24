@@ -130,7 +130,22 @@ export function calcularDiariaValores(
       VL_DIARIA_TOTAL: DataUtils.arredondar( Number(diariaParcial40 + diariaParcial20 + diariaIntegral) || 0),
       PARPERC: porcentagem,
     };
+
+    
   } catch (error) {
     throw new Error(`Erro ao calcular diária: ${error.message}`);
   }
 }
+
+export function calcQuantDiariaIntegralParcialPorcen(dateTimeParams: any) {
+  const diariaIntegral = calcularDiariaIntegral(
+    dateTimeParams.dataSaida,
+    dateTimeParams.horaSaida,
+    dateTimeParams.dataChegada,
+    dateTimeParams.horaChegada,
+  );
+  const diaraPorc = calcularDiariaParcial(dateTimeParams.horaChegada);
+  const diariaParcial = diaraPorc > 0 ? 1 : 0; 
+  return { diariaIntegral, diariaParcial,diaraPorc };
+}
+

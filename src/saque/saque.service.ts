@@ -6,18 +6,17 @@ import {
   PrestacaoDto,
   SolitarDto,
   InsS009SaqueDto,
+  DateTimeParams,
 } from './saque.dto';
 
 import { SaqueEntity } from 'src/database/db_oracle/entities/saque.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DiariaviagemService } from 'src/diariaviagem/diariaviagem.service';
 import { calcularValores } from 'src/util/calculo_extorno';
 import { formatDates } from 'src/util/formatStarDateEndDate';
 import { ItinirarioService } from 'src/itinirario/itinirario.service';
 import {
-  calcularDiariaIntegral,
-  calcularDiariaParcial,
+  calcQuantDiariaIntegralParcialPorcen,
   calcularDiariaValores,
 } from 'src/util/calculo_dia_retorno';
 import { Destino } from 'src/util/diariaDto';
@@ -29,17 +28,25 @@ import { DataUtils } from 'src/util/DataUtils';
 import { MotivodiariaService } from 'src/motivodiaria/motivodiaria.service';
 import { retornoItinerarioDto } from 'src/itinirario/itinerarioDto';
 import * as oracledb from 'oracledb';
+import { DiariaCalculadaDto } from './saque.dto';
+import { queryPrestacao, querySaque } from 'src/util/variaveis/querys';
+import { getObjectValues } from 'src/util/arrays/retornaArrayObj';
+import { RetonaStatus } from 'src/util/variaveis/statusPrestacao';
 
-function formatDateToString(date) {
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const year = date.getUTCFullYear();
-
-  return `${day}-${month}-${year}`;
-}
-
-function getObjectValues(obj: Record<string, any>): any[] {
-  return Object.values(obj);
+function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
+  return consulta.TRA_ID_CODIGO === 1
+    ? {
+        dataSaida: itinerario.ITI_DTSAIDA,
+        horaSaida: itinerario.ITI_HSAIDA,
+        dataChegada: itinerario.ITI_DTCHEGADA,
+        horaChegada: itinerario.ITI_HCHEGADA,
+      }
+    : {
+        dataSaida: consulta[0].REQ_DTSAIDA,
+        horaSaida: consulta[0].REQ_HSAIDA,
+        dataChegada: consulta[0].REQ_DTRET,
+        horaChegada: consulta[0].REQ_HRET,
+      };
 }
 
 @Injectable()
@@ -111,47 +118,22 @@ export class SaqueService {
         filterValues.push(endDate);
       }
 
-      // Monta a cláusula WHERE
-      const whereClause =
-        filterConditions.length > 0 ? `WHERE ${filterConditions.join(' AND ')}` : '';
-
       const result = await this.saqueRepository.query(
-        `
-        SELECT
-          a.SQE_DTPEDIDO as SQE_DTPEDIDO,
-          a.SQE_ID_CODIGO as SQE_ID_CODIGO,
-          a.SQE_EFETIVO as SQE_EFETIVO,
-          a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,
-          a.SQE_DTSAQUE as SQE_DTSAQUE,
-          a.SQE_VLSAQUE as SQE_VLSAQUE,
-          a.SQE_DTPREST ,
-          b.CHAPA as CHAPA,
-          b.NOME as NOME,     
-          b.TDE_DESCRICAO as TDE_DESCRICAO,
-          b.STS_DESCRICAO as STS_DESCRICAO,
-          b.PRA_ATIVO as PRA_ATIVO,
-          c.REQ_ID_CODIGO as REQ_ID_CODIGO,
-          d.REQ_STATUS as REQ_STATUS
-        FROM FINANCEIRO.s009_saque a
-          INNER JOIN FINANCEIRO.V009_ITENSREQREC b ON a.ITE_ID_CODIGO = b.ITE_ID_CODIGO 
-          INNER JOIN FINANCEIRO.s009_reqnumerario c ON a.SQE_ID_CODIGO = c.SQE_ID_CODIGO
-          INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO
-         ${whereClause}
-        ORDER BY ${orderByField} ${orderDirection}
-        OFFSET :offset ROWS FETCH NEXT :itemsPerPage ROWS ONLY
-      `,
+        querySaque(filterConditions, orderByField, orderDirection),
         [...filterValues, offset, itemsPerPage],
       );
 
       let consulta = result.map((item: any) => {
-        const calc = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
-        const STATUS =
-          ['S', 'C', 'R', 'E'].includes(item.SQE_EFETIVO) &&
-          item.SQE_TIPOSAQUE === 'N' &&
-          item.PRA_ATIVO != 'N' &&
-          (item.SQE_DTPREST === null || item.SQE_VLPREST === 0)
-            ? 'Pendente'
-            : 'Realizada';
+        // Calcular valores de extorno e devolução
+        const { VL_DEVOLUCAO, VL_EXTORNO } = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
+
+        const STATUS = RetonaStatus(
+          item.SQE_EFETIVO,
+          item.SQE_TIPOSAQUE,
+          item.PRA_ATIVO,
+          item.SQE_DTPREST,
+          item.SQE_VLPREST,
+        );
 
         return new SaqueDto({
           SQE_ID_CODIGO: item.SQE_ID_CODIGO,
@@ -169,8 +151,8 @@ export class SaqueService {
           REQ_DTREQ: item.REQ_DTREQ,
           REQ_STATUS: item.REQ_STATUS,
           CHAPA: item.CHAPA,
-          VL_COMPLEMENTAR: calc.VL_COMPLEMENTAR,
-          VL_EXTORNO: calc.VL_EXTORNO,
+          VL_COMPLEMENTAR: VL_EXTORNO,
+          VL_EXTORNO: VL_DEVOLUCAO,
           STATUS,
           SQE_EFETIVO: item.SQE_EFETIVO,
           PRA_ATIVO: item.PRA_ATIVO,
@@ -197,40 +179,12 @@ export class SaqueService {
       let UFESPcargoValor = 0;
       let destino = '';
       let pacote = 0;
+      let calcDiaraRetorn: DiariaCalculadaDto;
+      let calcDiaraInial: DiariaCalculadaDto;
+      let valdevolintegral = 0;
+      let valordevolparcial = 0;
 
-      const consulta = await this.saqueRepository.query(
-        `
-        SELECT
-          a.SQE_DTPEDIDO as SQE_DTPEDIDO,
-          a.SQE_ID_CODIGO as SQE_ID_CODIGO,
-          a.SQE_EFETIVO as SQE_EFETIVO,
-          a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,
-          a.SQE_DTSAQUE as SQE_DTSAQUE,
-          a.SQE_VLSAQUE as SQE_VLSAQUE,
-          a.SQE_DTPREST ,
-          b.CHAPA as CHAPA,
-          b.NOME as NOME,     
-          b.TDE_DESCRICAO as TDE_DESCRICAO,
-          b.STS_DESCRICAO as STS_DESCRICAO,
-          b.PRA_ATIVO as PRA_ATIVO,
-          c.REQ_ID_CODIGO as REQ_ID_CODIGO,         
-          d.REQ_STATUS as REQ_STATUS,
-          d.REQ_DTSAIDA as REQ_DTSAIDA,
-          d.REQ_PACOTE as REQ_PACOTE,
-          d.REQ_INTEGRAL as REQ_INTEGRAL,
-          d.REQ_PARCIAL as REQ_PARCIAL,
-          e.MUN_ID_CODIGO as MUN_ID_CODIGO,
-          f.CARGO as CARGO
-        FROM FINANCEIRO.s009_saque a
-          INNER JOIN FINANCEIRO.V009_ITENSREQREC b ON a.ITE_ID_CODIGO = b.ITE_ID_CODIGO 
-          INNER JOIN FINANCEIRO.s009_reqnumerario c ON a.SQE_ID_CODIGO = c.SQE_ID_CODIGO
-          INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO
-          INNER JOIN TRANSPORTE.s001_destino e ON c.REQ_ID_CODIGO = e.REQ_ID_CODIGO
-          INNER JOIN FINANCEIRO.V009_FUNCSALARIO f ON b.CHAPA = f.CHAPA
-          WHERE a.SQE_ID_CODIGO = :sqeIdCodigo           
-      `,
-        [sqeIdCodigo],
-      );
+      const consulta = await this.saqueRepository.query(queryPrestacao, [sqeIdCodigo]);
 
       if (!consulta || consulta.length === 0) {
         throw new HttpException('Saque não encontrado', HttpStatus.NOT_FOUND);
@@ -238,30 +192,19 @@ export class SaqueService {
 
       pacote = Number(consulta[0].REQ_PACOTE);
 
-      const STATUS =
-        ['S', 'C', 'R', 'E'].includes(consulta[0].SQE_EFETIVO) &&
-        consulta[0].SQE_TIPOSAQUE === 'N' &&
-        consulta[0].PRA_ATIVO != 'N' &&
-        (consulta[0].SQE_DTPREST === null || consulta[0].SQE_VLPREST === 0)
-          ? 'Pendente'
-          : 'Realizada';
+      const STATUS = RetonaStatus(
+        consulta[0].SQE_EFETIVO,
+        consulta[0].SQE_TIPOSAQUE,
+        consulta[0].PRA_ATIVO,
+        consulta[0].SQE_DTPREST,
+        consulta[0].SQE_VLPREST,
+      );
 
       try {
         itinerario = await this.itinerarioService.findUltimo(consulta[0].REQ_ID_CODIGO);
       } catch (error) {
         console.error('Erro ao buscar itinerário:', error);
       }
-
-      //Quantidade de diárias parciais
-      let diariaParcial = calcularDiariaParcial(itinerario.ITI_HCHEGADA);
-      diariaParcial = diariaParcial > 0 ? 1 : 0;
-      //Quantidade de diárias integrais
-      const diariaIntegral = calcularDiariaIntegral(
-        itinerario.ITI_DTSAIDA,
-        itinerario.ITI_HSAIDA,
-        itinerario.ITI_DTCHEGADA,
-        itinerario.ITI_HCHEGADA,
-      );
 
       // Busca o valor da UFESP na data da requisição
       try {
@@ -282,31 +225,48 @@ export class SaqueService {
       try {
         destino = verificarDestino(consulta[0].MUN_ID_CODIGO);
       } catch (error) {
-        throw new HttpException('Erro ao buscar UFESP do cargo', HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new HttpException('Erro ao destino da viagem', HttpStatus.INTERNAL_SERVER_ERROR);
       }
 
-      const calcDiraria = calcularDiariaValores(
+      // Calcular diárias
+      const itiDataHora = getDateTimeParams(consulta[0], itinerario);
+
+      const { diariaIntegral, diariaParcial, diaraPorc } =
+        calcQuantDiariaIntegralParcialPorcen(itiDataHora);
+
+      //CALCULO DIARIA INICAL
+      calcDiaraInial = calcularDiariaValores(
+        UFESP,
+        UFESPcargoValor,
+        destino as Destino,
+        pacote,
+        consulta[0].REQ_INTEGRAL,
+        consulta[0].REQ_PARCIAL > 0 ? 1 : 0,
+        consulta[0].REQ_HRET,
+      );
+
+      //CALCULO DIRIA RETORNO
+      calcDiaraRetorn = calcularDiariaValores(
         UFESP,
         UFESPcargoValor,
         destino as Destino,
         pacote,
         diariaIntegral,
         diariaParcial,
-        itinerario.ITI_HCHEGADA,
+        itiDataHora.horaChegada,
       );
 
-      const somaParcial = calcDiraria.VL_DIARIA_PARCIAL_40 + calcDiraria.VL_DIARIA_PARCIAL_20;
+      let vlestornointegral =
+        calcDiaraRetorn.VL_DIARIA_INTEGRAL - calcDiaraInial.VL_DIARIA_INTEGRAL;
+      let vlestornoparcial = calcDiaraRetorn.VL_DIARIA_PARCIAL - calcDiaraInial.VL_DIARIA_PARCIAL;
 
-      const somaDiarias = DataUtils.arredondar(calcDiraria.VL_DIARIA_INTEGRAL + somaParcial);
-
-      const valorComplementar = calcularValores(consulta[0].SQE_VLSAQUE, somaDiarias);
-
-      let diariaParcPorc = 0;
-
-      if (calcDiraria?.VL_DIARIA_PARCIAL_20 > 0) {
-        diariaParcPorc = 20;
-      } else if (calcDiraria?.VL_DIARIA_PARCIAL_40 > 0) {
-        diariaParcPorc = 40;
+      if (vlestornointegral < 0) {
+        valdevolintegral = Math.abs(vlestornointegral);
+        vlestornointegral = 0;
+      }
+      if (vlestornoparcial < 0) {
+        valordevolparcial = Math.abs(vlestornoparcial);
+        vlestornoparcial = 0;
       }
 
       return new PrestacaoDto({
@@ -333,30 +293,41 @@ export class SaqueService {
         REQ_MOTIVO: consulta[0].REQ_MOTIVO,
         CTR_STATUS: consulta[0].CTR_STATUS,
         STATUS: STATUS,
+        // ITINERARIO
         ITI_DTSAIDA: itinerario.ITI_DTSAIDA,
         ITI_HSAIDA: itinerario.ITI_HSAIDA,
         ITI_DTCHEGADA: itinerario.ITI_DTCHEGADA,
         ITI_HCHEGADA: itinerario.ITI_HCHEGADA,
+        // DIARIAS-QUANTIDADE
         SQE_VLSAQUE: Number(consulta[0].SQE_VLSAQUE) || 0,
-        PARREAL: diariaParcial,
         INTREAL: diariaIntegral,
-        VLINTEGRAL: calcDiraria.VL_DIARIA_INTEGRAL,
-        VLPARCIAL: somaParcial,
-        VLBASE: calcDiraria.VL_DIARIA_BASE,
-        VLPREST: somaDiarias,
-        VLCOMPLEMENTAR: valorComplementar.VL_COMPLEMENTAR,
-        VLEXTORNO: valorComplementar.VL_EXTORNO,
-        VLDEVOLUCAO: valorComplementar.VL_DEVOLUCAO,
-        VLDIARIA: calcDiraria.VL_DIARIA,
-        PORCDIARIA: diariaParcPorc,
+        PARREAL: diariaParcial,
+        //DIARIA-VALORES
+        VLINTPREV: calcDiaraInial.VL_DIARIA_INTEGRAL,
+        VLPARPREV: calcDiaraInial.VL_DIARIA_PARCIAL,
+        VLINTREAL: calcDiaraRetorn.VL_DIARIA_INTEGRAL,
+        VLPARREAL: calcDiaraRetorn.VL_DIARIA_PARCIAL,
+
+        VLBASE: calcDiaraRetorn.VL_DIARIA_BASE,
+        VLPREST: calcDiaraRetorn.VL_DIARIA_TOTAL,
+        VLCOMPLEMENTARINT: vlestornointegral,
+        VLCOMPLEMENTARPAR: vlestornoparcial,
+        VLDEVOLUCAOINT: valdevolintegral,
+        VLDEVOLUCAOPAR: valordevolparcial,
+        VLDIARIA: calcDiaraRetorn.VL_DIARIA,
+        PORCDIARIARETORNO: diaraPorc,
+        //PARAMETROS
         PRA_ATIVO: consulta[0].PRA_ATIVO,
         UFESP: UFESP,
+        TRA_ID_CODIGO: consulta[0].TRA_ID_CODIGO,
       });
     } catch (error) {
       console.error('Erro na consulta findSaque:', error);
       return new HttpException('Erro ao buscar Saques', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  //SOlicitar saque
 
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
     try {
@@ -383,9 +354,9 @@ export class SaqueService {
         par15: null,
         par16: null,
         par17: params.reqIdCodigo,
-        par18: formatDateToString(MD.REQ_DTSAIDA),
+        par18: DataUtils.formatDateToString(MD.REQ_DTSAIDA),
         par19: MD.REQ_HSAIDA,
-        par20: formatDateToString(MD.REQ_DTRET),
+        par20: DataUtils.formatDateToString(MD.REQ_DTRET),
         par21: MD.REQ_HRET,
         par22: MD.REQ_INTEGRAL,
         par23: MD.REQ_PARCIAL,

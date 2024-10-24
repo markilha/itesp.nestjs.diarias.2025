@@ -4,29 +4,9 @@ export function calcularValores(SQE_VLSAQUE: number | null | undefined, SQE_VLPR
     const saque = SQE_VLSAQUE ? SQE_VLSAQUE : 0;
     const prestacao = SQE_VLPREST ? SQE_VLPREST : 0; 
     const CALCULO = DataUtils.arredondar(prestacao - saque); 
-   
-   
-    if(CALCULO === 0) {
-      return {
-        VL_COMPLEMENTAR: 0,
-        VL_EXTORNO: 0,
-        VL_DEVOLUCAO: 0
-      };
-    }
 
-    if(CALCULO < 0) {
-      return {
-        VL_COMPLEMENTAR: 0,
-        VL_EXTORNO: 0,
-        VL_DEVOLUCAO: Math.abs(CALCULO)
-      };
-    }
+    const VL_EXTORNO = CALCULO > 0 ? CALCULO : 0;   
+    const VL_DEVOLUCAO = CALCULO < 0 ? Math.abs(CALCULO) : 0;  
 
-    if(CALCULO > 0) {
-      return {
-        VL_COMPLEMENTAR: CALCULO,
-        VL_EXTORNO: Math.abs(CALCULO),
-        VL_DEVOLUCAO: 0
-      };
-    }
+    return { VL_EXTORNO, VL_DEVOLUCAO };
   }

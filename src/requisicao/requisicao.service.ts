@@ -129,7 +129,7 @@ export class RequisicaoService {
 
       // Processar resultados
       let result = consulta.map((item) => {
-        const calc = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
+        const {VL_EXTORNO,VL_DEVOLUCAO} = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
         const STATUS = item.SQE_DTPREST ? 'Realizada' : 'Pendente';
 
         
@@ -149,8 +149,8 @@ export class RequisicaoService {
             REQ_DTREQ: item.REQ_DTREQ,
             REQ_STATUS: item.REQ_STATUS,
             CHAPA: item.CHAPA,
-            VL_COMPLEMENTAR: calc.VL_COMPLEMENTAR,
-            VL_EXTORNO: calc.VL_EXTORNO,
+            VL_COMPLEMENTAR: VL_EXTORNO,
+            VL_EXTORNO: VL_DEVOLUCAO,
             STATUS,
             TIPO_DESPESA: item.TIPO_DESPESA,
             TRA_DESCRICAO: item.TRA_DESCRICAO,
