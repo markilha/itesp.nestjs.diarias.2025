@@ -19,6 +19,7 @@ import { ItinirarioModule } from './itinirario/itinirario.module';
 import { UsureqModule } from './usureq/usureq.module';
 import { DbOraModule } from './database/db_oracle/db.ora.module';
 import { PcontasModule } from './pcontas/pcontas.module';
+import { PcontasNumModule } from './pcontasnum/pcontasnum.module';
 
 
 
@@ -41,7 +42,7 @@ import { PcontasModule } from './pcontas/pcontas.module';
     MotivodiariaModule,
     DespesadiariaModule,
     ItinirarioModule,   
-    UsureqModule, PcontasModule, 
+    UsureqModule, PcontasModule, PcontasNumModule
   ],
   controllers: [],
 
