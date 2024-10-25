@@ -336,6 +336,7 @@ export class SaqueService {
           UFESPcargoValor,
           destino as Destino,
         );
+        
 
       const { vlExtornoIntegral, vlExtornParcial, vlDevolucaoIntegral, vlDevolucaoParcial } =
         this.calcularExtornosEDevolucoes(calcDiaraInial, calcDiaraRetorn);
@@ -344,6 +345,7 @@ export class SaqueService {
         NOME: consulta.NOME,
         REQ_ID_CODIGO: consulta.REQ_ID_CODIGO,
         SQE_ID_CODIGO: consulta.SQE_ID_CODIGO,
+        RNU_ID_CODIGO: consulta.RNU_ID_CODIGO,
         CHAPA: consulta.CHAPA,
         SQE_DTPREST: consulta.SQE_DTPREST,
         SQE_VLPREST: consulta.IRR_VALOR_PREST,

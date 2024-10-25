@@ -4,10 +4,13 @@ import {
   HttpException,
   HttpStatus,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { PcargoService } from './pcargo.service';
 import { PcargoDto, FindAllParams } from './pcargoDto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('pcargo')
 export class PcargoController {
   constructor(private readonly pcargoService: PcargoService) {}

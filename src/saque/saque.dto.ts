@@ -97,6 +97,7 @@ export class PrestacaoDto {
   NOME: string;
   REQ_ID_CODIGO: number;
   SQE_ID_CODIGO: number;
+  RNU_ID_CODIGO: number;
   CHAPA: string;
   SQE_VLPREST: number;
   REQ_DTREQ: string;
@@ -154,6 +155,7 @@ export class PrestacaoDto {
     this.NOME = params.NOME;
     this.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
     this.SQE_ID_CODIGO = params.SQE_ID_CODIGO;
+    this.RNU_ID_CODIGO = params.RNU_ID_CODIGO;
     this.CHAPA = params.CHAPA;
     this.SQE_DTPREST = params.SQE_DTPREST;
     this.STATUS = params.STATUS;
