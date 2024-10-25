@@ -26,7 +26,6 @@ import { verificarDestino } from 'src/util/verificaDestino';
 import { DataUtils } from 'src/util/DataUtils';
 
 import { MotivodiariaService } from 'src/motivodiaria/motivodiaria.service';
-import { retornoItinerarioDto } from 'src/itinirario/itinerarioDto';
 import * as oracledb from 'oracledb';
 import { DiariaCalculadaDto } from './saque.dto';
 import { queryPrestacao, querySaque } from 'src/util/variaveis/querys';
@@ -59,7 +58,135 @@ export class SaqueService {
     private ufespService: UfespService,
     private despesaDiaria: DespesadiariaService,
   ) {}
+  private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
+    const consulta = await this.saqueRepository.query(queryPrestacao, [sqeIdCodigo]);
 
+    if (!consulta?.length) {
+      throw new HttpException('Saque não encontrado', HttpStatus.NOT_FOUND);
+    }
+
+    return consulta[0];
+  }
+
+  private async buscarItinerario(reqIdCodigo: number) {
+    try {
+      return await this.itinerarioService.findUltimo(reqIdCodigo);
+    } catch (error) {
+      console.error('Erro ao buscar itinerário:', error);
+      return null;
+    }
+  }
+
+  private async buscarUfesp(dataSaida: string): Promise<number> {
+    const { ufeValor } = await this.ufespService.findValueByDate(dataSaida);
+    return ufeValor;
+  }
+
+  private async buscarUfespCargo(cargo: string): Promise<number> {
+    const UFESPcargo = await this.despesaDiaria.findOne(cargo);
+    return Number(UFESPcargo?.dtdValorMax);
+  }
+
+  private async calcularDiarias(
+    consulta: any,
+    itinerario: any,
+    UFESP: number,
+    UFESPcargoValor: number,
+    destino: Destino,
+  ) {
+    const itiDataHora = getDateTimeParams(consulta, itinerario);
+    const { diariaIntegral, diariaParcial, diaraPorc } =
+      calcQuantDiariaIntegralParcialPorcen(itiDataHora);
+
+    const pacote = Number(consulta.REQ_PACOTE);
+
+    const calcDiaraInial = calcularDiariaValores(
+      UFESP,
+      UFESPcargoValor,
+      destino,
+      pacote,
+      consulta.REQ_INTEGRAL,
+      consulta.REQ_PARCIAL > 0 ? 1 : 0,
+      consulta.REQ_HRET,
+    );
+
+    const calcDiaraRetorn = calcularDiariaValores(
+      UFESP,
+      UFESPcargoValor,
+      destino,
+      pacote,
+      diariaIntegral,
+      diariaParcial,
+      itiDataHora.horaChegada,
+    );
+
+    return {
+      calcDiaraInial,
+      calcDiaraRetorn,
+      diariaIntegral,
+      diariaParcial,
+      diaraPorc,
+    };
+  }
+
+  private calcularExtornosEDevolucoes(
+    calcDiaraInial: DiariaCalculadaDto,
+    calcDiaraRetorn: DiariaCalculadaDto,
+  ) {
+    const { VL_EXTORNO: vlExtornoIntegral, VL_DEVOLUCAO: vlDevolucaoIntegral } = calcularValores(
+      calcDiaraInial.VL_DIARIA_INTEGRAL,
+      calcDiaraRetorn.VL_DIARIA_INTEGRAL,
+    );
+
+    const { VL_EXTORNO: vlExtornParcial, VL_DEVOLUCAO: vlDevolucaoParcial } = calcularValores(
+      calcDiaraInial.VL_DIARIA_PARCIAL,
+      calcDiaraRetorn.VL_DIARIA_PARCIAL,
+    );
+
+    return {
+      vlExtornoIntegral,
+      vlExtornParcial,
+      vlDevolucaoIntegral,
+      vlDevolucaoParcial,
+    };
+  }
+
+  private async buscarDadosNecessarios(consulta: any) {
+    try {
+      const [itinerario, UFESP, UFESPcargoValor] = await Promise.all([
+        this.buscarItinerario(consulta.REQ_ID_CODIGO).catch((error) => {
+          throw new HttpException(
+            'Erro ao buscar itinerário: ' + error.message,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }),
+        this.buscarUfesp(consulta.REQ_DTSAIDA).catch((error) => {
+          throw new HttpException(
+            'Erro ao buscar valor UFESP: ' + error.message,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }),
+        this.buscarUfespCargo(consulta.CARGO).catch((error) => {
+          throw new HttpException(
+            'Erro ao buscar UFESP do cargo: ' + error.message,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }),
+      ]);
+
+      return { itinerario, UFESP, UFESPcargoValor };
+    } catch (error) {
+      // Propaga o erro específico para ser tratado no nível superior
+      throw error instanceof HttpException
+        ? error
+        : new HttpException(
+            'Erro ao buscar dados necessários para prestação',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+    }
+  }
+
+  //BUSCAR TODOS OS SAQUES
   async findAll(params: FindParamsSaque): Promise<SaqueDto[]> {
     try {
       const chapa = params.CHAPA;
@@ -163,172 +290,109 @@ export class SaqueService {
       if (params.STATUS) {
         consulta = consulta.filter((item: any) => item.STATUS === params.STATUS);
       }
-
       return consulta;
     } catch (error) {
       console.error('Erro na consulta findSaque:', error);
-      throw new HttpException('Erro ao buscar Saques', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async findPrestacao(params: FindParamsSaque): Promise<any> {
+  async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto> {
+
+    let destino: Destino | null = null;
     try {
-      const sqeIdCodigo = params.SQE_ID_CODIGO;
-      let UFESP = 0;
-      let itinerario: retornoItinerarioDto;
-      let UFESPcargoValor = 0;
-      let destino = '';
-      let pacote = 0;
-      let calcDiaraRetorn: DiariaCalculadaDto;
-      let calcDiaraInial: DiariaCalculadaDto;
-      let valdevolintegral = 0;
-      let valordevolparcial = 0;
-
-      const consulta = await this.saqueRepository.query(queryPrestacao, [sqeIdCodigo]);
-
-      if (!consulta || consulta.length === 0) {
+      const consulta = await this.buscarConsulta(params.SQE_ID_CODIGO);      
+       if (!consulta) {
         throw new HttpException('Saque não encontrado', HttpStatus.NOT_FOUND);
       }
 
-      pacote = Number(consulta[0].REQ_PACOTE);
+     
+      const { itinerario, UFESP, UFESPcargoValor } = await this.buscarDadosNecessarios(consulta);
+
+
+    try {
+      
+      destino = verificarDestino(consulta.MUN_ID_CODIGO) as Destino;
+    } catch (error) {
+      throw new HttpException('Destino não encontrado', HttpStatus.NOT_FOUND);
+      
+    }
 
       const STATUS = RetonaStatus(
-        consulta[0].SQE_EFETIVO,
-        consulta[0].SQE_TIPOSAQUE,
-        consulta[0].PRA_ATIVO,
-        consulta[0].SQE_DTPREST,
-        consulta[0].SQE_VLPREST,
+        consulta.SQE_EFETIVO,
+        consulta.SQE_TIPOSAQUE,
+        consulta.PRA_ATIVO,
+        consulta.SQE_DTPREST,
+        consulta.SQE_VLPREST,
       );
 
-      try {
-        itinerario = await this.itinerarioService.findUltimo(consulta[0].REQ_ID_CODIGO);
-      } catch (error) {
-        console.error('Erro ao buscar itinerário:', error);
-      }
+      const { calcDiaraInial, calcDiaraRetorn, diariaIntegral, diariaParcial, diaraPorc } =
+        await this.calcularDiarias(
+          consulta,
+          itinerario,
+          UFESP,
+          UFESPcargoValor,
+          destino as Destino,
+        );
 
-      // Busca o valor da UFESP na data da requisição
-      try {
-        UFESP = (await this.ufespService.findValueByDate(consulta[0].REQ_DTSAIDA)).ufeValor || 0;
-      } catch (error) {
-        console.error('Erro ao buscar UFESP:', error);
-      }
-
-      // Busca o indice da UFESP do cargo do usuário
-      try {
-        const UFESPcargo = await this.despesaDiaria.findOne(consulta[0].CARGO);
-        UFESPcargoValor = Number(UFESPcargo?.dtdValorMax) || 0;
-      } catch (error) {
-        throw new HttpException('Erro ao buscar UFESP do cargo', HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-
-      //buscar destino
-      try {
-        destino = verificarDestino(consulta[0].MUN_ID_CODIGO);
-      } catch (error) {
-        throw new HttpException('Erro ao destino da viagem', HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-
-      // Calcular diárias
-      const itiDataHora = getDateTimeParams(consulta[0], itinerario);
-
-      const { diariaIntegral, diariaParcial, diaraPorc } =
-        calcQuantDiariaIntegralParcialPorcen(itiDataHora);
-
-      //CALCULO DIARIA INICAL
-      calcDiaraInial = calcularDiariaValores(
-        UFESP,
-        UFESPcargoValor,
-        destino as Destino,
-        pacote,
-        consulta[0].REQ_INTEGRAL,
-        consulta[0].REQ_PARCIAL > 0 ? 1 : 0,
-        consulta[0].REQ_HRET,
-      );
-
-      //CALCULO DIRIA RETORNO
-      calcDiaraRetorn = calcularDiariaValores(
-        UFESP,
-        UFESPcargoValor,
-        destino as Destino,
-        pacote,
-        diariaIntegral,
-        diariaParcial,
-        itiDataHora.horaChegada,
-      );
-
-      let vlestornointegral =
-        calcDiaraRetorn.VL_DIARIA_INTEGRAL - calcDiaraInial.VL_DIARIA_INTEGRAL;
-      let vlestornoparcial = calcDiaraRetorn.VL_DIARIA_PARCIAL - calcDiaraInial.VL_DIARIA_PARCIAL;
-
-      if (vlestornointegral < 0) {
-        valdevolintegral = Math.abs(vlestornointegral);
-        vlestornointegral = 0;
-      }
-      if (vlestornoparcial < 0) {
-        valordevolparcial = Math.abs(vlestornoparcial);
-        vlestornoparcial = 0;
-      }
+      const { vlExtornoIntegral, vlExtornParcial, vlDevolucaoIntegral, vlDevolucaoParcial } =
+        this.calcularExtornosEDevolucoes(calcDiaraInial, calcDiaraRetorn);
 
       return new PrestacaoDto({
-        NOME: consulta[0].NOME,
-        REQ_ID_CODIGO: consulta[0].REQ_ID_CODIGO,
-        SQE_ID_CODIGO: consulta[0].SQE_ID_CODIGO,
-        CHAPA: consulta[0].CHAPA,
-        SQE_DTPREST: consulta[0].SQE_DTPREST,
-        SQE_VLPREST: consulta[0].IRR_VALOR_PREST,
-        REQ_DTREQ: consulta[0].REQ_DTREQ,
-        TRA_DESCRICAO: consulta[0].TRA_DESCRICAO,
-        NME_MUNIC: consulta[0].NME_MUNIC,
-        REG_DESCRICAO: consulta[0].REG_DESCRICAO,
-        MUN_CIDADE: consulta[0].MUN_CIDADE,
-        DES_LOCAL: consulta[0].DES_LOCAL,
-        REQ_DTSAIDA: consulta[0].REQ_DTSAIDA,
-        REQ_DTRET: consulta[0].REQ_DTRET,
-        REQ_HSAIDA: consulta[0].REQ_HSAIDA,
-        REQ_HRET: consulta[0].REQ_HRET,
-        REQ_INTEGRAL: Number(consulta[0].REQ_INTEGRAL) || 0,
-        REQ_PARCIAL: consulta[0].REQ_PARCIAL > 0 ? 1 : 0,
-        REQ_PACOTE: pacote === 0 ? 'S' : 'N',
-        REQ_GOVERNADOR: consulta[0].REQ_GOVERNADOR,
-        REQ_MOTIVO: consulta[0].REQ_MOTIVO,
-        CTR_STATUS: consulta[0].CTR_STATUS,
-        STATUS: STATUS,
-        // ITINERARIO
-        ITI_DTSAIDA: itinerario.ITI_DTSAIDA,
-        ITI_HSAIDA: itinerario.ITI_HSAIDA,
-        ITI_DTCHEGADA: itinerario.ITI_DTCHEGADA,
-        ITI_HCHEGADA: itinerario.ITI_HCHEGADA,
-        // DIARIAS-QUANTIDADE
-        SQE_VLSAQUE: Number(consulta[0].SQE_VLSAQUE) || 0,
+        NOME: consulta.NOME,
+        REQ_ID_CODIGO: consulta.REQ_ID_CODIGO,
+        SQE_ID_CODIGO: consulta.SQE_ID_CODIGO,
+        CHAPA: consulta.CHAPA,
+        SQE_DTPREST: consulta.SQE_DTPREST,
+        SQE_VLPREST: consulta.IRR_VALOR_PREST,
+        REQ_DTREQ: consulta.REQ_DTREQ,
+        TRA_DESCRICAO: consulta.TRA_DESCRICAO,
+        NME_MUNIC: consulta.NME_MUNIC,
+        REG_DESCRICAO: consulta.REG_DESCRICAO,
+        MUN_CIDADE: consulta.MUN_CIDADE,
+        DES_LOCAL: consulta.DES_LOCAL,
+        REQ_DTSAIDA: consulta.REQ_DTSAIDA,
+        REQ_DTRET: consulta.REQ_DTRET,
+        REQ_HSAIDA: consulta.REQ_HSAIDA,
+        REQ_HRET: consulta.REQ_HRET,
+        REQ_INTEGRAL: Number(consulta.REQ_INTEGRAL) || 0,
+        REQ_PARCIAL: consulta.REQ_PARCIAL > 0 ? 1 : 0,
+        REQ_PACOTE: Number(consulta.REQ_PACOTE) === 0 ? 'S' : 'N',
+        REQ_GOVERNADOR: consulta.REQ_GOVERNADOR,
+        REQ_MOTIVO: consulta.REQ_MOTIVO,
+        CTR_STATUS: consulta.CTR_STATUS,
+        STATUS,
+        ITI_DTSAIDA: itinerario?.ITI_DTSAIDA,
+        ITI_HSAIDA: itinerario?.ITI_HSAIDA,
+        ITI_DTCHEGADA: itinerario?.ITI_DTCHEGADA,
+        ITI_HCHEGADA: itinerario?.ITI_HCHEGADA,
+        SQE_VLSAQUE: Number(consulta.SQE_VLSAQUE) || 0,
         INTREAL: diariaIntegral,
         PARREAL: diariaParcial,
-        //DIARIA-VALORES
         VLINTPREV: calcDiaraInial.VL_DIARIA_INTEGRAL,
         VLPARPREV: calcDiaraInial.VL_DIARIA_PARCIAL,
         VLINTREAL: calcDiaraRetorn.VL_DIARIA_INTEGRAL,
         VLPARREAL: calcDiaraRetorn.VL_DIARIA_PARCIAL,
-
         VLBASE: calcDiaraRetorn.VL_DIARIA_BASE,
         VLPREST: calcDiaraRetorn.VL_DIARIA_TOTAL,
-        VLCOMPLEMENTARINT: vlestornointegral,
-        VLCOMPLEMENTARPAR: vlestornoparcial,
-        VLDEVOLUCAOINT: valdevolintegral,
-        VLDEVOLUCAOPAR: valordevolparcial,
         VLDIARIA: calcDiaraRetorn.VL_DIARIA,
         PORCDIARIARETORNO: diaraPorc,
-        //PARAMETROS
-        PRA_ATIVO: consulta[0].PRA_ATIVO,
-        UFESP: UFESP,
-        TRA_ID_CODIGO: consulta[0].TRA_ID_CODIGO,
+        VLEXTORNOINTEGRAL: vlExtornoIntegral,
+        VLEXTORNOPARCIAL: vlExtornParcial,
+        VLDEVOLUCAOINTEGRAL: vlDevolucaoIntegral,
+        VLDEVOLUCAOPARCIAL: vlDevolucaoParcial,
+        PRA_ATIVO: consulta.PRA_ATIVO,
+        UFESP,
+        TRA_ID_CODIGO: consulta.TRA_ID_CODIGO,
+    
+          
       });
     } catch (error) {
-      console.error('Erro na consulta findSaque:', error);
-      return new HttpException('Erro ao buscar Saques', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   //SOlicitar saque
-
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
     try {
       const MD = await this.motivoDiaria.findOne(params.chapa, params.reqIdCodigo);

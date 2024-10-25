@@ -1,8 +1,8 @@
 import { DataUtils } from "./DataUtils";
 
-export function calcularValores(SQE_VLSAQUE: number | null | undefined, SQE_VLPREST: number | null | undefined) { 
-    const saque = SQE_VLSAQUE ? SQE_VLSAQUE : 0;
-    const prestacao = SQE_VLPREST ? SQE_VLPREST : 0; 
+export function calcularValores(Valor_Saque: number | null | undefined, Valor_prestado: number | null | undefined) { 
+    const saque = Valor_Saque ? Valor_Saque : 0;
+    const prestacao = Valor_prestado ? Valor_prestado : 0; 
     const CALCULO = DataUtils.arredondar(prestacao - saque); 
 
     const VL_EXTORNO = CALCULO > 0 ? CALCULO : 0;   

@@ -135,10 +135,12 @@ export class PrestacaoDto {
   VLBASE: number;
   SQE_VLSAQUE: number;
   VLPREST: number;
-  VLCOMPLEMENTARINT: number;
-  VLCOMPLEMENTARPAR: number;
-  VLDEVOLUCAOINT: number;
-  VLDEVOLUCAOPAR: number;
+  //EXTORNOS DEVOLUÇÕES
+  VLEXTORNOINTEGRAL: number;
+  VLEXTORNOPARCIAL: number;
+  VLDEVOLUCAOINTEGRAL: number;
+  VLDEVOLUCAOPARCIAL: number;
+
   VLDIARIA: number;
   PORCDIARIARETORNO: number;
   SQE_DTPREST: string;
@@ -146,7 +148,7 @@ export class PrestacaoDto {
   //PARAMETROS
   PRA_ATIVO: string;
   UFESP: number; 
-  TRA_ID_CODIGO: number;
+  TRA_ID_CODIGO: number; 
 
   constructor(params: any) {
     this.NOME = params.NOME;
@@ -187,10 +189,12 @@ export class PrestacaoDto {
     this.VLPARREAL = params.VLPARREAL;
     this.VLBASE = params.VLBASE;
     this.SQE_VLSAQUE = params.SQE_VLSAQUE;
-    this.VLCOMPLEMENTARINT = params.VLCOMPLEMENTARINT;
-    this.VLCOMPLEMENTARPAR = params.VLCOMPLEMENTARPAR;
-    this.VLDEVOLUCAOINT = params.VLDEVOLUCAOINT;
-    this.VLDEVOLUCAOPAR = params.VLDEVOLUCAOPAR;   
+     //EXTORNOS DEVOLUÇÕES
+    this.VLEXTORNOINTEGRAL = params.VLEXTORNOINTEGRAL;
+    this.VLEXTORNOPARCIAL = params.VLEXTORNOPARCIAL;
+    this.VLDEVOLUCAOINTEGRAL = params.VLDEVOLUCAOINTEGRAL;
+    this.VLDEVOLUCAOPARCIAL = params.VLDEVOLUCAOPARCIAL;   
+
     this.REQ_STATUS = params.REQ_STATUS;
     this.VLPREST = params.VLPREST;
     this.VLDIARIA = params.VLDIARIA;
@@ -198,6 +202,7 @@ export class PrestacaoDto {
     this.PRA_ATIVO = params.PRA_ATIVO;
     this.UFESP = params.UFESP;    
     this.TRA_ID_CODIGO = params.TRA_ID_CODIGO;
+   
   }
 }
 
