@@ -16,4 +16,8 @@ export class PcontasController {
     async findAll(@Query() params: FindAllParams): Promise<pcontasDto[]> {
       return await this.pcontasService.findAll(params);
     }
+    @Get('findone')
+    async findOne(@Query() params: FindAllParams): Promise<pcontasDto> {      
+      return await this.pcontasService.findOne(params.PCO_ID_CODIGO);
+    }
 }

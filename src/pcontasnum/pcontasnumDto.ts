@@ -4,16 +4,14 @@ export class pcontasNumDto {
   
   @IsNumber()
   @IsNotEmpty()
-  PCO_ID_CODIGO: number;
-
-  
+  PCO_ID_CODIGO: number;  
   RNU_ID_CODIGO: number;
-
  
 }
 
 export interface FindAllParams {
-  PCO_ID_CODIGO: string;  
+  PCO_ID_CODIGO: number;  
+  RNU_ID_CODIGO: number;
   page: number;
   limit: number;
 }

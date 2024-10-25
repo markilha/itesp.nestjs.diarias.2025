@@ -20,16 +20,15 @@ import { UsureqModule } from './usureq/usureq.module';
 import { DbOraModule } from './database/db_oracle/db.ora.module';
 import { PcontasModule } from './pcontas/pcontas.module';
 import { PcontasNumModule } from './pcontasnum/pcontasnum.module';
-
-
+import { extornoModule } from './extorno/extorno.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }), 
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     DbUsersModule,
     DbOraModule,
-    AuthModule,      
-    ReqnumerarioModule,  
+    AuthModule,
+    ReqnumerarioModule,
     UfespModule,
     PcargoModule,
     FuncsalarioModule,
@@ -41,10 +40,12 @@ import { PcontasNumModule } from './pcontasnum/pcontasnum.module';
     DiariaviagemModule,
     MotivodiariaModule,
     DespesadiariaModule,
-    ItinirarioModule,   
-    UsureqModule, PcontasModule, PcontasNumModule
+    ItinirarioModule,
+    UsureqModule,
+    PcontasModule,
+    PcontasNumModule,
+    extornoModule
   ],
   controllers: [],
-
 })
 export class AppModule {}

@@ -13,4 +13,9 @@ export class PcontasNumController {
     async findAll(@Query() params: FindAllParams): Promise<pcontasNumDto[]> {
       return await this.pcontasnumService.findAll(params);
     }
+
+    @Get('findone')
+    async findONe(@Query() params: FindAllParams): Promise<pcontasNumDto> {      
+      return await this.pcontasnumService.findOne(params.RNU_ID_CODIGO);
+    }
 }
