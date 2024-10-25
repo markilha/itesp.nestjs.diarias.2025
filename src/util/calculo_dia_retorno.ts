@@ -28,34 +28,33 @@ export function calcularDiariaParcial(horaChegada: string): number {
 }
 
 export function calcularDiariaIntegral(
-  dataSaida: Date,
+  dataSaida: Date | string,
   horaSaida: string,
-  dataChegada: Date,
+  dataChegada: Date | string,
   horaChegada: string,
 ): number {
-  // Combinar as datas e horas de saída e chegada
-  const dataHoraSaida = new Date(`${dataSaida}T${horaSaida}`);
-  const dataHoraChegada = new Date(`${dataChegada}T${horaChegada}`);
+  // Convertendo as datas para o tipo Date, se estiverem como strings
+  const dataSaidaFormatada = typeof dataSaida === 'string' ? new Date(`${dataSaida}T${horaSaida}`) : new Date(`${dataSaida.toISOString().split('T')[0]}T${horaSaida}`);
+  const dataChegadaFormatada = typeof dataChegada === 'string' ? new Date(`${dataChegada}T${horaChegada}`) : new Date(`${dataChegada.toISOString().split('T')[0]}T${horaChegada}`);
 
   // Verificar se as datas são válidas
-  if (isNaN(dataHoraSaida.getTime()) || isNaN(dataHoraChegada.getTime())) {
+  if (isNaN(dataSaidaFormatada.getTime()) || isNaN(dataChegadaFormatada.getTime())) {
     throw new Error('Data ou hora inválida');
   }
 
   // Calcular a diferença em milissegundos entre as duas datas
-  const diferencaMilissegundos = dataHoraChegada.getTime() - dataHoraSaida.getTime();
+  const diferencaMilissegundos = dataChegadaFormatada.getTime() - dataSaidaFormatada.getTime();
 
   // Converter a diferença em dias (1 dia = 24 * 60 * 60 * 1000 milissegundos)
   const diferencaDias = diferencaMilissegundos / (24 * 60 * 60 * 1000);
 
   // Arredondar para cima para contar qualquer fração de dia como um dia completo
   const totalDias = Math.ceil(diferencaDias);
-  if (totalDias > 1) {
-    return totalDias - 1;
-  }
 
-  return totalDias;
+  // Retornar o total de dias, diminuindo um caso seja maior que 1
+  return totalDias > 1 ? totalDias - 1 : totalDias;
 }
+
 
 export function calcularDiariaValores(
   UFESP: number,
@@ -138,6 +137,8 @@ export function calcularDiariaValores(
 }
 
 export function calcQuantDiariaIntegralParcialPorcen(dateTimeParams: any) {
+
+  console.log(dateTimeParams);
   const diariaIntegral = calcularDiariaIntegral(
     dateTimeParams.dataSaida,
     dateTimeParams.horaSaida,
