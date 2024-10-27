@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { PcontasService } from './pcontas.service';
 import { FindAllParams } from './pcontasDto';
@@ -19,5 +19,10 @@ export class PcontasController {
     @Get('findone')
     async findOne(@Query() params: FindAllParams): Promise<pcontasDto> {      
       return await this.pcontasService.findOne(params.PCO_ID_CODIGO);
+    }
+    //criar post
+    @Post()
+    async create(@Body() params: {SQE_ID_CODIGO:number}): Promise<number> {
+      return await this.pcontasService.createPcontas(params.SQE_ID_CODIGO);
     }
 }

@@ -8,6 +8,6 @@ import { pcontasnumEntity } from 'src/database/db_oracle/entities/pcontasnum';
   imports:[TypeOrmModule.forFeature([pcontasnumEntity], 'oracleConnection')],
   providers: [PcontasNumService],
   controllers: [PcontasNumController],
-  exports: [PcontasNumService]
+  exports: [PcontasNumService,TypeOrmModule]
 })
 export class PcontasNumModule {}

@@ -21,6 +21,8 @@ import { DbOraModule } from './database/db_oracle/db.ora.module';
 import { PcontasModule } from './pcontas/pcontas.module';
 import { PcontasNumModule } from './pcontasnum/pcontasnum.module';
 import { extornoModule } from './extorno/extorno.module';
+import { reembolsoModule } from './reembolso/reembolso.module';
+import { reqtransModule } from './reqtrans/reqtrans.module';
 
 @Module({
   imports: [
@@ -44,7 +46,9 @@ import { extornoModule } from './extorno/extorno.module';
     UsureqModule,
     PcontasModule,
     PcontasNumModule,
-    extornoModule
+    extornoModule,
+    reembolsoModule,
+    reqtransModule
   ],
   controllers: [],
 })

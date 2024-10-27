@@ -12,3 +12,10 @@ export class pcontasEntity {
   @Column({ name: 'PCO_TOTDOC', type: 'number', nullable: false })
   PCO_TOTDOC: number;
 }
+
+export interface createPcontasDto {
+  PCO_TIPO: string;
+  PCO_TOTDOC: number;
+  SQE_ID_CODIGO: number;
+  RNU_ID_CODIGO: number;
+}

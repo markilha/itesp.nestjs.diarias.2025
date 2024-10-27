@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsOptional, IsNumber, IsString, IsDate, MaxLength, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SaqueEntity } from 'src/database/db_oracle/entities/saque.entity';
 
 export interface FindAllParams {
   sqeIdCodigo?: number;
@@ -27,31 +28,54 @@ export interface FindParamsSaque {
   orderDirection?: 'ASC' | 'DESC';
 }
 
-export class CreateSaqueDto {
-  sqeIdCodigo?: number;
-  iteIdCodigo?: number;
-  rreIdCodigo?: number;
-  dirIdCodigo?: number;
-  fpaIdCodigo?: number;
-  stsIdCodigo?: number;
-  sqedtSaque?: string;
-  sqevlPrest?: number;
-  sqedtPrest?: string;
-  sqevlSaque?: number;
-  sqetipoSaque?: string;
-  sqeefetivo?: string;
-  sqedtPedido?: string;
-  sqelote?: number;
-  sqeanoLote?: number;
-  sqeterceiro?: string;
-  pesidcodigo?: number;
-  pespessoa?: string;
-  sqe_suario?: string;
-  sqeempenho?: string;
-  sqelistaSiafem?: string;
+export class SaqueDto {  
+  sqeIdCodigo: number; 
+  iteIdCodigo: number;  
+  rreIdCodigo: number;  
+  dirIdCodigo: number;  
+  fpaIdCodigo: number;
+  sqeDtSaque: string;
+  sqeVlPrest: number;  
+  sqeDtPrest: string; 
+  sqeVlSaque: number;
+  sqeTipoSaque: string;
+  sqeEfetivo: string; 
+  sqeDtPedido: string;
+  sqeLote: number; 
+  sqeAnoLote: number;
+  stsIdCodigo: number; 
+  sqeTerceiro: string; 
+  pesIdCodigo: number; 
+  pesPessoa: string;
+  sqeUsuario: string;
+  sqeEmpenho: string;  
+  sqeListaSiafem: string;
+  constructor(params: SaqueEntity) {
+    this.sqeIdCodigo = params.sqeIdCodigo;
+    this.iteIdCodigo = params.iteIdCodigo;
+    this.rreIdCodigo = params.rreIdCodigo;
+    this.dirIdCodigo = params.dirIdCodigo;
+    this.fpaIdCodigo = params.fpaIdCodigo;
+    this.stsIdCodigo = params.stsIdCodigo;
+    this.sqeDtSaque = params.sqeDtSaque;
+    this.sqeVlPrest = params.sqeVlPrest;
+    this.sqeDtPrest = params.sqeDtPrest;
+    this.sqeVlSaque = params.sqeVlSaque;
+    this.sqeTipoSaque = params.sqeTipoSaque;
+    this.sqeEfetivo = params.sqeEfetivo;
+    this.sqeDtPedido = params.sqeDtPedido;
+    this.sqeLote = params.sqeLote;
+    this.sqeAnoLote = params.sqeAnoLote;
+    this.sqeTerceiro = params.sqeTerceiro;
+    this.pesIdCodigo = params.pesIdCodigo;
+    this.pesPessoa = params.pesPessoa;
+    this.sqeUsuario = params.sqeUsuario;
+    this.sqeEmpenho = params.sqeEmpenho;
+    this.sqeListaSiafem = params.sqeListaSiafem;
+  }
 }
 
-export class SaqueDto {
+export class returnSaqueDto {
   SQE_DTSAQUE: string;
   SQE_DTPREST: string;
   NOME: string;
@@ -634,3 +658,5 @@ export interface DateTimeParams {
   dataChegada: Date;
   horaChegada: string;
 }
+
+

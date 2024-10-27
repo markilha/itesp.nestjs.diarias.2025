@@ -2,63 +2,63 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity('S009_REQNUMERARIO', { schema: 'FINANCEIRO' })
 export class ReqNumerarioEntity {
-  @PrimaryColumn({ type: 'number', name: 'RNU_ID_CODIGO' })
-  rnuIdCodigo: number;
+  @PrimaryColumn({  name: 'RNU_ID_CODIGO' })
+  RNU_ID_CODIGO: number;
 
-  @Column({ type: 'number', name: 'SQE_ID_CODIGO', nullable: true })
-  sqeIdCodigo: number;
+  @Column({  name: 'SQE_ID_CODIGO' })
+  SQE_ID_CODIGO: number;
 
-  @Column({ type: 'number', name: 'REQ_ID_CODIGO', nullable: true })
-  reqIdCodigo: number;
+  @Column({  name: 'REQ_ID_CODIGO' })
+  REQ_ID_CODIGO: number;
 
-  @Column({ type: 'number', name: 'ITE_ID_CODIGO', nullable: true })
-  iteIdCodigo: number;
+  @Column({  name: 'ITE_ID_CODIGO' })
+  ITE_ID_CODIGO: number;
 
-  @Column({ type: 'number', name: 'RRE_ID_CODIGO', nullable: true })
-  rreIdCodigo: number;
+  @Column({  name: 'RRE_ID_CODIGO' })
+  RRE_ID_CODIGO: number;
 
-  @Column({ type: 'number', name: 'DIR_ID_CODIGO', nullable: true })
-  dirIdCodigo: number;
+  @Column({  name: 'DIR_ID_CODIGO' })
+  DIR_ID_CODIGO: number;
 
-  @Column({ type: 'date', name: 'RNU_DTINICIO', nullable: true })
-  rnuDtInicio: Date;
+  @Column({  name: 'RNU_DTINICIO' })
+  RNU_DTINICIO: Date;
 
-  @Column({ type: 'varchar2', length: 10, name: 'RNU_HORAINICIO', nullable: true })
-  rnuHoraInicio: string;
+  @Column({  name: 'RNU_HORAINICIO' })
+  RNU_HORAINICIO: string;
 
-  @Column({ type: 'date', name: 'RNU_DTFIM', nullable: true })
-  rnuDtFim: Date;
+  @Column({  name: 'RNU_DTFIM' })
+  RNU_DTFIM: Date;
 
-  @Column({ type: 'varchar2', length: 10, name: 'RNU_HORAFIM', nullable: true })
-  rnuHoraFim: string;
+  @Column({  name: 'RNU_HORAFIM' })
+  RNU_HORAFIM: string;
 
-  @Column({ type: 'varchar2', length: 5, name: 'RNU_INTPREV', nullable: true })
-  rnuIntPrev: string;
+  @Column({name: 'RNU_INTPREV' })
+  RNU_INTPREV: string;
 
-  @Column({ type: 'varchar2', length: 5, name: 'RNU_PARPREV', nullable: true })
-  rnuParPrev: string;
+  @Column({  name: 'RNU_PARPREV' })
+  RNU_PARPREV: string;
 
-  @Column({ type: 'varchar2', length: 5, name: 'RNU_INTREAL', nullable: true })
-  rnuIntReal: string;
+  @Column({ name: 'RNU_INTREAL' })
+  RNU_INTREAL: string;
 
-  @Column({ type: 'varchar2', length: 5, name: 'RNU_PARREAL', nullable: true })
-  rnuParReal: string;
+  @Column({  name: 'RNU_PARREAL' })
+  RNU_PARREAL: string;
 
-  @Column({ type: 'varchar2', length: 1000, name: 'RNU_MOTIVO', nullable: true })
-  rnuMotivo: string;
+  @Column({ name: 'RNU_MOTIVO' })
+  RNU_MOTIVO: string;
 
-  @Column({ type: 'varchar2', length: 1, name: 'RNU_PACOTE', nullable: true })
-  rnuPacote: string;
+  @Column({  name: 'RNU_PACOTE' })
+  RNU_PACOTE: string;
 
-  @Column({ type: 'varchar2', length: 1, name: 'RNU_GOVERNADOR', nullable: true })
-  rnuGovernador: string;
+  @Column({  length: 1, name: 'RNU_GOVERNADOR' })
+  RNU_GOVERNADOR: string;
 
-  @Column({ type: 'number', precision: 10, scale: 2, name: 'RNU_VLINTEGRAL', nullable: true })
-  rnuVlIntegral: number;
+  @Column({name: 'RNU_VLINTEGRAL' })
+  RNU_VLINTEGRAL: number;
 
-  @Column({ type: 'number', precision: 10, scale: 2, name: 'RNU_VLPARCIAL', nullable: true })
-  rnuVlParcial: number;
+  @Column({  name: 'RNU_VLPARCIAL' })
+  RNU_VLPARCIAL: number;
 
-  @Column({ type: 'number', precision: 10, scale: 2, name: 'RNU_VLBASE', nullable: true })
-  rnuVlBase: number;
+  @Column({ name: 'RNU_VLBASE' })
+  RNU_VLBASE: number;
 }

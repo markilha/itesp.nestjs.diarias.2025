@@ -1,10 +1,10 @@
-import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Length } from 'class-validator';
+import { IsIn, IsNotEmpty, IsNumber, IsOptional} from 'class-validator';
 
 export class pcontasDto {
   
-  @IsNumber()
-  @IsNotEmpty()
-  PCO_ID_CODIGO: number;
+  @IsOptional() 
+  @IsNumber()  
+  PCO_ID_CODIGO?: number;
 
   @IsIn(['N', 'R']) 
   @IsNotEmpty()

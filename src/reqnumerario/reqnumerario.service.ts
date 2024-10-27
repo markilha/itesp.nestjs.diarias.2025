@@ -2,25 +2,25 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, ReturnReqnumerarioDto } from './reqnumerarioDto';
+import { FindAllParams, ReqnumerarioDto } from './reqnumerarioDto';
 import { ReqNumerarioEntity } from 'src/database/db_oracle/entities/reqnumerario.entity';
 
 @Injectable()
 export class ReqnumerarioService {
   constructor(   
     @InjectRepository(ReqNumerarioEntity, 'oracleConnection')
-    private readonly mysqlRepository: Repository<ReqNumerarioEntity>
+    private readonly renumerarioRepository: Repository<ReqNumerarioEntity>
   ) {}
 
-  async findAll(params: FindAllParams): Promise<ReturnReqnumerarioDto[]> {
+  async findAll(params: FindAllParams): Promise<ReqnumerarioDto[]> {
     try {
       const searchParams: FindOptionsWhere<ReqNumerarioEntity> = {};
 
-      if (params.rnuIdCodigo) {
-        searchParams.rnuIdCodigo = params.rnuIdCodigo;
+      if (params.RNU_ID_CODIGO) {
+        searchParams.RNU_ID_CODIGO = params.RNU_ID_CODIGO;
       }
-      if (params.reqIdCodigo) {
-        searchParams.reqIdCodigo = params.reqIdCodigo;
+      if (params.REQ_ID_CODIGO) {
+        searchParams.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
       }
 
       let reqnumerarios: ReqNumerarioEntity[] = [];
@@ -30,17 +30,17 @@ export class ReqnumerarioService {
         const limit = params.limit;
         const skip = (page - 1) * limit;
 
-        reqnumerarios = await this.mysqlRepository.find({
+        reqnumerarios = await this.renumerarioRepository.find({
           where: searchParams,
           skip,
           take: limit,
         });
       } else {
-        reqnumerarios = await this.mysqlRepository.find({
+        reqnumerarios = await this.renumerarioRepository.find({
           where: searchParams,
         });
       }
-      return reqnumerarios.map((reqv) => new ReturnReqnumerarioDto(reqv));
+      return reqnumerarios.map((reqv) => new ReqnumerarioDto(reqv));
     } catch (error) {
       throw new HttpException(
         'Erro ao buscar as requisições',
@@ -50,15 +50,45 @@ export class ReqnumerarioService {
   }
 
   //find one pelo sqe_id_codigo
-  async findOne(sqeIdCodigo: number): Promise<ReturnReqnumerarioDto> {
+  async findOne(SQE_ID_CODIGO: number): Promise<ReqnumerarioDto> {
     try {
-      const reqnumerario = await this.mysqlRepository.findOne({
-        where: { sqeIdCodigo},
+      const reqnumerario = await this.renumerarioRepository.findOne({
+        where: { SQE_ID_CODIGO},
       });
-      return new ReturnReqnumerarioDto(reqnumerario);
+      return new ReqnumerarioDto(reqnumerario);
     } catch (error) {
       throw new HttpException(
         'Erro ao buscar numerario',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // retonar o ultimo registro
+  async findLast(): Promise<number> {
+    try {
+        const lastINumerario = await this.renumerarioRepository.query(
+        `SELECT MAX(RNU_ID_CODIGO) as lastId FROM S009_REQNUMERARIO`,
+      );
+      const lastIdNum = lastINumerario[0]?.LASTID || 0;      
+      return lastIdNum + 1;
+    } catch (error) {
+      throw new HttpException(
+        'Erro ao buscar o último numerario',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async create(reqnumerario: ReqnumerarioDto): Promise<ReqnumerarioDto> {
+    try {
+      const newReqnumerario = await this.renumerarioRepository.save(
+        reqnumerario,
+      );
+      return new ReqnumerarioDto(newReqnumerario);
+    } catch (error) {
+      throw new HttpException(
+        'Erro ao criar o numerario',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

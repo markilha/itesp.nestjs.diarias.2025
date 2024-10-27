@@ -7,6 +7,7 @@ import {
   SolitarDto,
   InsS009SaqueDto,
   DateTimeParams,
+  returnSaqueDto,
 } from './saque.dto';
 
 import { SaqueEntity } from 'src/database/db_oracle/entities/saque.entity';
@@ -31,6 +32,9 @@ import { DiariaCalculadaDto } from './saque.dto';
 import { queryPrestacao, querySaque } from 'src/util/variaveis/querys';
 import { getObjectValues } from 'src/util/arrays/retornaArrayObj';
 import { RetonaStatus } from 'src/util/variaveis/statusPrestacao';
+import { ReqnumerarioService } from 'src/reqnumerario/reqnumerario.service';
+import { ReqnumerarioDto } from 'src/reqnumerario/reqnumerarioDto';
+import { reembolsoService } from 'src/reembolso/reembolso.service';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -48,6 +52,15 @@ function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
       };
 }
 
+const formatarDataAtual = () => {
+  const dataAtual = new Date();
+  const dia = String(dataAtual.getDate()).padStart(2, '0');
+  const mes = String(dataAtual.getMonth() + 1).padStart(2, '0'); // Janeiro é 0
+  const ano = String(dataAtual.getFullYear()).slice(-2); // Pega apenas os dois últimos dígitos
+
+  return `${dia}/${mes}/${ano}`;
+};
+
 @Injectable()
 export class SaqueService {
   constructor(
@@ -57,6 +70,9 @@ export class SaqueService {
     private itinerarioService: ItinirarioService,
     private ufespService: UfespService,
     private despesaDiaria: DespesadiariaService,
+    private reembolsoService: reembolsoService,
+
+    private readonly reqnumerarioService: ReqnumerarioService,
   ) {}
   private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
     const consulta = await this.saqueRepository.query(queryPrestacao, [sqeIdCodigo]);
@@ -268,7 +284,7 @@ export class SaqueService {
           item.SQE_VLPREST,
         );
 
-        return new SaqueDto({
+        return new returnSaqueDto({
           SQE_ID_CODIGO: item.SQE_ID_CODIGO,
           SQE_DTPEDIDO: item.SQE_DTPEDIDO,
           SQE_DTSAQUE: item.SQE_DTSAQUE,
@@ -336,7 +352,6 @@ export class SaqueService {
           UFESPcargoValor,
           destino as Destino,
         );
-        
 
       const { vlExtornoIntegral, vlExtornParcial, vlDevolucaoIntegral, vlDevolucaoParcial } =
         this.calcularExtornosEDevolucoes(calcDiaraInial, calcDiaraRetorn);
@@ -396,7 +411,7 @@ export class SaqueService {
   }
 
   //SOlicitar saque
-  async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
+  async solicitarSaque2(params: SolitarDto): Promise<RetNumSaque> {
     try {
       const MD = await this.motivoDiaria.findOne(params.chapa, params.reqIdCodigo);
       if (!MD) {
@@ -455,6 +470,155 @@ export class SaqueService {
       ]);
 
       return { sqeIdCodigo: result[0] };
+    } catch (error) {
+      console.error('Erro ao solicitar saque:', error);
+      throw new HttpException(
+        `Erro ao solicitar saque: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
+    try {
+      const PAR2 = 'S';
+      const PAR3 = '7';
+      const PAR10 = 'N';
+      const MD = await this.motivoDiaria.findOne(params.chapa, params.reqIdCodigo);
+      if (!MD) {
+        throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
+      }
+
+      const lastIdResult = await this.saqueRepository.query(
+        `SELECT MAX(SQE_ID_CODIGO) as lastId FROM S009_SAQUE`,
+      );
+
+      const lastIdSaque = lastIdResult[0]?.LASTID || 0;
+      const newId = lastIdSaque + 1;
+
+      const saqueDto = new SaqueDto({
+        sqeIdCodigo: newId,
+        iteIdCodigo: MD.ITE_ID_CODIGO,
+        rreIdCodigo: MD.RRE_ID_CODIGO,
+        dirIdCodigo: MD.DIR_ID_CODIGO,
+        fpaIdCodigo: 1,
+        stsIdCodigo: 1,
+        sqeDtSaque: null,
+        sqeVlPrest: null,
+        sqeDtPrest: null,
+        sqeVlSaque: MD.MDI_VALOR,
+        sqeTipoSaque: PAR10,
+        sqeEfetivo: PAR2,
+        sqeDtPedido: formatarDataAtual(),
+        sqeLote: null,
+        sqeAnoLote: null,
+        sqeTerceiro: null,
+        pesIdCodigo: null,
+        pesPessoa: null,
+        sqeUsuario: null,
+        sqeEmpenho: null,
+        sqeListaSiafem: null,
+      });
+
+      try {
+        await this.saqueRepository.insert(saqueDto);
+      } catch (error) {
+        throw new HttpException(
+          `Erro ao inserir saque: ${error.message}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      const lastINumerario = await this.reqnumerarioService.findLast();
+
+      try {
+        const lastIdNum = lastINumerario;
+        const newIdNum = lastIdNum + 1;
+        const numerario = new ReqnumerarioDto({
+          RNU_ID_CODIGO: newIdNum,
+          SQE_ID_CODIGO: newId,
+          REQ_ID_CODIGO: params.reqIdCodigo,
+          ITE_ID_CODIGO: MD.ITE_ID_CODIGO,
+          RRE_ID_CODIGO: MD.RRE_ID_CODIGO,
+          DIR_ID_CODIGO: MD.DIR_ID_CODIGO,
+          RNU_DTINICIO: MD.REQ_DTSAIDA,
+          RNU_HORAINICIO: MD.REQ_HSAIDA,
+          RNU_DTFIM: MD.REQ_DTRET,
+          RNU_HORAFIM: MD.REQ_HRET,
+          RNU_INTPREV: String(MD.REQ_INTEGRAL) || null,
+          RNU_PARPREV: String(MD.REQ_PARCIAL) || null,
+          RNU_INTREAL: null,
+          RNU_PARREAL: null,
+          RNU_MOTIVO: MD.REQ_MOTIVO,
+          RNU_PACOTE: MD.REQ_PACOTE,
+          RNU_GOVERNADOR: MD.REQ_GOVERNADOR,
+          RNU_VLINTEGRAL: params.diariaIntegral,
+          RNU_VLPARCIAL: params.diariaParcial,
+          RNU_VLBASE: params.diariaBase,
+        });
+        await this.reqnumerarioService.create(numerario);
+      } catch (error) {
+        throw new HttpException(
+          `Erro ao inserir numerário: ${error.message}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      // /*JUSTIFICATIVA*/
+      if (PAR2 === 'S' && PAR10 === 'N' && PAR3 === '7') {
+        await this.saqueRepository.query(
+          `INSERT INTO S009_REEMBOLSO (
+            RRE_ID_CODIGO,
+            DIR_ID_CODIGO,
+            ITE_ID_CODIGO,
+            SQE_ID_CODIGO,
+            RRE_JUSTIFICATIVA,
+            RRE_SAQUE
+          ) VALUES (
+            :rreIdCodigo,
+            :dirIdCodigo,
+            :iteIdCodigo,
+            :sqeIdCodigo,
+            :rreJustificativa,
+            :sqeIdCodigo
+          )`,
+          [MD.RRE_ID_CODIGO, MD.DIR_ID_CODIGO, MD.ITE_ID_CODIGO,newId, MD.REQ_MOTIVO,newId],
+        );
+      } else {
+        await this.saqueRepository.query(
+          `INSERT INTO S009_REEMBOLSO (
+            RRE_ID_CODIGO,
+            DIR_ID_CODIGO,
+            ITE_ID_CODIGO,
+            SQE_ID_CODIGO,
+            RRE_JUSTIFICATIVA
+          ) VALUES (
+            :rreIdCodigo,
+            :dirIdCodigo,
+            :iteIdCodigo,
+            :sqeIdCodigo,
+            :rreJustificativa
+          )`,
+          [MD.RRE_ID_CODIGO, MD.DIR_ID_CODIGO, MD.ITE_ID_CODIGO,newId, MD.REQ_MOTIVO],
+        );
+      }   
+      //   /*REQUISIÇÃO DE TRANSPORTE*/
+
+      if (PAR10 === 'N' && PAR3 === '7' && PAR2 === 'S') {
+        await this.saqueRepository.query(
+          `UPDATE TRANSPORTE.S001_REQUISICAO SET
+           TRANSPORTE.S001_REQUISICAO.REQ_STATUS = :status
+           WHERE TRANSPORTE.S001_REQUISICAO.REQ_ID_CODIGO = :reqIdCodigo
+           AND TRANSPORTE.S001_REQUISICAO.REQ_ID_CODIGO NOT IN (
+             SELECT REQ_ID_CODIGO FROM TRANSPORTE.S001_REQUISICAO 
+             WHERE REQ_ID_CODIGO = :reqIdCodigo 
+             AND REQ_STATUS IN ('FINALIZADA', 'AUTORIZADA PELO DIRETOR EXECUTIVO')
+           )`,
+          ['RECURSO SOLICITADO', params.reqIdCodigo, params.reqIdCodigo],
+        );
+      }
+
+      return { sqeIdCodigo: newId };
     } catch (error) {
       console.error('Erro ao solicitar saque:', error);
       throw new HttpException(

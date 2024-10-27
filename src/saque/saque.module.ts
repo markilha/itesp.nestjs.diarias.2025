@@ -9,6 +9,8 @@ import { ItinirarioModule } from 'src/itinirario/itinirario.module';
 import { UfespModule } from 'src/ufesp/ufesp.module';
 import { DespesadiariaModule } from 'src/despesadiaria/despesadiaria.module';
 import { MotivodiariaModule } from 'src/motivodiaria/motivodiaria.module';
+import { ReqnumerarioModule } from 'src/reqnumerario/reqnumerario.module';
+import { reembolsoModule } from 'src/reembolso/reembolso.module';
 
 
 @Module({
@@ -20,8 +22,8 @@ import { MotivodiariaModule } from 'src/motivodiaria/motivodiaria.module';
     UfespModule,
     DespesadiariaModule,
     MotivodiariaModule,
-  
-  
+    ReqnumerarioModule ,
+    reembolsoModule
   ],
   providers: [SaqueService],
   controllers: [SaqueController],
