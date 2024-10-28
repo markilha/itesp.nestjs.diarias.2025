@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { reembolsoController } from './reembolso.controller';
 import { reembolsoService } from './reembolso.service';
-import { reembolsoEntity } from 'src/database/db_oracle/entities/reembolso.entity';
+import { reembolsoEntity } from '../database/db_oracle/entities/reembolso.entity';
 
 
 @Module({

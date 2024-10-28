@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UferpsEntity } from 'src/database/db_oracle/entities/UferpsEntity';
+import { UferpsEntity } from '../database/db_oracle/entities/UferpsEntity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, UfespDto } from './ufespDto';
 

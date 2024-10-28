@@ -1,4 +1,4 @@
-import { ReqNumerarioEntity } from 'src/database/db_oracle/entities/reqnumerario.entity';
+import { ReqNumerarioEntity } from '../database/db_oracle/entities/reqnumerario.entity';
 
 export class ReqnumerarioDto {
   RNU_ID_CODIGO?: number;

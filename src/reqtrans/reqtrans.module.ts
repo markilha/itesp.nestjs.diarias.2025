@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { reqtransController } from './reqtrans.controller';
 import { reqtransService } from './reqtrans.service';
-import { reqtransEntity } from 'src/database/db_oracle/entities/requisicaoTrans.entity';
+import { reqtransEntity } from '../database/db_oracle/entities/requisicaoTrans.entity';
 
 
 

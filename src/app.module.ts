@@ -24,6 +24,7 @@ import { extornoModule } from './extorno/extorno.module';
 import { reembolsoModule } from './reembolso/reembolso.module';
 import { reqtransModule } from './reqtrans/reqtrans.module';
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -51,5 +52,6 @@ import { reqtransModule } from './reqtrans/reqtrans.module';
     reqtransModule
   ],
   controllers: [],
+  providers: [],
 })
 export class AppModule {}

@@ -4,37 +4,37 @@ import {
   RetNumSaque,
   SaqueDto,
   PrestacaoDto,
-  SolitarDto,
-  InsS009SaqueDto,
+  SolitarDto, 
   DateTimeParams,
   returnSaqueDto,
 } from './saque.dto';
 
-import { SaqueEntity } from 'src/database/db_oracle/entities/saque.entity';
+import { SaqueEntity } from '../database/db_oracle/entities/saque.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { calcularValores } from 'src/util/calculo_extorno';
-import { formatDates } from 'src/util/formatStarDateEndDate';
-import { ItinirarioService } from 'src/itinirario/itinirario.service';
+import { calcularValores } from '../util/calculo_extorno';
+import { formatDates } from '../util/formatStarDateEndDate';
+import { ItinirarioService } from '../itinirario/itinirario.service';
 import {
   calcQuantDiariaIntegralParcialPorcen,
   calcularDiariaValores,
-} from 'src/util/calculo_dia_retorno';
-import { Destino } from 'src/util/diariaDto';
-import { UfespService } from 'src/ufesp/ufesp.service';
-import { DespesadiariaService } from 'src/despesadiaria/despesadiaria.service';
-import { verificarDestino } from 'src/util/verificaDestino';
-import { DataUtils } from 'src/util/DataUtils';
+} from '../util/calculo_dia_retorno';
+import { Destino } from '../util/diariaDto';
+import { UfespService } from '../ufesp/ufesp.service';
+import { DespesadiariaService } from '../despesadiaria/despesadiaria.service';
+import { verificarDestino } from '../util/verificaDestino';
 
-import { MotivodiariaService } from 'src/motivodiaria/motivodiaria.service';
-import * as oracledb from 'oracledb';
+
+import { MotivodiariaService } from '../motivodiaria/motivodiaria.service';
+
 import { DiariaCalculadaDto } from './saque.dto';
-import { queryPrestacao, querySaque } from 'src/util/variaveis/querys';
-import { getObjectValues } from 'src/util/arrays/retornaArrayObj';
-import { RetonaStatus } from 'src/util/variaveis/statusPrestacao';
-import { ReqnumerarioService } from 'src/reqnumerario/reqnumerario.service';
-import { ReqnumerarioDto } from 'src/reqnumerario/reqnumerarioDto';
-import { reembolsoService } from 'src/reembolso/reembolso.service';
+import { queryPrestacao, querySaque } from '../util/variaveis/querys';
+
+import { RetonaStatus } from '../util/variaveis/statusPrestacao';
+import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
+import { ReqnumerarioDto } from '../reqnumerario/reqnumerarioDto';
+import { reembolsoService } from '../reembolso/reembolso.service';
+import { reqtransService } from '../reqtrans/reqtrans.service';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -70,6 +70,7 @@ export class SaqueService {
     private itinerarioService: ItinirarioService,
     private ufespService: UfespService,
     private despesaDiaria: DespesadiariaService,
+    private reqtransService: reqtransService,
     private reembolsoService: reembolsoService,
 
     private readonly reqnumerarioService: ReqnumerarioService,
@@ -410,91 +411,29 @@ export class SaqueService {
     }
   }
 
-  //SOlicitar saque
-  async solicitarSaque2(params: SolitarDto): Promise<RetNumSaque> {
+
+//Buscar ultimo id
+  async lastId(): Promise<number> {
     try {
-      const MD = await this.motivoDiaria.findOne(params.chapa, params.reqIdCodigo);
-      if (!MD) {
-        throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
-      }
-
-      const saqueDto = new InsS009SaqueDto({
-        par1: 'REEMBOLSO',
-        par2: 'S',
-        par3: '7',
-        par4: MD.ITE_ID_CODIGO,
-        par5: MD.RRE_ID_CODIGO,
-        par6: MD.DIR_ID_CODIGO,
-        par7: null,
-        par8: null,
-        par9: MD.MDI_VALOR,
-        par10: 'N',
-        par11: 'S',
-        par12: null,
-        par13: null,
-        par14: null,
-        par15: null,
-        par16: null,
-        par17: params.reqIdCodigo,
-        par18: DataUtils.formatDateToString(MD.REQ_DTSAIDA),
-        par19: MD.REQ_HSAIDA,
-        par20: DataUtils.formatDateToString(MD.REQ_DTRET),
-        par21: MD.REQ_HRET,
-        par22: MD.REQ_INTEGRAL,
-        par23: MD.REQ_PARCIAL,
-        par24: null,
-        par25: null,
-        par26: MD.REQ_PACOTE,
-        par27: MD.REQ_GOVERNADOR,
-        par28: MD.REQ_MOTIVO,
-        par29: MD.REQ_STATUS,
-        par30: params.diariaIntegral,
-        par31: params.diariaParcial,
-        par32: params.diariaBase,
-      });
-
-      const valuesArray = getObjectValues(saqueDto);
-
-      const query = `
-      CALL INS_S009_SAQUE(
-        :par1, :par2, TO_CHAR(:par3), :par4, :par5, :par6, :par7, :par8, :par9, :par10,
-        :par11, :par12, :par13, :par14, :par15, :par16, :par17, TO_DATE(:par18, 'DD-MM-YYYY'), 
-        :par19, TO_DATE(:par20, 'DD-MM-YYYY'), :par21, :par22, :par23, :par24,
-        :par25, :par26, :par27, :par28, :par29, :par30, :par31, :par32, :id
-      )
-    `;
-
-      const result = await this.saqueRepository.query(query, [
-        ...valuesArray,
-        { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-      ]);
-
-      return { sqeIdCodigo: result[0] };
-    } catch (error) {
-      console.error('Erro ao solicitar saque:', error);
-      throw new HttpException(
-        `Erro ao solicitar saque: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+      const lastIdResult = await this.saqueRepository.query(
+        `SELECT MAX(SQE_ID_CODIGO) as lastId FROM S009_SAQUE`,
       );
+      return lastIdResult[0]?.LASTID + 1 || 0;
+    } catch (error) {
+      console.error('Erro ao buscar último ID:', error);
+      throw new HttpException('Erro ao buscar último ID', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
+    //SOlicitar saque
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
     try {
       const PAR2 = 'S';
       const PAR3 = '7';
       const PAR10 = 'N';
       const MD = await this.motivoDiaria.findOne(params.chapa, params.reqIdCodigo);
-      if (!MD) {
-        throw new HttpException('Diária de viagem não encontrada', HttpStatus.NOT_FOUND);
-      }
 
-      const lastIdResult = await this.saqueRepository.query(
-        `SELECT MAX(SQE_ID_CODIGO) as lastId FROM S009_SAQUE`,
-      );
-
-      const lastIdSaque = lastIdResult[0]?.LASTID || 0;
-      const newId = lastIdSaque + 1;
+      const newId = await this.lastId();
 
       const saqueDto = new SaqueDto({
         sqeIdCodigo: newId,
@@ -565,57 +504,22 @@ export class SaqueService {
       }
 
       // /*JUSTIFICATIVA*/
-      if (PAR2 === 'S' && PAR10 === 'N' && PAR3 === '7') {
-        await this.saqueRepository.query(
-          `INSERT INTO S009_REEMBOLSO (
-            RRE_ID_CODIGO,
-            DIR_ID_CODIGO,
-            ITE_ID_CODIGO,
-            SQE_ID_CODIGO,
-            RRE_JUSTIFICATIVA,
-            RRE_SAQUE
-          ) VALUES (
-            :rreIdCodigo,
-            :dirIdCodigo,
-            :iteIdCodigo,
-            :sqeIdCodigo,
-            :rreJustificativa,
-            :sqeIdCodigo
-          )`,
-          [MD.RRE_ID_CODIGO, MD.DIR_ID_CODIGO, MD.ITE_ID_CODIGO,newId, MD.REQ_MOTIVO,newId],
-        );
-      } else {
-        await this.saqueRepository.query(
-          `INSERT INTO S009_REEMBOLSO (
-            RRE_ID_CODIGO,
-            DIR_ID_CODIGO,
-            ITE_ID_CODIGO,
-            SQE_ID_CODIGO,
-            RRE_JUSTIFICATIVA
-          ) VALUES (
-            :rreIdCodigo,
-            :dirIdCodigo,
-            :iteIdCodigo,
-            :sqeIdCodigo,
-            :rreJustificativa
-          )`,
-          [MD.RRE_ID_CODIGO, MD.DIR_ID_CODIGO, MD.ITE_ID_CODIGO,newId, MD.REQ_MOTIVO],
-        );
-      }   
-      //   /*REQUISIÇÃO DE TRANSPORTE*/
+      let rresaque = null;
+      if (PAR2 === 'S') {
+        rresaque = newId;
+      }
+      await this.reembolsoService.justificativa({
+        RRE_ID_CODIGO: MD.RRE_ID_CODIGO,
+        DIR_ID_CODIGO: MD.DIR_ID_CODIGO,
+        ITE_ID_CODIGO: MD.ITE_ID_CODIGO,
+        SQE_ID_CODIGO: newId,
+        RRE_JUSTIFICATIVA: MD.REQ_MOTIVO,
+        RRE_SAQUE: rresaque,
+      });
 
+      //   /*REQUISIÇÃO DE TRANSPORTE*/
       if (PAR10 === 'N' && PAR3 === '7' && PAR2 === 'S') {
-        await this.saqueRepository.query(
-          `UPDATE TRANSPORTE.S001_REQUISICAO SET
-           TRANSPORTE.S001_REQUISICAO.REQ_STATUS = :status
-           WHERE TRANSPORTE.S001_REQUISICAO.REQ_ID_CODIGO = :reqIdCodigo
-           AND TRANSPORTE.S001_REQUISICAO.REQ_ID_CODIGO NOT IN (
-             SELECT REQ_ID_CODIGO FROM TRANSPORTE.S001_REQUISICAO 
-             WHERE REQ_ID_CODIGO = :reqIdCodigo 
-             AND REQ_STATUS IN ('FINALIZADA', 'AUTORIZADA PELO DIRETOR EXECUTIVO')
-           )`,
-          ['RECURSO SOLICITADO', params.reqIdCodigo, params.reqIdCodigo],
-        );
+        await this.reqtransService.updateStatus(params.reqIdCodigo, 'RECURSO SOLICITADO');
       }
 
       return { sqeIdCodigo: newId };

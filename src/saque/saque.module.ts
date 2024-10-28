@@ -11,6 +11,7 @@ import { DespesadiariaModule } from 'src/despesadiaria/despesadiaria.module';
 import { MotivodiariaModule } from 'src/motivodiaria/motivodiaria.module';
 import { ReqnumerarioModule } from 'src/reqnumerario/reqnumerario.module';
 import { reembolsoModule } from 'src/reembolso/reembolso.module';
+import { reqtransModule } from 'src/reqtrans/reqtrans.module';
 
 
 @Module({
@@ -23,7 +24,8 @@ import { reembolsoModule } from 'src/reembolso/reembolso.module';
     DespesadiariaModule,
     MotivodiariaModule,
     ReqnumerarioModule ,
-    reembolsoModule
+    reembolsoModule,
+    reqtransModule
   ],
   providers: [SaqueService],
   controllers: [SaqueController],

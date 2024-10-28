@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsOptional, IsNumber, IsString, IsDate, MaxLength, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { SaqueEntity } from 'src/database/db_oracle/entities/saque.entity';
+import { SaqueEntity } from '../database/db_oracle/entities/saque.entity';
 
 export interface FindAllParams {
   sqeIdCodigo?: number;
@@ -408,7 +408,7 @@ export class InsS009SaqueDto {
   }
 }
 
-export class SolitarDto {
+export class SolitarDto { 
   reqIdCodigo: number;
   chapa: string;
   reqPacote: number;
@@ -419,7 +419,7 @@ export class SolitarDto {
 }
 
 export interface RetNumSaque {
-  sqeIdCodigo: string;
+  sqeIdCodigo: number;
 }
 
 

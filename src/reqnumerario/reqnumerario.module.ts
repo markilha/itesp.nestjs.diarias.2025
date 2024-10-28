@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ReqnumerarioController } from './reqnumerario.controller';
 import { ReqnumerarioService } from './reqnumerario.service';
-import { ReqNumerarioEntity } from 'src/database/db_oracle/entities/reqnumerario.entity';
+import { ReqNumerarioEntity } from '../database/db_oracle/entities/reqnumerario.entity';
 
 
 @Module({

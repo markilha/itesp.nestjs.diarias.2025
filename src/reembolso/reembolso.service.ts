@@ -2,14 +2,14 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, reembolsoDto } from './reembolsoDto';
-import { reembolsoEntity } from 'src/database/db_oracle/entities/reembolso.entity';
+import { FindAllParams, justificativaDto, reembolsoDto } from './reembolsoDto';
+import { reembolsoEntity } from '../database/db_oracle/entities/reembolso.entity';
 
 @Injectable()
 export class reembolsoService {
-  constructor(   
+  constructor(
     @InjectRepository(reembolsoEntity, 'oracleConnection')
-    private readonly reembolsoRepository: Repository<reembolsoEntity>
+    private readonly reembolsoRepository: Repository<reembolsoEntity>,
   ) {}
 
   async findAll(params: FindAllParams): Promise<reembolsoDto[]> {
@@ -42,27 +42,50 @@ export class reembolsoService {
       }
       return reembolsos.map((reqv) => new reembolsoDto(reqv));
     } catch (error) {
-      throw new HttpException(
-        'Erro ao buscar as requisições',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Erro ao buscar as requisições', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-
   async create(reembolso: reembolsoDto): Promise<reembolsoDto> {
     try {
-      const newreembolso = await this.reembolsoRepository.save(
-        reembolso,
-      );
+      const newreembolso = await this.reembolsoRepository.save(reembolso);
       return new reembolsoDto(newreembolso);
     } catch (error) {
       console.log(error);
-      throw new HttpException(
-        'Erro ao criar o reembolso',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Erro ao criar o reembolso', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  } 
+  }
 
+  async justificativa(MD: reembolsoDto): Promise<boolean> {
+    try {
+      await this.reembolsoRepository.query(
+        `INSERT INTO FINANCEIRO.S009_REEMBOLSO (
+            RRE_ID_CODIGO,
+            DIR_ID_CODIGO,
+            ITE_ID_CODIGO,
+            SQE_ID_CODIGO,
+            RRE_JUSTIFICATIVA,
+            RRE_SAQUE
+          ) VALUES (
+            :rreIdCodigo,
+            :dirIdCodigo,
+            :iteIdCodigo,
+            :sqeIdCodigo,
+            :rreJustificativa,
+            :sqeIdCodigo
+          )`,
+        [
+          MD.RRE_ID_CODIGO,
+          MD.DIR_ID_CODIGO,
+          MD.ITE_ID_CODIGO,
+          MD.SQE_ID_CODIGO,
+          MD.RRE_JUSTIFICATIVA,
+          MD.RRE_SAQUE,
+        ],
+      );
+      return true;
+    } catch (error) {
+      throw new HttpException('Erro ao criar a justificativa', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

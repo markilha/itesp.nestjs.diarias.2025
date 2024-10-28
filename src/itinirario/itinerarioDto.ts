@@ -25,10 +25,10 @@ export class ItinerarioDto {
 }
 
 export class retornoItinerarioDto {
-  ITI_DTSAIDA: Date ;
-  ITI_HSAIDA: string;
-  ITI_DTCHEGADA: Date;
-  ITI_HCHEGADA: string;
+  ITI_DTSAIDA: Date | null;
+  ITI_HSAIDA: string | null;
+  ITI_DTCHEGADA: Date | null;
+  ITI_HCHEGADA: string | null;
 }
 
 export interface FindAllParams {

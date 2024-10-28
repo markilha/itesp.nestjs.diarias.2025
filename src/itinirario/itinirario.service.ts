@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ItinerarioEntity } from 'src/database/db_oracle/entities/itinerario.entity';
+import { ItinerarioEntity } from '../database/db_oracle/entities/itinerario.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, ItinerarioDto, retornoItinerarioDto } from './itinerarioDto';
 
@@ -71,10 +71,10 @@ export class ItinirarioService {
   
     // Combine os resultados
     return {
-      ITI_DTSAIDA: primeiroRegistro?.ITI_DTSAIDA,
-      ITI_HSAIDA: primeiroRegistro?.ITI_HSAIDA,
-      ITI_DTCHEGADA: ultimoRegistro?.ITI_DTCHEGADA,
-      ITI_HCHEGADA: ultimoRegistro?.ITI_HCHEGADA,
+      ITI_DTSAIDA: primeiroRegistro?.ITI_DTSAIDA || null,
+      ITI_HSAIDA: primeiroRegistro?.ITI_HSAIDA || null,
+      ITI_DTCHEGADA: ultimoRegistro?.ITI_DTCHEGADA || null,
+      ITI_HCHEGADA: ultimoRegistro?.ITI_HCHEGADA || null,
     };
   }
   

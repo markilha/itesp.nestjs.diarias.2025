@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MotivodiariaEntity } from 'src/database/db_oracle/entities/motivoDiaria.entity';
+import { MotivodiariaEntity } from '../database/db_oracle/entities/motivoDiaria.entity';
 
 import { Repository } from 'typeorm';
 import { motivoDiariaDto } from './motivodiariaDto';
@@ -62,8 +62,7 @@ export class MotivodiariaService {
       }
 
       return new motivoDiariaDto(consulta[0]);
-    } catch (error) {
-      console.log(error);
+    } catch (error) {      
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,

@@ -1,5 +1,5 @@
-import { reembolsoEntity } from "src/database/db_oracle/entities/reembolso.entity";
-import { reqtransEntity } from "src/database/db_oracle/entities/requisicaoTrans.entity";
+import { reembolsoEntity } from "../database/db_oracle/entities/reembolso.entity";
+import { reqtransEntity } from "../database/db_oracle/entities/requisicaoTrans.entity";
 
 
 export class reqtransDto {

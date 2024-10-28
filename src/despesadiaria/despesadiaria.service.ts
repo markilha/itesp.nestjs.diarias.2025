@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DespesaDiariaEntity } from 'src/database/db_mysql/entities/despesaDiaria.entity';
+import { DespesaDiariaEntity } from '../database/db_mysql/entities/despesaDiaria.entity';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { FindAllParams } from './despesadiariaDto';
 

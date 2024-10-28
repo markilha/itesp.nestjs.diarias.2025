@@ -1,6 +1,5 @@
 
 
-
 export class RequisicaoDto {
   reqIdCodigo?: number;
   regIdCodigo?: number;
@@ -64,6 +63,13 @@ export class ReturnRequisicaoDto {
   diariaParcPorc: number;
   vlDiaria: number;
   usuMov: string; 
+  ITI_DTSAIDA: Date | null;
+  ITI_HSAIDA: string | null;
+  ITI_DTCHEGADA: Date | null;
+  ITI_HCHEGADA: string | null;  
+  diariaIntegralChegada: number;
+  diairaParcialChegada: number;
+ 
   
     constructor(
     params: any,    
@@ -98,7 +104,14 @@ export class ReturnRequisicaoDto {
     this.traDescricao = params.traDescricao;
     this.diariaParcPorc =params.diariaParcPorc;
     this.vlDiaria = params.vlDiaria;
-   
+    this.ITI_DTSAIDA = params.ITI_DTSAIDA;
+    this.ITI_HSAIDA = params.ITI_HSAIDA;
+    this.ITI_DTCHEGADA = params.ITI_DTCHEGADA;
+    this.ITI_HCHEGADA = params.ITI_HCHEGADA;
+    this.diariaIntegralChegada = params.diariaIntegralChegada;
+    this.diairaParcialChegada = params.diariaParcialChegada;
+
+
   }
 
 }

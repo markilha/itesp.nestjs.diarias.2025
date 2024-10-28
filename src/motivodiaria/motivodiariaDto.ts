@@ -1,4 +1,4 @@
-import { converterPacote, converterParcial } from 'src/util/variaveis/converterValores';
+import { converterPacote, converterParcial } from '../util/variaveis/converterValores';
 
 export class CreateMotivodiariaDto {
   MDI_ID_CODIGO: number;

@@ -6,7 +6,6 @@ import { S001RequisicaoService } from './s001_requisicao.service';
 import { UfespModule } from 'src/ufesp/ufesp.module';
 import { SaquesMesModule } from 'src/saques-mes/saques-mes.module';
 import { ItinirarioModule } from 'src/itinirario/itinirario.module';
-import { RequisicaoModule } from './requisicao.module';
 import { RequisicaoEntity } from 'src/database/db_oracle/entities/requisicao.entity';
 
 @Module({
@@ -15,7 +14,7 @@ import { RequisicaoEntity } from 'src/database/db_oracle/entities/requisicao.ent
     UfespModule,
     SaquesMesModule,
     ItinirarioModule,
-    RequisicaoModule,
+   
   ],
   controllers: [S001RequisicaoController],
   providers: [S001RequisicaoService],

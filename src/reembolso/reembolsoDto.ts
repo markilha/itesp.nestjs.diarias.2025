@@ -1,4 +1,4 @@
-import { reembolsoEntity } from "src/database/db_oracle/entities/reembolso.entity";
+import { reembolsoEntity } from "../database/db_oracle/entities/reembolso.entity";
 
 
 export class reembolsoDto {
@@ -21,13 +21,19 @@ export class reembolsoDto {
     this.RRE_SAQUE = params.RRE_SAQUE;   
   }
 }
-
-
 export interface FindAllParams {
   RRE_ID_CODIGO?: number;
   SQE_ID_CODIGO?: number;
   ITE_ID_CODIGO?: number;
   page: number;
   limit: number;
+}
+
+export interface justificativaDto{
+  RRE_ID_CODIGO: number;
+  DIR_ID_CODIGO: number;
+  ITE_ID_CODIGO: number;
+  SQE_ID_CODIGO: number;
+  REQ_MOTIVO: string;  
 }
 

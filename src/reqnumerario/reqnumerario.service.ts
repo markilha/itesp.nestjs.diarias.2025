@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, ReqnumerarioDto } from './reqnumerarioDto';
-import { ReqNumerarioEntity } from 'src/database/db_oracle/entities/reqnumerario.entity';
+import { ReqNumerarioEntity } from '../database/db_oracle/entities/reqnumerario.entity';
 
 @Injectable()
 export class ReqnumerarioService {

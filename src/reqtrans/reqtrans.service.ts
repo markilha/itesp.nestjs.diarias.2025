@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, reqtransDto } from './reqtransDto';
-import { reqtransEntity } from 'src/database/db_oracle/entities/requisicaoTrans.entity';
+import { reqtransEntity } from '../database/db_oracle/entities/requisicaoTrans.entity';
 
 @Injectable()
 export class reqtransService {
@@ -69,6 +69,32 @@ export class reqtransService {
       return reqtrans;
     } catch (error) {
       throw new HttpException('Erro ao atualizar a requisição', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async updateStatus(reqIdCodigo: number, status: string): Promise<boolean> {
+    try {
+      const reqtransToUpdate = await this.reqtransRepository.findOne({
+        where: { REQ_ID_CODIGO: reqIdCodigo },
+      });
+
+      await this.reqtransRepository.query(
+        `UPDATE TRANSPORTE.S001_REQUISICAO SET
+         TRANSPORTE.S001_REQUISICAO.REQ_STATUS = :status
+         WHERE TRANSPORTE.S001_REQUISICAO.REQ_ID_CODIGO = :reqIdCodigo
+         AND TRANSPORTE.S001_REQUISICAO.REQ_ID_CODIGO NOT IN (
+           SELECT REQ_ID_CODIGO FROM TRANSPORTE.S001_REQUISICAO 
+           WHERE REQ_ID_CODIGO = :reqIdCodigo 
+           AND REQ_STATUS IN ('FINALIZADA', 'AUTORIZADA PELO DIRETOR EXECUTIVO')
+         )`,
+        [status, reqIdCodigo, reqIdCodigo],
+      );
+      return true;
+    } catch (error) {
+      throw new HttpException(
+        'Erro ao atualizar o status da requisição',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

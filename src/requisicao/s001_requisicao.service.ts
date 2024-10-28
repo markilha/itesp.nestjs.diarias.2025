@@ -8,11 +8,18 @@ import { verificarDestino } from 'src/util/verificaDestino';
 import { Destino } from 'src/util/diariaDto';
 import { SaquesMesService } from 'src/saques-mes/saques-mes.service';
 import { formatDateToYYMM } from 'src/util/formatoYYMM';
-import { calcularDiariaValores } from 'src/util/calculo_dia_retorno';
+import {
+  calcularDiariaIntegral,
+  calcularDiariaParcial,
+  calcularDiariaValores,
+} from 'src/util/calculo_dia_retorno';
 import { ItinirarioService } from 'src/itinirario/itinirario.service';
 import { calcularSalario50 } from 'src/util/variaveis/calculo_50';
 import { logger } from 'src/util/savelogs/SaveLogs';
 import { RequisicaoEntity } from 'src/database/db_oracle/entities/requisicao.entity';
+import { retornoItinerarioDto } from 'src/itinirario/itinerarioDto';
+import { formatDate } from 'date-fns';
+import { DataUtils } from 'src/util/DataUtils';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -23,6 +30,14 @@ export class S001RequisicaoService {
     private SaquesMesService: SaquesMesService,
     private itinirarioService: ItinirarioService,
   ) {}
+
+  private async buscarItinerario(reqIdCodigo: number) {
+    try {
+      return await this.itinirarioService.findUltimo(reqIdCodigo);
+    } catch (error) {
+      return null;
+    }
+  }
 
   async find(params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
     try {
@@ -76,8 +91,6 @@ export class S001RequisicaoService {
     }
   }
 
-
-
   private async processRequisicao(
     requisicao: RequisicaoEntity,
     chapa: string,
@@ -90,9 +103,10 @@ export class S001RequisicaoService {
       let salario50PorcentoNumber = 0;
       let saqueSalario = null;
       let saldoRestante = 0;
-      let destino = '' as Destino;     
+      let destino = '' as Destino;
+      let qtdIntegral = null;
+      let qtdParcial = null;
 
-    
       // Busca o valor da UFESP na data da requisição
       try {
         UFESP = (await this.ufespService.findValueByDate(requisicao.reqDtSaida)).ufeValor || 0;
@@ -102,9 +116,9 @@ export class S001RequisicaoService {
 
       // Busca o valor do saque do mês
       try {
-        const formatoYYMM = formatDateToYYMM(requisicao.reqDtSaida);  
-        saqueSalario = await this.SaquesMesService.findOne(requisicao.chapa, formatoYYMM);       
-        saqueMes = Number(saqueSalario[0]?.TotalSaqueMes) || 0;       
+        const formatoYYMM = formatDateToYYMM(requisicao.reqDtSaida);
+        saqueSalario = await this.SaquesMesService.findOne(requisicao.chapa, formatoYYMM);
+        saqueMes = Number(saqueSalario[0]?.TotalSaqueMes) || 0;
       } catch (error) {
         logger.error(`Erro ao buscar saque do mês para chapa (${requisicao.chapa}): `, error);
       }
@@ -144,6 +158,29 @@ export class S001RequisicaoService {
         logger.error(`Erro ao buscar dados do funcionário (${requisicao.chapa}): `, error);
       }
 
+      let iti = new retornoItinerarioDto();
+
+      if (requisicao.traIdCodigo === 1) {
+        iti = await this.buscarItinerario(requisicao.reqIdCodigo);
+      } else {
+        iti.ITI_DTSAIDA = DataUtils.converterStringParaData(requisicao.reqDtSaida);
+        iti.ITI_HSAIDA = requisicao.reqHSaida;
+        iti.ITI_DTCHEGADA = DataUtils.converterStringParaData(requisicao.reqDtReq);
+        iti.ITI_HCHEGADA = requisicao.reqHRet;
+      }
+
+      try {
+        qtdIntegral = calcularDiariaIntegral(
+          iti.ITI_DTSAIDA,
+          iti.ITI_HSAIDA,
+          iti.ITI_DTCHEGADA,
+          iti.ITI_HCHEGADA,
+        );
+        qtdParcial = calcularDiariaParcial(iti.ITI_HCHEGADA);
+      } catch (error) {
+        console.log(error);
+      }
+
       // Retorna o DTO
       return new ReturnRequisicaoDto({
         reqIdCodigo: requisicao.reqIdCodigo,
@@ -176,9 +213,14 @@ export class S001RequisicaoService {
         traDescricao: requisicao.traDescricao,
         diariaParcPorc: diarias?.PARPERC || 0,
         vlDiaria: diarias?.VL_DIARIA || 0,
+        ITI_DTSAIDA: iti.ITI_DTSAIDA,
+        ITI_HSAIDA: iti.ITI_HSAIDA,
+        ITI_DTCHEGADA: iti.ITI_DTCHEGADA,
+        ITI_HCHEGADA: iti.ITI_HCHEGADA,
+        diariaIntegralChegada: qtdIntegral,
+        diariaParcialChegada: qtdParcial,
       });
     } catch (error) {
-      console.warn(`REQUISIÇÃO : ${requisicao.regIdCodigo}`, error);
       logger.error(`REQUISIÇÃO : ${requisicao.regIdCodigo}`, error);
       return new ReturnRequisicaoDto(requisicao);
     }
