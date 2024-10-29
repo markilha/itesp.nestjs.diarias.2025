@@ -1,25 +1,46 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { ReqNumerarioEntity } from '../database/db_oracle/entities/reqnumerario.entity';
 
 export class ReqnumerarioDto {
+  @ApiProperty()
   RNU_ID_CODIGO?: number;
+  @ApiProperty({ required: false })
   SQE_ID_CODIGO: number;
+  @ApiProperty({ required: false })
   REQ_ID_CODIGO: number;
+  @ApiProperty({ required: false })
   ITE_ID_CODIGO: number;
+  @ApiProperty({ required: false })
   RRE_ID_CODIGO: number;
+  @ApiProperty({ required: false })
   DIR_ID_CODIGO: number;
+  @ApiProperty({ required: false })
   RNU_DTINICIO: Date;
+  @ApiProperty({ required: false })
   RNU_HORAINICIO: string;
+  @ApiProperty({ required: false })
   RNU_DTFIM: Date;
+  @ApiProperty({ required: false })
   RNU_HORAFIM: string;
+  @ApiProperty({ required: false })
   RNU_INTPREV: string;
+  @ApiProperty({ required: false })
   RNU_PARPREV: string;
+  @ApiProperty({ required: false })
   RNU_INTREAL: string;
+  @ApiProperty({ required: false })
   RNU_PARREAL: string;
+  @ApiProperty({ required: false })
   RNU_MOTIVO: string;
+  @ApiProperty({ required: false })
   RNU_PACOTE: string;
+  @ApiProperty({ required: false })
   RNU_GOVERNADOR: string;
+  @ApiProperty({ required: false })
   RNU_VLINTEGRAL: number;
+  @ApiProperty({ required: false })
   RNU_VLPARCIAL: number;
+  @ApiProperty({ required: false })
   RNU_VLBASE: number;
   constructor(item: ReqNumerarioEntity) {   
     this.RNU_ID_CODIGO = item.RNU_ID_CODIGO;
@@ -46,12 +67,16 @@ export class ReqnumerarioDto {
 }
 
 
-export interface FindAllParams {
+export class FindAllParams {
+  @ApiProperty({ required: false })
   RNU_ID_CODIGO?: number;
+  @ApiProperty({ required: false })
   SQE_ID_CODIGO?: number;
+  @ApiProperty({ required: false })
   REQ_ID_CODIGO?: number;
-
+  @ApiProperty({ required: false })
   page: number;
+  @ApiProperty({ required: false })
   limit: number;
 }
 
