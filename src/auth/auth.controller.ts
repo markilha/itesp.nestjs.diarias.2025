@@ -1,14 +1,14 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { AuthResponseDto } from './auth.dto';
+import { Body, Controller, Param, Post } from '@nestjs/common';
+import { AuthDto, AuthResponseDto } from './auth.dto';
 import { AuthService } from './auth.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-    constructor( private readonly authService: AuthService) {}
-
-    @Post('login')
-   async signin(@Body('login') login: string, @Body('senha') senha: string):  Promise<AuthResponseDto> {
-        return await this.authService.signIn(login, senha);
-
-    }
+  constructor(private readonly authService: AuthService) {}
+  @Post('login')
+  async signin(@Body() params: AuthDto): Promise<AuthResponseDto> {
+    return await this.authService.signIn(params.login, params.senha);
+  }
 }

@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, ReturnRequisicaoDto } from './requisicao.dto';
+import { FindOptionsWhere, In, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
+import { FindAllAutorizadasParams, FindAllParams, RequisDto, ReturnRequisicaoDto } from './requisicao.dto';
 import { UfespService } from 'src/ufesp/ufesp.service';
 import { verificarDestino } from 'src/util/verificaDestino';
 import { Destino } from 'src/util/diariaDto';
@@ -112,7 +112,7 @@ export class S001RequisicaoService {
         UFESP = (await this.ufespService.findValueByDate(requisicao.reqDtSaida)).ufeValor || 0;
       } catch (error) {
         logger.error(`Erro ao buscar valor da ufesp (${requisicao.chapa}): `, error);
-      }
+      }   
 
       // Busca o valor do saque do mês
       try {
@@ -223,6 +223,45 @@ export class S001RequisicaoService {
     } catch (error) {
       logger.error(`REQUISIÇÃO : ${requisicao.regIdCodigo}`, error);
       return new ReturnRequisicaoDto(requisicao);
+    }
+  }
+
+  async findAllAprovadas(params: FindAllAutorizadasParams): Promise<RequisDto[]> {
+    try {
+      const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
+  
+      const pageNumber = params.page ?? 1;
+      const pageSize = params.limit ?? 10;
+      const skip = (pageNumber - 1) * pageSize;   
+  
+      searchParams['reqStatus'] = In(['AUTORIZADA PELO DIRETOR', 'AUTORIZADA PELO DIRETOR EXECUTIVO']);
+      searchParams['reqDtReq'] = MoreThanOrEqual('2008-01-01'); 
+  
+      const order: { [key: string]: 'ASC' | 'DESC' } = {};
+      if (params.orderBy) {
+        order[params.orderBy] = params.orderDirection === 'DESC' ? 'DESC' : 'ASC';
+      } else {
+        order['reqIdCodigo'] = 'ASC';
+      }
+  
+      if(params.chapa){
+        searchParams['chapa'] = params.chapa;
+      }
+  
+      const requisicao = await this.requisicaoRepository.find({
+        where: searchParams,
+        skip,
+        take: params.limit,
+        order        
+      });    
+  
+      return requisicao.map((reqv) => new RequisDto(reqv));
+    } catch (error) {
+      console.log(error.message);
+      throw new HttpException(
+        'Erro ao buscar as requisições autorizadas',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

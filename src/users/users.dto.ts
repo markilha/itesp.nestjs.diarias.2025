@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {  MaxLength, MinLength } from 'class-validator';
 
 export class UsersDto {
@@ -15,9 +16,11 @@ export class UserUpdateDto {
   readonly login?: string;
 }
 
-export interface FindAllParams {
-  nome: string;
-  login: string;
+export class FindAllParams {
+  @ApiProperty({required: false})
+  nome?: string;
+  @ApiProperty({required: false})
+  login?: string;
 }
 
 export enum StatusDto {

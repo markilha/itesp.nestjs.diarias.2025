@@ -1,3 +1,5 @@
+import { ApiProperty } from "@nestjs/swagger";
+import { RequisicaoEntity } from "src/database/db_oracle/entities/requisicao.entity";
 
 
 export class RequisicaoDto {
@@ -27,49 +29,90 @@ export class RequisicaoDto {
 }
 
 export class ReturnRequisicaoDto {
+  @ApiProperty()
   reqIdCodigo: number;
+  @ApiProperty({required: false})
   chapa: string;
+  @ApiProperty({required: false})
   codMunicipio: number;
+  @ApiProperty({required: false})
   oriMunicipio: string; 
+  @ApiProperty({required: false})
   reqDtReq: string; 
+  @ApiProperty({required: false})
   reqDtSaida: string;
+  @ApiProperty({required: false})
   reqHSaida: string; 
+  @ApiProperty({required: false})
   reqDtRetorno: string; 
+  @ApiProperty({required: false})
   reqMotivo: string; 
+  @ApiProperty({required: false})
   reqHRet: string;
+  @ApiProperty({required: false})
   reqKm: number; 
+  @ApiProperty({required: false})
   reqStatus: string; 
+  @ApiProperty({required: false})
   reqDiaria: number; 
+  @ApiProperty({required: false})
   reqIntegral: number; 
+  @ApiProperty({required: false})
   reqParcial: number; 
+  @ApiProperty({required: false})
   reqEspecial: number; 
+  @ApiProperty({required: false})
   reqPacote: string; 
+  @ApiProperty({required: false})
   reqGovernador: string | null; 
+  @ApiProperty({required: false})
   transmeio: number; 
+  @ApiProperty({required: false})
   municipio: number;
+  @ApiProperty({required: false})
   desLocal?: string; 
+  @ApiProperty({required: false})
   desMunIdCodigo: number; 
+  @ApiProperty({required: false})
   desMunNme: string; 
+  @ApiProperty({required: false})
   diariaIntegral: number;
+  @ApiProperty({required: false})
   diariaParcial: number;
+  @ApiProperty({required: false})
   diariaBase: number; 
+  @ApiProperty({required: false})
   salario50Porcento: number;
+  @ApiProperty({required: false})
   saldoDisponivel: number;
+  @ApiProperty({required: false})
   meioTransporte: string;
+  @ApiProperty({required: false})
   regDescricao: string;
+  @ApiProperty({required: false})
   traDescricao: string;
+  @ApiProperty({required: false})
   saqueMes: number;
+  @ApiProperty({required: false})
   valorSolicitado: number;
+  @ApiProperty({required: false})
   diariaParcPorc: number;
+  @ApiProperty({required: false})
   vlDiaria: number;
+  @ApiProperty({required: false})
   usuMov: string; 
+  @ApiProperty({required: false})
   ITI_DTSAIDA: Date | null;
+  @ApiProperty({required: false})
   ITI_HSAIDA: string | null;
+  @ApiProperty({required: false})
   ITI_DTCHEGADA: Date | null;
+  @ApiProperty({required: false})
   ITI_HCHEGADA: string | null;  
+  @ApiProperty({required: false})
   diariaIntegralChegada: number;
-  diairaParcialChegada: number;
- 
+  @ApiProperty({required: false})
+  diairaParcialChegada: number; 
   
     constructor(
     params: any,    
@@ -110,10 +153,7 @@ export class ReturnRequisicaoDto {
     this.ITI_HCHEGADA = params.ITI_HCHEGADA;
     this.diariaIntegralChegada = params.diariaIntegralChegada;
     this.diairaParcialChegada = params.diariaParcialChegada;
-
-
   }
-
 }
 
 
@@ -124,14 +164,52 @@ export enum RequisicaoStatus {
   CANCELADA = 'CANCELADA'
 }
 
-export interface FindAllParams {
-  reqIdCodigo: number;
-  codMunicipio: number;
-  reqStatus: RequisicaoStatus;
+export class FindAllParams {
+  @ApiProperty()
   chapa: string;
+  @ApiProperty({required: false})
+  reqIdCodigo: number;
+  @ApiProperty({required: false})
+  codMunicipio: number;
+  @ApiProperty({required: false})
+  reqStatus: RequisicaoStatus;  
+  @ApiProperty({required: false})
   page?: number;
+  @ApiProperty({required: false})
   limit?: number;
+  @ApiProperty({required: false})
   orderBy?: string;
+  @ApiProperty({required: false})
   orderDirection?: 'ASC' | 'DESC';
+}
+
+export class FindAllAutorizadasParams {
+  @ApiProperty()
+  chapa: string;
+  @ApiProperty({required: false})
+  reqIdCodigo: number;  
+  @ApiProperty({required: false})
+  page?: number;
+  @ApiProperty({required: false})
+  limit?: number;
+  @ApiProperty({required: false})
+  orderBy?: string;
+  @ApiProperty({required: false})
+  orderDirection?: 'ASC' | 'DESC';
+}
+
+export class RequisDto{
+  @ApiProperty()
+  chapa: string;
+  @ApiProperty()
+  reqIdCodigo?: number;
+  @ApiProperty()
+  reqStatus?: string; 
+  constructor(requis: RequisicaoEntity){
+    this.chapa = requis.chapa;
+    this.reqIdCodigo = requis.reqIdCodigo;
+    this.reqStatus = requis.reqStatus;
+   
+  }
 }
 

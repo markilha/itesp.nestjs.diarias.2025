@@ -1,26 +1,46 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { reembolsoEntity } from "../database/db_oracle/entities/reembolso.entity";
 import { reqtransEntity } from "../database/db_oracle/entities/requisicaoTrans.entity";
 
 
 export class reqtransDto {
+  @ApiProperty()
     REQ_ID_CODIGO?: number;
+    @ApiProperty()
     REG_ID_CODIGO: number;
+    @ApiProperty()
     COD_MUNICIP: number;
+    @ApiProperty()
     TRA_ID_CODIGO: number;
+    @ApiProperty()
     REQ_DTREQ: string;
+    @ApiProperty()
     REQ_DTSAIDA: Date;
+    @ApiProperty()
     REQ_MOTORISTA: string;
+    @ApiProperty()
     REQ_HSAIDA: string;
+    @ApiProperty()
     REQ_DTRET: Date;
+    @ApiProperty()
     REQ_MOTIVO: string;
+    @ApiProperty()
     REQ_HRET: string;
+    @ApiProperty()
     REQ_KM: number;
+    @ApiProperty()
     REQ_STATUS: string;
+    @ApiProperty()
     REQ_DIARIA: string;
+    @ApiProperty()
     REQ_INTEGRAL: number;
+    @ApiProperty()
     REQ_PARCIAL: number;
+    @ApiProperty()
     REQ_ESPECIAL: number;
+    @ApiProperty()
     REQ_PACOTE: string;
+    @ApiProperty()
     REQ_GOVERNADOR: string;
     constructor(reqtrans: reqtransEntity) {
         this.REQ_ID_CODIGO = reqtrans.REQ_ID_CODIGO;
@@ -49,9 +69,17 @@ export class reqtransDto {
 }
 
 
-export interface FindAllParams {
+export class FindAllParams {
+  @ApiProperty({ required: false })
   REQ_ID_CODIGO?: number;
-  page: number;
-  limit: number;
+  @ApiProperty({ required: false })
+  orderDirection: 'ASC' | 'DESC';
+  @ApiProperty({ required: false })
+  orderBy?: string;
+  @ApiProperty({ required: false })
+  page?: number;
+  @ApiProperty({ required: false })
+  limit?: number;
 }
+
 

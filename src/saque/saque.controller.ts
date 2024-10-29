@@ -18,6 +18,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 @Controller('saque')
 export class SaqueController {
   constructor(private readonly saqueService: SaqueService) {}
+  
   @UseGuards(AuthGuard)
   @Get()
   async findAll(@Query() params: FindParamsSaque): Promise<any> {
