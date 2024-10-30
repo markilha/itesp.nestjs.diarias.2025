@@ -88,4 +88,15 @@ export class reembolsoService {
       throw new HttpException('Erro ao criar a justificativa', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  //find by id
+  async findone(SQE_ID_CODIGO: number): Promise<reembolsoDto> {
+    try {
+      const reembolso = await this.reembolsoRepository.findOne({
+        where: { SQE_ID_CODIGO},
+      });
+      return new reembolsoDto(reembolso);
+    } catch (error) {
+      throw new HttpException('Erro ao buscar o reembolso', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

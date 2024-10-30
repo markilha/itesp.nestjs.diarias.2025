@@ -4,7 +4,7 @@ import {
   RetNumSaque,
   SaqueDto,
   PrestacaoDto,
-  SolitarDto, 
+  SolitarDto,
   DateTimeParams,
   returnSaqueDto,
 } from './saque.dto';
@@ -24,7 +24,6 @@ import { UfespService } from '../ufesp/ufesp.service';
 import { DespesadiariaService } from '../despesadiaria/despesadiaria.service';
 import { verificarDestino } from '../util/verificaDestino';
 
-
 import { MotivodiariaService } from '../motivodiaria/motivodiaria.service';
 
 import { DiariaCalculadaDto } from './saque.dto';
@@ -35,6 +34,9 @@ import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
 import { ReqnumerarioDto } from '../reqnumerario/reqnumerarioDto';
 import { reembolsoService } from '../reembolso/reembolso.service';
 import { reqtransService } from '../reqtrans/reqtrans.service';
+import { FuncsalarioService } from '../funcsalario/funcsalario.service';
+import { DataUtils } from 'src/util/DataUtils';
+import { extornoService } from 'src/extorno/extorno.service';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -52,15 +54,6 @@ function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
       };
 }
 
-const formatarDataAtual = () => {
-  const dataAtual = new Date();
-  const dia = String(dataAtual.getDate()).padStart(2, '0');
-  const mes = String(dataAtual.getMonth() + 1).padStart(2, '0'); // Janeiro é 0
-  const ano = String(dataAtual.getFullYear()).slice(-2); // Pega apenas os dois últimos dígitos
-
-  return `${dia}/${mes}/${ano}`;
-};
-
 @Injectable()
 export class SaqueService {
   constructor(
@@ -72,6 +65,8 @@ export class SaqueService {
     private despesaDiaria: DespesadiariaService,
     private reqtransService: reqtransService,
     private reembolsoService: reembolsoService,
+    private funcsalarioService: FuncsalarioService,
+    private extornoService: extornoService,
 
     private readonly reqnumerarioService: ReqnumerarioService,
   ) {}
@@ -79,7 +74,7 @@ export class SaqueService {
     const consulta = await this.saqueRepository.query(queryPrestacao, [sqeIdCodigo]);
 
     if (!consulta?.length) {
-      throw new HttpException('Saque não encontrado', HttpStatus.NOT_FOUND);
+      throw new HttpException('Erro ao buscar dados no banco', HttpStatus.NOT_FOUND);
     }
 
     return consulta[0];
@@ -99,8 +94,13 @@ export class SaqueService {
     return ufeValor;
   }
 
-  private async buscarUfespCargo(cargo: string): Promise<number> {
-    const UFESPcargo = await this.despesaDiaria.findOne(cargo);
+  private async buscarUfespCargo(chapa: string): Promise<number> {
+    const funcsalario = await this.funcsalarioService.findByCodigo(chapa);
+    if (!funcsalario) {
+      throw new HttpException('Funcionário não encontrado', HttpStatus.NOT_FOUND);
+    }
+
+    const UFESPcargo = await this.despesaDiaria.findOne(funcsalario.cargo);
     return Number(UFESPcargo?.dtdValorMax);
   }
 
@@ -118,6 +118,7 @@ export class SaqueService {
         calcQuantDiariaIntegralParcialPorcen(itiDataHora);
 
       const pacote = Number(consulta.REQ_PACOTE);
+     
 
       const calcDiaraInial = calcularDiariaValores(
         UFESP,
@@ -127,7 +128,7 @@ export class SaqueService {
         consulta.REQ_INTEGRAL,
         consulta.REQ_PARCIAL > 0 ? 1 : 0,
         consulta.REQ_HRET,
-      );
+      );     
 
       const calcDiaraRetorn = calcularDiariaValores(
         UFESP,
@@ -189,7 +190,7 @@ export class SaqueService {
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
         }),
-        this.buscarUfespCargo(consulta.CARGO).catch((error) => {
+        this.buscarUfespCargo(consulta.CHAPA).catch((error) => {
           throw new HttpException(
             'Erro ao buscar UFESP do cargo: ' + error.message,
             HttpStatus.INTERNAL_SERVER_ERROR,
@@ -357,6 +358,13 @@ export class SaqueService {
       const { vlExtornoIntegral, vlExtornParcial, vlDevolucaoIntegral, vlDevolucaoParcial } =
         this.calcularExtornosEDevolucoes(calcDiaraInial, calcDiaraRetorn);
 
+
+        let justificativa = '';
+      const extorno = await this.extornoService.findOne(params.SQE_ID_CODIGO);    
+
+       justificativa = extorno?.EXT_JUSTIFICA || justificativa;
+       
+
       return new PrestacaoDto({
         NOME: consulta.NOME,
         REQ_ID_CODIGO: consulta.REQ_ID_CODIGO,
@@ -404,6 +412,7 @@ export class SaqueService {
         PRA_ATIVO: consulta.PRA_ATIVO,
         UFESP,
         TRA_ID_CODIGO: consulta.TRA_ID_CODIGO,
+        JUSTIFICATIVA: justificativa,
       });
     } catch (error) {
       console.error('Erro ao buscar prestação:', error);
@@ -411,8 +420,7 @@ export class SaqueService {
     }
   }
 
-
-//Buscar ultimo id
+  //Buscar ultimo id
   async lastId(): Promise<number> {
     try {
       const lastIdResult = await this.saqueRepository.query(
@@ -425,7 +433,7 @@ export class SaqueService {
     }
   }
 
-    //SOlicitar saque
+  //SOlicitar saque
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
     try {
       const PAR2 = 'S';
@@ -448,7 +456,7 @@ export class SaqueService {
         sqeVlSaque: MD.MDI_VALOR,
         sqeTipoSaque: PAR10,
         sqeEfetivo: PAR2,
-        sqeDtPedido: formatarDataAtual(),
+        sqeDtPedido: DataUtils.formatarDataAtual(),
         sqeLote: null,
         sqeAnoLote: null,
         sqeTerceiro: null,

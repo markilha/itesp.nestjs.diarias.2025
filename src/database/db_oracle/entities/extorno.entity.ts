@@ -2,7 +2,6 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity('S009_EXTORNO', { schema: 'FINANCEIRO' })
 export class extornoEntity {
-  
   @PrimaryColumn({ name: 'SQE_ID_CODIGO', type: 'number' })
   SQE_ID_CODIGO: number;
 

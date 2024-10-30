@@ -1,19 +1,43 @@
+import { ApiProperty } from "@nestjs/swagger";
+
 export class extornoDto {
-    SQE_ID_CODIGO: number;
-    ITE_ID_CODIGO: number;
-    RRE_ID_CODIGO: number;
-    DIR_ID_CODIGO: number;
-    PCO_ID_CODIGO: number;
-    FPA_ID_CODIGO?: number;
-    EXT_VALOR?: number;
-    EXT_DATA?: string;
-    EXT_JUSTIFICA?: string;
+  @ApiProperty()
+  SQE_ID_CODIGO: number; 
+  @ApiProperty()
+  ITE_ID_CODIGO: number;
+  @ApiProperty()
+  RRE_ID_CODIGO: number;
+  @ApiProperty()
+  DIR_ID_CODIGO: number;
+  @ApiProperty()
+  PCO_ID_CODIGO: number;
+  @ApiProperty()
+  FPA_ID_CODIGO?: number;
+  @ApiProperty()
+  EXT_VALOR?: number;
+  @ApiProperty()
+  EXT_DATA?: string;
+  @ApiProperty()
+  EXT_JUSTIFICA?: string;
+  constructor(item: any){
+    this.SQE_ID_CODIGO = item.SQE_ID_CODIGO;
+    this.ITE_ID_CODIGO = item.ITE_ID_CODIGO;
+    this.RRE_ID_CODIGO = item.RRE_ID_CODIGO;
+    this.DIR_ID_CODIGO = item.DIR_ID_CODIGO;
+    this.PCO_ID_CODIGO = item.PCO_ID_CODIGO;
+    this.FPA_ID_CODIGO = item.FPA_ID_CODIGO;
+    this.EXT_VALOR = item.EXT_VALOR;
+    this.EXT_DATA = item.EXT_DATA;
+    this.EXT_JUSTIFICA = item.EXT_JUSTIFICA;
   }
+ 
+}
 
-
-  export interface FindAllParams {
-    SQE_ID_CODIGO: number; 
-    page: number;
-    limit: number;
-  }
-  
+export class FindAllParams {
+  @ApiProperty()
+  SQE_ID_CODIGO: number;
+  @ApiProperty({required: false})
+  page: number;
+  @ApiProperty({required: false})
+  limit: number;  
+}

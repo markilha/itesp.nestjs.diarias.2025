@@ -3,15 +3,17 @@ import { SaqueService } from './saque.service';
 import { SaqueController } from './saque.controller';
 import { SaqueEntity } from '../database/db_oracle/entities/saque.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DiariaviagemModule } from 'src/diariaviagem/diariaviagem.module';
-import { PpessoaModule } from 'src/ppessoa/ppessoa.module';
-import { ItinirarioModule } from 'src/itinirario/itinirario.module';
-import { UfespModule } from 'src/ufesp/ufesp.module';
-import { DespesadiariaModule } from 'src/despesadiaria/despesadiaria.module';
-import { MotivodiariaModule } from 'src/motivodiaria/motivodiaria.module';
-import { ReqnumerarioModule } from 'src/reqnumerario/reqnumerario.module';
-import { reembolsoModule } from 'src/reembolso/reembolso.module';
-import { reqtransModule } from 'src/reqtrans/reqtrans.module';
+import { DiariaviagemModule } from '../diariaviagem/diariaviagem.module';
+import { PpessoaModule } from '../ppessoa/ppessoa.module';
+import { ItinirarioModule } from '../itinirario/itinirario.module';
+import { UfespModule } from '../ufesp/ufesp.module';
+import { DespesadiariaModule } from '../despesadiaria/despesadiaria.module';
+import { MotivodiariaModule } from '../motivodiaria/motivodiaria.module';
+import { ReqnumerarioModule } from '../reqnumerario/reqnumerario.module';
+import { reembolsoModule } from '../reembolso/reembolso.module';
+import { reqtransModule } from '../reqtrans/reqtrans.module';
+import { FuncsalarioModule } from '../funcsalario/funcsalario.module';
+import { extornoModule } from 'src/extorno/extorno.module';
 
 
 @Module({
@@ -25,7 +27,10 @@ import { reqtransModule } from 'src/reqtrans/reqtrans.module';
     MotivodiariaModule,
     ReqnumerarioModule ,
     reembolsoModule,
-    reqtransModule
+    reqtransModule,
+    FuncsalarioModule,
+    extornoModule
+    
   ],
   providers: [SaqueService],
   controllers: [SaqueController],

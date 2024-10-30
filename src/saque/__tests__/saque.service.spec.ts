@@ -8,7 +8,8 @@ import { reembolsoService } from '../../reembolso/reembolso.service';
 import { reqtransService } from '../../reqtrans/reqtrans.service';
 import { ItinirarioService } from '../../itinirario/itinirario.service';
 import { UfespService } from '../../ufesp/ufesp.service';
-import { DespesadiariaService } from '../../despesadiaria/despesadiaria.service'; // Importação do DespesadiariaService
+import { DespesadiariaService } from '../../despesadiaria/despesadiaria.service'; 
+import { FuncsalarioService } from '../../funcsalario/funcsalario.service';
 import { Repository } from 'typeorm';
 import { mockMD, mockParams, mockSaque } from '../__mocks__/saque.mock';
 
@@ -67,6 +68,12 @@ describe('SaqueService', () => {
         },
         {
           provide: DespesadiariaService,
+          useValue: {
+            calculateExpenses: jest.fn(),
+          },
+        },
+        {
+          provide: FuncsalarioService,
           useValue: {
             calculateExpenses: jest.fn(),
           },

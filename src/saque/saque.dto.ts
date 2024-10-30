@@ -11,20 +11,34 @@ export interface FindAllParams {
   limit?: number;
 }
 
-export interface FindParamsSaque {
+export class FindParamsSaque {
+  @ApiProperty({required: false})
   REQ_ID_CODIGO?: number;
+  @ApiProperty({required: false})
   SQE_ID_CODIGO?: number;
+  @ApiProperty({required: false})
   ITE_ID_CODIGO?: number;
+  @ApiProperty({required: false})
   CHAPA?: string;
+  @ApiProperty({required: false})
   STS_DESCRICAO?: string;
+  @ApiProperty({required: false})
   REQ_STATUS?: string;
+  @ApiProperty({required: false})
   STATUS?: string;
+  @ApiProperty({required: false})
   usePrestDate?: string;
+  @ApiProperty({required: false})
   startDate?: string;
+  @ApiProperty({required: false})
   endDate?: string;
+  @ApiProperty({required: false})
   page?: number;
+  @ApiProperty({required: false})
   limit?: number;
+  @ApiProperty({required: false})
   orderBy?: string;
+  @ApiProperty({required: false})
   orderDirection?: 'ASC' | 'DESC';
 }
 
@@ -118,62 +132,114 @@ export class returnSaqueDto {
 }
 
 export class PrestacaoDto {
+  @ApiProperty()
   NOME: string;
+  @ApiProperty()
   REQ_ID_CODIGO: number;
+  @ApiProperty()
   SQE_ID_CODIGO: number;
+  @ApiProperty()
   RNU_ID_CODIGO: number;
+  @ApiProperty()
   CHAPA: string;
+  @ApiProperty()
   SQE_VLPREST: number;
+  @ApiProperty()
   REQ_DTREQ: string;
+  @ApiProperty()
   TIPO_DESPESA: string;
+  @ApiProperty()
   TRA_DESCRICAO: string;
+  @ApiProperty()
   TIPO_SAQUE: string;
+  @ApiProperty()
   NME_MUNIC: string;
+  @ApiProperty()
   REG_DESCRICAO: string;
+  @ApiProperty()
   MUN_CIDADE: string;
+  @ApiProperty()
   DES_LOCAL: string;
+  @ApiProperty()
   REQ_DTSAIDA: Date;
+  @ApiProperty()
   REQ_DTRET: Date;
+  @ApiProperty()
   REQ_HSAIDA: string;
+  @ApiProperty()
   REQ_HRET: string;
+  @ApiProperty()
   REQ_INTEGRAL: number;
+  @ApiProperty()
   REQ_PARCIAL: number;
+  @ApiProperty()
   REQ_PACOTE: string;
+  @ApiProperty()
   REQ_GOVERNADOR: string;
+  @ApiProperty()
   REQ_MOTIVO: string;
+  @ApiProperty()
   CTR_STATUS: string;
+  @ApiProperty()
   STATUS: string;
+  @ApiProperty()
   ITI_DTSAIDA: Date;
+  @ApiProperty()
   ITI_HSAIDA: string;
+  @ApiProperty()
   ITI_DTCHEGADA: Date;
+  @ApiProperty()
   ITI_HCHEGADA: string;
   //DIARIAS-QUANTIDADES
+  @ApiProperty()
   INTPREV: number;
+  @ApiProperty()
   PARPREV: number;
+  @ApiProperty()
   INTREAL: number;
-  PARREAL: number;  
+  @ApiProperty()
+  PARREAL: number; 
   //DIARIAS-VALORES
+  @ApiProperty()
   VLINTPREV: number;
+  @ApiProperty()
   VLPARPREV: number;
+  @ApiProperty()
   VLINTREAL: number;
+  @ApiProperty()
   VLPARREAL: number;
+  @ApiProperty()
   VLBASE: number;
+  @ApiProperty()
   SQE_VLSAQUE: number;
+  @ApiProperty()
   VLPREST: number;
   //EXTORNOS DEVOLUÇÕES
+  @ApiProperty()
   VLCOMPLEMENTARINTEGRAL: number;
+  @ApiProperty()
   VLCOMPLEMENTARPARCIAL: number;
+  @ApiProperty()
   VLDEVOLUCAOINTEGRAL: number;
+  @ApiProperty()
   VLDEVOLUCAOPARCIAL: number;
-
+  @ApiProperty()
   VLDIARIA: number;
+  @ApiProperty()
   PORCDIARIARETORNO: number;
+  @ApiProperty()
   SQE_DTPREST: string;
+  @ApiProperty()
   REQ_STATUS: string;
   //PARAMETROS
+  @ApiProperty()
   PRA_ATIVO: string;
+  @ApiProperty()
   UFESP: number; 
+  @ApiProperty()
   TRA_ID_CODIGO: number; 
+  @ApiProperty()
+  JUSTIFICATIVA: string;
 
   constructor(params: any) {
     this.NOME = params.NOME;
@@ -228,6 +294,7 @@ export class PrestacaoDto {
     this.PRA_ATIVO = params.PRA_ATIVO;
     this.UFESP = params.UFESP;    
     this.TRA_ID_CODIGO = params.TRA_ID_CODIGO;
+    this.JUSTIFICATIVA = params.JUSTIFICATIVA;
    
   }
 }

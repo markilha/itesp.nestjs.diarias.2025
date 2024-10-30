@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
-import { FuncSalarioEntity } from 'src/database/db_oracle/entities/funcsalario.entity';
+import { FuncSalarioEntity } from '../database/db_oracle/entities/funcsalario.entity';
 import { FindAllParams } from './funcsalarioDto';
 
 @Injectable()

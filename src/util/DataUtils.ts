@@ -77,4 +77,13 @@ export class DataUtils {
     return `${day}-${month}-${year}`;
   }
 
+  static formatarDataAtual = () => {
+    const dataAtual = new Date();
+    const dia = String(dataAtual.getDate()).padStart(2, '0');
+    const mes = String(dataAtual.getMonth() + 1).padStart(2, '0'); // Janeiro é 0
+    const ano = String(dataAtual.getFullYear()).slice(-2); // Pega apenas os dois últimos dígitos
+  
+    return `${dia}/${mes}/${ano}`;
+  };
+
 }

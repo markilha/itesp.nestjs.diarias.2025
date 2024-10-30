@@ -93,15 +93,16 @@ export function calcularDiariaValores(
     let diariaParcial40 = 0;
     let diariaParcial20 = 0;
     const horaRetornoDecimal = DataUtils.converterStringParaHora(horaRetorno);
+   
 
     let porcentagem = 0;
 
     if (req_parcial > 0) {
-      if (horaRetornoDecimal > 19) {
+      if (horaRetornoDecimal >= 19) {
         diariaParcial40 = req_parcial * (diariaBase * 0.4); // 40% se deslocamento >= 12 horas - a
         diariaParcial40 = DataUtils.arredondar(diariaParcial40);
         porcentagem = 40;
-      } else if (horaRetornoDecimal > 13) {
+      } else if (horaRetornoDecimal >= 13) {
         diariaParcial20 = req_parcial * (diariaBase * 0.2); // 20% se deslocamento entre 6 e 12 horas - b
         diariaParcial20 = DataUtils.arredondar(diariaParcial20);
         porcentagem = 20;
@@ -137,8 +138,6 @@ export function calcularDiariaValores(
 }
 
 export function calcQuantDiariaIntegralParcialPorcen(dateTimeParams: any) {
-
-  console.log(dateTimeParams);
   const diariaIntegral = calcularDiariaIntegral(
     dateTimeParams.dataSaida,
     dateTimeParams.horaSaida,

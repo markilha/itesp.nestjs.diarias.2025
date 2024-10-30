@@ -56,4 +56,15 @@ export class extornoService {
       );
     }
   }
+
+  async create(extorno: extornoDto): Promise<extornoDto> {
+    try {
+      return await this.extornoRepository.save(extorno);
+    } catch (error) {      
+      throw new HttpException(
+        'Não foi possível criar o extorno',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

@@ -76,26 +76,6 @@ export class ItinirarioService {
       ITI_DTCHEGADA: ultimoRegistro?.ITI_DTCHEGADA || null,
       ITI_HCHEGADA: ultimoRegistro?.ITI_HCHEGADA || null,
     };
-  }
-  
+  } 
 
-  // async findUltimo(reqIdCodigo: number): Promise<ItinerarioDto> {
-  //   return this.itinerarioRepository
-  //     .createQueryBuilder('itinerario')
-  //     .select([
-  //       'itinerario.ITI_ID_CODIGO',
-  //       'itinerario.MUN_ID_CODIGO',
-  //       'itinerario.ITI_LOCAL',
-  //       'itinerario.ITI_DTSAIDA',
-  //       'itinerario.ITI_HSAIDA',
-  //       'itinerario.ITI_DTCHEGADA',
-  //       'itinerario.ITI_HCHEGADA',
-  //       'itinerario.ITI_KM',
-  //     ])
-  //     .where('itinerario.REQ_ID_CODIGO = :reqIdCodigo', { reqIdCodigo })
-  //     .orderBy('itinerario.ITI_DTCHEGADA', 'DESC')
-  //     .addOrderBy('itinerario.ITI_HCHEGADA', 'DESC')
-  //     .limit(1)
-  //     .getOne();
-  // }
 }
