@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, justificativaDto, reembolsoDto } from './reembolsoDto';
+import { FindAllParams, reembolsoDto, updateDto } from './reembolsoDto';
 import { reembolsoEntity } from '../database/db_oracle/entities/reembolso.entity';
 
 @Injectable()
@@ -99,4 +99,32 @@ export class reembolsoService {
       throw new HttpException('Erro ao buscar o reembolso', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  //update
+  async update(ree: updateDto): Promise<{ message: string }> {
+    try {      
+      const codigo = Number(ree.RRE_ID_CODIGO);
+      const reembolsoExist = await this.reembolsoRepository.findOne({
+        where: { RRE_ID_CODIGO: codigo },
+      });      
+      
+      if (!reembolsoExist) {
+        throw new HttpException('Reembolso não encontrado', HttpStatus.NOT_FOUND);
+      }
+  
+      const dados = {    
+        REE_AUTORIZADO: ree.REE_AUTORIZADO,
+        RRE_JUSTIFICATIVA: ree.RRE_JUSTIFICATIVA,
+        RRE_SAQUE: ree.RRE_SAQUE,
+      };
+  
+      await this.reembolsoRepository.update(ree.RRE_ID_CODIGO, dados);
+  
+      return { message: 'Atualizado com sucesso!!!' };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  
+  
 }

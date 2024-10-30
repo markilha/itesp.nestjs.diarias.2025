@@ -360,9 +360,11 @@ export class SaqueService {
 
 
         let justificativa = '';
-      const extorno = await this.extornoService.findOne(params.SQE_ID_CODIGO);    
+      const extorno = await this.extornoService.findOne(params.SQE_ID_CODIGO);   
+      const reembolso = await this.reembolsoService.findone(params.SQE_ID_CODIGO); 
 
        justificativa = extorno?.EXT_JUSTIFICA || justificativa;
+       justificativa = reembolso?.RRE_JUSTIFICATIVA || justificativa;
        
 
       return new PrestacaoDto({

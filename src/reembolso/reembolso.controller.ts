@@ -1,10 +1,11 @@
-import { Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { reembolsoService } from './reembolso.service';
-import {  FindAllParams, reembolsoDto } from './reembolsoDto';
+import {  FindAllParams, reembolsoDto, updateDto } from './reembolsoDto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { reembolsoSwagger } from 'src/swagger/reembolsowagger';
+import { AuthGuard } from 'src/auth/auth.guard';
 
-
+@UseGuards(AuthGuard)
 @ApiTags('reembolso')
 @Controller('reembolso')
 export class reembolsoController {
@@ -25,6 +26,20 @@ export class reembolsoController {
   async findone(@Query() params: FindAllParams): Promise<reembolsoDto> {
     const sqlidcodigo = Number(params.SQE_ID_CODIGO);
     return await this.reembolsoService.findone(sqlidcodigo);
+  }
+
+  @Put()
+  @ApiOperation({ summary: 'Atualizar um reembolso' })
+  @ApiResponse({
+    status: 200,
+    description: 'Atualizado com sucesso',
+    schema: {
+      example: { message: 'Atualizado com sucesso!!!' },
+    },
+  })
+  @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
+  async update(@Body() dados: updateDto): Promise<{ message: string }> { 
+    return await this.reembolsoService.update(dados);
   }
  
 }
