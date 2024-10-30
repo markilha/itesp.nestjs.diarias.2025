@@ -1,7 +1,7 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Put, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { extornoService } from './extorno.service';
-import { FindAllParams } from './extornoDto';
+import { FindAllParams, upateExtornoDto } from './extornoDto';
 import { extornoDto } from './extornoDto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -23,6 +23,7 @@ export class extornoController {
   async findAll(@Query() params: FindAllParams): Promise<extornoDto[]> {
     return await this.extornoService.findAll(params);
   }
+
   @Get('findone')
   @ApiOperation({ summary: 'Busca o extorno pelo numero do saque' })
   @ApiResponse({
@@ -32,5 +33,17 @@ export class extornoController {
   })
   async findOne(@Query() params: FindAllParams): Promise<extornoDto> {
     return await this.extornoService.findOne(params.SQE_ID_CODIGO);
+  }
+  @Put()
+  @ApiOperation({ summary: 'Atualizar extorno' })
+  @ApiResponse({
+    status: 200,
+    description: 'Atualizar o extorno',
+    schema: {
+     example: {message: 'extorno atualizado com sucesso'},
+    },  
+  })
+  async atualizar(@Body() dados: upateExtornoDto): Promise<{message:string}> {
+    return await this.extornoService.update(dados);
   }
 }

@@ -86,4 +86,18 @@ export class DataUtils {
     return `${dia}/${mes}/${ano}`;
   };
 
+  static formatarDataAtualString(): string {
+    const dataAtual = new Date();
+  
+    const dia = String(dataAtual.getDate()).padStart(2, '0');
+    const mes = String(dataAtual.getMonth() + 1).padStart(2, '0'); // `getMonth` retorna de 0 a 11, então somamos 1
+    const ano = dataAtual.getFullYear();
+  
+    const horas = String(dataAtual.getHours()).padStart(2, '0');
+    const minutos = String(dataAtual.getMinutes()).padStart(2, '0');
+    const segundos = String(dataAtual.getSeconds()).padStart(2, '0');
+  
+    return `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
+  }
+
 }

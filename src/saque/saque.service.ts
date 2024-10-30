@@ -118,7 +118,6 @@ export class SaqueService {
         calcQuantDiariaIntegralParcialPorcen(itiDataHora);
 
       const pacote = Number(consulta.REQ_PACOTE);
-     
 
       const calcDiaraInial = calcularDiariaValores(
         UFESP,
@@ -128,7 +127,7 @@ export class SaqueService {
         consulta.REQ_INTEGRAL,
         consulta.REQ_PARCIAL > 0 ? 1 : 0,
         consulta.REQ_HRET,
-      );     
+      );
 
       const calcDiaraRetorn = calcularDiariaValores(
         UFESP,
@@ -358,14 +357,12 @@ export class SaqueService {
       const { vlExtornoIntegral, vlExtornParcial, vlDevolucaoIntegral, vlDevolucaoParcial } =
         this.calcularExtornosEDevolucoes(calcDiaraInial, calcDiaraRetorn);
 
+      let justificativa = '';
+      const extorno = await this.extornoService.findOne(params.SQE_ID_CODIGO);
+      const reembolso = await this.reembolsoService.findone(params.SQE_ID_CODIGO);
 
-        let justificativa = '';
-      const extorno = await this.extornoService.findOne(params.SQE_ID_CODIGO);   
-      const reembolso = await this.reembolsoService.findone(params.SQE_ID_CODIGO); 
-
-       justificativa = extorno?.EXT_JUSTIFICA || justificativa;
-       justificativa = reembolso?.RRE_JUSTIFICATIVA || justificativa;
-       
+      justificativa = extorno?.EXT_JUSTIFICA || justificativa;
+      justificativa = reembolso?.RRE_JUSTIFICATIVA || justificativa;
 
       return new PrestacaoDto({
         NOME: consulta.NOME,
@@ -415,6 +412,8 @@ export class SaqueService {
         UFESP,
         TRA_ID_CODIGO: consulta.TRA_ID_CODIGO,
         JUSTIFICATIVA: justificativa,
+        TOTALCOMPLEMENTAR: vlExtornoIntegral + vlExtornParcial,
+        TOTALDEVOLUCAO: vlDevolucaoIntegral + vlDevolucaoParcial,
       });
     } catch (error) {
       console.error('Erro ao buscar prestação:', error);
@@ -518,7 +517,7 @@ export class SaqueService {
       if (PAR2 === 'S') {
         rresaque = newId;
       }
-      await this.reembolsoService.justificativa({
+      await this.reembolsoService.inseriReembolso({
         RRE_ID_CODIGO: MD.RRE_ID_CODIGO,
         DIR_ID_CODIGO: MD.DIR_ID_CODIGO,
         ITE_ID_CODIGO: MD.ITE_ID_CODIGO,
@@ -537,6 +536,26 @@ export class SaqueService {
       console.error('Erro ao solicitar saque:', error);
       throw new HttpException(
         `Erro ao solicitar saque: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  //Retonar findone
+  async findOne(sqeIdCodigo: number): Promise<SaqueDto> {
+    try {
+      const result = await this.saqueRepository.findOne({
+        where: {
+          sqeIdCodigo,
+        },
+      });
+      if (!result) {
+        throw new HttpException('Saque não encontrado', HttpStatus.NOT_FOUND);
+      }
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        error.message,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

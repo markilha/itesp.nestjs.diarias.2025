@@ -2,17 +2,25 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { pcontasEntity } from 'src/database/db_oracle/entities/pcontas.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, pcontasDto } from './pcontasDto';
+import { createPcontasDto, FindAllParams, pcontasDto } from './pcontasDto';
 import { pcontasnumEntity } from 'src/database/db_oracle/entities/pcontasnum';
+import { reembolsoService } from '../reembolso/reembolso.service';
+import { extornoService } from 'src/extorno/extorno.service';
+import { extornoDto } from 'src/extorno/extornoDto';
+import { SaqueService } from 'src/saque/saque.service';
+import { DataUtils } from 'src/util/DataUtils';
 
 @Injectable()
 export class PcontasService {
   constructor(
     @InjectRepository(pcontasEntity, 'oracleConnection')
     private pcontasRepository: Repository<pcontasEntity>,
+    private reembolsosService: reembolsoService,
+    private extornoService: extornoService,
+    private saqueService: SaqueService,
 
     @InjectRepository(pcontasnumEntity, 'oracleConnection')
-    private readonly pcontasnumRepository: Repository<pcontasnumEntity>, 
+    private readonly pcontasnumRepository: Repository<pcontasnumEntity>,
   ) {}
 
   async findAll(params: FindAllParams): Promise<pcontasDto[]> {
@@ -45,6 +53,7 @@ export class PcontasService {
       );
     }
   }
+
   async findOne(PCO_ID_CODIGO: number): Promise<pcontasDto> {
     try {
       return await this.pcontasRepository.findOne({
@@ -53,35 +62,42 @@ export class PcontasService {
         },
       });
     } catch (error) {
-      console.log(error);
       throw new HttpException(
         'Não foi possível as prestações de conta',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
-  
 
-  async createPcontas(SQE_ID_CODIGO: number): Promise<number> {
+  async createPcontas(params: createPcontasDto): Promise<{ PCO_ID_CODIGO: number }> {
+    // se não encontrar SQE_ID_CODIGO, retorna erro
+    const saque = await this.saqueService.findOne(params.SQE_ID_CODIGO);
 
-     // Obtém o último valor de PCO_ID_CODIGO
-     const lastIdResult = await this.pcontasRepository.query(
-      `SELECT MAX(PCO_ID_CODIGO) as lastId FROM S009_PCONTAS`
+    //verifica se o reembolso existe
+    if (params.TOTALCOMPLEMENTAR > 0) {
+      const reembolso = await this.reembolsosService.findone(params.SQE_ID_CODIGO);
+      if (!reembolso) {
+        throw new HttpException('Reembolso não encontrado', HttpStatus.NOT_FOUND);
+      }
+    }
+
+    const lastIdResult = await this.pcontasRepository.query(
+      `SELECT MAX(PCO_ID_CODIGO) as lastId FROM S009_PCONTAS`,
     );
-    const lastId = lastIdResult[0]?.LASTID || 0;  
-    const newId = lastId + 1;     
-    
+    const lastId = lastIdResult[0]?.LASTID || 0;
+    const newId = lastId + 1;
+
     const pcontas = {
       PCO_ID_CODIGO: newId,
-      PCO_TIPO: 'N',
-      PCO_TOTDOC: 0,
+      PCO_TIPO: params.PCO_TIPO,
+      PCO_TOTDOC: params.PCO_TOTDOC,
     };
 
     const insertResult = await this.pcontasRepository.insert(pcontas);
     const pcoIdCodigo = insertResult.identifiers[0].PCO_ID_CODIGO;
     const rnuIdCodigo = await this.pcontasRepository.query(
       `SELECT RNU_ID_CODIGO FROM S009_REQNUMERARIO WHERE SQE_ID_CODIGO = :sqeIdCodigo`,
-      [SQE_ID_CODIGO],
+      [params.SQE_ID_CODIGO],
     );
 
     await this.pcontasnumRepository.insert({
@@ -89,6 +105,30 @@ export class PcontasService {
       RNU_ID_CODIGO: rnuIdCodigo[0]?.RNU_ID_CODIGO,
     });
 
-    return pcoIdCodigo;
+    // Atualiza a justificativa do reembolso
+    if (params.TOTALCOMPLEMENTAR > 0) {
+      await this.reembolsosService.atualizarJustificativa({
+        SQE_ID_CODIGO: params.SQE_ID_CODIGO,
+        RRE_JUSTIFICATIVA: params.JUSTIFICATIVA,
+        RRE_SAQUE: params.SQE_ID_CODIGO,
+      });
+    }
+
+    if (params.TOTALDEVOLUCAO > 0) {
+      const newExtorno = new extornoDto({
+        SQE_ID_CODIGO: saque.sqeIdCodigo,
+        ITE_ID_CODIGO: saque.iteIdCodigo,
+        RRE_ID_CODIGO: saque.rreIdCodigo,
+        DIR_ID_CODIGO: saque.dirIdCodigo,
+        PCO_ID_CODIGO: newId,
+        FPA_ID_CODIGO: saque.fpaIdCodigo,
+        EXT_VALOR: params.TOTALDEVOLUCAO,
+        EXT_DATA: DataUtils.formatarDataAtualString(),
+        EXT_JUSTIFICA: params.JUSTIFICATIVA,
+      });
+      await this.extornoService.create(newExtorno);
+    }
+
+    return { PCO_ID_CODIGO: pcoIdCodigo };
   }
 }

@@ -240,6 +240,10 @@ export class PrestacaoDto {
   TRA_ID_CODIGO: number; 
   @ApiProperty()
   JUSTIFICATIVA: string;
+  @ApiProperty()
+  TOTALDEVOLUCAO: boolean;
+  @ApiProperty()
+  TOTALCOMPLEMENTAR: boolean;
 
   constructor(params: any) {
     this.NOME = params.NOME;
@@ -295,7 +299,8 @@ export class PrestacaoDto {
     this.UFESP = params.UFESP;    
     this.TRA_ID_CODIGO = params.TRA_ID_CODIGO;
     this.JUSTIFICATIVA = params.JUSTIFICATIVA;
-   
+    this.TOTALDEVOLUCAO= params.TOTALDEVOLUCAO;
+    this.TOTALCOMPLEMENTAR= params.TOTALCOMPLEMENTAR;   
   }
 }
 

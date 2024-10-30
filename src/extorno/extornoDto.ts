@@ -33,6 +33,22 @@ export class extornoDto {
  
 }
 
+export class upateExtornoDto {
+  @ApiProperty()
+  SQE_ID_CODIGO: number;  
+  @ApiProperty()
+  PCO_ID_CODIGO: number;
+  @ApiProperty()
+  FPA_ID_CODIGO?: number;
+  @ApiProperty()
+  EXT_VALOR?: number;
+  @ApiProperty()
+  EXT_DATA?: string;
+  @ApiProperty()
+  EXT_JUSTIFICA?: string;  
+}
+
+
 export class FindAllParams {
   @ApiProperty()
   SQE_ID_CODIGO: number;

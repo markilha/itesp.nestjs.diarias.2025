@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, reembolsoDto, updateDto } from './reembolsoDto';
+import { FindAllParams, reembolsoDto, upadteJustificativaDto, updateDto } from './reembolsoDto';
 import { reembolsoEntity } from '../database/db_oracle/entities/reembolso.entity';
 
 @Injectable()
@@ -56,7 +56,7 @@ export class reembolsoService {
     }
   }
 
-  async justificativa(MD: reembolsoDto): Promise<boolean> {
+  async inseriReembolso(MD: reembolsoDto): Promise<boolean> {
     try {
       await this.reembolsoRepository.query(
         `INSERT INTO FINANCEIRO.S009_REEMBOLSO (
@@ -88,43 +88,66 @@ export class reembolsoService {
       throw new HttpException('Erro ao criar a justificativa', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  async atualizarJustificativa(dados: upadteJustificativaDto): Promise<boolean> {
+    try {
+      const exist = await this.reembolsoRepository.findOne({
+        where: { SQE_ID_CODIGO: dados.SQE_ID_CODIGO },
+      });
+      if (!exist) {
+        throw new HttpException('Reembolso não encontrado', HttpStatus.NOT_FOUND);
+      }
+      await this.reembolsoRepository.query(
+        `UPDATE FINANCEIRO.S009_REEMBOLSO
+         SET RRE_JUSTIFICATIVA = :rreJustificativa,
+             RRE_SAQUE = :rreSaque
+         WHERE SQE_ID_CODIGO = :sqeIdCodigo`,
+        [dados.RRE_JUSTIFICATIVA, dados.RRE_SAQUE, dados.SQE_ID_CODIGO],
+      );
+      return true;
+    } catch (error) {
+      throw new HttpException(
+        'Erro ao atualizar a justificativa',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   //find by id
   async findone(SQE_ID_CODIGO: number): Promise<reembolsoDto> {
     try {
       const reembolso = await this.reembolsoRepository.findOne({
-        where: { SQE_ID_CODIGO},
+        where: { SQE_ID_CODIGO },
       });
       return new reembolsoDto(reembolso);
     } catch (error) {
-      throw new HttpException('Erro ao buscar o reembolso', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException('Reembolso não encontrado!!!!', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   //update
   async update(ree: updateDto): Promise<{ message: string }> {
-    try {      
+    try {
       const codigo = Number(ree.RRE_ID_CODIGO);
       const reembolsoExist = await this.reembolsoRepository.findOne({
         where: { RRE_ID_CODIGO: codigo },
-      });      
-      
+      });
+
       if (!reembolsoExist) {
         throw new HttpException('Reembolso não encontrado', HttpStatus.NOT_FOUND);
       }
-  
-      const dados = {    
+
+      const dados = {
         REE_AUTORIZADO: ree.REE_AUTORIZADO,
         RRE_JUSTIFICATIVA: ree.RRE_JUSTIFICATIVA,
         RRE_SAQUE: ree.RRE_SAQUE,
       };
-  
+
       await this.reembolsoRepository.update(ree.RRE_ID_CODIGO, dados);
-  
+
       return { message: 'Atualizado com sucesso!!!' };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  
-  
 }
