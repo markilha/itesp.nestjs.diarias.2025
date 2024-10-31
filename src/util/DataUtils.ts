@@ -77,6 +77,40 @@ export class DataUtils {
     return `${day}-${month}-${year}`;
   }
 
+  static converterParaData(dataString:string) {
+    if (!dataString) return null;
+
+    // Define os formatos aceitos
+    const formatoDataHora = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2})$/;
+    const formatoDataAnoCompleto = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    const formatoDataAnoCurto = /^(\d{2})\/(\d{2})\/(\d{2})$/;
+
+    let data;
+
+    if (formatoDataHora.test(dataString)) {
+        const [dia, mes, ano, hora, minuto, segundo] = dataString.match(formatoDataHora).slice(1);
+        data = new Date(`${ano}-${mes}-${dia}T${hora}:${minuto}:${segundo}`);
+    } else if (formatoDataAnoCompleto.test(dataString)) {
+        const [dia, mes, ano] = dataString.match(formatoDataAnoCompleto).slice(1);
+        data = new Date(`${ano}-${mes}-${dia}`);
+    } else if (formatoDataAnoCurto.test(dataString)) {
+        const [dia, mes, anoCurto] = dataString.match(formatoDataAnoCurto).slice(1);
+        const ano = parseInt(anoCurto) < 50 ? `20${anoCurto}` : `19${anoCurto}`;
+        data = new Date(`${ano}-${mes}-${dia}`);
+    } else {
+        return null;
+    }
+
+    // Função auxiliar para adicionar zero à esquerda
+    const padZero = (num) => String(num).padStart(2, '0');
+
+    // Retorna a data formatada no padrão desejado
+    return `${padZero(data.getDate())}/${padZero(data.getMonth() + 1)}/${data.getFullYear()} ` +
+           `${padZero(data.getHours())}:${padZero(data.getMinutes())}:${padZero(data.getSeconds())}`;
+}
+
+
+
   static formatarDataAtual = () => {
     const dataAtual = new Date();
     const dia = String(dataAtual.getDate()).padStart(2, '0');

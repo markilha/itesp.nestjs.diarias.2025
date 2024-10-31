@@ -130,6 +130,7 @@ export class returnSaqueDto {
   STS_DESCRICAO: string;
   SQE_EFETIVO: string;
   PRA_ATIVO: string;
+ 
 
   constructor(params: any) {
     this.SQE_ID_CODIGO = params.SQE_ID_CODIGO;

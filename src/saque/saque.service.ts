@@ -287,13 +287,13 @@ export class SaqueService {
 
         return new returnSaqueDto({
           SQE_ID_CODIGO: item.SQE_ID_CODIGO,
-          SQE_DTPEDIDO: item.SQE_DTPEDIDO,
-          SQE_DTSAQUE: item.SQE_DTSAQUE,
+          SQE_DTPEDIDO: DataUtils.converterParaData(item.SQE_DTPEDIDO),
+          SQE_DTSAQUE: DataUtils.converterParaData(item.SQE_DTSAQUE),
           SQE_VLSAQUE: Number(item.SQE_VLSAQUE) || 0,
           SQE_VLPREST: Number(item.SQE_VLPREST) || 0,
           RRE_ID_CODIGO: item.RRE_ID_CODIGO,
           ITE_ID_CODIGO: item.ITE_ID_CODIGO,
-          SQE_DTPREST: item.SQE_DTPREST,
+          SQE_DTPREST: DataUtils.converterParaData(item.SQE_DTPREST),
           NOME: item.NOME,
           REQ_ID_CODIGO: item.REQ_ID_CODIGO,
           TDE_DESCRICAO: item.TDE_DESCRICAO,
