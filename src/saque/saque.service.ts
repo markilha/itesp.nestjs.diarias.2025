@@ -210,7 +210,7 @@ export class SaqueService {
   }
 
   //BUSCAR TODOS OS SAQUES
-  async findAll(params: FindParamsSaque): Promise<SaqueDto[]> {
+  async findAll(params: FindParamsSaque): Promise<returnSaqueDto[]> {
     try {
       const chapa = params.CHAPA;
       const orderByField = params.orderBy || 'a.SQE_DTPEDIDO';

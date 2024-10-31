@@ -112,23 +112,41 @@ export class SaqueDto {
 }
 
 export class returnSaqueDto {
+  @ApiProperty()
   SQE_DTSAQUE: string;
+  @ApiProperty()
   SQE_DTPREST: string;
+  @ApiProperty()
   NOME: string;
+  @ApiProperty()
   REQ_ID_CODIGO: number;
+  @ApiProperty()
   SQE_ID_CODIGO: number;
+  @ApiProperty()
   TDE_DESCRICAO: string;
+  @ApiProperty()
   SQE_VLSAQUE: number;
+  @ApiProperty()
   SQE_VLPREST: number;
+  @ApiProperty()
   VL_COMPLEMENTAR: number;
+  @ApiProperty()
   VL_EXTORNO: number;
+  @ApiProperty()
   STATUS: string;
+  @ApiProperty()
   REQ_DTREQ: string;
+  @ApiProperty()
   SQE_DTPEDIDO: string;
+  @ApiProperty()
   REQ_STATUS: string;
+  @ApiProperty()
   CHAPA: string;
+  @ApiProperty()
   STS_DESCRICAO: string;
+  @ApiProperty()
   SQE_EFETIVO: string;
+  @ApiProperty()
   PRA_ATIVO: string;
  
 

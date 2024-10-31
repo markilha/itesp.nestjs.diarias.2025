@@ -8,7 +8,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { FindParamsSaque, RetNumSaque, PrestacaoDto, SolitarDto, SaqueDto } from './saque.dto';
+import { FindParamsSaque, RetNumSaque, PrestacaoDto, SolitarDto, SaqueDto, returnSaqueDto } from './saque.dto';
 import { SaqueService } from './saque.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -22,10 +22,10 @@ export class SaqueController {
   
   @Get()
   @ApiOperation({ summary: 'Busca todos os saques' })
-  @ApiResponse({ status: 200, description: 'Retorna todos os saques' })
+  @ApiResponse({ status: 200, description: 'Retorna todos os saques',type: returnSaqueDto, isArray: true  })
   @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
 
-  async findAll(@Query() params: FindParamsSaque): Promise<any> {
+  async findAll(@Query() params: FindParamsSaque): Promise<returnSaqueDto[]> {
     if (!params.CHAPA) {
       throw new HttpException(
         'CHAPA não informada. Por favor, forneça uma CHAPA válida.',
