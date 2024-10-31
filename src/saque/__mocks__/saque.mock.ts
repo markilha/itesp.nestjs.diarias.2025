@@ -45,3 +45,73 @@ export const mockSaque =
     PRA_ATIVO: 'N',
   }
 
+  export const mockConsulta = {
+    SQE_ID_CODIGO: '123',
+    MUN_ID_CODIGO: '456',
+    SQE_EFETIVO: 'S',
+    SQE_TIPOSAQUE: 'NORMAL',
+    PRA_ATIVO: 'S',
+    SQE_DTPREST: new Date(),
+    SQE_VLPREST: 100,
+    NOME: 'Test User',
+    REQ_ID_CODIGO: '789',
+    RNU_ID_CODIGO: '101',
+    CHAPA: '12345',
+    IRR_VALOR_PREST: 150,
+    REQ_DTREQ: new Date(),
+    TRA_DESCRICAO: 'Viagem',
+    NME_MUNIC: 'São Paulo',
+    REG_DESCRICAO: 'Região Test',
+    MUN_CIDADE: 'São Paulo',
+    DES_LOCAL: 'Local Test',
+    REQ_DTSAIDA: new Date(),
+    REQ_DTRET: new Date(),
+    REQ_HSAIDA: '08:00',
+    REQ_HRET: '18:00',
+    REQ_INTEGRAL: 1,
+    REQ_PARCIAL: 0,
+    REQ_PACOTE: 0,
+    REQ_GOVERNADOR: 'N',
+    REQ_MOTIVO: 'Motivo Test',
+    CTR_STATUS: 'ATIVO',
+    SQE_VLSAQUE: 200,
+    TRA_ID_CODIGO: '1'
+  };
+
+  export const mockItinerario = {
+    ITI_DTSAIDA: new Date(),
+    ITI_HSAIDA: '08:00',
+    ITI_DTCHEGADA: new Date(),
+    ITI_HCHEGADA: '18:00'
+  };
+
+  export const mockCalcDiaria = {
+    VL_DIARIA_INTEGRAL: 100,
+    VL_DIARIA_PARCIAL: 50,
+    VL_DIARIA_BASE: 150,
+    VL_DIARIA_TOTAL: 200,
+    VL_DIARIA: 175
+  };
+
+  export const mockDiariaInicial = {
+    VL_DIARIA_INTEGRAL: 462.51,
+    VL_DIARIA_PARCIAL_40: 185,
+    VL_DIARIA_PARCIAL_20: 0,
+    VL_DIARIA_PARCIAL: 185,
+    VL_DIARIA_BASE: 462.51,
+    VL_DIARIA_TOTAL: 647.51,
+    VL_DIARIA: 462.51,
+    PARPERC: 40,
+  };
+ export  const mockDiariaChegada = {
+    VL_DIARIA_INTEGRAL: 462.51,
+    VL_DIARIA_PARCIAL_20: 92.5,
+    VL_DIARIA_PARCIAL_40: 0,
+    VL_DIARIA_PARCIAL: 92.5,
+    VL_DIARIA_BASE: 462.51,
+    VL_DIARIA_TOTAL: 555.01,
+    VL_DIARIA: 462.51,
+    PARPERC: 20,
+  };
+
+

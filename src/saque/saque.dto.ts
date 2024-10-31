@@ -43,27 +43,49 @@ export class FindParamsSaque {
 }
 
 export class SaqueDto {  
+  @ApiProperty()
   sqeIdCodigo: number; 
+  @ApiProperty()
   iteIdCodigo: number;  
-  rreIdCodigo: number;  
+  @ApiProperty()
+  rreIdCodigo: number; 
+  @ApiProperty() 
   dirIdCodigo: number;  
+  @ApiProperty({required: false})
   fpaIdCodigo: number;
+  @ApiProperty({required: false})
   sqeDtSaque: string;
+  @ApiProperty({required: false})
   sqeVlPrest: number;  
+  @ApiProperty({required: false})
   sqeDtPrest: string; 
+  @ApiProperty({required: false})
   sqeVlSaque: number;
+  @ApiProperty({required: false})
   sqeTipoSaque: string;
+  @ApiProperty({required: false})
   sqeEfetivo: string; 
+  @ApiProperty({required: false})
   sqeDtPedido: string;
+  @ApiProperty({required: false})
   sqeLote: number; 
+  @ApiProperty({required: false})
   sqeAnoLote: number;
+  @ApiProperty({required: false})
   stsIdCodigo: number; 
+  @ApiProperty({required: false})
   sqeTerceiro: string; 
+  @ApiProperty({required: false})
   pesIdCodigo: number; 
+  @ApiProperty({required: false})
   pesPessoa: string;
+  @ApiProperty({required: false})
   sqeUsuario: string;
+  @ApiProperty({required: false})
   sqeEmpenho: string;  
+  @ApiProperty({required: false})
   sqeListaSiafem: string;
+
   constructor(params: SaqueEntity) {
     this.sqeIdCodigo = params.sqeIdCodigo;
     this.iteIdCodigo = params.iteIdCodigo;

@@ -42,7 +42,7 @@ export class ReqnumerarioDto {
   RNU_VLPARCIAL: number;
   @ApiProperty({ required: false })
   RNU_VLBASE: number;
-  constructor(item: ReqNumerarioEntity) {   
+  constructor(item: ReqNumerarioEntity) {
     this.RNU_ID_CODIGO = item.RNU_ID_CODIGO;
     this.SQE_ID_CODIGO = item.SQE_ID_CODIGO;
     this.REQ_ID_CODIGO = item.REQ_ID_CODIGO;
@@ -62,10 +62,18 @@ export class ReqnumerarioDto {
     this.RNU_GOVERNADOR = item.RNU_GOVERNADOR;
     this.RNU_VLINTEGRAL = item.RNU_VLINTEGRAL;
     this.RNU_VLPARCIAL = item.RNU_VLPARCIAL;
-    this.RNU_VLBASE = item.RNU_VLBASE;  
+    this.RNU_VLBASE = item.RNU_VLBASE;
   }
 }
 
+export class updatChegadaDto {
+  @ApiProperty()
+  RNU_ID_CODIGO?: number;
+  @ApiProperty()
+  RNU_INTREAL: string;
+  @ApiProperty()
+  RNU_PARREAL: string;
+}
 
 export class FindAllParams {
   @ApiProperty({ required: false })

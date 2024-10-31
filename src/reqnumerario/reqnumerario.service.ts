@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, ReqnumerarioDto } from './reqnumerarioDto';
+import { FindAllParams, ReqnumerarioDto, updatChegadaDto } from './reqnumerarioDto';
 import { ReqNumerarioEntity } from '../database/db_oracle/entities/reqnumerario.entity';
 
 @Injectable()
@@ -94,41 +94,32 @@ export class ReqnumerarioService {
     }
   }
 
+  
+  async updateChegada(reqnumerario: updatChegadaDto): Promise<ReqnumerarioDto> {
+    try {
+      const reqnumerarioEntity = await this.renumerarioRepository.findOne({
+        where: { RNU_ID_CODIGO: reqnumerario.RNU_ID_CODIGO },
+      });
+
+      if (!reqnumerarioEntity) {
+        throw new HttpException(
+          'Requisição não encontrada',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      reqnumerarioEntity.RNU_INTREAL = reqnumerario.RNU_INTREAL;
+      reqnumerarioEntity.RNU_PARREAL = reqnumerario.RNU_PARREAL;
+
+      await this.renumerarioRepository.save(reqnumerarioEntity);
+
+      return new ReqnumerarioDto(reqnumerarioEntity);
+    } catch (error) {
+      throw new HttpException(
+        'Erro ao atualizar o numerario',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
  
-
-  // async findTotalReNumerarioMesAtual(chapa: string): Promise<number> {
-  //   try {
-  //     const dataAtual = new Date();
-  //     const primeiroDiaMes = new Date(
-  //       dataAtual.getFullYear(),
-  //       dataAtual.getMonth(),
-  //       1,
-  //     );
-  //     const ultimoDiaMes = new Date(
-  //       dataAtual.getFullYear(),
-  //       dataAtual.getMonth() + 1,
-  //       0,
-  //     );
-
-  //     const total = await this.mysqlRepository
-  //       .createQueryBuilder('s009_reqnumerario')
-  //       .select(
-  //         'SUM(COALESCE(s009_reqnumerario.RNU_VLINTEGRAL, 0) + COALESCE(s009_reqnumerario.RNU_VLPARCIAL, 0))',
-  //         'total',
-  //       )
-  //       .where('s009_reqnumerario.RNU_DTINICIO BETWEEN :inicio AND :fim', {
-  //         inicio: primeiroDiaMes,
-  //         fim: ultimoDiaMes,
-  //       })
-  //       .andWhere('s009_reqnumerario.CHAPA = :chapa', { chapa })
-  //       .getRawOne();
-
-  //     return total.total || 0;
-  //   } catch (error) {
-  //     throw new HttpException(
-  //       error.response || 'Erro ao buscar o total de requisições',
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
 }

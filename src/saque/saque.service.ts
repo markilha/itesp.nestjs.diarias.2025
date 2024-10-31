@@ -35,8 +35,8 @@ import { ReqnumerarioDto } from '../reqnumerario/reqnumerarioDto';
 import { reembolsoService } from '../reembolso/reembolso.service';
 import { reqtransService } from '../reqtrans/reqtrans.service';
 import { FuncsalarioService } from '../funcsalario/funcsalario.service';
-import { DataUtils } from 'src/util/DataUtils';
-import { extornoService } from 'src/extorno/extorno.service';
+import { DataUtils } from '../util/DataUtils';
+import { extornoService } from '../extorno/extorno.service';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -383,7 +383,7 @@ export class SaqueService {
         REQ_HSAIDA: consulta.REQ_HSAIDA,
         REQ_HRET: consulta.REQ_HRET,
         REQ_INTEGRAL: Number(consulta.REQ_INTEGRAL) || 0,
-        REQ_PARCIAL: consulta.REQ_PARCIAL > 0 ? 1 : 0,
+        REQ_PARCIAL: consulta.REQ_PARCIAL ,
         REQ_PACOTE: Number(consulta.REQ_PACOTE) === 0 ? 'S' : 'N',
         REQ_GOVERNADOR: consulta.REQ_GOVERNADOR,
         REQ_MOTIVO: consulta.REQ_MOTIVO,
@@ -395,7 +395,7 @@ export class SaqueService {
         ITI_HCHEGADA: itinerario?.ITI_HCHEGADA,
         SQE_VLSAQUE: Number(consulta.SQE_VLSAQUE) || 0,
         INTREAL: diariaIntegral,
-        PARREAL: diariaParcial,
+        PARREAL: calcDiaraRetorn.PARPERC,
         VLINTPREV: calcDiaraInial.VL_DIARIA_INTEGRAL,
         VLPARPREV: calcDiaraInial.VL_DIARIA_PARCIAL,
         VLINTREAL: calcDiaraRetorn.VL_DIARIA_INTEGRAL,
@@ -415,8 +415,7 @@ export class SaqueService {
         TOTALCOMPLEMENTAR: vlExtornoIntegral + vlExtornParcial,
         TOTALDEVOLUCAO: vlDevolucaoIntegral + vlDevolucaoParcial,
       });
-    } catch (error) {
-      console.error('Erro ao buscar prestação:', error);
+    } catch (error) {     
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

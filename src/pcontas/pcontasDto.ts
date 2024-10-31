@@ -36,6 +36,10 @@ export class createPcontasDto {
   TOTALCOMPLEMENTAR: number;
   @ApiProperty()
   TOTALDEVOLUCAO: number;
+  @ApiProperty()
+  INTREAL: string;
+  @ApiProperty()
+  PARREAL: string;
 }
 
 export class FindAllParams {

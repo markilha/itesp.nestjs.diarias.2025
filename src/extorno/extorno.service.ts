@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { extornoEntity } from 'src/database/db_oracle/entities/extorno.entity';
+import { extornoEntity } from '../database/db_oracle/entities/extorno.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, extornoDto,  upateExtornoDto } from './extornoDto';
 

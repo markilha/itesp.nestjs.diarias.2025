@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { PPessoaEntity } from 'src/database/db_mysql/entities/ppessoa.entity';
 
 export class returnRmDto {
@@ -60,11 +61,16 @@ export class returnRmDto {
 }
 
 export class FuncionarioDto {
-  CHAPA: string;        // Exemplo: '000081'
-  NOME: string;         // Exemplo: 'AIR DE SOUZA'
-  DESCFUNC: string;     // Exemplo: 'Pratico de Desenvolvimento III C'
-  CPF: string;          // Exemplo: '04514171867'
-  ORGAO: string;        // Exemplo: 'SEFAZ'
+  @ApiProperty()
+  CHAPA: string;   
+  @ApiProperty()     
+  NOME: string;     
+  @ApiProperty()    
+  DESCFUNC: string;    
+  @ApiProperty() 
+  CPF: string;    
+  @ApiProperty()      
+  ORGAO: string;       
   constructor(item: any) {
     this.CHAPA = item.CHAPA;
     this.NOME = item.NOME;

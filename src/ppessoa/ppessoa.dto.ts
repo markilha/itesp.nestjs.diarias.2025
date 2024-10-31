@@ -1,14 +1,14 @@
+import { ApiProperty } from "@nestjs/swagger";
+
 export class RMPessoaDto {
     codigo: number;
     nome?: string;  
   
   }
 
-  export interface FindAllParams {
-    chapa: string;
-    nome: string; 
-    page?: number;
-    limit?: number;
+  export class FindAllParams {
+    @ApiProperty()
+    chapa: string;   
   }
   
   

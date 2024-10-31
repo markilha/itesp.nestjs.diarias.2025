@@ -5,10 +5,11 @@ import { FindOptionsWhere, Repository } from 'typeorm';
 import { createPcontasDto, FindAllParams, pcontasDto } from './pcontasDto';
 import { pcontasnumEntity } from 'src/database/db_oracle/entities/pcontasnum';
 import { reembolsoService } from '../reembolso/reembolso.service';
-import { extornoService } from 'src/extorno/extorno.service';
+import { extornoService } from '../extorno/extorno.service';
 import { extornoDto } from 'src/extorno/extornoDto';
 import { SaqueService } from 'src/saque/saque.service';
 import { DataUtils } from 'src/util/DataUtils';
+import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
 
 @Injectable()
 export class PcontasService {
@@ -18,6 +19,7 @@ export class PcontasService {
     private reembolsosService: reembolsoService,
     private extornoService: extornoService,
     private saqueService: SaqueService,
+    private reqnumerarioService: ReqnumerarioService,
 
     @InjectRepository(pcontasnumEntity, 'oracleConnection')
     private readonly pcontasnumRepository: Repository<pcontasnumEntity>,
@@ -95,10 +97,17 @@ export class PcontasService {
 
     const insertResult = await this.pcontasRepository.insert(pcontas);
     const pcoIdCodigo = insertResult.identifiers[0].PCO_ID_CODIGO;
+
     const rnuIdCodigo = await this.pcontasRepository.query(
       `SELECT RNU_ID_CODIGO FROM S009_REQNUMERARIO WHERE SQE_ID_CODIGO = :sqeIdCodigo`,
       [params.SQE_ID_CODIGO],
     );
+
+    await this.reqnumerarioService.updateChegada({
+      RNU_ID_CODIGO: rnuIdCodigo[0]?.RNU_ID_CODIGO,
+      RNU_INTREAL: params.INTREAL,
+      RNU_PARREAL: params.PARREAL
+    });
 
     await this.pcontasnumRepository.insert({
       PCO_ID_CODIGO: pcoIdCodigo,

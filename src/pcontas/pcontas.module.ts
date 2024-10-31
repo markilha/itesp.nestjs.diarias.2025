@@ -7,7 +7,7 @@ import { PcontasNumModule } from 'src/pcontasnum/pcontasnum.module';
 import { reembolsoModule } from 'src/reembolso/reembolso.module';
 import { extornoModule } from 'src/extorno/extorno.module';
 import { SaqueModule } from 'src/saque/saque.module';
-
+import { ReqnumerarioModule } from 'src/reqnumerario/reqnumerario.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([pcontasEntity], 'oracleConnection'),
@@ -15,6 +15,7 @@ import { SaqueModule } from 'src/saque/saque.module';
     reembolsoModule,
     extornoModule,
     SaqueModule,
+    ReqnumerarioModule,
   ],
   providers: [PcontasService],
   controllers: [PcontasController],
