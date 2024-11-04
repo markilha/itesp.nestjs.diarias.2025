@@ -40,42 +40,46 @@ export class ItinirarioService {
   }
 
   async findUltimo(reqIdCodigo: number): Promise<retornoItinerarioDto> {
-    // Consulta para buscar a primeira saída (menor data e hora de saída)
-    const primeiroRegistro = await this.itinerarioRepository
-      .createQueryBuilder('itinerario')
-      .select([
-        'itinerario.ITI_ID_CODIGO',
-        'itinerario.MUN_ID_CODIGO',
-        'itinerario.ITI_LOCAL',
-        'itinerario.ITI_DTSAIDA',
-        'itinerario.ITI_HSAIDA',
-      ])
-      .where('itinerario.REQ_ID_CODIGO = :reqIdCodigo', { reqIdCodigo })
-      .orderBy('itinerario.ITI_DTSAIDA', 'ASC')
-      .addOrderBy('itinerario.ITI_HSAIDA', 'ASC')
-      .limit(1)
-      .getOne();
-  
-    // Consulta para buscar a última chegada (maior data e hora de chegada)
-    const ultimoRegistro = await this.itinerarioRepository
-      .createQueryBuilder('itinerario')
-      .select([
-        'itinerario.ITI_DTCHEGADA',
-        'itinerario.ITI_HCHEGADA',
-      ])
-      .where('itinerario.REQ_ID_CODIGO = :reqIdCodigo', { reqIdCodigo })
-      .orderBy('itinerario.ITI_DTCHEGADA', 'DESC')
-      .addOrderBy('itinerario.ITI_HCHEGADA', 'DESC')
-      .limit(1)
-      .getOne();
-  
-    // Combine os resultados
-    return {
-      ITI_DTSAIDA: primeiroRegistro?.ITI_DTSAIDA || null,
-      ITI_HSAIDA: primeiroRegistro?.ITI_HSAIDA || null,
-      ITI_DTCHEGADA: ultimoRegistro?.ITI_DTCHEGADA || null,
-      ITI_HCHEGADA: ultimoRegistro?.ITI_HCHEGADA || null,
-    };
+    try {      
+      // Consulta para buscar a primeira saída (menor data e hora de saída)
+      const primeiroRegistro = await this.itinerarioRepository
+        .createQueryBuilder('itinerario')
+        .select([
+          'itinerario.ITI_ID_CODIGO',
+          'itinerario.MUN_ID_CODIGO',
+          'itinerario.ITI_LOCAL',
+          'itinerario.ITI_DTSAIDA',
+          'itinerario.ITI_HSAIDA',
+        ])
+        .where('itinerario.REQ_ID_CODIGO = :reqIdCodigo', { reqIdCodigo })
+        .orderBy('itinerario.ITI_DTSAIDA', 'ASC')
+        .addOrderBy('itinerario.ITI_HSAIDA', 'ASC')
+        .limit(1)
+        .getOne();
+    
+      // Consulta para buscar a última chegada (maior data e hora de chegada)
+      const ultimoRegistro = await this.itinerarioRepository
+        .createQueryBuilder('itinerario')
+        .select([
+          'itinerario.ITI_DTCHEGADA',
+          'itinerario.ITI_HCHEGADA',
+        ])
+        .where('itinerario.REQ_ID_CODIGO = :reqIdCodigo', { reqIdCodigo })
+        .orderBy('itinerario.ITI_DTCHEGADA', 'DESC')
+        .addOrderBy('itinerario.ITI_HCHEGADA', 'DESC')
+        .limit(1)
+        .getOne();
+    
+      // Combine os resultados
+      return {
+        ITI_DTSAIDA: primeiroRegistro?.ITI_DTSAIDA || null,
+        ITI_HSAIDA: primeiroRegistro?.ITI_HSAIDA || null,
+        ITI_DTCHEGADA: ultimoRegistro?.ITI_DTCHEGADA || null,
+        ITI_HCHEGADA: ultimoRegistro?.ITI_HCHEGADA || null,
+      };
+    } catch (error) {
+      throw new HttpException("Itinerário não encontrado!!!", HttpStatus.INTERNAL_SERVER_ERROR);      
+    }
   } 
 
 }

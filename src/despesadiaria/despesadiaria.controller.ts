@@ -3,6 +3,7 @@ import { DespesadiariaService } from './despesadiaria.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { FindAllParams } from './despesadiariaDto';
 import { DespesaDiariaEntity } from '../database/db_mysql/entities/despesaDiaria.entity';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller('despesadiaria')
 export class DespesadiariaController {
@@ -13,12 +14,14 @@ export class DespesadiariaController {
 
     @UseGuards(AuthGuard)
     @Get()
+    @ApiExcludeEndpoint()
     async findAll(@Query() params: FindAllParams): Promise<DespesaDiariaEntity[]> {
       return await this.despesadiariaService.findAll(params);
     }
 
     @UseGuards(AuthGuard)
     @Get('findOne')
+    @ApiExcludeEndpoint()
     async findOne(@Query('cargo') cargo: string): Promise<DespesaDiariaEntity> {
       return await this.despesadiariaService.findOne(cargo);
     }

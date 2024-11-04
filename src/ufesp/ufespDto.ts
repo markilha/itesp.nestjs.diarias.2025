@@ -1,5 +1,5 @@
 export class UfespDto {
-  ufeIdCodigo?: number;
+  ufeIdCodigo: number;
   tdeIdCodigo?: number;
   ufeValor?: number;
   ufeDtInicio?: Date;
@@ -7,7 +7,7 @@ export class UfespDto {
 }
 
 export class FindAllParams {
-  ufeIdCodigo: number;
+  ufeIdCodigo?: number;
   tdeIdCodigo?: number;
   ufeValor?: number;
   ufeDtInicio?: Date;

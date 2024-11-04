@@ -32,7 +32,7 @@ export class extornoController {
     type: extornoDto   
   })
   async findOne(@Query() params: FindAllParams): Promise<extornoDto> {
-    return await this.extornoService.findOne(params.SQE_ID_CODIGO);
+    return await this.extornoService.findOneOrFail(params.SQE_ID_CODIGO);
   }
   @Put()
   @ApiOperation({ summary: 'Atualizar extorno' })
@@ -43,7 +43,7 @@ export class extornoController {
      example: {message: 'extorno atualizado com sucesso'},
     },  
   })
-  async atualizar(@Body() dados: upateExtornoDto): Promise<{message:string}> {
+  async atualizar(@Body() dados: upateExtornoDto) {
     return await this.extornoService.update(dados);
   }
 }

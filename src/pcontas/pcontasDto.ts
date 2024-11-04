@@ -44,11 +44,11 @@ export class createPcontasDto {
 
 export class FindAllParams {
   @ApiProperty({ required: false })
-  PCO_ID_CODIGO: number;  
+  PCO_ID_CODIGO?: number;  
   @ApiProperty({ required: false })
-  page: number;
+  page?: number;
   @ApiProperty({ required: false })
-  limit: number;
+  limit?: number;
 }
 export class FindOneParams {
   @ApiProperty({ required: false })

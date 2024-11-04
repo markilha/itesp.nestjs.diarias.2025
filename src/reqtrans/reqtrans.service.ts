@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, reqtransDto } from './reqtransDto';
+import { FindAllParams, reqtransDto, updateStatusDto } from './reqtransDto';
 import { reqtransEntity } from '../database/db_oracle/entities/requisicaoTrans.entity';
 
 @Injectable()
@@ -53,19 +53,27 @@ export class reqtransService {
     }
   }
 
+  //findOne
+  async findOne(REQ_ID_CODIGO: number): Promise<reqtransEntity> {
+    try {
+      return await this.reqtransRepository.findOneOrFail({
+        where: { REQ_ID_CODIGO },
+      });
+    } catch (error) {
+      throw new HttpException('Requisição não encontrada', HttpStatus.NOT_FOUND);
+    }
+  }
+
   //update
   async update(reqtrans: reqtransDto): Promise<reqtransDto> {
     try {
       const reqtransToUpdate = await this.reqtransRepository.findOne({
         where: { REQ_ID_CODIGO: reqtrans.REQ_ID_CODIGO },
       });
-
       if (!reqtransToUpdate) {
         throw new HttpException('Requisição não encontrada', HttpStatus.NOT_FOUND);
       }
-
       await this.reqtransRepository.update({ REQ_ID_CODIGO: reqtrans.REQ_ID_CODIGO }, reqtrans);
-
       return reqtrans;
     } catch (error) {
       throw new HttpException('Erro ao atualizar a requisição', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -98,5 +106,32 @@ export class reqtransService {
     }
   }
 
+  // async updateStatus(reqIdCodigo: number, status: string) {
+  //   const reqtransToUpdate = await this.findOne(reqIdCodigo);
+  //   // Verifica se o status atual é 'FINALIZADA' ou 'AUTORIZADA PELO DIRETOR EXECUTIVO'
+  //   if (['FINALIZADA', 'AUTORIZADA PELO DIRETOR EXECUTIVO'].includes(reqtransToUpdate.REQ_STATUS)) {
+  //     throw new HttpException(
+  //       'requisição finalizada ou já autorizada',
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
 
+  //   reqtransToUpdate.REQ_STATUS = status;
+  //   return this.reqtransRepository.save(reqtransToUpdate);
+  // }
+
+  async cancela(reqIdCodigo: number): Promise<reqtransEntity> {
+    if (!reqIdCodigo) {
+      throw new HttpException('Código da requisição não informado!!!', HttpStatus.BAD_REQUEST);
+    }
+    const params = { REQ_ID_CODIGO: reqIdCodigo, REQ_STATUS: 'CANCELADA' };
+    const result = this.updatereqStatus(params);
+    return result;
+  }
+
+  async updatereqStatus(params: updateStatusDto): Promise<reqtransEntity> {
+    const result = await this.findOne(params.REQ_ID_CODIGO);
+    result.REQ_STATUS = params.REQ_STATUS;
+    return this.reqtransRepository.save(result);
+  }
 }

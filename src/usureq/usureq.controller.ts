@@ -1,6 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { UsureqService } from './usureq.service';
 import { FindAllParams } from './usureqDto';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller('usureq2')
 export class UsureqController {
@@ -9,6 +10,7 @@ export class UsureqController {
     ) {}
 
     @Get()
+    @ApiExcludeEndpoint()
     async findAll(@Query() params: FindAllParams): Promise<any[]> {
       return await this.usureqService.findAll(params);
     }

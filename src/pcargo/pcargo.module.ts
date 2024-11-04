@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { PcargoService } from './pcargo.service';
 import { PcargoController } from './pcargo.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PcargoEntity } from 'src/database/db_oracle/entities/pcargo.entity';
+import { PcargoEntity } from '../database/db_oracle/entities/pcargo.entity';
 
 @Module({
   imports:[TypeOrmModule.forFeature([PcargoEntity], 'oracleConnection')],

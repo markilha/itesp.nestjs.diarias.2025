@@ -88,6 +88,7 @@ export class SaqueService {
       return null;
     }
   }
+  
 
   private async buscarUfesp(dataSaida: string): Promise<number> {
     const { ufeValor } = await this.ufespService.findValueByDate(dataSaida);
@@ -358,7 +359,7 @@ export class SaqueService {
         this.calcularExtornosEDevolucoes(calcDiaraInial, calcDiaraRetorn);
 
       let justificativa = '';
-      const extorno = await this.extornoService.findOne(params.SQE_ID_CODIGO);
+      const extorno = await this.extornoService.findOneOrFail(params.SQE_ID_CODIGO);
       const reembolso = await this.reembolsoService.findone(params.SQE_ID_CODIGO);
 
       justificativa = extorno?.EXT_JUSTIFICA || justificativa;
@@ -531,30 +532,25 @@ export class SaqueService {
       }
 
       return { sqeIdCodigo: newId };
-    } catch (error) {
-      console.error('Erro ao solicitar saque:', error);
+    } catch (error) {    
       throw new HttpException(
         `Erro ao solicitar saque: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
-
-  //Retonar findone
+  
   async findOne(sqeIdCodigo: number): Promise<SaqueDto> {
     try {
-      const result = await this.saqueRepository.findOne({
+      const result = await this.saqueRepository.findOneOrFail({
         where: {
           sqeIdCodigo,
         },
-      });
-      if (!result) {
-        throw new HttpException('Saque não encontrado', HttpStatus.NOT_FOUND);
-      }
+      });     
       return result;
     } catch (error) {
       throw new HttpException(
-        error.message,
+        "Saque não encontrado",
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

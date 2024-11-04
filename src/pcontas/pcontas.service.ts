@@ -1,14 +1,14 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { pcontasEntity } from 'src/database/db_oracle/entities/pcontas.entity';
+import { pcontasEntity } from '../database/db_oracle/entities/pcontas.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { createPcontasDto, FindAllParams, pcontasDto } from './pcontasDto';
-import { pcontasnumEntity } from 'src/database/db_oracle/entities/pcontasnum';
+import { pcontasnumEntity } from '../database/db_oracle/entities/pcontasnum';
 import { reembolsoService } from '../reembolso/reembolso.service';
 import { extornoService } from '../extorno/extorno.service';
-import { extornoDto } from 'src/extorno/extornoDto';
-import { SaqueService } from 'src/saque/saque.service';
-import { DataUtils } from 'src/util/DataUtils';
+import { extornoDto } from '../extorno/extornoDto';
+import { SaqueService } from '../saque/saque.service';
+import { DataUtils } from '../util/DataUtils';
 import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
 
 @Injectable()
@@ -47,8 +47,7 @@ export class PcontasService {
       return await this.pcontasRepository.find({
         where: searchParams,
       });
-    } catch (error) {
-      console.log(error);
+    } catch (error) {      
       throw new HttpException(
         'Não foi possível as prestações de conta',
         HttpStatus.INTERNAL_SERVER_ERROR,

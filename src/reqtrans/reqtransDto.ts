@@ -73,7 +73,7 @@ export class FindAllParams {
   @ApiProperty({ required: false })
   REQ_ID_CODIGO?: number;
   @ApiProperty({ required: false })
-  orderDirection: 'ASC' | 'DESC';
+  orderDirection?: 'ASC' | 'DESC';
   @ApiProperty({ required: false })
   orderBy?: string;
   @ApiProperty({ required: false })
@@ -81,5 +81,13 @@ export class FindAllParams {
   @ApiProperty({ required: false })
   limit?: number;
 }
+
+export class updateStatusDto {
+  @ApiProperty({ required: false })
+  REQ_ID_CODIGO: number;
+  @ApiProperty({ required: false })
+  REQ_STATUS: string; 
+}
+
 
 

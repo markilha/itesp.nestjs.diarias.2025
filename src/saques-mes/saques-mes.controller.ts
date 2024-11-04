@@ -3,11 +3,14 @@ import { SaquesMesService } from './saques-mes.service';
 import { FindAllParams, SaqueMesDto } from './saque-mesDto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { SaqueMesEntity } from 'src/database/db_oracle/entities/saqueMes.entity';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
+
 
 @Controller('saques-mes')
 export class SaquesMesController {
   constructor(private readonly pcargoService: SaquesMesService) {}
   @UseGuards(AuthGuard)
+  @ApiExcludeEndpoint()
   @Get()
   async findAll(@Query() params: FindAllParams): Promise<SaqueMesDto[]> {
     return await this.pcargoService.findOne(params.chapa, params.messaque);

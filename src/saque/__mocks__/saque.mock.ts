@@ -27,7 +27,7 @@ export const mockMD = {
 export const mockSaque = 
   {
     SQE_ID_CODIGO: 15739,
-    SQE_DTPEDIDO: '11/10/07',
+    SQE_DTPEDIDO: '10/10/2007 21:00:00',
     SQE_DTSAQUE: '15/10/2007 09:39:07',
     SQE_DTPREST: null,
     NOME: 'Air de Souza',

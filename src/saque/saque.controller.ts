@@ -7,16 +7,19 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { FindParamsSaque, RetNumSaque, PrestacaoDto, SolitarDto, SaqueDto, returnSaqueDto } from './saque.dto';
 import { SaqueService } from './saque.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { saquePrestacaoSwagger } from 'src/swagger/saqueswagger';
+import { AllExceptionsFilter } from 'src/interceptors/all-exceptions.filter';
 
 @UseGuards(AuthGuard)
 @ApiTags('saque')
 @Controller('saque')
+@UseInterceptors(AllExceptionsFilter)
 export class SaqueController {
   constructor(private readonly saqueService: SaqueService) {}  
   

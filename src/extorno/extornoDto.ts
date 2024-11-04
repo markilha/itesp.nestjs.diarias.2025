@@ -19,7 +19,7 @@ export class extornoDto {
   EXT_DATA?: string;
   @ApiProperty()
   EXT_JUSTIFICA?: string;
-  constructor(item: any){
+  constructor(item?: extornoDto){
     this.SQE_ID_CODIGO = item.SQE_ID_CODIGO;
     this.ITE_ID_CODIGO = item.ITE_ID_CODIGO;
     this.RRE_ID_CODIGO = item.RRE_ID_CODIGO;
@@ -53,7 +53,7 @@ export class FindAllParams {
   @ApiProperty()
   SQE_ID_CODIGO: number;
   @ApiProperty({required: false})
-  page: number;
+  page?: number;
   @ApiProperty({required: false})
-  limit: number;  
+  limit?: number;  
 }

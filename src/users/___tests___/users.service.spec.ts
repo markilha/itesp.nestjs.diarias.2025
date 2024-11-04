@@ -31,7 +31,7 @@ describe('UsersService', () => {
     );
   });
 
-  it('should be defined', () => {
+  it('deve ser definido', () => {
     expect(service).toBeDefined();
     expect(useRepository).toBeDefined();
   });

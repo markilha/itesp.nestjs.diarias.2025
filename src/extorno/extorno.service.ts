@@ -33,17 +33,16 @@ export class extornoService {
       return await this.extornoRepository.find({
         where: searchParams,
       });
-    } catch (error) {
-      console.log(error);
+    } catch (error) {     
       throw new HttpException(
-        'Não foi possível buscar os extornos',
+        error.message,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
-  async findOne(SQE_ID_CODIGO: number): Promise<extornoDto> {
+  async findOneOrFail(SQE_ID_CODIGO: number): Promise<extornoDto> {
     try {
-      const result = await this.extornoRepository.findOne({
+      const result = await this.extornoRepository.findOneOrFail({
         where: {
           SQE_ID_CODIGO,
         },
@@ -61,52 +60,45 @@ export class extornoService {
     }
   }
 
-  async create(extorno: extornoDto): Promise<extornoDto> {
-    try {
-      //extorno já existe
-      const existeExtorno = await this.extornoRepository.findOne({
-        where: { SQE_ID_CODIGO: extorno.SQE_ID_CODIGO, PCO_ID_CODIGO: extorno.PCO_ID_CODIGO },
-      });
-      if (existeExtorno) {
-        throw new HttpException('Extorno já existe', HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-      return await this.extornoRepository.save(extorno);
-    } catch (error) {  
-      console.log(error);    
+  async create(extorno: extornoDto) {
+    try {     
+      // const existeExtorno = await this.extornoRepository.findOne({
+      //   where: { SQE_ID_CODIGO: extorno.SQE_ID_CODIGO, PCO_ID_CODIGO: extorno.PCO_ID_CODIGO },
+      // });
+      // if (existeExtorno) {
+      //   throw new HttpException('Extorno já existe', HttpStatus.INTERNAL_SERVER_ERROR);
+      // }
+      return await this.extornoRepository.save(this.extornoRepository.create(extorno));
+    } catch (error) { 
       throw new HttpException(
-        'Não foi possível criar o extorno',
+        error.message,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
-  async update(ex: upateExtornoDto): Promise<{ message: string }> {
-    try {      
-      const codigo = Number(ex.SQE_ID_CODIGO);
-      const pcoCodigo = Number(ex.PCO_ID_CODIGO); 
-      const existeExist = await this.extornoRepository.findOne({
-        where: { SQE_ID_CODIGO: codigo, PCO_ID_CODIGO: pcoCodigo },
-      });      
-      
-      if (!existeExist) {
-        throw new HttpException('Extorno não encontrado', HttpStatus.NOT_FOUND);
-      }  
-  
-      const dados = {  
-        FPA_ID_CODIGO: ex.FPA_ID_CODIGO,
-        EXT_VALOR: ex.EXT_VALOR,
-        EXT_DATA: ex.EXT_DATA,
-        EXT_JUSTIFICA: ex.EXT_JUSTIFICA       
-      };
-      console.log(dados);
-  
-      await this.extornoRepository.update({ SQE_ID_CODIGO: codigo, PCO_ID_CODIGO: pcoCodigo }, dados);
-  
-      return { message: 'Atualizado com sucesso!!!' };
+  async update(ex: upateExtornoDto){
+    try {   
+      const extorno = await this.extornoRepository.findOneOrFail({
+        where: { SQE_ID_CODIGO: ex.SQE_ID_CODIGO, PCO_ID_CODIGO: ex.PCO_ID_CODIGO },
+      });
+      this.extornoRepository.merge(extorno, ex);
+      return await this.extornoRepository.save(extorno);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  async delete(SQE_ID_CODIGO: number) {
+    try {
+      const extorno = await this.extornoRepository.findOneOrFail({
+        where: { SQE_ID_CODIGO },
+      });
+      return await this.extornoRepository.softDelete(extorno.SQE_ID_CODIGO);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  } 
   
   
 }

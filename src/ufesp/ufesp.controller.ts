@@ -35,7 +35,7 @@ export class UfespController {
     @Param('id') id: number,
     @Body() updateUferpsvalorDto: UfespDto,
   ): Promise<UfespDto> {
-    return this.ufespService.update(id, updateUferpsvalorDto);
+    return this.ufespService.update(updateUferpsvalorDto);
   }
   @ApiExcludeEndpoint()
 

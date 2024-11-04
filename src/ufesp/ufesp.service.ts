@@ -21,13 +21,20 @@ export class UfespService {
     }
   }
 
-  async update(id: number, updateUferpsvalorDto: UfespDto): Promise<UferpsEntity> {
+  async update(updateValue: UfespDto): Promise<UfespDto> {
+    const result = await this.findOne(updateValue.ufeIdCodigo);
+    this.uferpsRepository.merge(result, updateValue);
+    return this.uferpsRepository.save(result);
+  }
+
+  //findOne
+  async findOne(id: number): Promise<UfespDto> {
     try {
-      await this.uferpsRepository.update(id, updateUferpsvalorDto);
-      return this.uferpsRepository.findOneBy({ ufeIdCodigo: id });
-    } catch (error) {
-      console.log(error);
-      throw new HttpException('Erro ao atualizar a ufesp', HttpStatus.INTERNAL_SERVER_ERROR);
+      return await this.uferpsRepository.findOneOrFail({
+        where: { ufeIdCodigo: id },
+      });
+    } catch (error) {      
+      throw new HttpException('Ufesp não encontrada', HttpStatus.NOT_FOUND);
     }
   }
 
@@ -94,6 +101,5 @@ export class UfespService {
     }
 
     return result;
-}
-
+  }
 }
