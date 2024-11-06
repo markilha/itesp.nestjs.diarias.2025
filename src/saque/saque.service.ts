@@ -38,7 +38,6 @@ import { FuncsalarioService } from '../funcsalario/funcsalario.service';
 import { DataUtils } from '../util/DataUtils';
 import { extornoService } from '../extorno/extorno.service';
 
-
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
     ? {
@@ -359,11 +358,18 @@ export class SaqueService {
         this.calcularExtornosEDevolucoes(calcDiaraInial, calcDiaraRetorn);
 
       let justificativa = '';
-      const extorno = await this.extornoService.findOneOrFail(params.SQE_ID_CODIGO);
-      const reembolso = await this.reembolsoService.findone(params.SQE_ID_CODIGO);
 
-      justificativa = extorno?.EXT_JUSTIFICA || justificativa;
-      justificativa = reembolso?.RRE_JUSTIFICATIVA || justificativa;
+      // Tenta encontrar o extorno sem quebrar se não encontrar
+      try {
+        const extorno = await this.extornoService.findOneOrFail(params.SQE_ID_CODIGO);
+        justificativa = extorno?.EXT_JUSTIFICA || justificativa;
+      } catch (error) {}
+
+      // Tenta encontrar o reembolso sem quebrar se não encontrar
+      try {
+        const reembolso = await this.reembolsoService.findone(params.SQE_ID_CODIGO);
+        justificativa = reembolso?.RRE_JUSTIFICATIVA || justificativa;
+      } catch (error) {}
 
       return new PrestacaoDto({
         NOME: consulta.NOME,

@@ -46,15 +46,12 @@ export class extornoService {
         where: {
           SQE_ID_CODIGO,
         },
-      });
-      if (!result) {
-        throw new HttpException('Extorno não encontrado', HttpStatus.NOT_FOUND);
-      }
+      });    
       return result;
     } catch (error) {  
     
       throw new HttpException(
-        error.message,
+        'Extorno não encontrado',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
