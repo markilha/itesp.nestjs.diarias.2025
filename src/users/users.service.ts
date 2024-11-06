@@ -2,7 +2,7 @@ import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../database/db_mysql/entities/user.entity'; 
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
-import { FindAllParams, UsersDto, UserUpdateDto } from './users.dto';
+import { FindAllParams, UsersDto } from './users.dto';
 import { hashSync as bcryptHashSync } from 'bcrypt';
 
 @Injectable()

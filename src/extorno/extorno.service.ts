@@ -61,13 +61,7 @@ export class extornoService {
   }
 
   async create(extorno: extornoDto) {
-    try {     
-      // const existeExtorno = await this.extornoRepository.findOne({
-      //   where: { SQE_ID_CODIGO: extorno.SQE_ID_CODIGO, PCO_ID_CODIGO: extorno.PCO_ID_CODIGO },
-      // });
-      // if (existeExtorno) {
-      //   throw new HttpException('Extorno já existe', HttpStatus.INTERNAL_SERVER_ERROR);
-      // }
+    try { 
       return await this.extornoRepository.save(this.extornoRepository.create(extorno));
     } catch (error) { 
       throw new HttpException(
@@ -89,16 +83,5 @@ export class extornoService {
     }
   }
 
-  async delete(SQE_ID_CODIGO: number) {
-    try {
-      const extorno = await this.extornoRepository.findOneOrFail({
-        where: { SQE_ID_CODIGO },
-      });
-      return await this.extornoRepository.softDelete(extorno.SQE_ID_CODIGO);
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  } 
-  
   
 }

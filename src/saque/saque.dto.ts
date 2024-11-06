@@ -772,4 +772,12 @@ export interface DateTimeParams {
   horaChegada: string;
 }
 
+export class updateEfetivoDto {
+  @ApiProperty()
+  sqeIdCodigo: number;
+  @ApiProperty()
+  sqeEfetivo: string;
+}
+
+
 

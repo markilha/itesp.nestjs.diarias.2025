@@ -12,10 +12,17 @@ import { DespesadiariaService } from '../../despesadiaria/despesadiaria.service'
 import { FuncsalarioService } from '../../funcsalario/funcsalario.service';
 import { extornoService } from '../../extorno/extorno.service';
 import { Repository } from 'typeorm';
-import { mockDiariaChegada, mockDiariaInicial, mockMD, mockSaque } from '../__mocks__/saque.mock';
+import {
+  mockDiariaChegada,
+  mockDiariaInicial,
+  mockMD,
+  mockReturnSaque,
+  mockSaque,
+} from '../__mocks__/saque.mock';
 import { calcularDiariaValores } from '../../util/calculo_dia_retorno';
 import { Destino } from '../../util/diariaDto';
 import { calcularValores } from '../../util/calculo_extorno';
+import { mock } from 'node:test';
 
 describe('SaqueService', () => {
   let service: SaqueService;
@@ -28,8 +35,11 @@ describe('SaqueService', () => {
         {
           provide: getRepositoryToken(SaqueEntity, 'oracleConnection'),
           useValue: {
-            findOne: jest.fn().mockResolvedValue(mockSaque),
+            findOne: jest.fn().mockResolvedValue(mockReturnSaque),
             query: jest.fn().mockResolvedValue([mockSaque]),
+            updateEfetivo: jest.fn().mockResolvedValue(mockReturnSaque),
+            save: jest.fn().mockResolvedValue(mockSaque),
+            findOneOrFail: jest.fn().mockResolvedValue(mockReturnSaque),
           },
         },
         {
@@ -102,7 +112,7 @@ describe('SaqueService', () => {
   it('Buscar todos saques', async () => {
     const saques = await service.findAll({ SQE_ID_CODIGO: 15739 });
     expect(saques).toEqual([mockSaque]);
-  }); 
+  });
 
   describe('Prestação de conta', () => {
     it('Calcula Diária Inicial', () => {
@@ -128,34 +138,53 @@ describe('SaqueService', () => {
         1,
         1,
         '15:50:00',
-      );   
+      );
       expect(result).toEqual(mockDiariaChegada);
     });
 
     it('deve retornar VL_DEVOLUCAO zerado', () => {
-      const { VL_EXTORNO, VL_DEVOLUCAO } = calcularValores( 
+      const { VL_EXTORNO, VL_DEVOLUCAO } = calcularValores(
         mockDiariaInicial.VL_DIARIA_INTEGRAL,
         mockDiariaChegada.VL_DIARIA_INTEGRAL,
       );
-      expect(VL_EXTORNO).toBe(0);     
-      expect(VL_DEVOLUCAO).toBe(0); 
+      expect(VL_EXTORNO).toBe(0);
+      expect(VL_DEVOLUCAO).toBe(0);
+    });
+
+    it('deve retornar VL_EXTORNO parcial', () => {
+      const { VL_EXTORNO, VL_DEVOLUCAO } = calcularValores(
+        mockDiariaInicial.VL_DIARIA_PARCIAL,
+        mockDiariaChegada.VL_DIARIA_PARCIAL,
+      );
+      expect(VL_EXTORNO).toBe(0);
+      expect(VL_DEVOLUCAO).toBe(92.5);
+    });
   });
 
-  it('deve retornar VL_EXTORNO parcial', () => {
-    const { VL_EXTORNO, VL_DEVOLUCAO } = calcularValores( 
-      mockDiariaInicial.VL_DIARIA_PARCIAL,
-      mockDiariaChegada.VL_DIARIA_PARCIAL,
-    );
-    expect(VL_EXTORNO).toBe(0);     
-    expect(VL_DEVOLUCAO).toBe(92.5); 
-});
-
-
-
-
-
-
+  describe('findOneOrFail', () => {
+    it('deve retornar um extorno', async () => {
+      const result = await service.findOne(mockReturnSaque.sqeIdCodigo);
+      expect(result).toEqual(mockReturnSaque);
+      expect(saqueRepository.findOneOrFail).toHaveBeenCalledTimes(1);
+    });
+    it('deve retornar uma execao', () => {
+      jest.spyOn(saqueRepository, 'findOneOrFail').mockRejectedValueOnce(new Error());
+      expect(service.findOne(9999)).rejects.toThrow();
+    });
   });
 
-  
+  describe('updateEfetivo', () => {
+    it('deve o efetivo do saque', async () => {
+      const result = await service.updateEfetivo(mockReturnSaque.sqeIdCodigo, 'C');
+      const resutEsperado = { ...mockReturnSaque, sqeEfetivo: 'C' };
+      expect(result).toEqual(resutEsperado);
+      expect(saqueRepository.findOneOrFail).toHaveBeenCalledTimes(1);
+      expect(saqueRepository.save).toHaveBeenCalledTimes(1);
+    });
+
+    it('deve retornar uma exceção ', async () => {
+      jest.spyOn(saqueRepository, 'findOneOrFail').mockRejectedValueOnce(new Error());
+      await expect(service.updateEfetivo(99999, 'c')).rejects.toThrow();
+    });
+  });
 });

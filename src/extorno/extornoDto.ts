@@ -51,7 +51,7 @@ export class upateExtornoDto {
 
 export class FindAllParams {
   @ApiProperty()
-  SQE_ID_CODIGO: number;
+  SQE_ID_CODIGO?: number;
   @ApiProperty({required: false})
   page?: number;
   @ApiProperty({required: false})

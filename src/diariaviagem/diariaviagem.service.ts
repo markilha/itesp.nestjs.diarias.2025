@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DiariaViagemEntity } from 'src/database/db_mysql/entities/diariaViagem';
+import { DiariaViagemEntity } from 'src/database/db_oracle/entities/diariaViagem.entity';
 import {  Repository } from 'typeorm';
 import {  DiariaviagemDto, FindAllParams } from './diariaviagemDto';
 
@@ -13,7 +13,7 @@ import { Destino } from 'src/util/diariaDto';
 @Injectable()
 export class DiariaviagemService {
   constructor(
-    @InjectRepository(DiariaViagemEntity, 'mysqlConnection')
+    @InjectRepository(DiariaViagemEntity, 'oracleConnection')
     private diariaviagemRepository: Repository<DiariaViagemEntity>,
   ) {}
 
@@ -50,7 +50,7 @@ export class DiariaviagemService {
         query.orderBy('REQ_ID_CODIGO', 'ASC'); 
       }
 
-      const consulta = await query.getRawMany();     
+      const consulta = await query.getRawMany();  
 
       const result = consulta.map((item) => {
         const parc = item.a_REQ_PARCIAL>0 ? 1 : 0;

@@ -38,7 +38,7 @@ export class reqtransController {
     return await this.reqtransService.findAll(params);
   }
   @Get('cancela')
-  @ApiOperation({ summary: 'Cancela um requisicao' })
+  @ApiOperation({ summary: 'Cancela uma requisicao' })
   @ApiResponse({
     status: 200,
     description: 'Retorna a requisição atualizada',

@@ -9,7 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FindParamsSaque, RetNumSaque, PrestacaoDto, SolitarDto, SaqueDto, returnSaqueDto } from './saque.dto';
+import { FindParamsSaque, RetNumSaque, PrestacaoDto, SolitarDto, SaqueDto, returnSaqueDto, updateEfetivoDto } from './saque.dto';
 import { SaqueService } from './saque.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -69,5 +69,14 @@ export class SaqueController {
   @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
   async findOne(@Query('SQE_ID_CODIGO') SQE_ID_CODIGO: number): Promise<SaqueDto> {
     return await this.saqueService.findOne(SQE_ID_CODIGO);
+  }
+
+  @Post('updateEfetivo')
+  @ApiOperation({ summary: 'Atualizar o status do saque' })
+  @ApiResponse({ status: 200, description: 'Retorna um saque com a efetivo atualizado',type: SaqueDto })
+  @ApiResponse({ status: 404, description: 'Saque não encontrado' })
+  @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
+  async update(@Body() params: updateEfetivoDto): Promise<SaqueDto> {
+    return await this.saqueService.updateEfetivo(params.sqeIdCodigo,params.sqeEfetivo);
   }
 }

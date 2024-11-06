@@ -2,7 +2,7 @@ import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { DespesadiariaService } from './despesadiaria.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { FindAllParams } from './despesadiariaDto';
-import { DespesaDiariaEntity } from '../database/db_mysql/entities/despesaDiaria.entity';
+import { DespesaDiariaEntity } from 'src/database/db_oracle/entities/despesaDiaria.entity';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller('despesadiaria')

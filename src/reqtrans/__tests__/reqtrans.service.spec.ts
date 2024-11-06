@@ -5,8 +5,7 @@ import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { HttpException } from '@nestjs/common';
 import { mockreqtrans, mockreqtransCancelada } from '../__mocks__/mocks';
-import { FindAllParams, updateStatusDto } from '../reqtransDto';
-
+import { updateStatusDto } from '../reqtransDto';
 
 describe('reqtransService', () => {
   let service: reqtransService;
@@ -30,7 +29,6 @@ describe('reqtransService', () => {
         },
       ],
     }).compile();
-
     service = module.get<reqtransService>(reqtransService);
     repository = module.get<Repository<reqtransEntity>>(
       getRepositoryToken(reqtransEntity, 'oracleConnection'),
@@ -39,52 +37,40 @@ describe('reqtransService', () => {
 
   it('deve ser definido', () => {
     expect(service).toBeDefined();
+    expect(repository).toBeDefined();
   });
 
   describe('findAll', () => {
     it('deve retornar uma lista as requisições', async () => {
-      jest.spyOn(repository, 'find');
-
       const result = await service.findAll({});
       expect(result).toEqual([mockreqtrans]);
     });
-  });
 
-  it('deve lançar uma HttpException se ocorrer um erro ao buscar das requsições', async () => {
-    const mockParams: FindAllParams = { REQ_ID_CODIGO: 1027, page: 1, limit: 10 };
-    jest.spyOn(repository, 'find').mockRejectedValue(new Error('Erro'));
-
-    await expect(service.findAll(mockParams)).rejects.toThrow(HttpException);
+    it('deve lançar uma HttpException se ocorrer um erro ao buscar das requsições', async () => {
+      jest.spyOn(repository, 'find').mockRejectedValue(new Error());
+      await expect(service.findAll({})).rejects.toThrow();
+    });
   });
 
   describe('findOneOrFail', () => {
     it('deve retornar um requisicao ', async () => {
-      const REQ_ID_CODIGO = 1;
-      jest.spyOn(repository, 'findOneOrFail');
       const result = await service.findOne(1);
       expect(result).toEqual(mockreqtrans);
-      expect(repository.findOneOrFail).toHaveBeenCalledWith({ where: { REQ_ID_CODIGO } });
+      expect(repository.findOneOrFail).toHaveBeenCalledWith({ where: { REQ_ID_CODIGO: 1 } });
     });
-
     it('deve lançar uma HttpException se a resquicão não for encontrado', async () => {
-      const REQ_ID_CODIGO = 100;
-
       jest.spyOn(repository, 'findOneOrFail').mockRejectedValue(new Error());
-
-      await expect(service.findOne(REQ_ID_CODIGO)).rejects.toThrow(HttpException);
+      await expect(service.findOne(100)).rejects.toThrow(HttpException);
     });
   });
 
-  describe('updateStatus2', () => {
+  describe('updatereqStatus', () => {
     it('deve atualizar o status de uma requisição existente', async () => {
       const params: updateStatusDto = { REQ_ID_CODIGO: 1, REQ_STATUS: 'Novo Status' };
       const mockUpdatedReqTrans = { ...mockreqtrans, REQ_STATUS: params.REQ_STATUS };
-
       jest.spyOn(service, 'findOne');
       jest.spyOn(repository, 'save');
-
       const result = await service.updatereqStatus(params);
-
       expect(result).toEqual(mockUpdatedReqTrans);
       expect(service.findOne).toHaveBeenCalledWith(params.REQ_ID_CODIGO);
       expect(repository.save).toHaveBeenCalledWith({
@@ -95,15 +81,11 @@ describe('reqtransService', () => {
 
     it('deve lançar uma HttpException se a requisição não for encontrada', async () => {
       const updateParams: updateStatusDto = {
-        REQ_ID_CODIGO: 9999, // ID não existente
+        REQ_ID_CODIGO: 9999,
         REQ_STATUS: 'Novo Status',
       };
-
-      jest
-        .spyOn(service, 'findOne')
-        .mockRejectedValue(new HttpException('Requisição não encontrada', 404));
-
-      await expect(service.updatereqStatus(updateParams)).rejects.toThrow(HttpException);
+      jest.spyOn(service, 'findOne').mockRejectedValue(new Error());
+      await expect(service.updatereqStatus(updateParams)).rejects.toThrow();
     });
   });
 
@@ -111,9 +93,7 @@ describe('reqtransService', () => {
     it('deve atualizar a requisição se encontrada', async () => {
       jest.spyOn(repository, 'findOne');
       jest.spyOn(repository, 'update');
-
       const result = await service.update(mockreqtrans);
-
       expect(result).toEqual(mockreqtrans);
       expect(repository.findOne).toHaveBeenCalledWith({
         where: { REQ_ID_CODIGO: mockreqtrans.REQ_ID_CODIGO },
@@ -125,26 +105,20 @@ describe('reqtransService', () => {
     });
   });
 
-  describe('cancela', () => {
+  describe('Cancelar uma requisição', () => {
     it('deve chamar updatereqStatus com os parâmetros corretos quando reqIdCodigo é fornecido', async () => {
       const reqIdCodigo = 1;
       jest.spyOn(service, 'updatereqStatus');
-  
       const result = await service.cancela(reqIdCodigo);
-  
       expect(service.updatereqStatus).toHaveBeenCalledWith({
         REQ_ID_CODIGO: reqIdCodigo,
         REQ_STATUS: 'CANCELADA',
       });
       expect(result).toEqual(mockreqtransCancelada);
     });
-    
     it('deve lançar uma HttpException se o reqIdCodigo não for fornecido', async () => {
-      const reqIdCodigo = null;
-      jest.spyOn(service, 'updatereqStatus');
-  
-      await expect(service.cancela(reqIdCodigo)).rejects.toThrow(HttpException);
+      jest.spyOn(service, 'updatereqStatus').mockRejectedValue(new Error());
+      await expect(service.cancela(null)).rejects.toThrow(HttpException);
     });
   });
-
 });

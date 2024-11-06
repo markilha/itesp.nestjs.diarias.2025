@@ -38,6 +38,7 @@ import { FuncsalarioService } from '../funcsalario/funcsalario.service';
 import { DataUtils } from '../util/DataUtils';
 import { extornoService } from '../extorno/extorno.service';
 
+
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
     ? {
@@ -88,7 +89,6 @@ export class SaqueService {
       return null;
     }
   }
-  
 
   private async buscarUfesp(dataSaida: string): Promise<number> {
     const { ufeValor } = await this.ufespService.findValueByDate(dataSaida);
@@ -384,7 +384,7 @@ export class SaqueService {
         REQ_HSAIDA: consulta.REQ_HSAIDA,
         REQ_HRET: consulta.REQ_HRET,
         REQ_INTEGRAL: Number(consulta.REQ_INTEGRAL) || 0,
-        REQ_PARCIAL: consulta.REQ_PARCIAL ,
+        REQ_PARCIAL: consulta.REQ_PARCIAL,
         REQ_PACOTE: Number(consulta.REQ_PACOTE) === 0 ? 'S' : 'N',
         REQ_GOVERNADOR: consulta.REQ_GOVERNADOR,
         REQ_MOTIVO: consulta.REQ_MOTIVO,
@@ -416,7 +416,7 @@ export class SaqueService {
         TOTALCOMPLEMENTAR: vlExtornoIntegral + vlExtornParcial,
         TOTALDEVOLUCAO: vlDevolucaoIntegral + vlDevolucaoParcial,
       });
-    } catch (error) {     
+    } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -532,27 +532,31 @@ export class SaqueService {
       }
 
       return { sqeIdCodigo: newId };
-    } catch (error) {    
+    } catch (error) {
       throw new HttpException(
         `Erro ao solicitar saque: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
-  
+
   async findOne(sqeIdCodigo: number): Promise<SaqueDto> {
     try {
       const result = await this.saqueRepository.findOneOrFail({
         where: {
           sqeIdCodigo,
         },
-      });     
+      });
       return result;
     } catch (error) {
-      throw new HttpException(
-        "Saque não encontrado",
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Saque não encontrado', HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  async updateEfetivo(sqeidcodigo: number, efetivo: string): Promise<SaqueDto> {
+    const saque = await this.findOne(sqeidcodigo);
+    saque.sqeEfetivo = efetivo;
+    await this.saqueRepository.save(saque);
+    return saque;
   }
 }

@@ -16,7 +16,6 @@ import { DiariaviagemModule } from './diariaviagem/diariaviagem.module';
 import { MotivodiariaModule } from './motivodiaria/motivodiaria.module';
 import { DespesadiariaModule } from './despesadiaria/despesadiaria.module';
 import { ItinirarioModule } from './itinirario/itinirario.module';
-import { UsureqModule } from './usureq/usureq.module';
 import { DbOraModule } from './database/db_oracle/db.ora.module';
 import { PcontasModule } from './pcontas/pcontas.module';
 import { PcontasNumModule } from './pcontasnum/pcontasnum.module';
@@ -45,8 +44,7 @@ import { reqtransModule } from './reqtrans/reqtrans.module';
     DiariaviagemModule,
     MotivodiariaModule,
     DespesadiariaModule,
-    ItinirarioModule,
-    UsureqModule,
+    ItinirarioModule,   
     PcontasModule,
     PcontasNumModule,
     extornoModule,

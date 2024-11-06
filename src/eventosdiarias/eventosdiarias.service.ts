@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { EventosDiariasDto, FindAllParams } from './envtosdiariasDto';
+import { FindAllParams } from './envtosdiariasDto';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { EventosDiariasEntity } from 'src/database/db_mysql/entities/eventosdiarias.entity';
+import { EventosDiariasEntity } from 'src/database/db_oracle/entities/eventosDiaria.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class EventosdiariasService {
     constructor(
-        @InjectRepository(EventosDiariasEntity, 'mysqlConnection')
+        @InjectRepository(EventosDiariasEntity, 'oracleConnection')
         private eventosDiariasRepository: Repository<EventosDiariasEntity>
       ) {}
 

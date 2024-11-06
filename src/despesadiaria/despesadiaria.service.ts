@@ -1,13 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DespesaDiariaEntity } from '../database/db_mysql/entities/despesaDiaria.entity';
+import { DespesaDiariaEntity } from '../database/db_oracle/entities/despesaDiaria.entity';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { FindAllParams } from './despesadiariaDto';
 
 @Injectable()
 export class DespesadiariaService {
   constructor(
-    @InjectRepository(DespesaDiariaEntity, 'mysqlConnection')
+    @InjectRepository(DespesaDiariaEntity, 'oracleConnection')
     private despesaRepository: Repository<DespesaDiariaEntity>,
   ) {}
 
