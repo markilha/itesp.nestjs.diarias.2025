@@ -1,15 +1,12 @@
 import {
   Controller,
-  Get,
-  HttpException,
-  HttpStatus,
-  Param,
+  Get,  
   Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { PrazosService } from './Prazos.service';
-import { PrazosDto, FindAllParams } from './PrazosDto';
+import { PrazosService } from './prazos.service';
+import { PrazosDto, FindAllParams } from './prazosDto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AllExceptionsFilter } from 'src/interceptors/all-exceptions.filter';

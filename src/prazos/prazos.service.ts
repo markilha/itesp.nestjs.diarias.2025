@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PrazosEntity } from '../database/db_oracle/entities/Prazos.entity';
+import { PrazosEntity } from '../database/db_oracle/entities/prazos.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, PrazosDto } from './PrazosDto';
+import { FindAllParams, PrazosDto } from './prazosDto';
 
 @Injectable()
 export class PrazosService {
