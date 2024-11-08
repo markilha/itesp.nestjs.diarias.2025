@@ -1,14 +1,15 @@
 import {
   Controller,
   Get, 
+  Param, 
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { S001RequisicaoService } from './s001_requisicao.service';
-import {  FindAllAutorizadasParams, FindAllParams, RequisDto, ReturnRequisicaoDto } from './requisicao.dto';
+import {  FindAllAutorizadasParams, FindAllParams, findMesParams, RequisDto, ReturnRequisicaoDto } from './requisicao.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { requisicaoAutorizadaSwagger, requisicaoSwagger } from 'src/swagger/requisicaoswagger';
 
 @UseGuards(AuthGuard)
@@ -55,6 +56,27 @@ export class S001RequisicaoController {
   })
   async findAllAprovadas(@Query()params:FindAllAutorizadasParams): Promise<RequisDto[]> {
     return await this.requisicao.findAllAprovadas(params);
+  }
+
+  @Get('mesatual')
+  @ApiOperation({ summary: 'Lista todas requisições que estão no status aprovada no mês atual' })
+  @ApiResponse({
+    status: 200,
+    description: 'Requições encontradas',
+    type: requisicaoAutorizadaSwagger,
+    isArray: true,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'token inválido',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao buscar requisições',
+  })
+  
+  async findMes(@Query() params:findMesParams): Promise<RequisDto[]> {
+    return await this.requisicao.findMesAtual(params);
   }
  
 }

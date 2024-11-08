@@ -187,7 +187,7 @@ export class FindAllAutorizadasParams {
   @ApiProperty()
   chapa: string;
   @ApiProperty({required: false})
-  reqIdCodigo: number;  
+  reqIdCodigo?: number;  
   @ApiProperty({required: false})
   page?: number;
   @ApiProperty({required: false})
@@ -197,6 +197,11 @@ export class FindAllAutorizadasParams {
   @ApiProperty({required: false})
   orderDirection?: 'ASC' | 'DESC';
 }
+export class findMesParams {
+  @ApiProperty()
+  chapa: string;
+ 
+}
 
 export class RequisDto{
   @ApiProperty()
@@ -205,11 +210,13 @@ export class RequisDto{
   reqIdCodigo?: number;
   @ApiProperty()
   reqStatus?: string; 
-  constructor(requis: RequisicaoEntity){
-    this.chapa = requis.chapa;
-    this.reqIdCodigo = requis.reqIdCodigo;
-    this.reqStatus = requis.reqStatus;
-   
+  @ApiProperty()
+  reqDtReq?: string;
+  constructor(requis?: Partial<RequisicaoEntity>){
+    this.chapa = requis?.chapa;
+    this.reqIdCodigo = requis?.reqIdCodigo;
+    this.reqStatus = requis?.reqStatus;
+    this.reqDtReq = requis?.reqDtReq;   
   }
 }
 

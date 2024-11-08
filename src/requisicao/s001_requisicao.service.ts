@@ -1,25 +1,32 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { FindOptionsWhere, In, MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
-import { FindAllAutorizadasParams, FindAllParams, RequisDto, ReturnRequisicaoDto } from './requisicao.dto';
-import { UfespService } from 'src/ufesp/ufesp.service';
-import { verificarDestino } from 'src/util/verificaDestino';
+import { Between, FindOptionsWhere, In, MoreThanOrEqual, Raw, Repository } from 'typeorm';
+import {
+  FindAllAutorizadasParams,
+  FindAllParams,
+  findMesParams,
+  RequisDto,
+  ReturnRequisicaoDto,
+} from './requisicao.dto';
+import { UfespService } from '../ufesp/ufesp.service';
+import { verificarDestino } from '../util/verificaDestino';
 import { Destino } from 'src/util/diariaDto';
-import { SaquesMesService } from 'src/saques-mes/saques-mes.service';
-import { formatDateToYYMM } from 'src/util/formatoYYMM';
+import { SaquesMesService } from '../saques-mes/saques-mes.service';
+import { formatDateToYYMM } from '../util/formatoYYMM';
 import {
   calcularDiariaIntegral,
   calcularDiariaParcial,
   calcularDiariaValores,
-} from 'src/util/calculo_dia_retorno';
-import { ItinirarioService } from 'src/itinirario/itinirario.service';
-import { calcularSalario50 } from 'src/util/variaveis/calculo_50';
-import { logger } from 'src/util/savelogs/SaveLogs';
-import { RequisicaoEntity } from 'src/database/db_oracle/entities/requisicao.entity';
-import { retornoItinerarioDto } from 'src/itinirario/itinerarioDto';
-import { formatDate } from 'date-fns';
-import { DataUtils } from 'src/util/DataUtils';
+} from '../util/calculo_dia_retorno';
+import { ItinirarioService } from '../itinirario/itinirario.service';
+import { calcularSalario50 } from '../util/variaveis/calculo_50';
+import { logger } from '../util/savelogs/SaveLogs';
+import { RequisicaoEntity } from '../database/db_oracle/entities/requisicao.entity';
+import { retornoItinerarioDto } from '../itinirario/itinerarioDto';
+import { DataUtils } from '../util/DataUtils';
+import { startOfMonth, endOfMonth, format } from 'date-fns';
+import { BIND_IN } from 'oracledb';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -112,7 +119,7 @@ export class S001RequisicaoService {
         UFESP = (await this.ufespService.findValueByDate(requisicao.reqDtSaida)).ufeValor || 0;
       } catch (error) {
         logger.error(`Erro ao buscar valor da ufesp (${requisicao.chapa}): `, error);
-      }   
+      }
 
       // Busca o valor do saque do mês
       try {
@@ -229,37 +236,62 @@ export class S001RequisicaoService {
   async findAllAprovadas(params: FindAllAutorizadasParams): Promise<RequisDto[]> {
     try {
       const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
-  
       const pageNumber = params.page ?? 1;
       const pageSize = params.limit ?? 10;
-      const skip = (pageNumber - 1) * pageSize;   
-  
-      searchParams['reqStatus'] = In(['AUTORIZADA PELO DIRETOR', 'AUTORIZADA PELO DIRETOR EXECUTIVO']);
-      searchParams['reqDtReq'] = MoreThanOrEqual('2008-01-01'); 
-  
+      const skip = (pageNumber - 1) * pageSize;
+
+      searchParams['reqStatus'] = In([
+        'AUTORIZADA PELO DIRETOR',
+        'AUTORIZADA PELO DIRETOR EXECUTIVO',
+      ]);
+      searchParams['reqDtReq'] = MoreThanOrEqual('2008-01-01');
+
       const order: { [key: string]: 'ASC' | 'DESC' } = {};
       if (params.orderBy) {
         order[params.orderBy] = params.orderDirection === 'DESC' ? 'DESC' : 'ASC';
       } else {
         order['reqIdCodigo'] = 'ASC';
       }
-  
-      if(params.chapa){
+
+      if (params.chapa) {
         searchParams['chapa'] = params.chapa;
       }
-  
+
       const requisicao = await this.requisicaoRepository.find({
         where: searchParams,
         skip,
         take: params.limit,
-        order        
-      });    
-  
+        order,
+      });
+
       return requisicao.map((reqv) => new RequisDto(reqv));
     } catch (error) {
-      console.log(error.message);
       throw new HttpException(
-        'Erro ao buscar as requisições autorizadas',
+        'Erro ao buscar requisições aprovadas',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async findMesAtual(params: findMesParams): Promise<RequisDto[]> {
+    try {
+      // Formata as datas no mesmo padrão que está no banco
+      const inicioMes = format(startOfMonth(new Date()), 'dd/MM/yyyy 00:00:00');
+      const fimMes = format(endOfMonth(new Date()), 'dd/MM/yyyy 23:59:59');  
+      
+      const requisicao = await this.requisicaoRepository.find({
+        where: {
+          reqStatus: In(['AUTORIZADA PELO DIRETOR', 'AUTORIZADA PELO DIRETOR EXECUTIVO']),
+          chapa: params.chapa,
+          reqDtReq: Raw((alias) => 
+            `TO_DATE(${alias}, 'DD/MM/YYYY HH24:MI:SS') BETWEEN TO_DATE('${inicioMes}', 'DD/MM/YYYY HH24:MI:SS') AND TO_DATE('${fimMes}', 'DD/MM/YYYY HH24:MI:SS')`
+          ),
+        },
+      });
+      return requisicao.map((reqv) => new RequisDto(reqv));
+    } catch (error) {    
+      throw new HttpException(
+        'Erro ao buscar requisições aprovadas',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

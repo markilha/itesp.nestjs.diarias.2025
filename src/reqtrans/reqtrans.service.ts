@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsWhere, In, Repository } from 'typeorm';
 import { FindAllParams, reqtransDto, updateStatusDto } from './reqtransDto';
 import { reqtransEntity } from '../database/db_oracle/entities/requisicaoTrans.entity';
 
@@ -134,4 +134,5 @@ export class reqtransService {
     result.REQ_STATUS = params.REQ_STATUS;
     return this.reqtransRepository.save(result);
   }
+
 }

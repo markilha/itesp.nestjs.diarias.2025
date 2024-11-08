@@ -2,7 +2,6 @@ import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { SaquesMesService } from './saques-mes.service';
 import { FindAllParams, SaqueMesDto } from './saque-mesDto';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { SaqueMesEntity } from 'src/database/db_oracle/entities/saqueMes.entity';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 

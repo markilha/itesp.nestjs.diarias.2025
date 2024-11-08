@@ -1,9 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { FindAllParams, SaqueEfetMesDto } from './saque-mesDto';
+import {  Injectable } from '@nestjs/common';
+
 import { SaqueMesDto } from './saque-mesDto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SaqueMesEntity } from 'src/database/db_oracle/entities/saqueMes.entity';
+import { SaqueMesEntity } from '../database/db_oracle/entities/saqueMes.entity';
 
 @Injectable()
 export class SaquesMesService {

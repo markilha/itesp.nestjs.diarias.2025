@@ -7,6 +7,7 @@ import {
   SolitarDto,
   DateTimeParams,
   returnSaqueDto,
+  buscarSaqueDto,
 } from './saque.dto';
 
 import { SaqueEntity } from '../database/db_oracle/entities/saque.entity';
@@ -70,12 +71,17 @@ export class SaqueService {
 
     private readonly reqnumerarioService: ReqnumerarioService,
   ) {}
-  private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
-    const consulta = await this.saqueRepository.query(queryPrestacao, [sqeIdCodigo]);
 
-    if (!consulta?.length) {
-      throw new HttpException('Erro ao buscar dados no banco', HttpStatus.NOT_FOUND);
-    }
+  private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
+
+    const saque = await this.findOne(sqeIdCodigo);
+ 
+   
+  
+
+    let consulta = await this.saqueRepository.query(queryPrestacao, [sqeIdCodigo]);
+    
+
 
     return consulta[0];
   }

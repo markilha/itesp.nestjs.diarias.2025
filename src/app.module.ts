@@ -22,6 +22,8 @@ import { PcontasNumModule } from './pcontasnum/pcontasnum.module';
 import { extornoModule } from './extorno/extorno.module';
 import { reembolsoModule } from './reembolso/reembolso.module';
 import { reqtransModule } from './reqtrans/reqtrans.module';
+import { PrazosModule } from './prazos/prazos.module';
+import { itensreqrecModule } from './itensreqrec/itensreqrec.module';
 
 
 
@@ -49,7 +51,9 @@ import { reqtransModule } from './reqtrans/reqtrans.module';
     PcontasNumModule,
     extornoModule,
     reembolsoModule,
-    reqtransModule
+    reqtransModule,
+    PrazosModule,
+    itensreqrecModule
   ],
   controllers: [],
   providers: [],
