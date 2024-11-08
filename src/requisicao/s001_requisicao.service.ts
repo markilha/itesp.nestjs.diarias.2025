@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Between, FindOptionsWhere, In, MoreThanOrEqual, Raw, Repository } from 'typeorm';
+import { FindOptionsWhere, In, MoreThanOrEqual, Raw, Repository } from 'typeorm';
 import {
   FindAllAutorizadasParams,
   FindAllParams,
@@ -26,7 +26,7 @@ import { RequisicaoEntity } from '../database/db_oracle/entities/requisicao.enti
 import { retornoItinerarioDto } from '../itinirario/itinerarioDto';
 import { DataUtils } from '../util/DataUtils';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
-import { BIND_IN } from 'oracledb';
+
 
 @Injectable()
 export class S001RequisicaoService {
@@ -46,7 +46,7 @@ export class S001RequisicaoService {
     }
   }
 
-  async find(params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
+  async find(params: FindAllParams): Promise<any> {
     try {
       const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
       const fields = ['reqIdCodigo', 'codMunicipio', 'reqStatus', 'chapa'];
@@ -91,6 +91,11 @@ export class S001RequisicaoService {
       const results = await Promise.all(
         requisicoes.map((requisicao) => this.processRequisicao(requisicao, params.chapa)),
       );
+
+      return {
+        data: results,
+        total: results.length,
+       }
 
       return results;
     } catch (error) {
@@ -277,7 +282,7 @@ export class S001RequisicaoService {
     try {
       // Formata as datas no mesmo padrão que está no banco
       const inicioMes = format(startOfMonth(new Date()), 'dd/MM/yyyy 00:00:00');
-      const fimMes = format(endOfMonth(new Date()), 'dd/MM/yyyy 23:59:59');  
+      const fimMes = format(endOfMonth(new Date()), 'yyyy-mm-dd 23:59:59');  
       
       const requisicao = await this.requisicaoRepository.find({
         where: {
@@ -294,6 +299,17 @@ export class S001RequisicaoService {
         'Erro ao buscar requisições aprovadas',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  //findone
+  async findOne(reqIdCodigo: number) {
+    try {
+      return await this.requisicaoRepository.findOneOrFail({
+        where: { reqIdCodigo}        
+      });
+    } catch (error) {
+      throw new HttpException('Requisição não encontrada', HttpStatus.NOT_FOUND);
     }
   }
 }

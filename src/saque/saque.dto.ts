@@ -753,69 +753,38 @@ export class SolicitaSaqueDto {
   }
 }
 
+
 export class buscarSaqueDto {
-  SQE_DTPEDIDO: Date;
-  SQE_ID_CODIGO: number;
-  SQE_EFETIVO: boolean;
-  SQE_TIPOSAQUE: string;
-  SQE_DTSAQUE: Date;
-  SQE_VLSAQUE: number;
-  SQE_DTPREST: Date | null;
-  CHAPA: string;
-  NOME: string;
-  TDE_DESCRICAO: string;
-  STS_DESCRICAO: string;
-  PRA_ATIVO: boolean;
-  REQ_ID_CODIGO: number;
-  RNU_ID_CODIGO: number;
-  REQ_STATUS: string;
-  REQ_DTSAIDA: Date;
-  REQ_HSAIDA: string;   
-  REQ_DTRET: Date;
-  REQ_HRET: string;    
-  REQ_PACOTE: string;
-  REQ_INTEGRAL: boolean;
-  REQ_PARCIAL: boolean;
-  TRA_ID_CODIGO: number;
-  REQ_MOTIVO: string;
-  MUN_ID_CODIGO: number;
-  DES_LOCAL: string;
-  TRA_DESCRICAO: string;
-  MUN_CIDADE: string;
-  NME_MUNIC: string;
-  REG_DESCRICAO: string;
-  constructor(params?: any) {
-    this.SQE_DTPEDIDO = params.SQE_DTPEDIDO;
-    this.SQE_ID_CODIGO = params.SQE_ID_CODIGO;
-    this.SQE_EFETIVO = params.SQE_EFETIVO;
-    this.SQE_TIPOSAQUE = params.SQE_TIPOSAQUE;
-    this.SQE_DTSAQUE = params.SQE_DTSAQUE;
-    this.SQE_VLSAQUE = params.SQE_VLSAQUE;
-    this.SQE_DTPREST = params.SQE_DTPREST;
-    this.CHAPA = params.CHAPA;
-    this.NOME = params.NOME;
-    this.TDE_DESCRICAO = params.TDE_DESCRICAO;
-    this.STS_DESCRICAO = params.STS_DESCRICAO;
-    this.PRA_ATIVO = params.PRA_ATIVO;
-    this.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
-    this.RNU_ID_CODIGO = params.RNU_ID_CODIGO;
-    this.REQ_STATUS = params.REQ_STATUS;
-    this.REQ_DTSAIDA = params.REQ_DTSAIDA;
-    this.REQ_HSAIDA = params.REQ_HSAIDA;
-    this.REQ_DTRET = params.REQ_DTRET;
-    this.REQ_HRET = params.REQ_HRET;
-    this.REQ_PACOTE = params.REQ_PACOTE;
-    this.REQ_INTEGRAL = params.REQ_INTEGRAL;
-    this.REQ_PARCIAL = params.REQ_PARCIAL;
-    this.TRA_ID_CODIGO = params.TRA_ID_CODIGO;
-    this.REQ_MOTIVO = params.REQ_MOTIVO;
-    this.MUN_ID_CODIGO = params.MUN_ID_CODIGO;
-    this.DES_LOCAL = params.DES_LOCAL;
-    this.TRA_DESCRICAO = params.TRA_DESCRICAO;
-    this.MUN_CIDADE = params.MUN_CIDADE;
-    this.NME_MUNIC = params.NME_MUNIC;
-    this.REG_DESCRICAO = params.REG_DESCRICAO;
-  }
+  SQE_DTPEDIDO?: string;
+  SQE_ID_CODIGO?: number;
+  SQE_EFETIVO?: string;
+  SQE_TIPOSAQUE?: string;
+  SQE_DTSAQUE?: Date;
+  SQE_VLSAQUE?: number;
+  SQE_DTPREST?: Date | null;
+  CHAPA?: string;
+  NOME?: string;
+  TDE_DESCRICAO?: string;
+  STS_DESCRICAO?: string;
+  PRA_ATIVO?: string;
+  REQ_ID_CODIGO?: number;
+  RNU_ID_CODIGO?: number;
+  REQ_STATUS?: string;
+  REQ_DTSAIDA?: string;
+  REQ_HSAIDA?: string;   
+  REQ_DTRET?: string;
+  REQ_HRET?: string;    
+  REQ_PACOTE?: number;
+  REQ_INTEGRAL?: number;
+  REQ_PARCIAL?: number;
+  TRA_ID_CODIGO?: number;
+  REQ_MOTIVO?: string;
+  MUN_ID_CODIGO?: number;
+  DES_LOCAL?: string;
+  TRA_DESCRICAO?: string;
+  MUN_CIDADE?: string;
+  NME_MUNIC?: string;
+  REG_DESCRICAO?: string;
 }
 
 

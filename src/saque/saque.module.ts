@@ -14,6 +14,9 @@ import { reembolsoModule } from '../reembolso/reembolso.module';
 import { reqtransModule } from '../reqtrans/reqtrans.module';
 import { FuncsalarioModule } from '../funcsalario/funcsalario.module';
 import { extornoModule } from 'src/extorno/extorno.module';
+import { itensreqrecModule } from 'src/itensreqrec/itensreqrec.module';
+import { S001RequisicaoModule } from 'src/requisicao/s001_requisicao.module';
+import { destinoModule } from 'src/destino/destino.module';
 
 
 @Module({
@@ -29,7 +32,10 @@ import { extornoModule } from 'src/extorno/extorno.module';
     reembolsoModule,
     reqtransModule,
     FuncsalarioModule,
-    extornoModule
+    extornoModule,
+    itensreqrecModule,
+    S001RequisicaoModule,
+    destinoModule
     
   ],
   providers: [SaqueService],

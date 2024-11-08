@@ -38,6 +38,10 @@ import { reqtransService } from '../reqtrans/reqtrans.service';
 import { FuncsalarioService } from '../funcsalario/funcsalario.service';
 import { DataUtils } from '../util/DataUtils';
 import { extornoService } from '../extorno/extorno.service';
+import { itensreqrecService } from 'src/itensreqrec/itensreqrec.service';
+import { S001RequisicaoService } from 'src/requisicao/s001_requisicao.service';
+import { destinoService } from 'src/destino/destino.service';
+import { formatDate } from 'date-fns';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -68,22 +72,55 @@ export class SaqueService {
     private reembolsoService: reembolsoService,
     private funcsalarioService: FuncsalarioService,
     private extornoService: extornoService,
-
-    private readonly reqnumerarioService: ReqnumerarioService,
+    private itensreqrecService: itensreqrecService,
+    private reqnumerarioService: ReqnumerarioService,
+    private requisicaoService: S001RequisicaoService,
+    private destinoService: destinoService,
   ) {}
 
   private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
-
     const saque = await this.findOne(sqeIdCodigo);
- 
-   
-  
+    const itensreq = await this.itensreqrecService.findOne(saque.iteIdCodigo);
+    const reqnumerario = await this.reqnumerarioService.findOne(saque.sqeIdCodigo);
+    const requisicao = await this.requisicaoService.findOne(reqnumerario.REQ_ID_CODIGO);
+    const destino = await this.destinoService.findOne(requisicao.reqIdCodigo);
 
-    let consulta = await this.saqueRepository.query(queryPrestacao, [sqeIdCodigo]);
-    
+    const saquedto: buscarSaqueDto = {
+      SQE_ID_CODIGO: saque.sqeIdCodigo,
+      SQE_DTPEDIDO: saque.sqeDtPedido,
+      SQE_EFETIVO: saque.sqeEfetivo,
+      SQE_TIPOSAQUE: saque.sqeTipoSaque,
+      SQE_VLSAQUE: saque.sqeVlSaque,
+      CHAPA: itensreq.CHAPA,
+      NOME: itensreq.NOME,
+      TDE_DESCRICAO: itensreq.TDE_DESCRICAO,
+      STS_DESCRICAO: itensreq.STS_DESCRICAO,
+      PRA_ATIVO: itensreq.PRA_ATIVO,
+      REQ_ID_CODIGO: reqnumerario.REQ_ID_CODIGO,
+      RNU_ID_CODIGO: reqnumerario.RNU_ID_CODIGO,
+      REQ_STATUS: requisicao.reqStatus,
+      REQ_DTSAIDA: requisicao.reqDtSaida,
+      REQ_HSAIDA: requisicao.reqHSaida,
+      REQ_DTRET: requisicao.reqDtReq,
+      REQ_HRET: requisicao.reqHRet,
+      REQ_PACOTE: requisicao.reqPacote,
+      REQ_INTEGRAL: requisicao.reqIntegral,
+      REQ_PARCIAL: requisicao.reqParcial,
+      TRA_ID_CODIGO: requisicao.traIdCodigo,
+      REQ_MOTIVO: requisicao.reqMotivo,
+      MUN_ID_CODIGO: destino.MUN_ID_CODIGO,
+      DES_LOCAL: destino.DES_LOCAL,
+      MUN_CIDADE: requisicao.nmeMunic,
+      TRA_DESCRICAO: requisicao.traDescricao,
+      NME_MUNIC: requisicao.nmeMunic,
+      REG_DESCRICAO: requisicao.regDescricao,
+    };
 
+    return saquedto;
 
-    return consulta[0];
+    // let consulta = await this.saqueRepository.query(queryPrestacao, [sqeIdCodigo]);
+
+    // return consulta[0];
   }
 
   private async buscarItinerario(reqIdCodigo: number) {
@@ -216,7 +253,7 @@ export class SaqueService {
   }
 
   //BUSCAR TODOS OS SAQUES
-  async findAll(params: FindParamsSaque): Promise<returnSaqueDto[]> {
+  async findAll(params: FindParamsSaque): Promise<any> {
     try {
       const chapa = params.CHAPA;
       const orderByField = params.orderBy || 'a.SQE_DTPEDIDO';
@@ -304,7 +341,7 @@ export class SaqueService {
           REQ_ID_CODIGO: item.REQ_ID_CODIGO,
           TDE_DESCRICAO: item.TDE_DESCRICAO,
           STS_DESCRICAO: item.STS_DESCRICAO,
-          REQ_DTREQ: item.REQ_DTREQ,
+          REQ_DTREQ: DataUtils.converterParaData(item.REQ_DTREQ),
           REQ_STATUS: item.REQ_STATUS,
           CHAPA: item.CHAPA,
           VL_COMPLEMENTAR: VL_EXTORNO,
@@ -319,7 +356,10 @@ export class SaqueService {
       if (params.STATUS) {
         consulta = consulta.filter((item: any) => item.STATUS === params.STATUS);
       }
-      return consulta;
+      return {
+        data: consulta,
+        total: consulta.length,
+       };
     } catch (error) {
       console.error('Erro na consulta findSaque:', error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -385,13 +425,13 @@ export class SaqueService {
         CHAPA: consulta.CHAPA,
         SQE_DTPREST: consulta.SQE_DTPREST,
         SQE_VLPREST: consulta.IRR_VALOR_PREST,
-        REQ_DTREQ: consulta.REQ_DTREQ,
+        REQ_DTREQ: DataUtils.converterParaData(consulta.REQ_DTREQ),
         TRA_DESCRICAO: consulta.TRA_DESCRICAO,
         NME_MUNIC: consulta.NME_MUNIC,
         REG_DESCRICAO: consulta.REG_DESCRICAO,
         MUN_CIDADE: consulta.MUN_CIDADE,
         DES_LOCAL: consulta.DES_LOCAL,
-        REQ_DTSAIDA: consulta.REQ_DTSAIDA,
+        REQ_DTSAIDA: formatDate(consulta.REQ_DTSAIDA, 'yyyy-mm-dd 00:00:00'),
         REQ_DTRET: consulta.REQ_DTRET,
         REQ_HSAIDA: consulta.REQ_HSAIDA,
         REQ_HRET: consulta.REQ_HRET,

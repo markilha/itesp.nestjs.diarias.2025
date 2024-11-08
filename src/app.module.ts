@@ -24,6 +24,7 @@ import { reembolsoModule } from './reembolso/reembolso.module';
 import { reqtransModule } from './reqtrans/reqtrans.module';
 import { PrazosModule } from './prazos/prazos.module';
 import { itensreqrecModule } from './itensreqrec/itensreqrec.module';
+import { destinoModule } from './destino/destino.module';
 
 
 
@@ -53,7 +54,8 @@ import { itensreqrecModule } from './itensreqrec/itensreqrec.module';
     reembolsoModule,
     reqtransModule,
     PrazosModule,
-    itensreqrecModule
+    itensreqrecModule,
+    destinoModule
   ],
   controllers: [],
   providers: [],

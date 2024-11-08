@@ -18,5 +18,6 @@ import { RequisicaoEntity } from 'src/database/db_oracle/entities/requisicao.ent
   ],
   controllers: [S001RequisicaoController],
   providers: [S001RequisicaoService],
+  exports: [S001RequisicaoService],
 })
 export class S001RequisicaoModule {}
