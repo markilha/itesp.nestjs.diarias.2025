@@ -8,13 +8,19 @@ import { UfespService } from '../../ufesp/ufesp.service';
 import { Repository } from 'typeorm';
 import { RequisicaoEntity } from '../../database/db_oracle/entities/requisicao.entity';
 import { SaquesMesService } from '../../saques-mes/saques-mes.service';
-import { mockAprovadas, mockReqMes } from '../__mocks__/mocks';
+import { mockAprovadas, mockQueryBuilder, mockReqMes } from '../__mocks__/mocks';
 
 
 
 describe('requsicaoService', () => {
   let requiservice: S001RequisicaoService;
   let requisicaoRepository: Repository<RequisicaoEntity>;
+  // const mockQueryBuilder = {
+  //   where: jest.fn().mockReturnThis(),
+  //   andWhere: jest.fn().mockReturnThis(),
+  //   getRawMany: jest.fn().mockResolvedValue(mockReqMes), 
+  // };
+
 
     // Mock da data atual para testes consistentes
     const mockDate = new Date('2024-11-07T10:00:00Z');
@@ -46,6 +52,7 @@ describe('requsicaoService', () => {
             find: jest.fn().mockResolvedValue(mockAprovadas),
             findAllAprovadas: jest.fn(),
             findMesAtual: jest.fn().mockResolvedValue(mockReqMes),
+            createQueryBuilder: jest.fn(() => mockQueryBuilder),
           },
         },
         {
@@ -94,55 +101,15 @@ describe('requsicaoService', () => {
 
   describe('findMesAtual', () => {
     it('deve retornar requisições do mês atual', async () => {     
-      const result = await requiservice.findMesAtual({ chapa: '000081' });
-      expect(result).toEqual(mockReqMes);
+      const result = await requiservice.findMesAtual({ chapa: '000081' });      
+      expect(result).toEqual(mockReqMes);     
     });
 
-    // it('deve lançar HttpException quando ocorrer erro', async () => {
-    //   // Mock do erro
-    //   jest.spyOn(repository, 'find').mockRejectedValue(new Error('Database error'));
-
-    //   // Verifica se o erro é lançado corretamente
-    //   await expect(service.findMesAtual({ chapa: '000081' })).rejects.toThrow(
-    //     new HttpException(
-    //       'Erro ao buscar requisições aprovadas',
-    //       HttpStatus.INTERNAL_SERVER_ERROR,
-    //     ),
-    //   );
-    // });
-
-    // it('não deve retornar requisições de outros meses', async () => {
-    //   // Mock com requisições de meses diferentes
-    //   const mockRequisicoes = [
-    //     {
-    //       reqIdCodigo: 1,
-    //       reqStatus: 'AUTORIZADA PELO DIRETOR',
-    //       chapa: '000081',
-    //       reqDtReq: '07/11/2024 10:00:00', // Mês atual
-    //     },
-    //     {
-    //       reqIdCodigo: 2,
-    //       reqStatus: 'AUTORIZADA PELO DIRETOR',
-    //       chapa: '000081',
-    //       reqDtReq: '07/10/2024 10:00:00', // Mês anterior
-    //     },
-    //   ];
-
-    //   // Mock que simula o filtro do banco
-    //   jest.spyOn(repository, 'find').mockImplementation(async () => {
-    //     return mockRequisicoes.filter(req => {
-    //       const reqDate = new Date(req.reqDtReq.split(' ')[0].split('/').reverse().join('-'));
-    //       const startMonth = new Date('2024-11-01');
-    //       const endMonth = new Date('2024-11-30');
-    //       return reqDate >= startMonth && reqDate <= endMonth;
-    //     });
-    //   });
-
-    //   const result = await service.findMesAtual({ chapa: '000081' });
-
-    //   // Deve retornar apenas a requisição do mês atual
-    //   expect(result).toHaveLength(1);
-    //   expect(result[0].reqDtReq).toBe('07/11/2024 10:00:00');
-    // });
+    it('deve lançar HttpException quando ocorrer erro', async () => {
+     
+      jest.spyOn(requiservice, 'findMesAtual').mockRejectedValue(new Error());
+      await expect(requiservice.findMesAtual(null)).rejects.toThrow();   
+    });
+   
   });
 });

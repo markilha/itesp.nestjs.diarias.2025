@@ -69,3 +69,11 @@ export const mockReqMes = [
     }
   ];
 
+
+  export const mockQueryBuilder = {
+    where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    getRawMany: jest.fn().mockResolvedValue(mockReqMes), 
+  };
+
+

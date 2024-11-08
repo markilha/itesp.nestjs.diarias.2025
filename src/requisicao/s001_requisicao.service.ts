@@ -27,7 +27,6 @@ import { retornoItinerarioDto } from '../itinirario/itinerarioDto';
 import { DataUtils } from '../util/DataUtils';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 
-
 @Injectable()
 export class S001RequisicaoService {
   constructor(
@@ -93,16 +92,13 @@ export class S001RequisicaoService {
       );
 
       const count = await this.requisicaoRepository.find({
-        where: searchParams       
+        where: searchParams,
       });
-      
 
       return {
         data: results,
         total: count.length || 0,
-       }
-
-     
+      };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -285,21 +281,25 @@ export class S001RequisicaoService {
 
   async findMesAtual(params: findMesParams): Promise<RequisDto[]> {
     try {
-      // Formata as datas no mesmo padrão que está no banco
-      const inicioMes = format(startOfMonth(new Date()), 'dd/MM/yyyy 00:00:00');
-      const fimMes = format(endOfMonth(new Date()), 'yyyy-mm-dd 23:59:59');  
-      
-      const requisicao = await this.requisicaoRepository.find({
-        where: {
-          reqStatus: In(['AUTORIZADA PELO DIRETOR', 'AUTORIZADA PELO DIRETOR EXECUTIVO']),
-          chapa: params.chapa,
-          reqDtReq: Raw((alias) => 
-            `TO_DATE(${alias}, 'DD/MM/YYYY HH24:MI:SS') BETWEEN TO_DATE('${inicioMes}', 'DD/MM/YYYY HH24:MI:SS') AND TO_DATE('${fimMes}', 'DD/MM/YYYY HH24:MI:SS')`
-          ),
-        },
-      });
+      const newdata = '2012-09-17'
+      //const newdata = new Date();
+      const inicioMes = format(startOfMonth(newdata), 'dd/MM/yyyy 00:00:00');
+      const fimMes = format(endOfMonth(newdata), 'dd/MM/yyyy 00:00:00');
+
+      const requisicao = await this.requisicaoRepository
+        .createQueryBuilder('requisicao')
+        .where('requisicao.reqStatus IN (:...statuses)', {
+          statuses: ['AUTORIZADA PELO DIRETOR', 'AUTORIZADA PELO DIRETOR EXECUTIVO'],
+        })
+        .andWhere('requisicao.chapa = :chapa', { chapa: params.chapa })
+        .andWhere(
+          `TO_DATE(requisicao.reqDtReq, 'DD/MM/YYYY HH24:MI:SS') BETWEEN TO_DATE(:inicioMes, 'DD/MM/YYYY HH24:MI:SS') AND TO_DATE(:fimMes, 'DD/MM/YYYY HH24:MI:SS')`,
+          { inicioMes, fimMes },
+        )
+        .getRawMany();
+
       return requisicao.map((reqv) => new RequisDto(reqv));
-    } catch (error) {    
+    } catch (error) {     
       throw new HttpException(
         'Erro ao buscar requisições aprovadas',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -311,7 +311,7 @@ export class S001RequisicaoService {
   async findOne(reqIdCodigo: number) {
     try {
       return await this.requisicaoRepository.findOneOrFail({
-        where: { reqIdCodigo}        
+        where: { reqIdCodigo },
       });
     } catch (error) {
       throw new HttpException('Requisição não encontrada', HttpStatus.NOT_FOUND);
