@@ -92,12 +92,17 @@ export class S001RequisicaoService {
         requisicoes.map((requisicao) => this.processRequisicao(requisicao, params.chapa)),
       );
 
+      const count = await this.requisicaoRepository.find({
+        where: searchParams       
+      });
+      
+
       return {
         data: results,
-        total: results.length,
+        total: count.length || 0,
        }
 
-      return results;
+     
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

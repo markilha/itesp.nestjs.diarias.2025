@@ -28,7 +28,7 @@ import { verificarDestino } from '../util/verificaDestino';
 import { MotivodiariaService } from '../motivodiaria/motivodiaria.service';
 
 import { DiariaCalculadaDto } from './saque.dto';
-import { queryPrestacao, querySaque } from '../util/variaveis/querys';
+import { queryPrestacao, querySaque, querySaqueCount } from '../util/variaveis/querys';
 
 import { RetonaStatus } from '../util/variaveis/statusPrestacao';
 import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
@@ -255,6 +255,10 @@ export class SaqueService {
   //BUSCAR TODOS OS SAQUES
   async findAll(params: FindParamsSaque): Promise<any> {
     try {
+      // total de registros por params.chapa
+    
+      
+
       const chapa = params.CHAPA;
       const orderByField = params.orderBy || 'a.SQE_DTPEDIDO';
       const orderDirection = params.orderDirection || 'ASC';
@@ -269,6 +273,7 @@ export class SaqueService {
       // Adiciona o filtro de CHAPA
       filterConditions.push('b.CHAPA = :chapa');
       filterValues.push(chapa);
+     
 
       // Verifica e adiciona cada filtro dinamicamente
       if (params.SQE_ID_CODIGO) {
@@ -316,6 +321,13 @@ export class SaqueService {
         [...filterValues, offset, itemsPerPage],
       );
 
+      const count = await this.saqueRepository.query(
+        querySaqueCount(filterConditions),
+        filterValues,
+      );
+      const totalCount = count[0]?.TOTAL_REGISTROS || 0;
+
+
       let consulta = result.map((item: any) => {
         // Calcular valores de extorno e devolução
         const { VL_DEVOLUCAO, VL_EXTORNO } = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
@@ -358,7 +370,7 @@ export class SaqueService {
       }
       return {
         data: consulta,
-        total: consulta.length,
+        total: totalCount,
        };
     } catch (error) {
       console.error('Erro na consulta findSaque:', error);
