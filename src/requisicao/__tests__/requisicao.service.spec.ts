@@ -102,11 +102,10 @@ describe('requsicaoService', () => {
   describe('findMesAtual', () => {
     it('deve retornar requisições do mês atual', async () => {     
       const result = await requiservice.findMesAtual({ chapa: '000081' });      
-      expect(result).toEqual(mockReqMes);     
+      expect(result).toEqual(mockReqMes); 
     });
 
-    it('deve lançar HttpException quando ocorrer erro', async () => {
-     
+    it('deve lançar HttpException quando ocorrer erro', async () => {     
       jest.spyOn(requiservice, 'findMesAtual').mockRejectedValue(new Error());
       await expect(requiservice.findMesAtual(null)).rejects.toThrow();   
     });

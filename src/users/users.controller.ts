@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, UseGuards, Delete, Param, Query, Put, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UsersDto, UserUpdateDto } from './users.dto';
+import { userNivelDto, UsersDto, UserUpdateDto } from './users.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { FindAllParams } from './users.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -20,7 +20,13 @@ export class UsersController {
   }
   @Get('/:id')
   @ApiOperation({ summary: 'Retorna o usuário pelo id' })
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  findOne(@Param('id') id: number) {
+    return this.usersService.findOne(id);
+  }
+  @Get('nivel/:id')
+  @ApiOperation({ summary: 'Lista os acessos do usuário' })
+  @ApiResponse({ status: 200, description: 'Lista os acessos do usuáiro', type: userNivelDto, isArray: true })
+  findNivel(@Param('id') id: number): Promise<userNivelDto[]> {
+    return this.usersService.findNivel(id);
   }
 }

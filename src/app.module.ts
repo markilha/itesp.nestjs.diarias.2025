@@ -25,9 +25,7 @@ import { reqtransModule } from './reqtrans/reqtrans.module';
 import { PrazosModule } from './prazos/prazos.module';
 import { itensreqrecModule } from './itensreqrec/itensreqrec.module';
 import { destinoModule } from './destino/destino.module';
-
-
-
+import { naotrabModule } from './naotrab/naotrab.module';
 
 @Module({
   imports: [
@@ -55,7 +53,8 @@ import { destinoModule } from './destino/destino.module';
     reqtransModule,
     PrazosModule,
     itensreqrecModule,
-    destinoModule
+    destinoModule,
+    naotrabModule
   ],
   controllers: [],
   providers: [],

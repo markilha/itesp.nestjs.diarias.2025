@@ -1,8 +1,8 @@
 import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from '../database/db_mysql/entities/user.entity'; 
+import { UserEntity } from '../database/db_mysql/entities/user.entity';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
-import { FindAllParams, UsersDto } from './users.dto';
+import { FindAllParams, userNivelDto, UsersDto } from './users.dto';
 import { hashSync as bcryptHashSync } from 'bcrypt';
 
 @Injectable()
@@ -32,17 +32,45 @@ export class UsersService {
     return users;
   }
 
- 
-
   async findOne(id_usuario: number): Promise<UserEntity> {
-    const user = await this.usersRepository.findOne({ where: { id_usuario } });
-    if (!user) {
+    try {
+      const user = await this.usersRepository.findOneOrFail({ where: { id_usuario } });
+      return user;
+    } catch (error) {
       throw new HttpException(
-        `User with id ${id_usuario} not found`,
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Usuário não encotrado',
+        },
         HttpStatus.NOT_FOUND,
       );
     }
-    return user;
+  }
+
+  async findNivel(id_usuario: number): Promise<userNivelDto[]> {
+    try {
+      const users = await this.usersRepository.query(
+        `
+        SELECT 
+        usu.nome,
+        usu.chapa,
+        usu.login,
+        ace.id_perfil_acesso,
+        ace.id_sistema
+        FROM usu_usuario_cpf usu
+        INNER JOIN ace_usuario_perfil_acesso ace ON usu.id_usuario = ace.id_usuario
+        WHERE usu.id_usuario = ?
+        `,
+        [id_usuario],
+      );
+      return users;
+    } catch (error) {
+      console.log(error.message)
+      throw new HttpException(
+        `Erro ao buscar nível do usuario`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async findByUserName(login: string): Promise<UsersDto | null> {
@@ -54,5 +82,5 @@ export class UsersService {
       return null;
     }
     return userFound;
-  } 
+  }
 }
