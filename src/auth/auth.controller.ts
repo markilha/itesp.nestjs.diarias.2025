@@ -11,4 +11,9 @@ export class AuthController {
   async signin(@Body() params: AuthDto): Promise<AuthResponseDto> {
     return await this.authService.signIn(params.login, params.senha);
   }
+  @Post('refresh')
+  async refresh(@Body() body:any){
+    const {refreshToken} = body;
+    return await this.authService.refresh(refreshToken);
+  }
 }

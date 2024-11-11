@@ -27,5 +27,11 @@ export class naotrabController {
     const naotrab = await this.naotrabService.findOne(REQ_ID_CODIGO);   
     return naotrab;
   }
+
+  @Get('totaldiarianaotrabalhada')  
+  async calcDiarias(@Query('REQ_ID_CODIGO') REQ_ID_CODIGO: number): Promise<any> {
+    const naotrab = await this.naotrabService.totalDiariaNaoTrabalhada(REQ_ID_CODIGO);   
+    return naotrab;
+  }
  
 }

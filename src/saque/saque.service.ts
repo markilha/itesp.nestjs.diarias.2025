@@ -28,7 +28,7 @@ import { verificarDestino } from '../util/verificaDestino';
 import { MotivodiariaService } from '../motivodiaria/motivodiaria.service';
 
 import { DiariaCalculadaDto } from './saque.dto';
-import { queryPrestacao, querySaque, querySaqueCount } from '../util/variaveis/querys';
+import { querySaque, querySaqueCount } from '../util/variaveis/querys';
 
 import { RetonaStatus } from '../util/variaveis/statusPrestacao';
 import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
@@ -42,6 +42,7 @@ import { itensreqrecService } from 'src/itensreqrec/itensreqrec.service';
 import { S001RequisicaoService } from 'src/requisicao/s001_requisicao.service';
 import { destinoService } from 'src/destino/destino.service';
 import { formatDate } from 'date-fns';
+import { naotrabService } from 'src/naotrab/naotrab.service';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -76,6 +77,7 @@ export class SaqueService {
     private reqnumerarioService: ReqnumerarioService,
     private requisicaoService: S001RequisicaoService,
     private destinoService: destinoService,
+    private naotrabservice: naotrabService,
   ) {}
 
   private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
@@ -156,10 +158,12 @@ export class SaqueService {
   ) {
     try {
       const itiDataHora = getDateTimeParams(consulta, itinerario);
-
-      const { diariaIntegral, diariaParcial, diaraPorc } =
-        calcQuantDiariaIntegralParcialPorcen(itiDataHora);
-
+      const nt = await this.naotrabservice.totalDiariaNaoTrabalhada(consulta.REQ_ID_CODIGO);
+      const diariaNaoTrabalhada = nt.total || 0;
+      const { diariaIntegral, diariaParcial, diaraPorc } = calcQuantDiariaIntegralParcialPorcen(
+        itiDataHora,
+        diariaNaoTrabalhada,
+      );
       const pacote = Number(consulta.REQ_PACOTE);
 
       const calcDiaraInial = calcularDiariaValores(
@@ -256,8 +260,6 @@ export class SaqueService {
   async findAll(params: FindParamsSaque): Promise<any> {
     try {
       // total de registros por params.chapa
-    
-      
 
       const chapa = params.CHAPA;
       const orderByField = params.orderBy || 'a.SQE_DTPEDIDO';
@@ -273,7 +275,6 @@ export class SaqueService {
       // Adiciona o filtro de CHAPA
       filterConditions.push('b.CHAPA = :chapa');
       filterValues.push(chapa);
-     
 
       // Verifica e adiciona cada filtro dinamicamente
       if (params.SQE_ID_CODIGO) {
@@ -327,7 +328,6 @@ export class SaqueService {
       );
       const totalCount = count[0]?.TOTAL_REGISTROS || 0;
 
-
       let consulta = result.map((item: any) => {
         // Calcular valores de extorno e devolução
         const { VL_DEVOLUCAO, VL_EXTORNO } = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
@@ -371,7 +371,7 @@ export class SaqueService {
       return {
         data: consulta,
         total: totalCount,
-       };
+      };
     } catch (error) {
       console.error('Erro na consulta findSaque:', error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

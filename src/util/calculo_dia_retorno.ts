@@ -1,5 +1,6 @@
 import { DataUtils } from './DataUtils';
 import { Destino } from './diariaDto';
+import { parse, differenceInMilliseconds } from 'date-fns';
 
 export interface DiariaCalculada {
   VL_DIARIA_INTEGRAL: number;
@@ -13,48 +14,120 @@ export interface DiariaCalculada {
 }
 
 export function calcularDiariaParcial(horaChegada: string): number {
-  const horaChegadaInt = parseInt(horaChegada);
-  let valorFinal = 20;
+  // Horários de referência
+  let parcial = 0;
+  let h13 = new Date('1970-01-01T13:00:00'); // 13:00
+  h13.setHours(h13.getHours() - 3);
+  let h19 = new Date('1970-01-01T19:00:00'); // 19:00
+  h19.setHours(h19.getHours() - 3);
+
+  // Convertendo a hora de chegada para o tipo Date
+  let horaChegadaDate = new Date('1970-01-01T' + horaChegada);
+  horaChegadaDate.setHours(horaChegadaDate.getHours() - 3);
+
   // Situação 3: No dia de retorno à sede.
-  if (horaChegadaInt >= 19) {
-    valorFinal = 40; // 40% quando regresso ocorre a partir das 19h.
-  } else if (horaChegadaInt >= 13 && horaChegadaInt < 19) {
-    valorFinal = 20; // 20% quando regresso ocorre entre 13h e 19h.
+  if (horaChegadaDate >= h19) {
+    parcial = 40; // 40% quando regresso ocorre a partir das 19h.
+  } else if (horaChegadaDate >= h13 && horaChegadaDate < h19) {
+    parcial = 20; // 20% quando regresso ocorre entre 13h e 19h.
   } else {
-    valorFinal = 0; // 0% quando regresso ocorre antes das 13h.
+    parcial = 0; // 0% quando regresso ocorre antes das 13h ou depois das 19h.
   }
 
-  return valorFinal;
+  return parcial;
 }
+
+// export function calcularDiariaParcial(horaChegada: string): number {
+//   const horaChegadaInt = parseInt(horaChegada);
+//   let valorFinal = 20;
+//   // Situação 3: No dia de retorno à sede.
+//   if (horaChegadaInt >= 19) {
+//     valorFinal = 40; // 40% quando regresso ocorre a partir das 19h.
+//   } else if (horaChegadaInt >= 13 && horaChegadaInt < 19) {
+//     valorFinal = 20; // 20% quando regresso ocorre entre 13h e 19h.
+//   } else {
+//     valorFinal = 0; // 0% quando regresso ocorre antes das 13h.
+//   }
+//   return valorFinal;
+// }
+
+// export function calcularDiariaIntegral(
+//   dataSaida: Date | string,
+//   horaSaida: string,
+//   dataChegada: Date | string,
+//   horaChegada: string,
+// ): number {
+//   // Convertendo as datas para o tipo Date, se estiverem como strings
+//   const dataSaidaFormatada =
+//     typeof dataSaida === 'string'
+//       ? new Date(`${dataSaida}T${horaSaida}`)
+//       : new Date(`${dataSaida.toISOString().split('T')[0]}T${horaSaida}`);
+//   const dataChegadaFormatada =
+//     typeof dataChegada === 'string'
+//       ? new Date(`${dataChegada}T${horaChegada}`)
+//       : new Date(`${dataChegada.toISOString().split('T')[0]}T${horaChegada}`);
+
+//   // Verificar se as datas são válidas
+//   if (isNaN(dataSaidaFormatada.getTime()) || isNaN(dataChegadaFormatada.getTime())) {
+//     throw new Error('Data ou hora inválida');
+//   }
+
+//   // Calcular a diferença em milissegundos entre as duas datas
+//   const diferencaMilissegundos = dataChegadaFormatada.getTime() - dataSaidaFormatada.getTime();
+
+//   // Converter a diferença em dias (1 dia = 24 * 60 * 60 * 1000 milissegundos)
+//   const diferencaDias = diferencaMilissegundos / (24 * 60 * 60 * 1000);
+
+//   // Arredondar para cima para contar qualquer fração de dia como um dia completo
+//   const totalDias = Math.ceil(diferencaDias);
+
+//   // Retornar o total de dias, diminuindo um caso seja maior que 1
+//   return totalDias > 1 ? totalDias - 1 : totalDias;
+// }
 
 export function calcularDiariaIntegral(
-  dataSaida: Date | string,
-  horaSaida: string,
-  dataChegada: Date | string,
-  horaChegada: string,
+  dtSaida: Date | string,
+  hoSaida: string,
+  dtChegada: Date | string,
+  hChegada: string,
+  naotrab: number,
 ): number {
-  // Convertendo as datas para o tipo Date, se estiverem como strings
-  const dataSaidaFormatada = typeof dataSaida === 'string' ? new Date(`${dataSaida}T${horaSaida}`) : new Date(`${dataSaida.toISOString().split('T')[0]}T${horaSaida}`);
-  const dataChegadaFormatada = typeof dataChegada === 'string' ? new Date(`${dataChegada}T${horaChegada}`) : new Date(`${dataChegada.toISOString().split('T')[0]}T${horaChegada}`);
+  let diariaSemDesconto = calcularDias(dtSaida, hoSaida, dtChegada, hChegada);
+  let horaChegada = new Date(`1970-01-01T${hChegada}`);
+  horaChegada.setHours(horaChegada.getHours() - 3);
+  let diaria: number;
 
-  // Verificar se as datas são válidas
-  if (isNaN(dataSaidaFormatada.getTime()) || isNaN(dataChegadaFormatada.getTime())) {
-    throw new Error('Data ou hora inválida');
+  // Regra nova para calcular a diária
+  let diariaReal = diariaSemDesconto - naotrab;
+
+  try {
+    diaria = Math.floor(diariaReal); // Tenta converter diretamente
+  } catch (e) {
+    diaria = Math.floor(diariaSemDesconto - naotrab); // Caso haja erro, faz o cálculo sem a conversão
+  }
+  let periodo = diariaSemDesconto - naotrab - diaria; // Cálculo do resto
+
+  // Convertendo o período para o formato de hora
+  const periodoAtual = new Date(
+    '1970-01-01T' + new Date(periodo * 24 * 60 * 60 * 1000).toISOString().slice(11, 19),
+  );
+  periodoAtual.setHours(periodoAtual.getHours() - 3);
+
+  // Horários de referência
+  let h19 = new Date('1970-01-01T06:00:00'); // 19:00
+  h19.setHours(h19.getHours() - 3);
+
+  // Convertendo a hora de chegada para o tipo Date
+  let horaChegadaDate = new Date('1970-01-01T' + horaChegada);
+  horaChegadaDate.setHours(horaChegadaDate.getHours() - 3);
+
+  // Situação 3: No dia de retorno à sede apos as 19h aumenta 1 diaria
+  if (horaChegadaDate >= h19) {
+    diaria += 1;
   }
 
-  // Calcular a diferença em milissegundos entre as duas datas
-  const diferencaMilissegundos = dataChegadaFormatada.getTime() - dataSaidaFormatada.getTime();
-
-  // Converter a diferença em dias (1 dia = 24 * 60 * 60 * 1000 milissegundos)
-  const diferencaDias = diferencaMilissegundos / (24 * 60 * 60 * 1000);
-
-  // Arredondar para cima para contar qualquer fração de dia como um dia completo
-  const totalDias = Math.ceil(diferencaDias);
-
-  // Retornar o total de dias, diminuindo um caso seja maior que 1
-  return totalDias > 1 ? totalDias - 1 : totalDias;
+  return diaria;
 }
-
 
 export function calcularDiariaValores(
   UFESP: number,
@@ -66,10 +139,19 @@ export function calcularDiariaValores(
   horaRetorno: string,
 ): DiariaCalculada {
   try {
+    let horaChegada = new Date(`1970-01-01T${horaRetorno}`);
+
+    // Ajustando o fuso horário
+    horaChegada.setHours(horaChegada.getHours() - 3);
+    let h13 = new Date('1970-01-01T13:00:00'); // 13:00
+    h13.setHours(h13.getHours() - 3);
+    let h19 = new Date('1970-01-01T19:00:00'); // 19:00
+    h19.setHours(h19.getHours() - 3);
+    
     let diariaBase: number;
     // Artigo 2.º - Definir base conforme o cargo
     diariaBase = cargoUfesp * UFESP;
-   
+
     // Artigo 3.º - Ajuste da base conforme o destino
     switch (destino) {
       case Destino.DF_MANaus:
@@ -88,21 +170,18 @@ export function calcularDiariaValores(
         diariaBase = diariaBase;
         break;
     }
-    let diaria = diariaBase;   
 
+    let diaria = diariaBase;
     let diariaParcial40 = 0;
     let diariaParcial20 = 0;
-    const horaRetornoDecimal = DataUtils.converterStringParaHora(horaRetorno);
-   
-
     let porcentagem = 0;
 
     if (req_parcial > 0) {
-      if (horaRetornoDecimal >= 19) {
+      if (horaChegada >= h19) {
         diariaParcial40 = req_parcial * (diariaBase * 0.4); // 40% se deslocamento >= 12 horas - a
         diariaParcial40 = DataUtils.arredondar(diariaParcial40);
         porcentagem = 40;
-      } else if (horaRetornoDecimal >= 13) {
+      } else if (horaChegada >= h13 && horaChegada < h19) {
         diariaParcial20 = req_parcial * (diariaBase * 0.2); // 20% se deslocamento entre 6 e 12 horas - b
         diariaParcial20 = DataUtils.arredondar(diariaParcial20);
         porcentagem = 20;
@@ -125,27 +204,46 @@ export function calcularDiariaValores(
       VL_DIARIA_PARCIAL_40: diariaParcial40,
       VL_DIARIA_PARCIAL_20: diariaParcial20,
       VL_DIARIA_BASE: diariaBase,
-      VL_DIARIA:DataUtils.arredondar(diaria),
+      VL_DIARIA: DataUtils.arredondar(diaria),
       VL_DIARIA_PARCIAL: Number(diariaParcial40 + diariaParcial20) || 0,
-      VL_DIARIA_TOTAL: DataUtils.arredondar( Number(diariaParcial40 + diariaParcial20 + diariaIntegral) || 0),
+      VL_DIARIA_TOTAL: DataUtils.arredondar(
+        Number(diariaParcial40 + diariaParcial20 + diariaIntegral) || 0,
+      ),
       PARPERC: porcentagem,
     };
-
-    
   } catch (error) {
     throw new Error(`Erro ao calcular diária: ${error.message}`);
   }
 }
 
-export function calcQuantDiariaIntegralParcialPorcen(dateTimeParams: any) {
+export function calcQuantDiariaIntegralParcialPorcen(dateTimeParams: any, naotrab: number) {
   const diariaIntegral = calcularDiariaIntegral(
     dateTimeParams.dataSaida,
     dateTimeParams.horaSaida,
     dateTimeParams.dataChegada,
     dateTimeParams.horaChegada,
+    naotrab,
   );
+
   const diaraPorc = calcularDiariaParcial(dateTimeParams.horaChegada);
-  const diariaParcial = diaraPorc > 0 ? 1 : 0; 
-  return { diariaIntegral, diariaParcial,diaraPorc };
+  const diariaParcial = diaraPorc > 0 ? 1 : 0;
+  return { diariaIntegral, diariaParcial, diaraPorc };
 }
 
+function calcularDias(saida, saidaHora, chegada, chegadaHora) {
+  // Junta as datas e horas sem fuso horário para manter o horário local
+  let dataSaida = parse(`${saida.split(' ')[0]} ${saidaHora}`, 'yyyy-MM-dd HH:mm:ss', new Date());
+  let dataChegada = parse(
+    `${chegada.split(' ')[0]} ${chegadaHora}`,
+    'yyyy-MM-dd HH:mm:ss',
+    new Date(),
+  );
+
+  // Calcula a diferença em milissegundos entre as datas
+  let diferencaMs = differenceInMilliseconds(dataChegada, dataSaida);
+
+  // Converte a diferença de milissegundos para dias
+  let dias = diferencaMs / (1000 * 60 * 60 * 24);
+
+  return dias;
+}

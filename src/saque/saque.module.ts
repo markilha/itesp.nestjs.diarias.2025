@@ -17,6 +17,7 @@ import { extornoModule } from 'src/extorno/extorno.module';
 import { itensreqrecModule } from 'src/itensreqrec/itensreqrec.module';
 import { S001RequisicaoModule } from 'src/requisicao/s001_requisicao.module';
 import { destinoModule } from 'src/destino/destino.module';
+import { naotrabModule } from 'src/naotrab/naotrab.module';
 
 
 @Module({
@@ -35,7 +36,8 @@ import { destinoModule } from 'src/destino/destino.module';
     extornoModule,
     itensreqrecModule,
     S001RequisicaoModule,
-    destinoModule
+    destinoModule,
+    naotrabModule
     
   ],
   providers: [SaqueService],
