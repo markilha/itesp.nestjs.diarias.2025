@@ -26,6 +26,7 @@ import { RequisicaoEntity } from '../database/db_oracle/entities/requisicao.enti
 import { retornoItinerarioDto } from '../itinirario/itinerarioDto';
 import { DataUtils } from '../util/DataUtils';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
+import { naotrabService } from '../naotrab/naotrab.service';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -35,6 +36,7 @@ export class S001RequisicaoService {
     private ufespService: UfespService,
     private SaquesMesService: SaquesMesService,
     private itinirarioService: ItinirarioService,
+    private naotrabservice: naotrabService,
   ) {}
 
   private async buscarItinerario(reqIdCodigo: number) {
@@ -182,12 +184,16 @@ export class S001RequisicaoService {
         iti.ITI_HCHEGADA = requisicao.reqHRet;
       }
 
+      const naotrab = await this.naotrabservice.totalDiariaNaoTrabalhada(requisicao.reqIdCodigo);
+      const nt = naotrab?.total || 0;
+
       try {
         qtdIntegral = calcularDiariaIntegral(
           iti.ITI_DTSAIDA,
           iti.ITI_HSAIDA,
           iti.ITI_DTCHEGADA,
           iti.ITI_HCHEGADA,
+          nt,
         );
         qtdParcial = calcularDiariaParcial(iti.ITI_HCHEGADA);
       } catch (error) {
@@ -281,10 +287,11 @@ export class S001RequisicaoService {
 
   async findMesAtual(params: findMesParams): Promise<RequisDto[]> {
     try {
-      const newdata = '2012-09-17'
+
+      const dataatual = params.dataAtual ? params.dataAtual : new Date();  
       //const newdata = new Date();
-      const inicioMes = format(startOfMonth(newdata), 'dd/MM/yyyy 00:00:00');
-      const fimMes = format(endOfMonth(newdata), 'dd/MM/yyyy 00:00:00');
+      const inicioMes = format(startOfMonth(dataatual), 'dd/MM/yyyy 00:00:00');
+      const fimMes = format(endOfMonth(dataatual), 'dd/MM/yyyy 00:00:00');
 
       const requisicao = await this.requisicaoRepository
         .createQueryBuilder('requisicao')
@@ -297,9 +304,18 @@ export class S001RequisicaoService {
           { inicioMes, fimMes },
         )
         .getRawMany();
+     
 
-      return requisicao.map((reqv) => new RequisDto(reqv));
-    } catch (error) {     
+      return requisicao.map(
+        (requis) =>
+          new RequisDto({
+            chapa: requis?.requisicao_CHAPA,
+            reqIdCodigo: requis?.requisicao_REQ_ID_CODIGO,
+            reqStatus: requis?.requisicao_REQ_STATUS,
+            reqDtReq: requis?.requisicao_REQ_DTREQ,
+          }),
+      );
+    } catch (error) {
       throw new HttpException(
         'Erro ao buscar requisições aprovadas',
         HttpStatus.INTERNAL_SERVER_ERROR,

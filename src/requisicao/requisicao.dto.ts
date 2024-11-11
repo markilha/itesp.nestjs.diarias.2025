@@ -200,7 +200,8 @@ export class FindAllAutorizadasParams {
 export class findMesParams {
   @ApiProperty()
   chapa: string;
- 
+  @ApiProperty()
+  dataAtual: Date; 
 }
 
 export class RequisDto{

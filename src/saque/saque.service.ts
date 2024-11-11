@@ -38,11 +38,12 @@ import { reqtransService } from '../reqtrans/reqtrans.service';
 import { FuncsalarioService } from '../funcsalario/funcsalario.service';
 import { DataUtils } from '../util/DataUtils';
 import { extornoService } from '../extorno/extorno.service';
-import { itensreqrecService } from 'src/itensreqrec/itensreqrec.service';
-import { S001RequisicaoService } from 'src/requisicao/s001_requisicao.service';
-import { destinoService } from 'src/destino/destino.service';
+import { itensreqrecService } from '../itensreqrec/itensreqrec.service';
+import { S001RequisicaoService } from '../requisicao/s001_requisicao.service';
+import { destinoService } from '../destino/destino.service';
 import { formatDate } from 'date-fns';
-import { naotrabService } from 'src/naotrab/naotrab.service';
+import { naotrabService } from '../naotrab/naotrab.service';
+
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1

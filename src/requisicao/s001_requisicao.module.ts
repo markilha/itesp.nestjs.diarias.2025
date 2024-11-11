@@ -7,6 +7,7 @@ import { UfespModule } from 'src/ufesp/ufesp.module';
 import { SaquesMesModule } from 'src/saques-mes/saques-mes.module';
 import { ItinirarioModule } from 'src/itinirario/itinirario.module';
 import { RequisicaoEntity } from 'src/database/db_oracle/entities/requisicao.entity';
+import { naotrabModule } from 'src/naotrab/naotrab.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { RequisicaoEntity } from 'src/database/db_oracle/entities/requisicao.ent
     UfespModule,
     SaquesMesModule,
     ItinirarioModule,
+    naotrabModule,
    
   ],
   controllers: [S001RequisicaoController],

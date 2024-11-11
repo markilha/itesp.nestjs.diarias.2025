@@ -11,6 +11,10 @@ import { UfespService } from '../../ufesp/ufesp.service';
 import { DespesadiariaService } from '../../despesadiaria/despesadiaria.service';
 import { FuncsalarioService } from '../../funcsalario/funcsalario.service';
 import { extornoService } from '../../extorno/extorno.service';
+import { naotrabService } from '../../naotrab/naotrab.service';
+import { itensreqrecService } from '../../itensreqrec/itensreqrec.service';
+import { S001RequisicaoService } from '../../requisicao/s001_requisicao.service';
+import { destinoService } from '../../destino/destino.service';
 import { Repository } from 'typeorm';
 import {
   mockDiariaChegada,
@@ -22,7 +26,8 @@ import {
 import { calcularDiariaValores } from '../../util/calculo_dia_retorno';
 import { Destino } from '../../util/diariaDto';
 import { calcularValores } from '../../util/calculo_extorno';
-import { mock } from 'node:test';
+
+
 
 describe('SaqueService', () => {
   let service: SaqueService;
@@ -34,7 +39,7 @@ describe('SaqueService', () => {
         SaqueService,
         {
           provide: getRepositoryToken(SaqueEntity, 'oracleConnection'),
-          useValue: {
+          useValue: {            
             findOne: jest.fn().mockResolvedValue(mockReturnSaque),
             query: jest.fn().mockResolvedValue([mockSaque]),
             updateEfetivo: jest.fn().mockResolvedValue(mockReturnSaque),
@@ -97,6 +102,33 @@ describe('SaqueService', () => {
             findAll: jest.fn(),
           },
         },
+        {
+          provide: naotrabService,
+          useValue: {
+            getCurrentValue: jest.fn(),
+          },
+        },
+        {
+          provide: itensreqrecService,
+          useValue: {
+            findItens: jest.fn(),
+          },
+        },
+        {
+          provide: S001RequisicaoService,
+          useValue: {
+            // Aqui você define os métodos mockados necessários para os testes
+            findOne: jest.fn(),
+            create: jest.fn(),
+            // Adicione outros métodos que serão usados
+          },
+        },
+        {
+          provide: destinoService,
+          useValue: {
+            findOne: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -110,8 +142,10 @@ describe('SaqueService', () => {
   });
 
   it('Buscar todos saques', async () => {
-    const saques = await service.findAll({ SQE_ID_CODIGO: 15739 });
-    expect(saques).toEqual([mockSaque]);
+    const saques = await service.findAll({  CHAPA: '000081' });
+    const result = saques.data;    
+   
+   expect(result).toEqual([mockSaque]);
   });
 
   describe('Prestação de conta', () => {
