@@ -1,29 +1,32 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToOne, JoinColumn } from 'typeorm';
+import { MunicipiosIbgIEntity } from './municipiosIBGE';
+import { TransMeioEntity } from './transmeio.entity';
+import { regionalEntity } from './regional.entity';
 
-@Entity('S001_REQUISICAO', { schema: 'TRANSPORTE' }) 
+@Entity('S001_REQUISICAO', { schema: 'TRANSPORTE' })
 export class reqtransEntity {
   @PrimaryColumn({ name: 'REQ_ID_CODIGO' })
   @ApiProperty()
   REQ_ID_CODIGO: number;
 
-  @Column({ name: 'REG_ID_CODIGO'})
+  @Column({ name: 'REG_ID_CODIGO' })
   @ApiProperty()
   REG_ID_CODIGO: number;
 
-  @Column({ name: 'COD_MUNICIP'})
+  @Column({ name: 'COD_MUNICIP' })
   @ApiProperty()
   COD_MUNICIP: number;
 
-  @Column({ name: 'TRA_ID_CODIGO'})
+  @Column({ name: 'TRA_ID_CODIGO' })
   @ApiProperty()
   TRA_ID_CODIGO: number;
 
-  @Column({ name: 'REQ_DTREQ'})
+  @Column({ name: 'REQ_DTREQ' })
   @ApiProperty()
   REQ_DTREQ: string;
 
-  @Column({ name: 'REQ_DTSAIDA'})
+  @Column({ name: 'REQ_DTSAIDA' })
   @ApiProperty()
   REQ_DTSAIDA: Date;
 
@@ -31,7 +34,7 @@ export class reqtransEntity {
   @ApiProperty()
   REQ_MOTORISTA: string;
 
-  @Column({ name: 'REQ_HSAIDA'})
+  @Column({ name: 'REQ_HSAIDA' })
   @ApiProperty()
   REQ_HSAIDA: string;
 
@@ -47,27 +50,27 @@ export class reqtransEntity {
   @ApiProperty()
   REQ_HRET: string;
 
-  @Column({ name: 'REQ_KM'})
+  @Column({ name: 'REQ_KM' })
   @ApiProperty()
   REQ_KM: number;
 
-  @Column({ name: 'REQ_STATUS'})
+  @Column({ name: 'REQ_STATUS' })
   @ApiProperty()
   REQ_STATUS: string;
 
-  @Column({ name: 'REQ_DIARIA'})
+  @Column({ name: 'REQ_DIARIA' })
   @ApiProperty()
   REQ_DIARIA: string;
 
-  @Column({ name: 'REQ_INTEGRAL'})
+  @Column({ name: 'REQ_INTEGRAL' })
   @ApiProperty()
   REQ_INTEGRAL: number;
 
-  @Column({ name: 'REQ_PARCIAL'})
+  @Column({ name: 'REQ_PARCIAL' })
   @ApiProperty()
   REQ_PARCIAL: number;
 
-  @Column({ name: 'REQ_ESPECIAL'})
+  @Column({ name: 'REQ_ESPECIAL' })
   @ApiProperty()
   REQ_ESPECIAL: number;
 
@@ -75,7 +78,21 @@ export class reqtransEntity {
   @ApiProperty()
   REQ_PACOTE: string;
 
-  @Column({ name: 'REQ_GOVERNADOR'})
+  @Column({ name: 'REQ_GOVERNADOR' })
   @ApiProperty()
   REQ_GOVERNADOR: string;
+
+  @OneToOne(() => MunicipiosIbgIEntity, (municipiosIbgIEntity) => municipiosIbgIEntity.requi)
+  @JoinColumn({ name: 'COD_MUNICIP', referencedColumnName: 'codMunicipio' })
+  muni?: MunicipiosIbgIEntity;
+
+  @OneToOne(() => TransMeioEntity)
+  @JoinColumn({ name: 'TRA_ID_CODIGO', referencedColumnName: 'traIdCodigo' })
+  transmeio?: TransMeioEntity;
+
+  @OneToOne(() => regionalEntity)
+  @JoinColumn({ name: 'REG_ID_CODIGO', referencedColumnName: 'REG_ID_CODIGO' })
+  regional?: regionalEntity;
+
+  
 }

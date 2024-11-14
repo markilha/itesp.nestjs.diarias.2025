@@ -1,33 +1,32 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PPessoaEntity } from 'src/database/db_oracle/entities/ppessoa.entity';
-import { PFuncEntity } from 'src/database/db_oracle/entities/pfunc.entity';
+import { PPessoaEntity } from '../database/db_oracle/entities/ppessoa.entity';
 import { Repository } from 'typeorm';
-import { FindAllParams, RMPessoaDto } from './ppessoa.dto';
+import { FindAllParams, } from './ppessoa.dto';
 import { FuncionarioDto, returnRmDto } from './returnRmDto';
 
 @Injectable()
 export class PpessoaService {
   constructor(
     @InjectRepository(PPessoaEntity, 'oracleConnection')
-    private rmRepository: Repository<PPessoaEntity>,
-
-    @InjectRepository(PFuncEntity, 'oracleConnection')
-    private funcRepository: Repository<PFuncEntity>,
+    private rmRepository: Repository<PPessoaEntity>,  
   ) {}
 
-  async findAll(params: FindAllParams): Promise<FuncionarioDto> {
+  async find(params: FindAllParams): Promise<FuncionarioDto> {
     try {
-      const query = `    
-      SELECT
-        a.CHAPA as CHAPA,
-        UPPER(a.NOME) as NOME,
-        a.DESCFUNC as DESCFUNC,
-        b.CPF as CPF
-      FROM FINANCEIRO.V001_PFUNC a 
-      INNER JOIN RM.ppessoa b ON a.CHAPA = b.CODUSUARIO
-      WHERE a.CHAPA = :chapa           
-    `;
+      const query = `
+      SELECT 
+        A.CHAPA as CHAPA,
+        UPPER(C.NOME) as NOME,
+        C.CPF as CPF,
+        D.NOME as DESCFUNC,
+        E.REG_ID_CODIGO as REG_ID_CODIGO
+      FROM Rm.Pfunc A, Rm.Ppessoa C, Financeiro.V009_SetorRegional E,Rm.Pfuncao D
+      WHERE A.Codpessoa = C.Codigo 
+      AND A.Codsecao = E.codigo 
+      AND  A.Codfuncao = d.codigo
+      AND A.CHAPA = :chapa
+      `;
 
       const consulta = await this.rmRepository.query(query, [params.chapa]);
 
@@ -41,6 +40,7 @@ export class PpessoaService {
         CPF: consulta[0].CPF,
         DESCFUNC: consulta[0].DESCFUNC,
         ORGAO: 'FUNDAÇÃO INSTITUTO DE TERRAS DO ESTADO DE SÃO PAULO',
+        REG_ID_CODIGO: consulta[0].REG_ID_CODIGO,
       });
 
       return funcionario;

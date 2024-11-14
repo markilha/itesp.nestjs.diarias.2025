@@ -44,7 +44,6 @@ import { destinoService } from '../destino/destino.service';
 import { formatDate } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
 
-
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
     ? {
@@ -83,10 +82,14 @@ export class SaqueService {
 
   private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
     const saque = await this.findOne(sqeIdCodigo);
+
     const itensreq = await this.itensreqrecService.findOne(saque.iteIdCodigo);
+
     const reqnumerario = await this.reqnumerarioService.findOne(saque.sqeIdCodigo);
-    const requisicao = await this.requisicaoService.findOne(reqnumerario.REQ_ID_CODIGO);
-    const destino = await this.destinoService.findOne(requisicao.reqIdCodigo);
+
+    const reqtrans = await this.reqtransService.findOne(reqnumerario.REQ_ID_CODIGO);
+
+    const destino = await this.destinoService.findOne(reqnumerario.REQ_ID_CODIGO);
 
     const saquedto: buscarSaqueDto = {
       SQE_ID_CODIGO: saque.sqeIdCodigo,
@@ -101,29 +104,25 @@ export class SaqueService {
       PRA_ATIVO: itensreq.PRA_ATIVO,
       REQ_ID_CODIGO: reqnumerario.REQ_ID_CODIGO,
       RNU_ID_CODIGO: reqnumerario.RNU_ID_CODIGO,
-      REQ_STATUS: requisicao.reqStatus,
-      REQ_DTSAIDA: requisicao.reqDtSaida,
-      REQ_HSAIDA: requisicao.reqHSaida,
-      REQ_DTRET: requisicao.reqDtReq,
-      REQ_HRET: requisicao.reqHRet,
-      REQ_PACOTE: requisicao.reqPacote,
-      REQ_INTEGRAL: requisicao.reqIntegral,
-      REQ_PARCIAL: requisicao.reqParcial,
-      TRA_ID_CODIGO: requisicao.traIdCodigo,
-      REQ_MOTIVO: requisicao.reqMotivo,
+      REQ_STATUS: reqtrans.REQ_STATUS,
+      REQ_DTSAIDA: reqtrans.REQ_DTSAIDA,
+      REQ_HSAIDA: reqtrans.REQ_HSAIDA,
+      REQ_DTRET: reqtrans.REQ_DTRET,
+      REQ_HRET: reqtrans.REQ_HRET,
+      REQ_PACOTE: Number(reqtrans.REQ_PACOTE),
+      REQ_INTEGRAL: reqtrans.REQ_INTEGRAL,
+      REQ_PARCIAL: reqtrans.REQ_PARCIAL,
+      TRA_ID_CODIGO: reqtrans.TRA_ID_CODIGO,
+      REQ_MOTIVO: reqtrans.REQ_MOTIVO,
       MUN_ID_CODIGO: destino.MUN_ID_CODIGO,
       DES_LOCAL: destino.DES_LOCAL,
-      MUN_CIDADE: requisicao.nmeMunic,
-      TRA_DESCRICAO: requisicao.traDescricao,
-      NME_MUNIC: requisicao.nmeMunic,
-      REG_DESCRICAO: requisicao.regDescricao,
+      MUN_CIDADE: reqtrans?.muni?.nmeMunic,
+      NME_MUNIC: reqtrans?.muni?.nmeMunic,
+      TRA_DESCRICAO: reqtrans?.transmeio?.traDescricao,
+      REG_DESCRICAO: reqtrans?.regional?.REG_DESCRICAO,
     };
 
     return saquedto;
-
-    // let consulta = await this.saqueRepository.query(queryPrestacao, [sqeIdCodigo]);
-
-    // return consulta[0];
   }
 
   private async buscarItinerario(reqIdCodigo: number) {
@@ -140,8 +139,10 @@ export class SaqueService {
     return ufeValor;
   }
 
-  private async buscarUfespCargo(chapa: string): Promise<number> {
+  private async buscarUfespCargo(chapa: string): Promise<number> {   
+   
     const funcsalario = await this.funcsalarioService.findByCodigo(chapa);
+
     if (!funcsalario) {
       throw new HttpException('Funcionário não encontrado', HttpStatus.NOT_FOUND);
     }
@@ -158,15 +159,21 @@ export class SaqueService {
     destino: Destino,
   ) {
     try {
+      
       const itiDataHora = getDateTimeParams(consulta, itinerario);
+     
       const nt = await this.naotrabservice.totalDiariaNaoTrabalhada(consulta.REQ_ID_CODIGO);
-      const diariaNaoTrabalhada = nt.total || 0;
+     
+      const diariaNaoTrabalhada = nt.total || 0;     
+
+
       const { diariaIntegral, diariaParcial, diaraPorc } = calcQuantDiariaIntegralParcialPorcen(
         itiDataHora,
         diariaNaoTrabalhada,
       );
+      
       const pacote = Number(consulta.REQ_PACOTE);
-
+    
       const calcDiaraInial = calcularDiariaValores(
         UFESP,
         UFESPcargoValor,
@@ -186,6 +193,8 @@ export class SaqueService {
         diariaParcial,
         itiDataHora.horaChegada,
       );
+     
+
 
       return {
         calcDiaraInial,
@@ -194,9 +203,8 @@ export class SaqueService {
         diariaParcial,
         diaraPorc,
       };
-    } catch (error) {
-      console.error('Erro ao calcular diárias:', error);
-      throw new HttpException('Erro ao calcular diárias', HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error) {     
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -226,20 +234,18 @@ export class SaqueService {
     try {
       const [itinerario, UFESP, UFESPcargoValor] = await Promise.all([
         this.buscarItinerario(consulta.REQ_ID_CODIGO).catch((error) => {
-          throw new HttpException(
-            'Erro ao buscar itinerário: ' + error.message,
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
+          throw new HttpException('Erro ao buscar itinerário: ', HttpStatus.INTERNAL_SERVER_ERROR);
         }),
+
         this.buscarUfesp(consulta.REQ_DTSAIDA).catch((error) => {
           throw new HttpException(
-            'Erro ao buscar valor UFESP: ' + error.message,
+            'Requisição anterior a 10/08/2009, ufesp não encontrada: ',
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
         }),
-        this.buscarUfespCargo(consulta.CHAPA).catch((error) => {
+        this.buscarUfespCargo(consulta.CHAPA).catch((error) => {          
           throw new HttpException(
-            'Erro ao buscar UFESP do cargo: ' + error.message,
+            error.message,
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
         }),
@@ -318,10 +324,14 @@ export class SaqueService {
         filterValues.push(endDate);
       }
 
-      const result = await this.saqueRepository.query(
+      const result2 = await this.saqueRepository.query(
         querySaque(filterConditions, orderByField, orderDirection),
         [...filterValues, offset, itemsPerPage],
       );
+
+      const result = result2.filter((item) => {
+        return new Date(item.SQE_DTSAQUE) > new Date('2009-08-10');
+      });
 
       const count = await this.saqueRepository.query(
         querySaqueCount(filterConditions),
@@ -362,6 +372,7 @@ export class SaqueService {
           STATUS,
           SQE_EFETIVO: item.SQE_EFETIVO,
           PRA_ATIVO: item.PRA_ATIVO,
+          SQE_TIPOSAQUE: item.SQE_TIPOSAQUE === 'N' ? 'Diária' : '',
         });
       });
 
@@ -374,7 +385,6 @@ export class SaqueService {
         total: totalCount,
       };
     } catch (error) {
-      console.error('Erro na consulta findSaque:', error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -385,7 +395,10 @@ export class SaqueService {
       const consulta = await this.buscarConsulta(params.SQE_ID_CODIGO);
 
       if (!consulta) {
-        throw new HttpException('Saque não encontrado', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          `Saque com codigo: ${params.SQE_ID_CODIGO} não encontrado`,
+          HttpStatus.NOT_FOUND,
+        );
       }
 
       const { itinerario, UFESP, UFESPcargoValor } = await this.buscarDadosNecessarios(consulta);

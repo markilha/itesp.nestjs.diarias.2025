@@ -70,13 +70,16 @@ export class FuncionarioDto {
   @ApiProperty() 
   CPF: string;    
   @ApiProperty()      
-  ORGAO: string;       
-  constructor(item: any) {
-    this.CHAPA = item.CHAPA;
-    this.NOME = item.NOME;
-    this.DESCFUNC = item.DESCFUNC;
-    this.CPF = item.CPF;
-    this.ORGAO = item.ORGAO;
+  ORGAO: string;  
+  @ApiProperty() 
+  REG_ID_CODIGO: number;   
+  constructor(item?: any) {
+    this.CHAPA = item?.CHAPA;
+    this.NOME = item?.NOME;
+    this.DESCFUNC = item?.DESCFUNC;
+    this.CPF = item?.CPF;
+    this.ORGAO = item?.ORGAO;
+    this.REG_ID_CODIGO = item?.REG_ID_CODIGO;
   } 
 
 }

@@ -1,97 +1,127 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
 
 @Entity('V009_DOCPCONTASNUM', { schema: 'FINANCEIRO' }) 
 export class docpcontasnumEntity {
 
   @PrimaryColumn({ name: 'NDO_ID_CODIGO', type: 'number', nullable: false })
+  @ApiProperty()
   NDO_ID_CODIGO: number;
 
-
   @Column({ name: 'SQE_ID_CODIGO', type: 'number' })
+  @ApiProperty()
   SQE_ID_CODIGO: number;
 
   @Column({ name: 'PCO_ID_CODIGO', type: 'number', nullable: false })
+  @ApiProperty()
   PCO_ID_CODIGO: number;
 
   @Column({ name: 'PES_ID_CODIGO', type: 'number', nullable: true })
+  @ApiProperty({required: false})
   PES_ID_CODIGO?: number;
 
   @Column({ name: 'PES_PESSOA', type: 'char', length: 1, nullable: true })
+  @ApiProperty({required: false})
   PES_PESSOA?: string;
 
   @Column({ name: 'NDO_ID_NUMERO', type: 'varchar2', length: 20, nullable: false })
+  @ApiProperty()
   NDO_ID_NUMERO: string;
 
+
   @Column({ name: 'NDO_DATA', type: 'date', nullable: false })
+  @ApiProperty({required: false})
   NDO_DATA: Date;
 
   @Column({ name: 'NDO_DTENTREGA', type: 'varchar2', length: 25, nullable: true })
+  @ApiProperty({required: false})
   NDO_DTENTREGA?: string;
 
   @Column({ name: 'NDO_OPERADOR', type: 'varchar2', length: 100, nullable: true })
+  @ApiProperty({required: false})
   NDO_OPERADOR?: string;
 
   @Column({ name: 'STS_ID_CODIGO', type: 'number', nullable: true })
+  @ApiProperty({required: false})
   STS_ID_CODIGO?: number;
 
   @Column({ name: 'NDO_SERIE', type: 'varchar2', length: 20, nullable: true })
+  @ApiProperty({required: false})
   NDO_SERIE?: string;
 
   @Column({ name: 'NDO_TITULO', type: 'varchar2', length: 30, nullable: true })
+  @ApiProperty({required: false})
   NDO_TITULO?: string;
 
   @Column({ name: 'PES_NOME', type: 'varchar2', length: 60, nullable: true })
+  @ApiProperty({required: false})
   PES_NOME?: string;
 
   @Column({ name: 'CHAPA', type: 'varchar2', length: 16, nullable: false })
+  @ApiProperty()
   CHAPA: string;
 
   @Column({ name: 'NOME', type: 'varchar2', length: 120, nullable: true })
+  @ApiProperty({required: false})
   NOME?: string;
 
   @Column({ name: 'CODIGO', type: 'varchar2', length: 35, nullable: true })
+  @ApiProperty({required: false})
   CODIGO?: string;
 
   @Column({ name: 'DESCRICAO', type: 'varchar2', length: 60, nullable: true })
+  @ApiProperty({required: false})
   DESCRICAO?: string;
 
   @Column({ name: 'VALORTOTAL', type: 'number', nullable: true })
+  @ApiProperty({required: false})
   VALORTOTAL?: number;
 
   @Column({ name: 'SQE_DTPREST', type: 'varchar2', length: 30, nullable: true })
+  @ApiProperty({required: false})
   SQE_DTPREST?: string;
 
   @Column({ name: 'TDE_DESCRICAO', type: 'varchar2', length: 100, nullable: true })
+  @ApiProperty({required: false})
   TDE_DESCRICAO?: string;
 
   @Column({ name: 'TDE_ID_CODIGO', type: 'number', nullable: true })
+  @ApiProperty({required: false})
   TDE_ID_CODIGO?: number;
 
   @Column({ name: 'SQE_VLSAQUE', type: 'number', precision: 10, scale: 2, nullable: true })
+  @ApiProperty({required: false})
   SQE_VLSAQUE?: number;
 
   @Column({ name: 'SQE_VLPREST', type: 'number', precision: 10, scale: 2, nullable: true })
+  @ApiProperty({required: false})
   SQE_VLPREST?: number;
 
   @Column({ name: 'SQE_DTSAQUE', type: 'varchar2', length: 30, nullable: true })
+  @ApiProperty({required: false})
   SQE_DTSAQUE?: string;
 
   @Column({ name: 'PCO_TIPO', type: 'char', length: 1, nullable: true })
   PCO_TIPO?: string;
 
   @Column({ name: 'PCO_TOTDOC', type: 'number', nullable: true })
+  @ApiProperty({required: false})
   PCO_TOTDOC?: number;
 
   @Column({ name: 'PRA_ID_CODIGO', type: 'number', nullable: true })
+  @ApiProperty({required: false})
   PRA_ID_CODIGO?: number;
 
   @Column({ name: 'REQ_ID_CODIGO', type: 'number', nullable: true })
+  @ApiProperty({required: false})
   REQ_ID_CODIGO?: number;
 
   @Column({ name: 'SQE_EFETIVO', type: 'char', length: 1, nullable: true })
+  @ApiProperty({required: false})
   SQE_EFETIVO?: string;
 
   @Column({ name: 'REG_ID_CODIGO', type: 'number', nullable: true })
+  @ApiProperty({required: false})
   REG_ID_CODIGO?: number;
 
  constructor(docpcontasnum?: Partial<docpcontasnumEntity>) {

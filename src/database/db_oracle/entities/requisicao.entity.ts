@@ -18,7 +18,7 @@ export class RequisicaoEntity {
   reqDtReq: string;
 
   @Column({ name: 'REQ_DTSAIDA', type: 'varchar2', length: 50, nullable: true })
-  reqDtSaida: string;
+  reqDtSaida: Date;
 
   @Column({ name: 'REQ_MOTORISTA', type: 'varchar2', length: 50, nullable: true })
   reqMotorista: string;

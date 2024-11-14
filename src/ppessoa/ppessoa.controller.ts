@@ -20,7 +20,7 @@ export class PpessoaController {
     @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
    
     async findAll(@Query() params: FindAllParams): Promise<FuncionarioDto> {
-      return await this.rmService.findAll(params);
+      return await this.rmService.find(params);
     }  
 
 }

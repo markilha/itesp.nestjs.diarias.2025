@@ -38,12 +38,18 @@ export const mockSaque = {
   VL_EXTORNO: 100,
   STATUS: 'Realizada',
   REQ_DTREQ: null,
-  REQ_STATUS: 'AUTORIZADA PELO DIRETOR EXECUTIVO',
+  REQ_STATUS: 'CANCELADA',
   CHAPA: '000081',
   STS_DESCRICAO: 'SAQUES E PRESTACAO DE CONTAS',
   SQE_EFETIVO: 'S',
   PRA_ATIVO: 'N',
+  SQE_TIPOSAQUE: '',
 };
+
+export const mocktotal = {
+  data: [mockSaque],
+  total: 1,
+}
 
 export const mockReturnSaque = {
   sqeIdCodigo: 9162307,

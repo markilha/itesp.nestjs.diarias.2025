@@ -58,7 +58,7 @@ export class ReqnumerarioService {
       return new ReqnumerarioDto(reqnumerario);
     } catch (error) {
       throw new HttpException(
-        'Erro ao buscar numerario',
+        `Numerario com SQE_ID_CODIGO ${SQE_ID_CODIGO} não encontrado`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

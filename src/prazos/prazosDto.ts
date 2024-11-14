@@ -34,6 +34,17 @@ export class PrazosDto {
   }
 }
 
+export class findPrazosMesDto {
+  @ApiProperty(
+    
+  )
+  chapa: string;
+  @ApiProperty({ required: false,
+    description: 'Se não informado, será considerado a data atual',
+  })
+  data?: Date;
+}
+
 export class FindAllParams {
   PRA_ID_CODIGO?: number;
   REG_ID_CODIGO?: number;

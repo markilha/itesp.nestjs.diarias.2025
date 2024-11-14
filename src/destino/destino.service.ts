@@ -11,13 +11,13 @@ export class destinoService {
     private destinoRepository: Repository<destinoEntity>,
   ) {}  
 
-  async findOne(REQ_ID_CODIGO: number) {
+  async findOne(REQ_ID_CODIGO: number): Promise<destinoEntity> {
     try {
       return await this.destinoRepository.findOneOrFail({
         where: {REQ_ID_CODIGO},
       });
     } catch (error) {
-      throw new HttpException('Destino não encontrado', HttpStatus.NOT_FOUND);
+      throw new HttpException(`Destina da requisição: ${REQ_ID_CODIGO} não foi encontrado `, HttpStatus.NOT_FOUND);
     }
   }
  

@@ -1,5 +1,6 @@
 import { Entity, PrimaryColumn, Column, OneToOne } from 'typeorm';
-import { RequisicaoEntity } from './requisicao.entity';
+
+import { reqtransEntity } from './requisicaoTrans.entity';
 
 @Entity('MUNICIPIOS_IBGE_IGC',{ schema: 'COMUM' })
 export class MunicipiosIbgIEntity {
@@ -8,5 +9,10 @@ export class MunicipiosIbgIEntity {
 
   @Column({ name: 'NME_MUNIC', type: 'varchar2', length: 50, nullable: true })
   nmeMunic: string;
+
+  @OneToOne(() => reqtransEntity, mun => mun.muni) 
+  requi?: reqtransEntity; 
+
+
 
 }

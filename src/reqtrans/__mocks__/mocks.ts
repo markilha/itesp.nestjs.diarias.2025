@@ -1,7 +1,7 @@
 import { reqtransEntity } from "src/database/db_oracle/entities/requisicaoTrans.entity";
 
 
-export const mockreqtrans:reqtransEntity ={
+export const mockreqtrans ={
     "REQ_ID_CODIGO": 1,
     "REG_ID_CODIGO": 7,
     "COD_MUNICIP": 355030,
@@ -23,7 +23,7 @@ export const mockreqtrans:reqtransEntity ={
     "REQ_GOVERNADOR": null
 }
 
-export const mockreqtransCancelada:reqtransEntity ={
+export const mockreqtransCancelada ={
        "COD_MUNICIP": 355030,
        "REG_ID_CODIGO": 7,
        "REQ_DIARIA": null,

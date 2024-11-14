@@ -82,15 +82,15 @@ export class UfespService {
 
   // Inserir uma data e retornar o valor da UFESP naquela data
 
-  async findValueByDate(dateString: string): Promise<UfespDto | null> {
-    const date = new Date(dateString);
-
+  async findValueByDate(dateString: string | Date): Promise<UfespDto | null> {
+    const date = dateString instanceof Date ? dateString : new Date(dateString);    
+  
     // Tenta encontrar o valor correspondente à data utilizando BETWEEN
     let result = await this.uferpsRepository
       .createQueryBuilder('u')
       .where(':date BETWEEN u.ufeDtInicio AND u.ufeDtFinal', { date }) // Utiliza BETWEEN para simplificar
       .getOne();
-
+  
     // Se não encontrar, busca o valor anterior à data
     if (!result) {
       result = await this.uferpsRepository
@@ -99,7 +99,8 @@ export class UfespService {
         .orderBy('u.ufeDtFinal', 'DESC')
         .getOne();
     }
-
+  
     return result;
   }
+  
 }

@@ -17,7 +17,7 @@ export class itensreqrecService {
         where: { ITE_ID_CODIGO},
       });
     } catch (error) {
-      throw new HttpException('Itens requeridos não encontrado', HttpStatus.NOT_FOUND);
+      throw new HttpException(`Item com codigo: ${ITE_ID_CODIGO} não encontrado`, HttpStatus.NOT_FOUND);
     }
   }
  

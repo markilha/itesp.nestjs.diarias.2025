@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { FindOptionsWhere, In, MoreThanOrEqual, Raw, Repository } from 'typeorm';
+import { FindOptionsWhere, In, MoreThan, MoreThanOrEqual, Raw, Repository } from 'typeorm';
 import {
   FindAllAutorizadasParams,
   FindAllParams,
@@ -64,6 +64,8 @@ export class S001RequisicaoService {
         order['reqIdCodigo'] = 'ASC';
       }
 
+      searchParams['reqDtSaida'] = MoreThanOrEqual(new Date('2009-08-10'));
+
       let requisicoes: RequisicaoEntity[];
 
       if (params.page && params.limit) {
@@ -77,7 +79,8 @@ export class S001RequisicaoService {
           take: limit,
           order,
           relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
-        });
+        }); 
+
       } else {
         requisicoes = await this.requisicaoRepository.find({
           where: searchParams,
@@ -178,7 +181,7 @@ export class S001RequisicaoService {
       if (requisicao.traIdCodigo === 1) {
         iti = await this.buscarItinerario(requisicao.reqIdCodigo);
       } else {
-        iti.ITI_DTSAIDA = DataUtils.converterStringParaData(requisicao.reqDtSaida);
+        iti.ITI_DTSAIDA = requisicao.reqDtSaida
         iti.ITI_HSAIDA = requisicao.reqHSaida;
         iti.ITI_DTCHEGADA = DataUtils.converterStringParaData(requisicao.reqDtReq);
         iti.ITI_HCHEGADA = requisicao.reqHRet;
@@ -252,11 +255,11 @@ export class S001RequisicaoService {
       const pageSize = params.limit ?? 10;
       const skip = (pageNumber - 1) * pageSize;
 
-      searchParams['reqStatus'] = In([
-        'AUTORIZADA PELO DIRETOR',
-        'AUTORIZADA PELO DIRETOR EXECUTIVO',
-      ]);
-      searchParams['reqDtReq'] = MoreThanOrEqual('2008-01-01');
+      // searchParams['reqStatus'] = In([
+      //   'AUTORIZADA PELO DIRETOR',
+      //   'AUTORIZADA PELO DIRETOR EXECUTIVO',
+      // ]);
+      searchParams['reqDtSaida'] = MoreThanOrEqual(new Date('2009-08-10'));
 
       const order: { [key: string]: 'ASC' | 'DESC' } = {};
       if (params.orderBy) {
@@ -330,7 +333,7 @@ export class S001RequisicaoService {
         where: { reqIdCodigo },
       });
     } catch (error) {
-      throw new HttpException('Requisição não encontrada', HttpStatus.NOT_FOUND);
+      throw new HttpException(`Requisição ${reqIdCodigo} não encontrada`, HttpStatus.NOT_FOUND);
     }
   }
 }

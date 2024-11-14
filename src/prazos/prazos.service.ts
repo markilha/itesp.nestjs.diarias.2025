@@ -1,14 +1,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PrazosEntity } from '../database/db_oracle/entities/prazos.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, PrazosDto } from './prazosDto';
+import { Between, FindOptionsWhere, Repository } from 'typeorm';
+import { FindAllParams, findPrazosMesDto, PrazosDto } from './prazosDto';
+import { PpessoaService } from '../ppessoa/ppessoa.service';
+import { endOfMonth, startOfMonth, format } from 'date-fns';
 
 @Injectable()
 export class PrazosService {
   constructor(
     @InjectRepository(PrazosEntity, 'oracleConnection')
     private PrazosRepository: Repository<PrazosEntity>,
+    private ppessoaService: PpessoaService,
   ) {}
 
   async findAll(params: FindAllParams): Promise<PrazosDto[]> {
@@ -41,7 +44,7 @@ export class PrazosService {
     } catch (error) {
       throw new HttpException('Não foi possível buscar cargos', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }  
+  }
 
   async findOne(PRA_ID_CODIGO: number) {
     try {
@@ -50,6 +53,26 @@ export class PrazosService {
       });
     } catch (error) {
       throw new HttpException('Prazo não encontrado', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async findmes(params: findPrazosMesDto): Promise<PrazosDto[]> {
+    try {
+      const dataatual = params.data || new Date();
+      const inicioMes = startOfMonth(dataatual);
+      const fimMes = endOfMonth(dataatual);
+      const ppessoa = await this.ppessoaService.find({ chapa: params.chapa });
+      const reg = ppessoa.REG_ID_CODIGO;
+
+      return await this.PrazosRepository.find({
+        where: {
+          REG_ID_CODIGO: reg,
+          PRA_INICIO_APLICA: Between(inicioMes, fimMes),
+        },
+      });
+      
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.NOT_FOUND);
     }
   }
 }

@@ -6,7 +6,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { PrazosService } from './prazos.service';
-import { PrazosDto, FindAllParams } from './prazosDto';
+import { PrazosDto, FindAllParams, findPrazosMesDto } from './prazosDto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AllExceptionsFilter } from 'src/interceptors/all-exceptions.filter';
@@ -23,13 +23,21 @@ export class PrazosController {
   @ApiResponse({ status: 200, description: 'Listagem de prazos', type: PrazosDto, isArray: true })
   @ApiResponse({ status: 500, description: 'Não foi possível buscar prazos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
+
   async findAll(@Query() params: FindAllParams): Promise<PrazosDto[]> {
     return await this.PrazosService.findAll(params);
   }
 
   @Get('findone')
+  @ApiResponse({ status: 200, description: 'Listagem de prazos', type: PrazosDto })
   async findOne(@Query('PRA_ID_CODIGO') PRA_ID_CODIGO: number): Promise<PrazosDto> {
     const Prazos = await this.PrazosService.findOne(PRA_ID_CODIGO);   
+    return Prazos;
+  }
+  @Get('findmes')
+  @ApiResponse({ status: 200, description: 'Listagem de prazos e aplicação do mes atual', type: PrazosDto, isArray: true })
+  async findreg(@Query() params: findPrazosMesDto): Promise<PrazosDto[]> {
+    const Prazos = await this.PrazosService.findmes(params);   
     return Prazos;
   }
  

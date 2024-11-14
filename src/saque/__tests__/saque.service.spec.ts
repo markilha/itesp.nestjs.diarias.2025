@@ -22,6 +22,7 @@ import {
   mockMD,
   mockReturnSaque,
   mockSaque,
+  mocktotal,
 } from '../__mocks__/saque.mock';
 import { calcularDiariaValores } from '../../util/calculo_dia_retorno';
 import { Destino } from '../../util/diariaDto';
@@ -44,7 +45,8 @@ describe('SaqueService', () => {
             query: jest.fn().mockResolvedValue([mockSaque]),
             updateEfetivo: jest.fn().mockResolvedValue(mockReturnSaque),
             save: jest.fn().mockResolvedValue(mockSaque),
-            findOneOrFail: jest.fn().mockResolvedValue(mockReturnSaque),
+            findOneOrFail: jest.fn().mockResolvedValue(mockReturnSaque)
+          
           },
         },
         {
@@ -143,9 +145,8 @@ describe('SaqueService', () => {
 
   it('Buscar todos saques', async () => {
     const saques = await service.findAll({  CHAPA: '000081' });
-    const result = saques.data;    
-   
-   expect(result).toEqual([mockSaque]);
+    const result = saques.data;  
+    expect(result).toEqual([mockSaque]);
   });
 
   describe('Prestação de conta', () => {
@@ -221,4 +222,6 @@ describe('SaqueService', () => {
       await expect(service.updateEfetivo(99999, 'c')).rejects.toThrow();
     });
   });
+
+
 });

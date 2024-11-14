@@ -200,8 +200,11 @@ export class FindAllAutorizadasParams {
 export class findMesParams {
   @ApiProperty()
   chapa: string;
-  @ApiProperty()
-  dataAtual: Date; 
+  @ApiProperty({
+    description: 'Data a ser considerada; caso não informada, será usada a data atual do sistema',
+    required: false,  
+  })
+  dataAtual?: Date; 
 }
 
 export class RequisDto{
@@ -213,11 +216,14 @@ export class RequisDto{
   reqStatus?: string; 
   @ApiProperty()
   reqDtReq?: string;
+  @ApiProperty()
+  reqDtSaida?: Date;
   constructor(requis?: Partial<RequisicaoEntity>){
     this.chapa = requis?.chapa;
     this.reqIdCodigo = requis?.reqIdCodigo;
     this.reqStatus = requis?.reqStatus;
-    this.reqDtReq = requis?.reqDtReq;   
+    this.reqDtReq = requis?.reqDtReq;  
+    this.reqDtSaida = requis?.reqDtSaida; 
   }
 }
 

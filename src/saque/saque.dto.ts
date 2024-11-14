@@ -148,6 +148,9 @@ export class returnSaqueDto {
   SQE_EFETIVO: string;
   @ApiProperty()
   PRA_ATIVO: string;
+  @ApiProperty()
+  SQE_TIPOSAQUE: string;
+
  
 
   constructor(params: any) {
@@ -169,6 +172,8 @@ export class returnSaqueDto {
     this.STS_DESCRICAO = params.STS_DESCRICAO;
     this.SQE_EFETIVO = params.SQE_EFETIVO;
     this.PRA_ATIVO = params.PRA_ATIVO;
+    this.SQE_TIPOSAQUE = params.SQE_TIPOSAQUE;
+  
   }
 }
 
@@ -536,6 +541,23 @@ export interface RetNumSaque {
 }
 
 
+export class returnaTotal {
+  @ApiProperty({
+    description: 'Array de objetos do tipo returnSaqueDto',
+    type: [returnSaqueDto],
+  })
+  data: returnSaqueDto[];
+
+  @ApiProperty({
+    description: 'Valor total calculado',
+    type: Number,
+    example: 0,
+  })
+  total: number;
+}
+
+
+
 
 
 export enum TipoOperacao {
@@ -770,9 +792,9 @@ export class buscarSaqueDto {
   REQ_ID_CODIGO?: number;
   RNU_ID_CODIGO?: number;
   REQ_STATUS?: string;
-  REQ_DTSAIDA?: string;
+  REQ_DTSAIDA?: Date;
   REQ_HSAIDA?: string;   
-  REQ_DTRET?: string;
+  REQ_DTRET?: Date;
   REQ_HRET?: string;    
   REQ_PACOTE?: number;
   REQ_INTEGRAL?: number;

@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { PpessoaController } from './ppessoa.controller';
 import { PpessoaService } from './ppessoa.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PPessoaEntity } from 'src/database/db_oracle/entities/ppessoa.entity';
-import { PFuncEntity } from 'src/database/db_oracle/entities/pfunc.entity';
+import { PPessoaEntity } from '../database/db_oracle/entities/ppessoa.entity';
+import { PFuncEntity } from '../database/db_oracle/entities/pfunc.entity';
 
 
 @Module({

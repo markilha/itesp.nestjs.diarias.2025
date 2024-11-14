@@ -93,7 +93,9 @@ export function calcularDiariaIntegral(
   naotrab: number,
 ): number {
   let diariaSemDesconto = calcularDias(dtSaida, hoSaida, dtChegada, hChegada);
+
   let horaChegada = new Date(`1970-01-01T${hChegada}`);
+
   horaChegada.setHours(horaChegada.getHours() - 3);
   let diaria: number;
 
@@ -111,6 +113,7 @@ export function calcularDiariaIntegral(
   const periodoAtual = new Date(
     '1970-01-01T' + new Date(periodo * 24 * 60 * 60 * 1000).toISOString().slice(11, 19),
   );
+
   periodoAtual.setHours(periodoAtual.getHours() - 3);
 
   // Horários de referência
@@ -147,7 +150,7 @@ export function calcularDiariaValores(
     h13.setHours(h13.getHours() - 3);
     let h19 = new Date('1970-01-01T19:00:00'); // 19:00
     h19.setHours(h19.getHours() - 3);
-    
+
     let diariaBase: number;
     // Artigo 2.º - Definir base conforme o cargo
     diariaBase = cargoUfesp * UFESP;
@@ -212,38 +215,41 @@ export function calcularDiariaValores(
       PARPERC: porcentagem,
     };
   } catch (error) {
-    throw new Error(`Erro ao calcular diária: ${error.message}`);
+    throw new Error(`Erro ao calcular valores de diárias`);
   }
 }
 
 export function calcQuantDiariaIntegralParcialPorcen(dateTimeParams: any, naotrab: number) {
-  const diariaIntegral = calcularDiariaIntegral(
-    dateTimeParams.dataSaida,
-    dateTimeParams.horaSaida,
-    dateTimeParams.dataChegada,
-    dateTimeParams.horaChegada,
-    naotrab,
-  );
+  try {
+    const diariaIntegral = calcularDiariaIntegral(
+      dateTimeParams.dataSaida,
+      dateTimeParams.horaSaida,
+      dateTimeParams.dataChegada,
+      dateTimeParams.horaChegada,
+      naotrab,
+    );
 
-  const diaraPorc = calcularDiariaParcial(dateTimeParams.horaChegada);
-  const diariaParcial = diaraPorc > 0 ? 1 : 0;
-  return { diariaIntegral, diariaParcial, diaraPorc };
+    const diaraPorc = calcularDiariaParcial(dateTimeParams.horaChegada);
+    const diariaParcial = diaraPorc > 0 ? 1 : 0;
+    return { diariaIntegral, diariaParcial, diaraPorc };
+  } catch (error) {
+    throw new Error(`Ocorreu erro ao calcular quantidade de diarias`);
+  }
 }
 
 function calcularDias(saida, saidaHora, chegada, chegadaHora) {
-  // Junta as datas e horas sem fuso horário para manter o horário local
-  let dataSaida = parse(`${saida.split(' ')[0]} ${saidaHora}`, 'yyyy-MM-dd HH:mm:ss', new Date());
-  let dataChegada = parse(
-    `${chegada.split(' ')[0]} ${chegadaHora}`,
-    'yyyy-MM-dd HH:mm:ss',
-    new Date(),
-  );
+  const MS_POR_DIA = 1000 * 60 * 60 * 24;
+  const formatarHora = (hora) => (hora.length < 8 ? hora + ':00' : hora);
 
-  // Calcula a diferença em milissegundos entre as datas
-  let diferencaMs = differenceInMilliseconds(dataChegada, dataSaida);
+  const datSaida = `${saida.includes(' ') ? saida.split(' ')[0] : saida} ${formatarHora(saidaHora)}`;
+  const datChegada = `${chegada.includes(' ') ? chegada.split(' ')[0] : chegada} ${formatarHora(chegadaHora)}`;
 
-  // Converte a diferença de milissegundos para dias
-  let dias = diferencaMs / (1000 * 60 * 60 * 24);
-
-  return dias;
+  try {
+    const dataSaida = parse(datSaida, 'yyyy-MM-dd HH:mm:ss', new Date());
+    const dataChegada = parse(datChegada, 'yyyy-MM-dd HH:mm:ss', new Date());
+    return differenceInMilliseconds(dataChegada, dataSaida) / MS_POR_DIA;
+  } catch (error) {
+    console.error('Erro ao calcular diferença entre datas:', error);
+    return 0;
+  }
 }

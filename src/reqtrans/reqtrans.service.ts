@@ -58,6 +58,8 @@ export class reqtransService {
     try {
       return await this.reqtransRepository.findOneOrFail({
         where: { REQ_ID_CODIGO },
+        relations: ['muni', 'transmeio','regional'],
+        
       });
     } catch (error) {
       throw new HttpException('Requisição não encontrada', HttpStatus.NOT_FOUND);
