@@ -40,7 +40,8 @@ describe('SaqueService', () => {
         SaqueService,
         {
           provide: getRepositoryToken(SaqueEntity, 'oracleConnection'),
-          useValue: {            
+          useValue: {         
+            findAll: jest.fn().mockResolvedValue(mocktotal),   
             findOne: jest.fn().mockResolvedValue(mockReturnSaque),
             query: jest.fn().mockResolvedValue([mockSaque]),
             updateEfetivo: jest.fn().mockResolvedValue(mockReturnSaque),
@@ -118,11 +119,9 @@ describe('SaqueService', () => {
         },
         {
           provide: S001RequisicaoService,
-          useValue: {
-            // Aqui você define os métodos mockados necessários para os testes
+          useValue: {           
             findOne: jest.fn(),
-            create: jest.fn(),
-            // Adicione outros métodos que serão usados
+            create: jest.fn(),            
           },
         },
         {
@@ -144,9 +143,8 @@ describe('SaqueService', () => {
   });
 
   it('Buscar todos saques', async () => {
-    const saques = await service.findAll({  CHAPA: '000081' });
-    const result = saques.data;  
-    expect(result).toEqual([mockSaque]);
+    let saques = await service.findAll({  CHAPA: '000081' }); 
+    expect(saques).toEqual(mocktotal);
   });
 
   describe('Prestação de conta', () => {

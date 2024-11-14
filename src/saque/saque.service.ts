@@ -41,7 +41,7 @@ import { extornoService } from '../extorno/extorno.service';
 import { itensreqrecService } from '../itensreqrec/itensreqrec.service';
 import { S001RequisicaoService } from '../requisicao/s001_requisicao.service';
 import { destinoService } from '../destino/destino.service';
-import { formatDate } from 'date-fns';
+import { formatDate, parse } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
@@ -75,7 +75,6 @@ export class SaqueService {
     private extornoService: extornoService,
     private itensreqrecService: itensreqrecService,
     private reqnumerarioService: ReqnumerarioService,
-    private requisicaoService: S001RequisicaoService,
     private destinoService: destinoService,
     private naotrabservice: naotrabService,
   ) {}
@@ -330,7 +329,9 @@ export class SaqueService {
       );
 
       const result = result2.filter((item) => {
-        return new Date(item.SQE_DTSAQUE) > new Date('2009-08-10');
+        const newDataSaida = DataUtils.converterStringParaData(item.SQE_DTSAQUE);  
+        const dataLimite =     new Date('2009-08-10')
+        return newDataSaida > dataLimite;
       });
 
       const count = await this.saqueRepository.query(

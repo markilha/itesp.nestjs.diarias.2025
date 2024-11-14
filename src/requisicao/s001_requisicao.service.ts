@@ -79,8 +79,7 @@ export class S001RequisicaoService {
           take: limit,
           order,
           relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
-        }); 
-
+        });
       } else {
         requisicoes = await this.requisicaoRepository.find({
           where: searchParams,
@@ -122,8 +121,8 @@ export class S001RequisicaoService {
       let saqueSalario = null;
       let saldoRestante = 0;
       let destino = '' as Destino;
-      let qtdIntegral = null;
-      let qtdParcial = null;
+      let qtdIntegral = 0;
+      let qtdParcial = 0;
 
       // Busca o valor da UFESP na data da requisição
       try {
@@ -181,7 +180,7 @@ export class S001RequisicaoService {
       if (requisicao.traIdCodigo === 1) {
         iti = await this.buscarItinerario(requisicao.reqIdCodigo);
       } else {
-        iti.ITI_DTSAIDA = requisicao.reqDtSaida
+        iti.ITI_DTSAIDA = requisicao.reqDtSaida;
         iti.ITI_HSAIDA = requisicao.reqHSaida;
         iti.ITI_DTCHEGADA = DataUtils.converterStringParaData(requisicao.reqDtReq);
         iti.ITI_HCHEGADA = requisicao.reqHRet;
@@ -191,16 +190,21 @@ export class S001RequisicaoService {
       const nt = naotrab?.total || 0;
 
       try {
-        qtdIntegral = calcularDiariaIntegral(
-          iti.ITI_DTSAIDA,
-          iti.ITI_HSAIDA,
-          iti.ITI_DTCHEGADA,
-          iti.ITI_HCHEGADA,
-          nt,
-        );
-        qtdParcial = calcularDiariaParcial(iti.ITI_HCHEGADA);
+        if (!iti.ITI_DTSAIDA || !iti.ITI_HSAIDA || !iti.ITI_DTCHEGADA || !iti.ITI_HCHEGADA) {
+          qtdIntegral = 0;
+          qtdParcial = 0;
+        } else {         
+          qtdIntegral = calcularDiariaIntegral(
+            iti.ITI_DTSAIDA,
+            iti.ITI_HSAIDA,
+            iti.ITI_DTCHEGADA,
+            iti.ITI_HCHEGADA,
+            nt,
+          );
+          qtdParcial = calcularDiariaParcial(iti.ITI_HCHEGADA);
+        }
       } catch (error) {
-        console.log(error);
+        console.log(`Requisição ${requisicao.reqIdCodigo}: `, error.message);
       }
 
       // Retorna o DTO
@@ -290,8 +294,7 @@ export class S001RequisicaoService {
 
   async findMesAtual(params: findMesParams): Promise<RequisDto[]> {
     try {
-
-      const dataatual = params.dataAtual ? params.dataAtual : new Date();  
+      const dataatual = params.dataAtual ? params.dataAtual : new Date();
       //const newdata = new Date();
       const inicioMes = format(startOfMonth(dataatual), 'dd/MM/yyyy 00:00:00');
       const fimMes = format(endOfMonth(dataatual), 'dd/MM/yyyy 00:00:00');
@@ -307,7 +310,6 @@ export class S001RequisicaoService {
           { inicioMes, fimMes },
         )
         .getRawMany();
-     
 
       return requisicao.map(
         (requis) =>
