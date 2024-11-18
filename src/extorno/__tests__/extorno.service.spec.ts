@@ -6,10 +6,12 @@ import { Repository } from 'typeorm';
 import { mockEntityExtorno } from '../__mocks__/mocks';
 import {  FindAllParams } from '../extornoDto';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { SaqueService } from '../../saque/saque.service';
 
 describe('ExtornoService', () => {
   let service: extornoService;
   let extornoRepository: Repository<extornoEntity>;
+  let saqueService: SaqueService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -28,6 +30,14 @@ describe('ExtornoService', () => {
             softDelete: jest.fn().mockResolvedValue(mockEntityExtorno[0]),
           },
         },
+        SaqueService,
+        {
+          provide: SaqueService,
+          useValue: {
+            findOne: jest.fn(),
+          },
+        },
+
       ],
     }).compile();
 

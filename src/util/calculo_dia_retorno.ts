@@ -92,7 +92,6 @@ export function calcularDiariaIntegral(
   hChegada: string,
   naotrab: number,
 ): number {
-  
   let diariaSemDesconto = calcularDias(dtSaida, hoSaida, dtChegada, hChegada);
 
   let horaChegada = new Date(`1970-01-01T${hChegada}`);
@@ -222,6 +221,9 @@ export function calcularDiariaValores(
 
 export function calcQuantDiariaIntegralParcialPorcen(dateTimeParams: any, naotrab: number) {
   try {
+    if (!dateTimeParams.dataSaida) {
+      return { diariaIntegral: 0, diariaParcial: 0, diaraPorc: 0};
+    }
     const diariaIntegral = calcularDiariaIntegral(
       dateTimeParams.dataSaida,
       dateTimeParams.horaSaida,
@@ -239,7 +241,6 @@ export function calcQuantDiariaIntegralParcialPorcen(dateTimeParams: any, naotra
 }
 
 function calcularDias(saida, saidaHora, chegada, chegadaHora) {
-  
   const MS_POR_DIA = 1000 * 60 * 60 * 24;
   const datSaida = DataUtils.converterFormatoDataHora(saida, saidaHora);
   const datChegada = DataUtils.converterFormatoDataHora(chegada, chegadaHora);
@@ -253,9 +254,3 @@ function calcularDias(saida, saidaHora, chegada, chegadaHora) {
     return 0;
   }
 }
-
-
-
-
-
-

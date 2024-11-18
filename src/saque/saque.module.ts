@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { SaqueService } from './saque.service';
 import { SaqueController } from './saque.controller';
 import { SaqueEntity } from '../database/db_oracle/entities/saque.entity';
@@ -20,6 +20,7 @@ import { destinoModule } from 'src/destino/destino.module';
 import { naotrabModule } from 'src/naotrab/naotrab.module';
 
 
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([SaqueEntity], 'oracleConnection'),
@@ -32,12 +33,12 @@ import { naotrabModule } from 'src/naotrab/naotrab.module';
     ReqnumerarioModule ,
     reembolsoModule,
     reqtransModule,
-    FuncsalarioModule,
-    extornoModule,
+    FuncsalarioModule,    
     itensreqrecModule,
     S001RequisicaoModule,
     destinoModule,
-    naotrabModule
+    naotrabModule,    
+    forwardRef(() => extornoModule)
     
   ],
   providers: [SaqueService],

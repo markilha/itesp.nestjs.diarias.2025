@@ -39,7 +39,6 @@ import { FuncsalarioService } from '../funcsalario/funcsalario.service';
 import { DataUtils } from '../util/DataUtils';
 import { extornoService } from '../extorno/extorno.service';
 import { itensreqrecService } from '../itensreqrec/itensreqrec.service';
-import { S001RequisicaoService } from '../requisicao/s001_requisicao.service';
 import { destinoService } from '../destino/destino.service';
 import { formatDate, parse } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
@@ -138,8 +137,7 @@ export class SaqueService {
     return ufeValor;
   }
 
-  private async buscarUfespCargo(chapa: string): Promise<number> {   
-   
+  private async buscarUfespCargo(chapa: string): Promise<number> {
     const funcsalario = await this.funcsalarioService.findByCodigo(chapa);
 
     if (!funcsalario) {
@@ -158,22 +156,22 @@ export class SaqueService {
     destino: Destino,
   ) {
     try {
-      
-      const itiDataHora = getDateTimeParams(consulta, itinerario);
-     
-      const nt = await this.naotrabservice.totalDiariaNaoTrabalhada(consulta.REQ_ID_CODIGO);
-     
-      const diariaNaoTrabalhada = nt.total || 0;     
+      let calcDiaraInial = null;
+      let calcDiaraRetorn = null;
 
+      const itiDataHora = getDateTimeParams(consulta, itinerario);
+      const nt = await this.naotrabservice.totalDiariaNaoTrabalhada(consulta.REQ_ID_CODIGO);
+
+      const diariaNaoTrabalhada = nt.total || 0;
 
       const { diariaIntegral, diariaParcial, diaraPorc } = calcQuantDiariaIntegralParcialPorcen(
         itiDataHora,
         diariaNaoTrabalhada,
       );
-      
+
       const pacote = Number(consulta.REQ_PACOTE);
-    
-      const calcDiaraInial = calcularDiariaValores(
+
+      calcDiaraInial = calcularDiariaValores(
         UFESP,
         UFESPcargoValor,
         destino,
@@ -183,7 +181,7 @@ export class SaqueService {
         consulta.REQ_HRET,
       );
 
-      const calcDiaraRetorn = calcularDiariaValores(
+      calcDiaraRetorn = calcularDiariaValores(
         UFESP,
         UFESPcargoValor,
         destino,
@@ -192,8 +190,6 @@ export class SaqueService {
         diariaParcial,
         itiDataHora.horaChegada,
       );
-     
-
 
       return {
         calcDiaraInial,
@@ -202,7 +198,7 @@ export class SaqueService {
         diariaParcial,
         diaraPorc,
       };
-    } catch (error) {     
+    } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -242,11 +238,8 @@ export class SaqueService {
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
         }),
-        this.buscarUfespCargo(consulta.CHAPA).catch((error) => {          
-          throw new HttpException(
-            error.message,
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
+        this.buscarUfespCargo(consulta.CHAPA).catch((error) => {
+          throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }),
       ]);
 
@@ -326,7 +319,7 @@ export class SaqueService {
       const result = await this.saqueRepository.query(
         querySaque(filterConditions, orderByField, orderDirection),
         [...filterValues, offset, itemsPerPage],
-      );    
+      );
 
       const count = await this.saqueRepository.query(
         querySaqueCount(filterConditions),
@@ -411,6 +404,8 @@ export class SaqueService {
         consulta.SQE_DTPREST,
         consulta.SQE_VLPREST,
       );
+
+      console.log(itinerario);
 
       const { calcDiaraInial, calcDiaraRetorn, diariaIntegral, diariaParcial, diaraPorc } =
         await this.calcularDiarias(
@@ -631,5 +626,11 @@ export class SaqueService {
     saque.sqeEfetivo = efetivo;
     await this.saqueRepository.save(saque);
     return saque;
+  }
+
+  async updateDataPrestacao(sqeIdCodigo: number, sqeDtPrest: string) {
+    const saque = await this.findOne(sqeIdCodigo);
+    this.saqueRepository.merge(saque, { sqeDtPrest });
+    return await this.saqueRepository.save(saque);
   }
 }

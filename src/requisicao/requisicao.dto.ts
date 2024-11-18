@@ -212,12 +212,16 @@ export class RequisDto {
   reqDtReq?: string;
   @ApiProperty()
   reqDtSaida?: Date;
-  constructor(requis?: Partial<RequisicaoEntity>) {
+  @ApiProperty({ required: false })
+  periodoAprovacao?: string;
+  constructor(requis?: Partial<RequisDto>) {
     this.chapa = requis?.chapa;
     this.reqIdCodigo = requis?.reqIdCodigo;
     this.reqStatus = requis?.reqStatus;
     this.reqDtReq = requis?.reqDtReq;
     this.reqDtSaida = requis?.reqDtSaida;
+    this.periodoAprovacao = requis?.periodoAprovacao;
+
   }
 }
 
@@ -228,10 +232,17 @@ export class requiPendente {
   SQE_ID_CODIGO: number;
   @ApiProperty()
   REQ_ID_CODIGO: number;
+  @ApiProperty({ required: false })
+  REQ_DTRET?: Date;
+  @ApiProperty({ required: false })
+  periodopendente?: string;
+
   constructor(params: any) {
     this.CHAPA = params.CHAPA;
     this.SQE_ID_CODIGO = params.SQE_ID_CODIGO;
     this.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
+    this.REQ_DTRET = params.REQ_DTRET;
+    this.periodopendente = params.periodopendente;
   }
 }
 

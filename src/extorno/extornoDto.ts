@@ -19,16 +19,16 @@ export class extornoDto {
   EXT_DATA?: string;
   @ApiProperty()
   EXT_JUSTIFICA?: string;
-  constructor(item?: extornoDto){
-    this.SQE_ID_CODIGO = item.SQE_ID_CODIGO;
-    this.ITE_ID_CODIGO = item.ITE_ID_CODIGO;
-    this.RRE_ID_CODIGO = item.RRE_ID_CODIGO;
-    this.DIR_ID_CODIGO = item.DIR_ID_CODIGO;
-    this.PCO_ID_CODIGO = item.PCO_ID_CODIGO;
-    this.FPA_ID_CODIGO = item.FPA_ID_CODIGO;
-    this.EXT_VALOR = item.EXT_VALOR;
-    this.EXT_DATA = item.EXT_DATA;
-    this.EXT_JUSTIFICA = item.EXT_JUSTIFICA;
+  constructor(item?: Partial<extornoDto>){
+    this.SQE_ID_CODIGO = item?.SQE_ID_CODIGO;
+    this.ITE_ID_CODIGO = item?.ITE_ID_CODIGO;
+    this.RRE_ID_CODIGO = item?.RRE_ID_CODIGO;
+    this.DIR_ID_CODIGO = item?.DIR_ID_CODIGO;
+    this.PCO_ID_CODIGO = item?.PCO_ID_CODIGO;
+    this.FPA_ID_CODIGO = item?.FPA_ID_CODIGO;
+    this.EXT_VALOR = item?.EXT_VALOR;
+    this.EXT_DATA = item?.EXT_DATA;
+    this.EXT_JUSTIFICA = item?.EXT_JUSTIFICA;
   }
  
 }

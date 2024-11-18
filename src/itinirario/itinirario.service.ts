@@ -76,7 +76,7 @@ export class ItinirarioService {
         ITI_HSAIDA: primeiroRegistro?.ITI_HSAIDA || null,
         ITI_DTCHEGADA: ultimoRegistro?.ITI_DTCHEGADA || null,
         ITI_HCHEGADA: ultimoRegistro?.ITI_HCHEGADA || null,
-      };
+      } 
     } catch (error) {
       throw new HttpException("Itinerário não encontrado!!!", HttpStatus.INTERNAL_SERVER_ERROR);      
     }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { extornoService } from './extorno.service';
 import { FindAllParams, upateExtornoDto } from './extornoDto';
@@ -34,6 +34,7 @@ export class extornoController {
   async findOne(@Query() params: FindAllParams): Promise<extornoDto> {
     return await this.extornoService.findOneOrFail(params.SQE_ID_CODIGO);
   }
+
   @Put()
   @ApiOperation({ summary: 'Atualizar extorno' })
   @ApiResponse({
@@ -45,5 +46,19 @@ export class extornoController {
   })
   async atualizar(@Body() dados: upateExtornoDto) {
     return await this.extornoService.update(dados);
+  }
+
+  @Post('viagemnaorealizada')
+  @ApiOperation({ summary: 'Extornar' })
+  @ApiResponse({
+    status: 200,
+    description: 'Extornar',
+    schema: {
+     example: {message: 'Extorno realizado com sucesso'},
+    },  
+  })
+  @ApiResponse({ status: 500, description: 'Erro ao extornar viagem não realizada' })
+  async extornar(@Body() dados: extornoDto): Promise<extornoDto> {
+   return await this.extornoService.extornoViagemNaoRealizada(dados);
   }
 }

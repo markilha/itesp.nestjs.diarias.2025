@@ -29,7 +29,7 @@ import { retornoItinerarioDto } from '../itinirario/itinerarioDto';
 import { DataUtils } from '../util/DataUtils';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
-
+import { calcularPeriodo } from 'src/util/calcula_periodo';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -196,7 +196,7 @@ export class S001RequisicaoService {
         if (!iti.ITI_DTSAIDA || !iti.ITI_HSAIDA || !iti.ITI_DTCHEGADA || !iti.ITI_HCHEGADA) {
           qtdIntegral = 0;
           qtdParcial = 0;
-        } else {         
+        } else {
           qtdIntegral = calcularDiariaIntegral(
             iti.ITI_DTSAIDA,
             iti.ITI_HSAIDA,
@@ -314,15 +314,22 @@ export class S001RequisicaoService {
         )
         .getRawMany();
 
-      return requisicao.map(
-        (requis) =>
-          new RequisDto({
-            chapa: requis?.requisicao_CHAPA,
-            reqIdCodigo: requis?.requisicao_REQ_ID_CODIGO,
-            reqStatus: requis?.requisicao_REQ_STATUS,
-            reqDtReq: requis?.requisicao_REQ_DTREQ,
-          }),
-      );
+      // const perAplicacao = calcularPeriodo(datAplicacao);
+
+      const retornoRequi = requisicao.map((requis) => {
+        const newdate = DataUtils.converterStringParaData(requis?.requisicao_REQ_DTREQ);
+
+        const periodo = calcularPeriodo(newdate);
+        return new RequisDto({
+          chapa: requis?.requisicao_CHAPA,
+          reqIdCodigo: requis?.requisicao_REQ_ID_CODIGO,
+          reqStatus: requis?.requisicao_REQ_STATUS,
+          reqDtReq: requis?.requisicao_REQ_DTREQ,
+          periodoAprovacao: periodo,
+        });
+      });
+
+      return retornoRequi;
     } catch (error) {
       throw new HttpException(
         'Erro ao buscar requisições aprovadas',
@@ -344,13 +351,14 @@ export class S001RequisicaoService {
 
   async findPendentes(chapa: string): Promise<requiTotal> {
     try {
-      const searchParams: FindOptionsWhere<RequisicaoEntity> = {}; 
+      const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
 
       const consulta = await this.requisicaoRepository.query(
-     ` SELECT    
+        ` SELECT    
         a.SQE_ID_CODIGO as SQE_ID_CODIGO, 
         d.REQ_ID_CODIGO as REQ_ID_CODIGO,
-        d.REQ_DTSAIDA ,       
+        d.REQ_DTSAIDA ,   
+        d.REQ_DTRET,    
         a.SQE_EFETIVO as SQE_EFETIVO,
         a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,
         a.SQE_DTSAQUE as SQE_DTSAQUE,
@@ -369,11 +377,21 @@ export class S001RequisicaoService {
       AND (a.SQE_DTPREST IS NULL OR a.SQE_VLPREST = 0)
       AND d.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')
     ORDER BY d.REQ_DTSAIDA DESC   
-    `
-      );    
+    `,
+      );
 
-      const retorno = consulta.map((req) => new requiPendente(req));
-     
+      const retorno = consulta.map((req) => {
+        const periodo = calcularPeriodo(req.REQ_DTRET);
+
+        return new requiPendente({
+          CHAPA: req.CHAPA,
+          SQE_ID_CODIGO: req.SQE_ID_CODIGO,
+          REQ_ID_CODIGO: req.REQ_ID_CODIGO,
+          REQ_DTRET: req.REQ_DTRET,
+          periodopendente: periodo,
+        });
+      });
+
       return {
         data: retorno,
         total: retorno.length || 0,
@@ -382,5 +400,4 @@ export class S001RequisicaoService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
 }
