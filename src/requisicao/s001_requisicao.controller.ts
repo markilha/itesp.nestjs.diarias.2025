@@ -1,12 +1,13 @@
-import {
-  Controller,
-  Get, 
-  Param, 
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { S001RequisicaoService } from './s001_requisicao.service';
-import {  FindAllAutorizadasParams, FindAllParams, findMesParams, RequisDto, ReturnRequisicaoDto } from './requisicao.dto';
+import {
+  FindAllAutorizadasParams,
+  FindAllParams,
+  findMesParams,
+  RequisDto,
+  requiTotal,
+  ReturnRequisicaoDto,
+} from './requisicao.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -54,7 +55,7 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async findAllAprovadas(@Query()params:FindAllAutorizadasParams): Promise<RequisDto[]> {
+  async findAllAprovadas(@Query() params: FindAllAutorizadasParams): Promise<RequisDto[]> {
     return await this.requisicao.findAllAprovadas(params);
   }
 
@@ -74,9 +75,27 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  
-  async findMes(@Query() params:findMesParams): Promise<RequisDto[]> {
+  async findMes(@Query() params: findMesParams): Promise<RequisDto[]> {
     return await this.requisicao.findMesAtual(params);
   }
- 
+
+  @Get('pendentes')
+  @ApiOperation({ summary: 'Lista todas requisições que estão no status pendente' })
+  @ApiResponse({
+    status: 200,
+    description: 'Requições encontradas',
+    type: requiTotal
+   
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'token inválido',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao buscar requisições',
+  })
+  async findPendentes(@Query('chapa') chapa: string): Promise<requiTotal> {
+    return await this.requisicao.findPendentes(chapa);
+  }
 }

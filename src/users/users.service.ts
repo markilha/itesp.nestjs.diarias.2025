@@ -83,4 +83,15 @@ export class UsersService {
     }
     return userFound;
   }
+
+  // async findByUserEmail(email: string): Promise<UsersDto | null> {
+  //   const userFound = await this.usersRepository.findOne({
+  //     where: { email },
+  //   });
+
+  //   if (!userFound) {
+  //     return null;
+  //   }
+  //   return userFound;
+  // }
 }

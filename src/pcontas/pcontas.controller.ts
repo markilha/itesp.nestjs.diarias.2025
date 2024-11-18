@@ -30,7 +30,7 @@ export class PcontasController {
     }
     //criar post
     @Post()
-    @ApiOperation({ summary: 'Cria uma prestações de conta' })
+    @ApiOperation({ summary: 'Inseri uma nova prestação de conta' })
     @ApiResponse({ status: 200, description: 'Retorna o id da prestações de conta criada',schema: { example: { PCO_ID_CODIGO: 1 } } })
     @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
     async create(@Body() params: createPcontasDto): Promise<{PCO_ID_CODIGO: number}> {

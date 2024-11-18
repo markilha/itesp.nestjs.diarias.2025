@@ -1,11 +1,11 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { AuthResponseDto } from './auth.dto';
+
 import { compareSync as bcryptCompareSync } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { nivel } from 'src/util/variaveis/variaveis';
-import exp from 'node:constants';
+
 
 @Injectable()
 export class AuthService {
@@ -95,4 +95,33 @@ export class AuthService {
 
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }
+
+  async createPasswordResetToken(email: string): Promise<any> {
+    try {
+      
+      // const user = await this.usersService.findByUserName(email);
+      // if (!user) {
+      //   throw new BadRequestException('Login não encontrado');
+      // }
+      
+      const payload = {
+        sub: email,     
+      };    
+     // const token = this.jwtService.sign(payload);
+     const token = 'token teste 123';
+      return {
+        token,
+        expiresIn: '1h',
+      };
+    } catch (error) {
+      throw new BadRequestException('Erro ao gerar token  de redefinição de senha');
+      
+    }
+
+  }
+
+  // async sendPasswordResetEmail(email: string, token: string) {
+  //   const resetUrl = `http://localhost:3000/auth/reset-password?token=${token}`;
+
+  // }
 }

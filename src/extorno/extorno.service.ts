@@ -40,6 +40,7 @@ export class extornoService {
       );
     }
   }
+  
   async findOneOrFail(SQE_ID_CODIGO: number): Promise<extornoDto> {
     try {
       const result = await this.extornoRepository.findOneOrFail({

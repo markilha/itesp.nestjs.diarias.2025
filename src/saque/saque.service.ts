@@ -323,16 +323,10 @@ export class SaqueService {
         filterValues.push(endDate);
       }
 
-      const result2 = await this.saqueRepository.query(
+      const result = await this.saqueRepository.query(
         querySaque(filterConditions, orderByField, orderDirection),
         [...filterValues, offset, itemsPerPage],
-      );
-
-      const result = result2.filter((item) => {
-        const newDataSaida = DataUtils.converterStringParaData(item.SQE_DTSAQUE);  
-        const dataLimite =     new Date('2009-08-10')
-        return newDataSaida > dataLimite;
-      });
+      );    
 
       const count = await this.saqueRepository.query(
         querySaqueCount(filterConditions),

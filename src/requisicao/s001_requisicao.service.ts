@@ -6,7 +6,9 @@ import {
   FindAllAutorizadasParams,
   FindAllParams,
   findMesParams,
+  requiPendente,
   RequisDto,
+  requiTotal,
   ReturnRequisicaoDto,
 } from './requisicao.dto';
 import { UfespService } from '../ufesp/ufesp.service';
@@ -27,6 +29,7 @@ import { retornoItinerarioDto } from '../itinirario/itinerarioDto';
 import { DataUtils } from '../util/DataUtils';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
+
 
 @Injectable()
 export class S001RequisicaoService {
@@ -338,4 +341,46 @@ export class S001RequisicaoService {
       throw new HttpException(`Requisição ${reqIdCodigo} não encontrada`, HttpStatus.NOT_FOUND);
     }
   }
+
+  async findPendentes(chapa: string): Promise<requiTotal> {
+    try {
+      const searchParams: FindOptionsWhere<RequisicaoEntity> = {}; 
+
+      const consulta = await this.requisicaoRepository.query(
+     ` SELECT    
+        a.SQE_ID_CODIGO as SQE_ID_CODIGO, 
+        d.REQ_ID_CODIGO as REQ_ID_CODIGO,
+        d.REQ_DTSAIDA ,       
+        a.SQE_EFETIVO as SQE_EFETIVO,
+        a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,
+        a.SQE_DTSAQUE as SQE_DTSAQUE,
+        a.SQE_VLSAQUE as SQE_VLSAQUE,
+        a.SQE_DTPREST ,     
+        b.CHAPA as CHAPA,     
+        b.PRA_ATIVO as PRA_ATIVO     
+    FROM FINANCEIRO.s009_saque a
+      INNER JOIN FINANCEIRO.V009_ITENSREQREC b ON a.ITE_ID_CODIGO = b.ITE_ID_CODIGO 
+      INNER JOIN FINANCEIRO.s009_reqnumerario c ON a.SQE_ID_CODIGO = c.SQE_ID_CODIGO
+      INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO 
+      WHERE a.SQE_TIPOSAQUE = 'N' 
+      AND b.PRA_ATIVO = 'N' 
+      AND b.CHAPA = '${chapa}' 
+      AND a.SQE_EFETIVO IN ('S', 'C', 'R', 'E')
+      AND (a.SQE_DTPREST IS NULL OR a.SQE_VLPREST = 0)
+      AND d.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')
+    ORDER BY d.REQ_DTSAIDA DESC   
+    `
+      );    
+
+      const retorno = consulta.map((req) => new requiPendente(req));
+     
+      return {
+        data: retorno,
+        total: retorno.length || 0,
+      };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 }

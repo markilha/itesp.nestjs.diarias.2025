@@ -5,6 +5,7 @@ import { Between, FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, findPrazosMesDto, PrazosDto } from './prazosDto';
 import { PpessoaService } from '../ppessoa/ppessoa.service';
 import { endOfMonth, startOfMonth, format } from 'date-fns';
+import { calcularPeriodo } from 'src/util/calcula_periodo';
 
 @Injectable()
 export class PrazosService {
@@ -64,13 +65,27 @@ export class PrazosService {
       const ppessoa = await this.ppessoaService.find({ chapa: params.chapa });
       const reg = ppessoa.REG_ID_CODIGO;
 
-      return await this.PrazosRepository.find({
+      const consulta = await this.PrazosRepository.find({
         where: {
           REG_ID_CODIGO: reg,
           PRA_INICIO_APLICA: Between(inicioMes, fimMes),
         },
       });
-      
+
+      const prazos = consulta.map((prazo) => {
+        const datAplicacao = new Date(prazo.PRA_INICIO_APLICA);
+        const datRecurso = new Date(prazo.PRA_INICIO_RECURSO);
+        const perAplicacao = calcularPeriodo(datAplicacao);
+        const perRecurso = calcularPeriodo(datRecurso);
+        
+        return new PrazosDto({
+          ...prazo,
+          PER_APLICACAO: perAplicacao,
+          PER_RECURSO: perRecurso,
+        });
+      });
+
+      return prazos;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.NOT_FOUND);
     }

@@ -69,7 +69,8 @@ export function querySaque(
       INNER JOIN FINANCEIRO.V009_ITENSREQREC b ON a.ITE_ID_CODIGO = b.ITE_ID_CODIGO 
       INNER JOIN FINANCEIRO.s009_reqnumerario c ON a.SQE_ID_CODIGO = c.SQE_ID_CODIGO
       INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO      
-     ${whereClause}
+     ${whereClause}      
+     AND d.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')
     ORDER BY ${orderByField} ${orderDirection}
     OFFSET :offset ROWS FETCH NEXT :itemsPerPage ROWS ONLY
     `;
