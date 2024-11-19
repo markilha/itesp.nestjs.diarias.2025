@@ -1,0 +1,145 @@
+export const mockParams = {
+  chapa: '12345',
+  reqIdCodigo: 1,
+  diariaIntegral: 100,
+  diariaParcial: 50,
+  diariaBase: 75,
+  reqPacote: 0,
+  reqStatus: 'string',
+};
+
+export const mockMD = {
+  ITE_ID_CODIGO: 1,
+  RRE_ID_CODIGO: 1,
+  DIR_ID_CODIGO: 1,
+  MDI_VALOR: 100,
+  REQ_DTSAIDA: '2024-01-01',
+  REQ_HSAIDA: '08:00',
+  REQ_DTRET: '2024-01-02',
+  REQ_HRET: '18:00',
+  REQ_INTEGRAL: 1,
+  REQ_PARCIAL: 0,
+  REQ_MOTIVO: 'Viagem a trabalho',
+  REQ_PACOTE: 'N',
+  REQ_GOVERNADOR: 'N',
+};
+
+export const mockSaque = {
+  SQE_ID_CODIGO: 15739,
+  SQE_DTPEDIDO: '10/10/2010 21:00:00',
+  SQE_DTSAQUE: '15/10/2010 09:39:07',
+  SQE_DTPREST: null,
+  NOME: 'Air de Souza',
+  REQ_ID_CODIGO: 58970,
+  TDE_DESCRICAO: 'DIARIAS',
+  SQE_VLSAQUE: 100,
+  SQE_VLPREST: 0,
+  VL_COMPLEMENTAR: 0,
+  VL_EXTORNO: 100,
+  STATUS: 'Realizada',
+  REQ_DTREQ: null,
+  REQ_STATUS: 'CANCELADA',
+  CHAPA: '000081',
+  STS_DESCRICAO: 'SAQUES E PRESTACAO DE CONTAS',
+  SQE_EFETIVO: 'S',
+  PRA_ATIVO: 'N',
+  SQE_TIPOSAQUE: '',
+};
+
+export const mocktotal = {
+  data: [mockSaque],
+  total: 0,
+}
+
+export const mockReturnSaque = {
+  sqeIdCodigo: 9162307,
+  iteIdCodigo: 11815,
+  rreIdCodigo: 529,
+  dirIdCodigo: 3,
+  fpaIdCodigo: 1,
+  sqeDtSaque: null,
+  sqeVlPrest: null,
+  sqeDtPrest: null,
+  sqeVlSaque: 325,
+  sqeTipoSaque: 'N',
+  sqeEfetivo: 'S',
+  sqeDtPedido: '29/10/24',
+  sqeLote: 166671,
+  sqeAnoLote: null,
+  stsIdCodigo: 1,
+  sqeTerceiro: null,
+  pesIdCodigo: null,
+  pesPessoa: null,
+  sqeUsuario: null,
+  sqeEmpenho: null,
+  sqeListaSiafem: null,
+};
+
+export const mockConsulta = {
+  SQE_ID_CODIGO: '123',
+  MUN_ID_CODIGO: '456',
+  SQE_EFETIVO: 'S',
+  SQE_TIPOSAQUE: 'NORMAL',
+  PRA_ATIVO: 'S',
+  SQE_DTPREST: new Date(),
+  SQE_VLPREST: 100,
+  NOME: 'Test User',
+  REQ_ID_CODIGO: '789',
+  RNU_ID_CODIGO: '101',
+  CHAPA: '12345',
+  IRR_VALOR_PREST: 150,
+  REQ_DTREQ: new Date(),
+  TRA_DESCRICAO: 'Viagem',
+  NME_MUNIC: 'São Paulo',
+  REG_DESCRICAO: 'Região Test',
+  MUN_CIDADE: 'São Paulo',
+  DES_LOCAL: 'Local Test',
+  REQ_DTSAIDA: new Date(),
+  REQ_DTRET: new Date(),
+  REQ_HSAIDA: '08:00',
+  REQ_HRET: '18:00',
+  REQ_INTEGRAL: 1,
+  REQ_PARCIAL: 0,
+  REQ_PACOTE: 0,
+  REQ_GOVERNADOR: 'N',
+  REQ_MOTIVO: 'Motivo Test',
+  CTR_STATUS: 'ATIVO',
+  SQE_VLSAQUE: 200,
+  TRA_ID_CODIGO: '1',
+};
+
+export const mockItinerario = {
+  ITI_DTSAIDA: new Date(),
+  ITI_HSAIDA: '08:00',
+  ITI_DTCHEGADA: new Date(),
+  ITI_HCHEGADA: '18:00',
+};
+
+export const mockCalcDiaria = {
+  VL_DIARIA_INTEGRAL: 100,
+  VL_DIARIA_PARCIAL: 50,
+  VL_DIARIA_BASE: 150,
+  VL_DIARIA_TOTAL: 200,
+  VL_DIARIA: 175,
+};
+
+export const mockDiariaInicial = {
+  VL_DIARIA_INTEGRAL: 462.51,
+  VL_DIARIA_PARCIAL_40: 185,
+  VL_DIARIA_PARCIAL_20: 0,
+  VL_DIARIA_PARCIAL: 185,
+  VL_DIARIA_BASE: 462.51,
+  VL_DIARIA_TOTAL: 647.51,
+  VL_DIARIA: 462.51,
+  PARPERC: 40,
+};
+export const mockDiariaChegada = {
+  VL_DIARIA_INTEGRAL: 462.51,
+  VL_DIARIA_PARCIAL_20: 92.5,
+  VL_DIARIA_PARCIAL_40: 0,
+  VL_DIARIA_PARCIAL: 92.5,
+  VL_DIARIA_BASE: 462.51,
+  VL_DIARIA_TOTAL: 555.01,
+  VL_DIARIA: 462.51,
+  PARPERC: 20,
+};

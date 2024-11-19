@@ -1,0 +1,91 @@
+export const queryPrestacao = `
+SELECT
+  a.SQE_DTPEDIDO as SQE_DTPEDIDO,
+  a.SQE_ID_CODIGO as SQE_ID_CODIGO,
+  a.SQE_EFETIVO as SQE_EFETIVO,
+  a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,
+  a.SQE_DTSAQUE as SQE_DTSAQUE,
+  a.SQE_VLSAQUE as SQE_VLSAQUE,
+  a.SQE_DTPREST,
+  b.CHAPA as CHAPA,
+  b.NOME as NOME,     
+  b.TDE_DESCRICAO as TDE_DESCRICAO,
+  b.STS_DESCRICAO as STS_DESCRICAO,
+  b.PRA_ATIVO as PRA_ATIVO,
+  c.REQ_ID_CODIGO as REQ_ID_CODIGO, 
+  c.RNU_ID_CODIGO as RNU_ID_CODIGO,
+  d.REQ_STATUS as REQ_STATUS,
+  d.REQ_DTSAIDA as REQ_DTSAIDA,
+  d.REQ_HSAIDA as REQ_HSAIDA,
+  d.REQ_DTRET as REQ_DTRET,
+  d.REQ_HRET as REQ_HRET,
+  d.REQ_PACOTE as REQ_PACOTE,
+  d.REQ_INTEGRAL as REQ_INTEGRAL,
+  d.REQ_PARCIAL as REQ_PARCIAL,
+  d.TRA_ID_CODIGO as TRA_ID_CODIGO,
+  d.REQ_MOTIVO as REQ_MOTIVO,
+  e.MUN_ID_CODIGO as MUN_ID_CODIGO,
+  e.DES_LOCAL as DES_LOCAL, 
+  g.TRA_DESCRICAO as TRA_DESCRICAO,
+  h.MUN_CIDADE as MUN_CIDADE,
+  i.NME_MUNIC as NME_MUNIC,
+ j.REG_DESCRICAO as REG_DESCRICAO
+FROM FINANCEIRO.s009_saque a
+  INNER JOIN FINANCEIRO.V009_ITENSREQREC b ON a.ITE_ID_CODIGO = b.ITE_ID_CODIGO 
+  INNER JOIN FINANCEIRO.s009_reqnumerario c ON a.SQE_ID_CODIGO = c.SQE_ID_CODIGO
+  INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO
+  INNER JOIN TRANSPORTE.s001_destino e ON c.REQ_ID_CODIGO = e.REQ_ID_CODIGO
+  INNER JOIN TRANSPORTE.S001_TRANSMEIO g ON d.TRA_ID_CODIGO = g.TRA_ID_CODIGO
+  INNER JOIN TRANSPORTE.S001_MUNIC_DETRAN h ON e.MUN_ID_CODIGO = h.MUN_ID_CODIGO
+  INNER JOIN COMUM.MUNICIPIOS_IBGE_IGC i ON d.COD_MUNICIP = i.COD_MUNICIP
+  INNER JOIN COMUM.S000_REGIONAL j ON d.REG_ID_CODIGO = j.REG_ID_CODIGO  
+  WHERE a.SQE_ID_CODIGO = :sqeIdCodigo 
+`;
+
+export function querySaque(
+  filterConditions: string[] = [],
+  orderByField: string,
+  orderDirection: string,
+) {
+  const whereClause = filterConditions.length > 0 ? `WHERE ${filterConditions.join(' AND ')}` : '';
+  return `
+    SELECT
+      a.SQE_DTPEDIDO as SQE_DTPEDIDO,
+      a.SQE_ID_CODIGO as SQE_ID_CODIGO,
+      a.SQE_EFETIVO as SQE_EFETIVO,
+      a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,
+      a.SQE_DTSAQUE as SQE_DTSAQUE,
+      a.SQE_VLSAQUE as SQE_VLSAQUE,
+      a.SQE_DTPREST ,
+      a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,     
+      b.CHAPA as CHAPA,
+      b.NOME as NOME,     
+      b.TDE_DESCRICAO as TDE_DESCRICAO,
+      b.STS_DESCRICAO as STS_DESCRICAO,
+      b.PRA_ATIVO as PRA_ATIVO,
+      c.REQ_ID_CODIGO as REQ_ID_CODIGO,
+      d.REQ_STATUS as REQ_STATUS    
+    FROM FINANCEIRO.s009_saque a
+      INNER JOIN FINANCEIRO.V009_ITENSREQREC b ON a.ITE_ID_CODIGO = b.ITE_ID_CODIGO 
+      INNER JOIN FINANCEIRO.s009_reqnumerario c ON a.SQE_ID_CODIGO = c.SQE_ID_CODIGO
+      INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO      
+     ${whereClause}      
+     AND d.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')
+    ORDER BY ${orderByField} ${orderDirection}
+    OFFSET :offset ROWS FETCH NEXT :itemsPerPage ROWS ONLY
+    `;
+}
+
+export function querySaqueCount(
+  filterConditions: string[] = [] 
+) {
+  const whereClause = filterConditions.length > 0 ? `WHERE ${filterConditions.join(' AND ')}` : '';
+  return `   
+    SELECT COUNT(*) AS total_registros
+    FROM FINANCEIRO.s009_saque a
+      INNER JOIN FINANCEIRO.V009_ITENSREQREC b ON a.ITE_ID_CODIGO = b.ITE_ID_CODIGO 
+      INNER JOIN FINANCEIRO.s009_reqnumerario c ON a.SQE_ID_CODIGO = c.SQE_ID_CODIGO
+      INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO    
+    ${whereClause}
+    `;
+}

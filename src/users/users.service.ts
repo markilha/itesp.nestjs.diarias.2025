@@ -1,26 +1,25 @@
 import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Users } from 'src/database/db_mysql/entities/user.entity'; 
+import { UserEntity } from '../database/db_mysql/entities/user.entity';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
-import { FindAllParams, UsersDto, UserUpdateDto } from './users.dto';
+import { FindAllParams, userNivelDto, UsersDto } from './users.dto';
 import { hashSync as bcryptHashSync } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(Users, 'mysqlConnection')
-    private usersRepository: Repository<Users>,
+    @InjectRepository(UserEntity, 'mysqlConnection')
+    private usersRepository: Repository<UserEntity>,
   ) {}
 
   async create(userDTO: UsersDto): Promise<UsersDto> {
     userDTO.senha = bcryptHashSync(userDTO.senha, 10);
-
     const createUser = await this.usersRepository.save(userDTO);
     return createUser;
   }
 
-  async findAll(params: FindAllParams): Promise<Users[]> {
-    const searchParams: FindOptionsWhere<Users> = {};
+  async findAll(params: FindAllParams): Promise<UserEntity[]> {
+    const searchParams: FindOptionsWhere<UserEntity> = {};
 
     if (params.nome) {
       searchParams.nome = ILike(`%${params.nome}%`);
@@ -33,26 +32,45 @@ export class UsersService {
     return users;
   }
 
-  async remove(id_usuario: number): Promise<void> {
-    const user = await this.usersRepository.findOne({ where: { id_usuario } });
-    if (!user) {
+  async findOne(id_usuario: number): Promise<UserEntity> {
+    try {
+      const user = await this.usersRepository.findOneOrFail({ where: { id_usuario } });
+      return user;
+    } catch (error) {
       throw new HttpException(
-        `User with id ${id_usuario} not found`,
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Usuário não encotrado',
+        },
         HttpStatus.NOT_FOUND,
       );
     }
-    await this.usersRepository.delete(id_usuario);
   }
 
-  async findOne(id_usuario: number): Promise<Users> {
-    const user = await this.usersRepository.findOne({ where: { id_usuario } });
-    if (!user) {
+  async findNivel(id_usuario: number): Promise<userNivelDto[]> {
+    try {
+      const users = await this.usersRepository.query(
+        `
+        SELECT 
+        usu.nome,
+        usu.chapa,
+        usu.login,
+        ace.id_perfil_acesso,
+        ace.id_sistema
+        FROM usu_usuario_cpf usu
+        INNER JOIN ace_usuario_perfil_acesso ace ON usu.id_usuario = ace.id_usuario
+        WHERE usu.id_usuario = ?
+        `,
+        [id_usuario],
+      );
+      return users;
+    } catch (error) {
+      console.log(error.message)
       throw new HttpException(
-        `User with id ${id_usuario} not found`,
-        HttpStatus.NOT_FOUND,
+        `Erro ao buscar nível do usuario`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    return user;
   }
 
   async findByUserName(login: string): Promise<UsersDto | null> {
@@ -66,19 +84,14 @@ export class UsersService {
     return userFound;
   }
 
-  async update(
-    id_usuario: number,
-    userUpdateDto: UserUpdateDto,
-  ): Promise<UsersDto> {
-    const user = await this.usersRepository.findOne({ where: { id_usuario } });
-    if (!user) {
-      throw new HttpException(
-        `User with id ${id_usuario} not found`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    await this.usersRepository.update(id_usuario, userUpdateDto);
+  // async findByUserEmail(email: string): Promise<UsersDto | null> {
+  //   const userFound = await this.usersRepository.findOne({
+  //     where: { email },
+  //   });
 
-    return { ...user, ...userUpdateDto };
-  }
+  //   if (!userFound) {
+  //     return null;
+  //   }
+  //   return userFound;
+  // }
 }

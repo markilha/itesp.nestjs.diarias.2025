@@ -1,13 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UferpsEntity } from 'src/database/db_mysql/entities/UferpsEntity';
+import { UferpsEntity } from '../database/db_oracle/entities/UferpsEntity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, UfespDto } from './ufespDto';
 
 @Injectable()
 export class UfespService {
   constructor(
-    @InjectRepository(UferpsEntity,'mysqlConnection')
+    @InjectRepository(UferpsEntity, 'oracleConnection')
     private uferpsRepository: Repository<UferpsEntity>,
   ) {}
 
@@ -17,23 +17,24 @@ export class UfespService {
       return this.uferpsRepository.save(uferpsvalor);
     } catch (error) {
       console.log(error);
-      throw new HttpException(
-        'Erro ao criar a ufesp',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Erro ao criar a ufesp', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async update(id: number, updateUferpsvalorDto: UfespDto): Promise<UferpsEntity> {
+  async update(updateValue: UfespDto): Promise<UfespDto> {
+    const result = await this.findOne(updateValue.ufeIdCodigo);
+    this.uferpsRepository.merge(result, updateValue);
+    return this.uferpsRepository.save(result);
+  }
+
+  //findOne
+  async findOne(id: number): Promise<UfespDto> {
     try {
-      await this.uferpsRepository.update(id, updateUferpsvalorDto);
-      return this.uferpsRepository.findOneBy({ ufeIdCodigo: id });
-    } catch (error) {
-      console.log(error);
-      throw new HttpException(
-        'Erro ao atualizar a ufesp',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      return await this.uferpsRepository.findOneOrFail({
+        where: { ufeIdCodigo: id },
+      });
+    } catch (error) {      
+      throw new HttpException('Ufesp não encontrada', HttpStatus.NOT_FOUND);
     }
   }
 
@@ -42,10 +43,7 @@ export class UfespService {
       await this.uferpsRepository.delete(id);
     } catch (error) {
       console.log(error);
-      throw new HttpException(
-        'Erro ao remover a ufesp',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Erro ao remover a ufesp', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -81,4 +79,28 @@ export class UfespService {
       .addOrderBy('u.ufeDtInicio', 'DESC')
       .getOne();
   }
+
+  // Inserir uma data e retornar o valor da UFESP naquela data
+
+  async findValueByDate(dateString: string | Date): Promise<UfespDto | null> {
+    const date = dateString instanceof Date ? dateString : new Date(dateString);    
+  
+    // Tenta encontrar o valor correspondente à data utilizando BETWEEN
+    let result = await this.uferpsRepository
+      .createQueryBuilder('u')
+      .where(':date BETWEEN u.ufeDtInicio AND u.ufeDtFinal', { date }) // Utiliza BETWEEN para simplificar
+      .getOne();
+  
+    // Se não encontrar, busca o valor anterior à data
+    if (!result) {
+      result = await this.uferpsRepository
+        .createQueryBuilder('u')
+        .where('u.ufeDtFinal < :date', { date }) // Reutiliza o mesmo valor
+        .orderBy('u.ufeDtFinal', 'DESC')
+        .getOne();
+    }
+  
+    return result;
+  }
+  
 }

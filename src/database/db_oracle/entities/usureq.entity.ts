@@ -16,13 +16,11 @@ export class UsuReqEntity {
   @PrimaryColumn({ name: 'USU_MOV', type: 'char', length: 1 })
   usuMov: string;
 
-  @ManyToOne(() => RequisicaoEntity, (requi) => requi.usereq)
+  @ManyToOne(() => RequisicaoEntity, (requi) => requi.usureq)
   @JoinColumn({ name: 'REQ_ID_CODIGO', referencedColumnName: 'reqIdCodigo' })
   requisicao?: RequisicaoEntity;
 
-  // @OneToOne(() => PPessoaEntity, (pessoa) => pessoa.usereq)
-  // @JoinColumn({ name: 'CHAPA', referencedColumnName: 'codusuario' })
-  // pessoa?: PPessoaEntity; 
+ 
 
   @OneToOne(() => PFuncEntity, (pfun) => pfun.usureq)
   @JoinColumn({ name: 'CHAPA', referencedColumnName: 'CHAPA' })

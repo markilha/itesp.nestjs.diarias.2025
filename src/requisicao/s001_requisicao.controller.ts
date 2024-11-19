@@ -1,38 +1,101 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Param,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { S001RequisicaoService } from './s001_requisicao.service';
-import { RequisicaoDto, FindAllParams } from './requisicao.dto';
+import {
+  FindAllAutorizadasParams,
+  FindAllParams,
+  findMesParams,
+  RequisDto,
+  requiTotal,
+  ReturnRequisicaoDto,
+} from './requisicao.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { RequisicaoEntity } from 'src/database/db_oracle/entities/requisicao.entity';
+
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { requisicaoAutorizadaSwagger, requisicaoSwagger } from 'src/swagger/requisicaoswagger';
 
 @UseGuards(AuthGuard)
-@Controller('requisicao')
+@ApiTags('usureq')
+@Controller('usureq')
 export class S001RequisicaoController {
   constructor(private readonly requisicao: S001RequisicaoService) {}
 
   @Get()
-  async findAll(@Query() params: FindAllParams): Promise<RequisicaoDto[]> {
-    return await this.requisicao.findAll(params);
+  @ApiOperation({ summary: 'Lista todas requisições de viagem pela chapa do funcionário' })
+  @ApiResponse({
+    status: 200,
+    description: 'Requições encontradas',
+    type: requisicaoSwagger,
+    isArray: true,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'token inválido',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao buscar requisições',
+  })
+  async find(@Query() params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
+    return await this.requisicao.find(params);
   }
 
-  @Post()
-  async createRequisicao(
-    @Body() requisicaoDto: RequisicaoDto,
-  ): Promise<RequisicaoEntity> {
-    return await this.requisicao.createRequisicao(requisicaoDto);
+  @Get('aprovadas')
+  @ApiOperation({ summary: 'Lista todas requisições que estão no status aprovada' })
+  @ApiResponse({
+    status: 200,
+    description: 'Requições encontradas',
+    type: requisicaoAutorizadaSwagger,
+    isArray: true,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'token inválido',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao buscar requisições',
+  })
+  async findAllAprovadas(@Query() params: FindAllAutorizadasParams): Promise<RequisDto[]> {
+    return await this.requisicao.findAllAprovadas(params);
   }
 
-  @Delete(':reqIdCodigo')
-  async deleteRequisicao(@Param('reqIdCodigo') reqIdCodigo: number): Promise<{ message: string }> {
-    return await this.requisicao.removeRequisicao(reqIdCodigo);
+  @Get('mesatual')
+  @ApiOperation({ summary: 'Lista todas requisições que estão no status aprovada no mês atual' })
+  @ApiResponse({
+    status: 200,
+    description: 'Requições encontradas',
+    type: requisicaoAutorizadaSwagger,
+    isArray: true,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'token inválido',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao buscar requisições',
+  })
+  async findMes(@Query() params: findMesParams): Promise<RequisDto[]> {
+    return await this.requisicao.findMesAtual(params);
+  }
+
+  @Get('pendentes')
+  @ApiOperation({ summary: 'Lista todas requisições que estão no status pendente' })
+  @ApiResponse({
+    status: 200,
+    description: 'Requições encontradas',
+    type: requiTotal
+   
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'token inválido',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao buscar requisições',
+  })
+  async findPendentes(@Query('chapa') chapa: string): Promise<requiTotal> {
+    return await this.requisicao.findPendentes(chapa);
   }
 }

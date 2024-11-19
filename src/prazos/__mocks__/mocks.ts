@@ -1,0 +1,33 @@
+export const mocksPrazos = [
+  {
+    PRA_ID_CODIGO: 1,
+    PRA_PREVISAO: 'R',
+    PRA_INICIO_RECURSO: '2024-02-27',
+    PRA_FIM_RECURSO: '2024-03-06',
+    PRA_ATIVO: 'A',
+    PRA_INICIO_APLICA: '2024-03-07',
+    PRA_FIM_APLICA: '2024-04-05',
+    REG_ID_CODIGO: 0,
+    ORR_ID_CODIGO: 16,
+  },
+  {
+    PRA_ID_CODIGO: 2,
+    PRA_PREVISAO: 'R',
+    PRA_INICIO_RECURSO: '2024-02-27',
+    PRA_FIM_RECURSO: '2024-03-06',
+    PRA_ATIVO: 'A',
+    PRA_INICIO_APLICA: '2024-03-07',
+    PRA_FIM_APLICA: '2024-04-05',
+    REG_ID_CODIGO: 9,
+    ORR_ID_CODIGO: 16,
+  },
+];
+
+export const mocksPpessoa = {
+  CHAPA: '000081',
+  NOME: 'FULANO DE TAL',
+  DESCFUNC: 'Tecnico em Desenv.Fundiario I A',
+  CPF: '15381904860',
+  ORGAO: 'FUNDAÇÃO INSTITUTO DE TERRAS DO ESTADO DE SÃO PAULO',
+  REG_ID_CODIGO: 4,
+};
