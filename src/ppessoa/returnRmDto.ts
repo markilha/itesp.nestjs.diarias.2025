@@ -73,13 +73,39 @@ export class FuncionarioDto {
   ORGAO: string;  
   @ApiProperty() 
   REG_ID_CODIGO: number;   
-  constructor(item?: any) {
-    this.CHAPA = item?.CHAPA;
+  @ApiProperty()  
+  DTNASCIMENTO: Date;
+  @ApiProperty()
+  ENDERECO: string;
+  @ApiProperty()
+  EMAIL: string;
+  @ApiProperty()
+  TELEFONE: string;
+  @ApiProperty()
+  DIRETORIA: string;
+  @ApiProperty()
+  REG_DESCRICAO: string;
+  @ApiProperty()
+  NME_MUNIC: string;
+
+
+  constructor(item?: any) {   
     this.NOME = item?.NOME;
-    this.DESCFUNC = item?.DESCFUNC;
     this.CPF = item?.CPF;
-    this.ORGAO = item?.ORGAO;
+    this.DTNASCIMENTO = item?.DTNASCIMENTO;
+    this.ENDERECO = item?.ENDERECO;
+    this.EMAIL = item?.EMAIL;
+    this.TELEFONE = item?.TELEFONE;
+    this.DESCFUNC = item?.DESCFUNC;
+    this.CHAPA = item?.CHAPA;  
+    this.DIRETORIA = item?.DIRETORIA;
+    this.REG_DESCRICAO = item?.REG_DESCRICAO;
+  
     this.REG_ID_CODIGO = item?.REG_ID_CODIGO;
+    this.ORGAO = item?.ORGAO;
+    this.NME_MUNIC = item?.NME_MUNIC;
+   
+  
   } 
 
 }

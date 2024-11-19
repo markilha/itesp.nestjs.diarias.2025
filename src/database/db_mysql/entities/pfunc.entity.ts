@@ -14,6 +14,9 @@ export class PFuncEntity {
   @Column({ type: 'varchar', length: 120, name: 'CODSECAO', nullable: true })
   CODSECAO: string;
 
+  @Column({ nullable: true })
+  DTNASCIMENTO: Date;
+
   @Column({ type: 'varchar', length: 120, name: 'CODFUNCAO', nullable: true })
   CODFUNCAO: string;
 

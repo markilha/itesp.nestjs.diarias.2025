@@ -27,6 +27,7 @@ import { itensreqrecModule } from './itensreqrec/itensreqrec.module';
 import { destinoModule } from './destino/destino.module';
 import { naotrabModule } from './naotrab/naotrab.module';
 import { docpcontasnumModule } from './docpcontasnum/docpcontasnum.module';
+import { psubstchefeModule } from './psubstchefe/psubstchefe.module';
 
 @Module({
   imports: [
@@ -56,7 +57,8 @@ import { docpcontasnumModule } from './docpcontasnum/docpcontasnum.module';
     itensreqrecModule,
     destinoModule,
     naotrabModule,
-    docpcontasnumModule
+    docpcontasnumModule,
+    psubstchefeModule,
   ],
   controllers: [],
   providers: [],
