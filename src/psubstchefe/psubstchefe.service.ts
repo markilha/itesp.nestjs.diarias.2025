@@ -20,7 +20,6 @@ export class psubstchefeService {
       if (!result) {
         throw new HttpException('psubstchefe não encontrado', HttpStatus.NOT_FOUND);
       }
-
       return result;
     } catch (error) {
       throw new HttpException(

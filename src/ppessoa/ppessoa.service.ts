@@ -3,14 +3,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PPessoaEntity } from '../database/db_oracle/entities/ppessoa.entity';
 import { Repository } from 'typeorm';
 import { FindAllParams } from './ppessoa.dto';
-import { FuncionarioDto, returnRmDto } from './returnRmDto';
-import { endOfDecade } from 'date-fns';
+import { FuncionarioDto} from './returnRmDto';
+import { psubstchefeService } from '../psubstchefe/psubstchefe.service';
+
 
 @Injectable()
 export class PpessoaService {
   constructor(
     @InjectRepository(PPessoaEntity, 'oracleConnection')
     private rmRepository: Repository<PPessoaEntity>,
+    private psubstchefeService: psubstchefeService
   ) {}
 
   async find(params: FindAllParams): Promise<FuncionarioDto> {
@@ -18,6 +20,7 @@ export class PpessoaService {
       const query = `
       SELECT 
         A.CHAPA as CHAPA,
+        A.CODSECAO as CODSECAO,
         UPPER(C.NOME) as NOME,
         C.CPF as CPF,
         C.DTNASCIMENTO as DTNASCIMENTO,
@@ -47,6 +50,13 @@ export class PpessoaService {
       `;
 
       const consulta = await this.rmRepository.query(query, [params.chapa]);
+
+       const psubstchefe = await this.psubstchefeService.findAtual(consulta[0].CODSECAO);
+       const superv = await this.findOne(psubstchefe.CHAPASUBST);
+       console.log(superv);
+
+       
+  
       
       
 
@@ -54,8 +64,7 @@ export class PpessoaService {
         throw new HttpException('Funcionário não encontrado!!!', HttpStatus.INTERNAL_SERVER_ERROR);
       }
 
-      const funcionario = new FuncionarioDto({
-        
+      const funcionario = new FuncionarioDto({        
         NOME: consulta[0].NOME,
         CPF: consulta[0].CPF,
         DESCFUNC: consulta[0].DESCFUNC,
@@ -68,21 +77,21 @@ export class PpessoaService {
         ORGAO: 'FUNDAÇÃO INSTITUTO DE TERRAS DO ESTADO DE SÃO PAULO',
         DIRETORIA: consulta[0].DIRETORIA,
         REG_DESCRICAO: consulta[0].REG_DESCRICAO,
-        NME_MUNIC: consulta[0].CIDADE,   
+        NME_MUNIC: consulta[0].CIDADE,  
+        SUPERVISOR: superv?.nome
       });
 
       return funcionario;
-    } catch (error) {
-      console.log(error);
+    } catch (error) {    
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   //findOne pelo codusuaril
-  async findOne(chapa: string): Promise<FuncionarioDto> {
-    const rm = await this.rmRepository.find({
+  async findOne(chapa: string): Promise<PPessoaEntity> {
+    const rm = await this.rmRepository.findOneOrFail({
       where: { codusuario: chapa },
     });
-    return new FuncionarioDto(rm);
+    return rm;
   }
 }

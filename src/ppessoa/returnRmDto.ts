@@ -87,6 +87,8 @@ export class FuncionarioDto {
   REG_DESCRICAO: string;
   @ApiProperty()
   NME_MUNIC: string;
+  @ApiProperty()
+  SUPERVISOR: string;
 
 
   constructor(item?: any) {   
@@ -104,6 +106,7 @@ export class FuncionarioDto {
     this.REG_ID_CODIGO = item?.REG_ID_CODIGO;
     this.ORGAO = item?.ORGAO;
     this.NME_MUNIC = item?.NME_MUNIC;
+    this.SUPERVISOR = item?.SUPERVISOR;
    
   
   } 
