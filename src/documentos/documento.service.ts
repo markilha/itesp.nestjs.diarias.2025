@@ -30,9 +30,9 @@ export class documentosService {
     return documentos;
   }
 
-  async findOne(id: number): Promise<docsEntity> {
+  async findOne(ID_DOC: number): Promise<docsEntity> {
     try {
-      const documento = await this.documentosRepository.findOneOrFail({ where: { id } });
+      const documento = await this.documentosRepository.findOneOrFail({ where: { ID_DOC } });
       return documento;
     } catch (error) {
       throw new HttpException('Documento não encontrado', HttpStatus.NOT_FOUND);

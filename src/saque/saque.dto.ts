@@ -150,6 +150,11 @@ export class returnSaqueDto {
   PRA_ATIVO: string;
   @ApiProperty()
   SQE_TIPOSAQUE: string;
+  @ApiProperty({required: false})
+  ID_DOC?: number;
+  @ApiProperty({required: false})
+  ORIGINAL_NAME?: string;
+
 
  
 
@@ -173,6 +178,8 @@ export class returnSaqueDto {
     this.SQE_EFETIVO = params.SQE_EFETIVO;
     this.PRA_ATIVO = params.PRA_ATIVO;
     this.SQE_TIPOSAQUE = params.SQE_TIPOSAQUE;
+    this.ID_DOC = params.ID_DOC;
+    this.ORIGINAL_NAME = params.ORIGINAL_NAME;
   
   }
 }

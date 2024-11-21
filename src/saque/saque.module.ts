@@ -18,6 +18,7 @@ import { itensreqrecModule } from 'src/itensreqrec/itensreqrec.module';
 import { S001RequisicaoModule } from 'src/requisicao/s001_requisicao.module';
 import { destinoModule } from 'src/destino/destino.module';
 import { naotrabModule } from 'src/naotrab/naotrab.module';
+import { documentosModule } from 'src/documentos/documento.module';
 
 
 
@@ -38,7 +39,8 @@ import { naotrabModule } from 'src/naotrab/naotrab.module';
     S001RequisicaoModule,
     destinoModule,
     naotrabModule,    
-    forwardRef(() => extornoModule)
+    forwardRef(() => extornoModule),
+    documentosModule
     
   ],
   providers: [SaqueService],
