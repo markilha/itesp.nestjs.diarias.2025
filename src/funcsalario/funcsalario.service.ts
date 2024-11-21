@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { FuncSalarioEntity } from '../database/db_oracle/entities/funcsalario.entity';
 import { FindAllParams } from './funcsalarioDto';
+import e from 'express';
 
 @Injectable()
 export class FuncsalarioService {
@@ -70,5 +71,43 @@ export class FuncsalarioService {
       [chapa],
     );
     return funcs;
+  }
+
+  async dadosPagamento(chapa: string): Promise<any> {  
+
+    try {
+      
+      const dados = await this.funcSalarioRepository.query(
+        `
+    SELECT 
+      A.CHAPA,
+      A.CODBANCOPAGTO,
+      A.CODAGENCIAPAGTO,
+      A.CONTAPAGAMENTO,
+      D.SALARIO 
+    FROM   
+      RM.PFUNC A,
+      RM.PSECAO B,
+      RM.PFUNCAO C,
+      FINANCEIRO.V009_FUNCSALARIO D
+    Where 
+      A.CODSECAO = B.CODIGO 
+    AND 
+      A.CODFUNCAO = C.CODIGO 
+    AND 
+      A.CHAPA = D.CHAPA 
+    AND	
+      A.CHAPA = :chapa
+        `,
+        [chapa],
+      );
+     
+  
+      return dados;
+    } catch (error) {
+      console.log(error);
+      
+    }
+
   }
 }
