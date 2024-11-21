@@ -1,3 +1,5 @@
+import { ApiProperty } from "@nestjs/swagger";
+
 export class FuncSalarioDto {
     chapa: string;
     codsecao: string;
@@ -20,5 +22,10 @@ export interface FindAllParams {
     regDescricao: string;
     page: number;
     limit: number;
+}
+export class FindPagamento {
+  @ApiProperty()
+  chapa: string;
+  
 }
   

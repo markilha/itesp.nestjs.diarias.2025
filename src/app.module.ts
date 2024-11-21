@@ -28,6 +28,10 @@ import { destinoModule } from './destino/destino.module';
 import { naotrabModule } from './naotrab/naotrab.module';
 import { docpcontasnumModule } from './docpcontasnum/docpcontasnum.module';
 import { psubstchefeModule } from './psubstchefe/psubstchefe.module';
+import { docsService } from './docs/docs.service';
+import { docsController } from './docs/docs.controller';
+import { docsModule } from './docs/docs.module';
+import { documentosModule } from './documentos/documento.module';
 
 @Module({
   imports: [
@@ -59,8 +63,10 @@ import { psubstchefeModule } from './psubstchefe/psubstchefe.module';
     naotrabModule,
     docpcontasnumModule,
     psubstchefeModule,
+    docsModule,
+    documentosModule,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [docsController],
+  providers: [docsService],
 })
 export class AppModule {}

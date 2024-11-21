@@ -5,3 +5,4 @@ export function formatDateToYYMM(dateString: string | Date): string {
     const mes = String(data.getMonth() + 1).padStart(2, '0'); // Obtém o mês (1 a 12)
     return `${ano}/${mes}`;
 }
+

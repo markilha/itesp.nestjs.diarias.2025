@@ -26,5 +26,7 @@ export class psubstchefeController {
     return await this.psubstchefeService.findAtual(codigo);
   }
 
+  
+
 
 }
