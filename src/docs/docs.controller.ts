@@ -22,7 +22,7 @@ export class docsController {
     },
   })    
   async getDocumentLink(@Query() params: FindAllParams) {    
-    return await this.docsService.getDocumentLink(params.id);
+    return await this.docsService.getDocumentLink(params.ID_DOC);
   }
 
 

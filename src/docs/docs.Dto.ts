@@ -12,5 +12,5 @@ export type FileDto ={
 
 export class FindAllParams {
     @ApiProperty()
-    id: number;
+    ID_DOC: number;
   }

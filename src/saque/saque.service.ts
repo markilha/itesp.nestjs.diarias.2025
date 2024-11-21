@@ -40,8 +40,10 @@ import { DataUtils } from '../util/DataUtils';
 import { extornoService } from '../extorno/extorno.service';
 import { itensreqrecService } from '../itensreqrec/itensreqrec.service';
 import { destinoService } from '../destino/destino.service';
-import { formatDate, parse } from 'date-fns';
+import { formatDate } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
+import { documentosService } from 'src/documentos/documento.service';
+import { docsEntity } from 'src/database/db_mysql/entities/docs.entity';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -76,6 +78,7 @@ export class SaqueService {
     private reqnumerarioService: ReqnumerarioService,
     private destinoService: destinoService,
     private naotrabservice: naotrabService,
+    private documentosService: documentosService,
   ) {}
 
   private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
@@ -327,42 +330,56 @@ export class SaqueService {
       );
       const totalCount = count[0]?.TOTAL_REGISTROS || 0;
 
-      let consulta = result.map((item: any) => {
-        // Calcular valores de extorno e devolução
-        const { VL_DEVOLUCAO, VL_EXTORNO } = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
+      let consulta = await Promise.all(
+        result.map(async (item: any) => {
 
-        const STATUS = RetonaStatus(
-          item.SQE_EFETIVO,
-          item.SQE_TIPOSAQUE,
-          item.PRA_ATIVO,
-          item.SQE_DTPREST,
-          item.SQE_VLPREST,
-        );
+          // Calcular valores de extorno e devolução
+          const { VL_DEVOLUCAO, VL_EXTORNO } = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
 
-        return new returnSaqueDto({
-          SQE_ID_CODIGO: item.SQE_ID_CODIGO,
-          SQE_DTPEDIDO: DataUtils.converterParaData(item.SQE_DTPEDIDO),
-          SQE_DTSAQUE: DataUtils.converterParaData(item.SQE_DTSAQUE),
-          SQE_VLSAQUE: Number(item.SQE_VLSAQUE) || 0,
-          SQE_VLPREST: Number(item.SQE_VLPREST) || 0,
-          RRE_ID_CODIGO: item.RRE_ID_CODIGO,
-          ITE_ID_CODIGO: item.ITE_ID_CODIGO,
-          SQE_DTPREST: DataUtils.converterParaData(item.SQE_DTPREST),
-          NOME: item.NOME,
-          REQ_ID_CODIGO: item.REQ_ID_CODIGO,
-          TDE_DESCRICAO: item.TDE_DESCRICAO,
-          STS_DESCRICAO: item.STS_DESCRICAO,
-          REQ_DTREQ: DataUtils.converterParaData(item.REQ_DTREQ),
-          REQ_STATUS: item.REQ_STATUS,
-          CHAPA: item.CHAPA,
-          VL_COMPLEMENTAR: VL_EXTORNO,
-          VL_EXTORNO: VL_DEVOLUCAO,
-          STATUS,
-          SQE_EFETIVO: item.SQE_EFETIVO,
-          PRA_ATIVO: item.PRA_ATIVO,
-          SQE_TIPOSAQUE: item.SQE_TIPOSAQUE === 'N' ? 'Diária' : '',
-        });
-      });
+          // Busca documentos
+          let docs: docsEntity[] | null = null;
+          try {
+            docs = await this.documentosService.findBySQE_ID_CODIGO(item.SQE_ID_CODIGO);
+          } catch (error) {}
+
+          // Obter status
+          const STATUS = RetonaStatus(
+            item.SQE_EFETIVO,
+            item.SQE_TIPOSAQUE,
+            item.PRA_ATIVO,
+            item.SQE_DTPREST,
+            item.SQE_VLPREST,
+          );
+
+          // Retorna a estrutura do objeto
+          return new returnSaqueDto({
+            SQE_ID_CODIGO: item.SQE_ID_CODIGO,
+            SQE_DTPEDIDO: DataUtils.converterParaData(item.SQE_DTPEDIDO),
+            SQE_DTSAQUE: DataUtils.converterParaData(item.SQE_DTSAQUE),
+            SQE_VLSAQUE: Number(item.SQE_VLSAQUE) || 0,
+            SQE_VLPREST: Number(item.SQE_VLPREST) || 0,
+            RRE_ID_CODIGO: item.RRE_ID_CODIGO,
+            ITE_ID_CODIGO: item.ITE_ID_CODIGO,
+            SQE_DTPREST: DataUtils.converterParaData(item.SQE_DTPREST),
+            NOME: item.NOME,
+            REQ_ID_CODIGO: item.REQ_ID_CODIGO,
+            TDE_DESCRICAO: item.TDE_DESCRICAO,
+            STS_DESCRICAO: item.STS_DESCRICAO,
+            REQ_DTREQ: DataUtils.converterParaData(item.REQ_DTREQ),
+            REQ_STATUS: item.REQ_STATUS,
+            CHAPA: item.CHAPA,
+            VL_COMPLEMENTAR: VL_EXTORNO,
+            VL_EXTORNO: VL_DEVOLUCAO,
+            STATUS,
+            SQE_EFETIVO: item.SQE_EFETIVO,
+            PRA_ATIVO: item.PRA_ATIVO,
+            SQE_TIPOSAQUE: item.SQE_TIPOSAQUE === 'N' ? 'Diária' : '',
+            ID_DOC: docs && docs[0] ? docs[0].ID_DOC : null,
+            ORIGINAL_NAME: docs && docs[0] ? docs[0].ORIGINAL_NAME : null,
+            
+          });
+        }),
+      );
 
       // Filtros adicionais
       if (params.STATUS) {

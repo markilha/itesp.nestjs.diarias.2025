@@ -23,11 +23,11 @@ export class documentosController {
     return await this.documentosService.create(dados);
   }
   //find by id usando query
-  @Get('id')
+  @Get('iddoc')
   @ApiOperation({ summary: 'Busca um documento por id' })
   @ApiResponse({ status: 200, description: 'Documento encontrado' })
-  async findOne(@Query('id') id: number): Promise<docsEntity> {
-    return await this.documentosService.findOne(id);
+  async findOne(@Query('ID_DOC') ID_DOC: number): Promise<docsEntity> {
+    return await this.documentosService.findOne(ID_DOC);
   }
   //delete by sqe_id_codigo
   @Delete()

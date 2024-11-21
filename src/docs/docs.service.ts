@@ -20,9 +20,9 @@ export class docsService {
     });
   }
 
-  async getDocumentLink(id: number) {
+  async getDocumentLink(ID_DOC: number) {
     try {
-      const doc = await this.documentosService.findOne(id);
+      const doc = await this.documentosService.findOne(ID_DOC);
       const fullKey = `${doc.SQE_ID_CODIGO}/${doc.NOME_DOCUMENTO}`;
       const result = this.obsClient.createSignedUrlSync({
         Method: 'GET',
