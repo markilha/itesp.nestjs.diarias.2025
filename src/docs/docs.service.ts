@@ -50,7 +50,7 @@ export class docsService {
     const bucketName = 'itesp-ccp';
     const nomeArquivo = Buffer.from(file.originalname, 'latin1').toString('utf8');
     const nomeArquivoFinal = generateUniqueFileName(nomeArquivo, SQE_ID_CODIGO);
-    const objectKey = `${SQE_ID_CODIGO}/${nomeArquivoFinal}`;
+    const objectKey = `DIARIAS_${SQE_ID_CODIGO}/${nomeArquivoFinal}`;
 
     const dados = {
       NOME_DOCUMENTO: nomeArquivoFinal,
