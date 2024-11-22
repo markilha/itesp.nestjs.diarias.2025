@@ -420,9 +420,7 @@ export class SaqueService {
         consulta.PRA_ATIVO,
         consulta.SQE_DTPREST,
         consulta.SQE_VLPREST,
-      );
-
-      console.log(itinerario);
+      );  
 
       const { calcDiaraInial, calcDiaraRetorn, diariaIntegral, diariaParcial, diaraPorc } =
         await this.calcularDiarias(

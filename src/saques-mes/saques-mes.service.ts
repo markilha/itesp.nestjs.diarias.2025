@@ -1,6 +1,6 @@
-import {  Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
-import { SaqueMesDto } from './saque-mesDto';
+import { returnDevolucaoDto, returnTransferenciaDto, SaqueMesDto } from './saque-mesDto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SaqueMesEntity } from '../database/db_oracle/entities/saqueMes.entity';
@@ -13,8 +13,7 @@ export class SaquesMesService {
   ) {}
 
   async findOne(chapa: string, messaque: string): Promise<SaqueMesDto[]> {
-    try {    
-
+    try {
       const consulta = await this.saqueMes.query(`
           SELECT 
               d.CHAPA AS chapa,
@@ -55,131 +54,107 @@ export class SaquesMesService {
             
         `);
 
-        const result = consulta.map((item:any) => {
-          return {
-            CHAPA: item.CHAPA,            
-            messaque: item.MESSAQUE,
-            totSaque: item.TOTSAQUE,
-            TotalSaqueMes: item.TOTSAQUE - item.TOTSAQUEESTCANC - item.VLDEVOLUCAO,          
-          };
-        });
-      
-        return result;
-       
+      const result = consulta.map((item: any) => {
+        return {
+          CHAPA: item.CHAPA,
+          messaque: item.MESSAQUE,
+          totSaque: item.TOTSAQUE,
+          TotalSaqueMes: item.TOTSAQUE - item.TOTSAQUEESTCANC - item.VLDEVOLUCAO,
+        };
+      });
 
-      
+      return result;
     } catch (error) {
-      console.error('Error during query execution:', error);
-      throw error; // Propaga o erro para tratamento adicional
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async findDevolucaoMes(chapa: string, messaque: string): Promise<returnDevolucaoDto[]> {
+    const consulta = await this.saqueMes.query(`
+      SELECT 
+        A.tde_id_codigo,
+        A.CHAPA,
+        A.mesdev,
+        Sum(A.EXT_VALOR) As VlDevolucao
+      From Financeiro.V009_Devolucaomes A
+      where A.MesDEv = A.Messaque 
+      AND
+        a.TDE_ID_CODIGO = 7    
+        ${chapa ? `AND a.CHAPA = '${chapa}'` : ''}
+        ${messaque ? `AND a.MESSAQUE = '${messaque}'` : ''}
+      Group By A.TDE_ID_CODIGO, A.CHAPA, A.MESDEV
+      `);
+
+    return consulta.map((item: any) => {
+      return {
+        CHAPA: item.CHAPA,
+        TDE_ID_CODIGO: item.TDE_ID_CODIGO,
+        MESDEV: item.MESDEV,
+        VLDEVOLUCAO: item.VLDEVOLUCAO,
+      };
+    });
+  }
+
+  async findTransferenciaMes(chapa: string, messaque: string): Promise<returnTransferenciaDto[]> {
+    try {
+      const consulta = await this.saqueMes.query(`
+        SELECT 
+        TO_CHAR(TO_DATE(A.SQE_DTPEDIDO, 'DD/MM/YY HH24:MI:SS'), 'YY/MM') AS MesPed,
+          B.CHAPA,        
+          SUM(A.SQE_VLSAQUE) AS VLTOTAL
+        FROM 
+          S009_Saque A
+        JOIN 
+          S009_ITENSREQREC B 
+        ON 
+          A.ITE_ID_CODIGO = B.ITE_ID_CODIGO
+        WHERE 
+          A.SQE_TIPOSAQUE = 'N' 
+        AND A.SQE_EFETIVO IN ('T')
+         ${chapa ? `AND B.CHAPA = '${chapa}'` : ''}
+         ${messaque ? `AND TO_CHAR(TO_DATE(A.SQE_DTPEDIDO, 'DD/MM/YY HH24:MI:SS'), 'YY/MM') = '${messaque}'` : ''}
+        GROUP BY 
+          B.CHAPA,
+          TO_CHAR(TO_DATE(A.SQE_DTPEDIDO, 'DD/MM/YY HH24:MI:SS'), 'YY/MM')
+        ORDER BY  MesPed DESC
+        `);
+
+      return consulta;
+    } catch (error) {   
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   // Método privado para construir a query base
-  private createBaseQueryBuilder() {
-    return this.saqueMes
-      .createQueryBuilder('a')
-      .select([
-        'd.CHAPA AS chapa',
-        'd.NOME AS nome',
-        'e.DESCRICAO AS descricao',
-        'f.FUNCAO AS funcao',
-        'a.MESSAQUE AS messaque',
-        "STR_TO_DATE(a.MESSAQUE, '%m/%Y') AS messaque2",
-        'a.TotSaque AS totSaque',
-        'IFNULL(b.TotSaqueEstCanc, 0) AS totSaqueEstCanc',
-        'c.mesdev AS mesDev',
-        'IFNULL(c.vl_devolucao, 0) AS vlDevolucao',
-        'IFNULL(f.SALARIO, 0) AS salario',
-      ])
-      .leftJoin(
-        'v009_saqueestcanc_mes',
-        'b',
-        'a.CHAPA = b.CHAPA AND a.MESSAQUE = b.MESSAQUE AND a.TDE_ID_CODIGO = b.TDE_ID_CODIGO',
-      )
-      .leftJoin(
-        'v009_devoltot_mes',
-        'c',
-        'a.CHAPA = c.chapa AND a.MESSAQUE = c.mesdev AND a.TDE_ID_CODIGO = c.tde_id_codigo',
-      )
-      .innerJoin('pfunc', 'd', 'a.CHAPA = d.CHAPA')
-      .innerJoin('psecao', 'e', 'd.CODSECAO = e.CODIGO')
-      .leftJoin('v009_funcsalario', 'f', 'd.CHAPA = f.CHAPA')
-      .where('a.TDE_ID_CODIGO = :codigo', { codigo: 7 });
-  }
-
-  // Método privado para aplicar filtros comuns
-  // private applyFilters(query, params: FindAllParams) {
-  //   if (params.CHAPA) {
-  //     query.andWhere('a.CHAPA = :chapa', { chapa: params.CHAPA });
-  //   }
-
-  //   if (params.messaque) {
-  //     query.andWhere('a.MESSAQUE = :messaque', { messaque: params.messaque });
-  //   }
-
-  //   if (params.page && params.limit) {
-  //     const page = params.page;
-  //     const limit = params.limit;
-  //     const skip = (page - 1) * limit;
-  //     query.skip(skip).take(limit);
-  //   }
-
-  //   return query;
-  // }
-
-  // async findAll(params: FindAllParams): Promise<SaqueMesEntity[]> {
-  //   const searchParams: FindOptionsWhere<SaqueMesEntity> = {};
-
-  //   if (params.CHAPA) {
-  //     searchParams['CHAPA'] = params.CHAPA;
-  //   }
-  //   if (params.MESSAQUE) {
-  //     searchParams['MESSAQUE'] = params.MESSAQUE;
-  //   }
-
-  //   if (params.page && params.limit) {
-  //     const page = params.page;
-  //     const limit = params.limit;
-  //     const skip = (page - 1) * limit;
-
-  //     return await this.saqueMes.find({
-  //       where: searchParams,
-  //       skip,
-  //       take: limit,
-  //     });
-  //   }
-
-  //   return await this.saqueMes.find({
-  //     where: searchParams,
-  //   });
-  // }
-
-  // Método público para buscar todos os registros
-  // async findAll(params: FindAllParams): Promise<SaqueMesDto[]> {
-  //   const query = this.createBaseQueryBuilder();
-  //   this.applyFilters(query, params);
-
-  //   const result = await query.getRawMany();
-  //   return result;
-  // }
-
-  // Método público para buscar um registro específico
-  // async findOne(chapa: string, messaque: string): Promise<SaqueMesDto | null> {
-
-    
-
-  //   // const query = this.createBaseQueryBuilder()
-  //   //   .andWhere('a.CHAPA = :chapa', { chapa })
-  //   //   .andWhere('a.MESSAQUE = :messaque', { messaque })
-  //   //   .limit(1);
-
-  //   // const result = await query.getRawOne();
-  //   // if (!result) {
-  //   //   throw new HttpException('Registro não encontrado', HttpStatus.NOT_FOUND);
-  //   // }
-
-  //   // result.TotalSaqueMes = result.totSaque - result.totSaqueEstCanc - result.vlDevolucao;
-
-  //   // return result;
+  // private createBaseQueryBuilder() {
+  //   return this.saqueMes
+  //     .createQueryBuilder('a')
+  //     .select([
+  //       'd.CHAPA AS chapa',
+  //       'd.NOME AS nome',
+  //       'e.DESCRICAO AS descricao',
+  //       'f.FUNCAO AS funcao',
+  //       'a.MESSAQUE AS messaque',
+  //       "STR_TO_DATE(a.MESSAQUE, '%m/%Y') AS messaque2",
+  //       'a.TotSaque AS totSaque',
+  //       'IFNULL(b.TotSaqueEstCanc, 0) AS totSaqueEstCanc',
+  //       'c.mesdev AS mesDev',
+  //       'IFNULL(c.vl_devolucao, 0) AS vlDevolucao',
+  //       'IFNULL(f.SALARIO, 0) AS salario',
+  //     ])
+  //     .leftJoin(
+  //       'v009_saqueestcanc_mes',
+  //       'b',
+  //       'a.CHAPA = b.CHAPA AND a.MESSAQUE = b.MESSAQUE AND a.TDE_ID_CODIGO = b.TDE_ID_CODIGO',
+  //     )
+  //     .leftJoin(
+  //       'v009_devoltot_mes',
+  //       'c',
+  //       'a.CHAPA = c.chapa AND a.MESSAQUE = c.mesdev AND a.TDE_ID_CODIGO = c.tde_id_codigo',
+  //     )
+  //     .innerJoin('pfunc', 'd', 'a.CHAPA = d.CHAPA')
+  //     .innerJoin('psecao', 'e', 'd.CODSECAO = e.CODIGO')
+  //     .leftJoin('v009_funcsalario', 'f', 'd.CHAPA = f.CHAPA')
+  //     .where('a.TDE_ID_CODIGO = :codigo', { codigo: 7 });
   // }
 }

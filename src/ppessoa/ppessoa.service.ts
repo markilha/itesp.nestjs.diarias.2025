@@ -52,13 +52,7 @@ export class PpessoaService {
       const consulta = await this.rmRepository.query(query, [params.chapa]);
 
        const psubstchefe = await this.psubstchefeService.findAtual(consulta[0].CODSECAO);
-       const superv = await this.findOne(psubstchefe.CHAPASUBST);
-       console.log(superv);
-
-       
-  
-      
-      
+       const superv = await this.findOne(psubstchefe.CHAPASUBST);        
 
       if (consulta.length === 0) {
         throw new HttpException('Funcionário não encontrado!!!', HttpStatus.INTERNAL_SERVER_ERROR);
