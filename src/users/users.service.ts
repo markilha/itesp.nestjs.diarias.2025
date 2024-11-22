@@ -64,8 +64,7 @@ export class UsersService {
         [id_usuario],
       );
       return users;
-    } catch (error) {
-      console.log(error.message)
+    } catch (error) {     
       throw new HttpException(
         `Erro ao buscar nível do usuario`,
         HttpStatus.INTERNAL_SERVER_ERROR,
