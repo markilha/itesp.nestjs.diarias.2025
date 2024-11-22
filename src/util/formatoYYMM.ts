@@ -6,3 +6,4 @@ export function formatDateToYYMM(dateString: string | Date): string {
     return `${ano}/${mes}`;
 }
 
+console.log(formatDateToYYMM('2021-12-31')); // 21/12
