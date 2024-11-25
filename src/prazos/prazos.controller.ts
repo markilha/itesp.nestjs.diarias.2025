@@ -10,6 +10,8 @@ import { PrazosDto, FindAllParams, findPrazosMesDto } from './prazosDto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AllExceptionsFilter } from 'src/interceptors/all-exceptions.filter';
+import { CurrentUser } from 'src/auth/current-user.decorator';
+import { UsersDto } from 'src/users/users.dto';
 
 @ApiTags('prazos')
 @UseGuards(AuthGuard)
@@ -36,7 +38,10 @@ export class PrazosController {
   }
   @Get('findmes')
   @ApiResponse({ status: 200, description: 'Listagem de prazos e aplicação do mes atual', type: PrazosDto, isArray: true })
-  async findreg(@Query() params: findPrazosMesDto): Promise<PrazosDto[]> {
+  async findreg(@CurrentUser() user: UsersDto,@Query() params: findPrazosMesDto): Promise<PrazosDto[]> {
+    if(!params.chapa){
+      params.chapa = user.chapa;
+    }
     const Prazos = await this.PrazosService.findmes(params);   
     return Prazos;
   }

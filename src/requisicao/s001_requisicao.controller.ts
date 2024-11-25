@@ -10,8 +10,10 @@ import {
 } from './requisicao.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { requisicaoAutorizadaSwagger, requisicaoSwagger } from 'src/swagger/requisicaoswagger';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { UsersDto } from 'src/users/users.dto';
 
 @UseGuards(AuthGuard)
 @ApiTags('usureq')
@@ -35,7 +37,12 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async find(@Query() params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
+  async find(@CurrentUser() user: UsersDto,@Query() params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
+
+    if(!params.chapa){
+     params.chapa = user.chapa;
+    }
+
     return await this.requisicao.find(params);
   }
 
@@ -55,7 +62,10 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async findAllAprovadas(@Query() params: FindAllAutorizadasParams): Promise<RequisDto[]> {
+  async findAllAprovadas(@CurrentUser() user: UsersDto,@Query() params: FindAllAutorizadasParams): Promise<RequisDto[]> {
+    if(!params.chapa){
+      params.chapa = user.chapa;
+     }
     return await this.requisicao.findAllAprovadas(params);
   }
 
@@ -75,7 +85,10 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async findMes(@Query() params: findMesParams): Promise<RequisDto[]> {
+  async findMes(@CurrentUser() user: UsersDto,@Query() params: findMesParams): Promise<RequisDto[]> {
+    if(!params.chapa){
+      params.chapa = user.chapa;
+     }
     return await this.requisicao.findMesAtual(params);
   }
 
@@ -95,7 +108,10 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async findPendentes(@Query('chapa') chapa: string): Promise<requiTotal> {
+  async findPendentes(@CurrentUser() user: UsersDto,@Query('chapa') chapa: string): Promise<requiTotal> {    
+    if(!chapa){
+      chapa = user.chapa;
+     } 
     return await this.requisicao.findPendentes(chapa);
   }
 }

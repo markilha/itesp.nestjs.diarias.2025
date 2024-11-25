@@ -63,3 +63,41 @@ export class FindAllParams {
   @ApiProperty({ required: false })
   orderDirection?: string;
 }
+export class FindParamsExtrato {
+  @ApiProperty()
+  chapa: string; 
+}
+
+export class ExtratoDto {
+  @ApiProperty()
+  ITE_ID_CODIGO: number;
+  @ApiProperty()
+  DT_CONCEDIDO: string;
+  @ApiProperty()
+  SQE_MES: number;  
+  @ApiProperty()
+  VL_CONCEDIDO: number;
+  @ApiProperty()
+  VL_PRESTADO: number;
+  @ApiProperty()
+  VL_COMPREMENTO: number;
+  @ApiProperty()
+  VL_DEVOLUCAO: number;
+  @ApiProperty()
+  SQE_RESTANTE?: number;
+  @ApiProperty()
+  SQE_EFET_MES: number;
+
+  constructor(item: any) {
+    this.ITE_ID_CODIGO = item.ITE_ID_CODIGO;
+    this.DT_CONCEDIDO = item.DT_CONCEDIDO;
+    this.SQE_MES = item.SQE_MES;
+    this.VL_CONCEDIDO = item.VL_CONCEDIDO;
+    this.VL_PRESTADO = item.VL_PRESTADO;
+    this.VL_COMPREMENTO = item.VL_COMPREMENTO;
+    this.VL_DEVOLUCAO = item.VL_DEVOLUCAO;
+    this.SQE_RESTANTE = item.SQE_RESTANTE;
+    this.SQE_EFET_MES = item.SQE_EFET_MES;
+  }
+
+}

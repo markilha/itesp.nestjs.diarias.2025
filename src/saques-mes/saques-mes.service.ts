@@ -1,9 +1,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
-import { returnDevolucaoDto, returnTransferenciaDto, SaqueMesDto } from './saque-mesDto';
+import {
+  ExtratoDto,
+  returnDevolucaoDto,
+  returnTransferenciaDto,
+  SaqueMesDto,
+} from './saque-mesDto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SaqueMesEntity } from '../database/db_oracle/entities/saqueMes.entity';
+import { formatDateToYYMM } from 'src/util/formatoYYMM';
+import { DataUtils } from 'src/util/DataUtils';
+import { calcularTotalPorYYMM } from 'src/util/variaveis/calcula_total_mes';
 
 @Injectable()
 export class SaquesMesService {
@@ -95,7 +103,7 @@ export class SaquesMesService {
     });
   }
 
-  async findTransferenciaMes(chapa: string, messaque: string): Promise<returnTransferenciaDto[]> {
+  async findTransferenciaMes(chapa: string, messaque: string): Promise<returnTransferenciaDto[]> {   
     try {
       const consulta = await this.saqueMes.query(`
         SELECT 
@@ -120,41 +128,108 @@ export class SaquesMesService {
         `);
 
       return consulta;
-    } catch (error) {   
+    } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  // Método privado para construir a query base
-  // private createBaseQueryBuilder() {
-  //   return this.saqueMes
-  //     .createQueryBuilder('a')
-  //     .select([
-  //       'd.CHAPA AS chapa',
-  //       'd.NOME AS nome',
-  //       'e.DESCRICAO AS descricao',
-  //       'f.FUNCAO AS funcao',
-  //       'a.MESSAQUE AS messaque',
-  //       "STR_TO_DATE(a.MESSAQUE, '%m/%Y') AS messaque2",
-  //       'a.TotSaque AS totSaque',
-  //       'IFNULL(b.TotSaqueEstCanc, 0) AS totSaqueEstCanc',
-  //       'c.mesdev AS mesDev',
-  //       'IFNULL(c.vl_devolucao, 0) AS vlDevolucao',
-  //       'IFNULL(f.SALARIO, 0) AS salario',
-  //     ])
-  //     .leftJoin(
-  //       'v009_saqueestcanc_mes',
-  //       'b',
-  //       'a.CHAPA = b.CHAPA AND a.MESSAQUE = b.MESSAQUE AND a.TDE_ID_CODIGO = b.TDE_ID_CODIGO',
-  //     )
-  //     .leftJoin(
-  //       'v009_devoltot_mes',
-  //       'c',
-  //       'a.CHAPA = c.chapa AND a.MESSAQUE = c.mesdev AND a.TDE_ID_CODIGO = c.tde_id_codigo',
-  //     )
-  //     .innerJoin('pfunc', 'd', 'a.CHAPA = d.CHAPA')
-  //     .innerJoin('psecao', 'e', 'd.CODSECAO = e.CODIGO')
-  //     .leftJoin('v009_funcsalario', 'f', 'd.CHAPA = f.CHAPA')
-  //     .where('a.TDE_ID_CODIGO = :codigo', { codigo: 7 });
-  // }
+  async findExtrato(chapa: string): Promise<ExtratoDto[]> {
+    try {
+      const consulta = await this.saqueMes.query(`
+        SELECT DISTINCT
+          B.ITE_ID_CODIGO,
+          B.CHAPA AS CHAPA,
+          B.IRR_DATA_CONC AS DT_CONCEDIDO,    
+          (C.SALARIO * 0.5) AS SQE_MES,  
+          B.IRR_VALOR_CONC AS VL_CONCEDIDO,
+          B.IRR_VALOR_PREST AS VL_PRESTADO,
+        CASE
+            WHEN (B.IRR_VALOR_PREST - B.IRR_VALOR_CONC) < 0 THEN 0
+            ELSE (B.IRR_VALOR_PREST - B.IRR_VALOR_CONC)
+        END AS VL_COMPREMENTO,
+          CASE
+            WHEN (B.IRR_VALOR_PREST - B.IRR_VALOR_CONC) > 0 THEN 0
+            ELSE (B.IRR_VALOR_CONC - B.IRR_VALOR_PREST)
+        END AS VL_DEVOLUCAO       
+        FROM 
+            FINANCEIRO.S009_SAQUE A
+        INNER JOIN 
+            FINANCEIRO.S009_ITENSREQREC B 
+            ON A.ITE_ID_CODIGO = B.ITE_ID_CODIGO
+        INNER JOIN 
+            FINANCEIRO.V009_FUNCSALARIO C 
+            ON B.CHAPA = C.CHAPA
+        WHERE 
+            B.CHAPA = ${chapa}        
+        ORDER BY B.ITE_ID_CODIGO DESC
+        `);
+
+      const dados: ExtratoDto[] = [
+        {
+          ITE_ID_CODIGO: 1,
+          DT_CONCEDIDO: '15/01/2023 10:43:16',
+          SQE_MES: 0,
+          VL_CONCEDIDO: 200,
+          VL_PRESTADO: 0,
+          VL_COMPREMENTO: 50,
+          VL_DEVOLUCAO: 20,
+          SQE_RESTANTE: 0,
+          SQE_EFET_MES: 0,
+        },
+        {
+          ITE_ID_CODIGO: 2,
+          DT_CONCEDIDO: '25/01/2023 15:20:00',
+          SQE_MES: 0,
+          VL_CONCEDIDO: 300,
+          VL_PRESTADO: 0,
+          VL_COMPREMENTO: 30,
+          VL_DEVOLUCAO: 50,
+          SQE_RESTANTE: 0,
+          SQE_EFET_MES: 0,
+        },
+        {
+          ITE_ID_CODIGO: 3,
+          DT_CONCEDIDO: '10/12/2023 09:00:00',
+          SQE_MES: 0,
+          VL_CONCEDIDO: 400,
+          VL_PRESTADO: 0,
+          VL_COMPREMENTO: 40,
+          VL_DEVOLUCAO: 100,
+          SQE_RESTANTE: 0,
+          SQE_EFET_MES: 0,
+        },
+      ];
+
+      const result = Promise.all(
+        consulta.map(async (item: any) => {
+          let dataNow = null;
+          let formatoYYMM = null;
+          let saquemes = 0;
+
+          if (item.DT_CONCEDIDO) {
+            dataNow = DataUtils.converterStringParaData(item.DT_CONCEDIDO);
+            formatoYYMM = formatDateToYYMM(dataNow);
+            saquemes = calcularTotalPorYYMM(consulta, formatoYYMM) || 0;
+          }
+
+          return {
+            ITE_ID_CODIGO: item.ITE_ID_CODIGO,
+            DT_CONCEDIDO: item.DT_CONCEDIDO,
+            SQE_MES: item.SQE_MES,
+            VL_CONCEDIDO: item.VL_CONCEDIDO,
+            VL_PRESTADO: item.VL_PRESTADO,
+            VL_COMPREMENTO: item.VL_COMPREMENTO,
+            VL_DEVOLUCAO: item.VL_DEVOLUCAO,
+            SQE_EFET_MES: saquemes,
+            SQE_RESTANTE: Number((item.SQE_MES - saquemes).toFixed(2)) || 0
+          };
+        }),
+      );
+
+      return result;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

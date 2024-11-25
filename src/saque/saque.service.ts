@@ -385,9 +385,10 @@ export class SaqueService {
       if (params.STATUS) {
         consulta = consulta.filter((item: any) => item.STATUS === params.STATUS);
       }
-      return {
+      return {       
         data: consulta,
         total: totalCount,
+
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
