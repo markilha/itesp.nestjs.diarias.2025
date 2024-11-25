@@ -1,15 +1,26 @@
 import { isValid, parse, parseISO } from 'date-fns';
-import { format } from 'path';
 
 export class DataUtils {
   static converterStringParaData(dataString: string): Date {
-    try {
+    if (!dataString || dataString.trim() === '') {
+      return;
+    }
+    try {      
+      
       // Tentar primeiro com o formato completo com hora
       let dataConvertida = parse(dataString, 'dd/MM/yyyy HH:mm:ss', new Date());
 
       // Se não for válido, tenta o formato sem a hora
       if (!isValid(dataConvertida)) {
         dataConvertida = parse(dataString, 'dd/MM/yy', new Date());
+      }
+
+      if (!isValid(dataConvertida)) {
+        dataConvertida = parse(dataString, 'dd/MM/yyyy', new Date());
+      }  
+
+      if (!isValid(dataConvertida)) {
+        dataConvertida = parse(dataString, 'yyyy-MM-dd', new Date());
       }
 
       // Verificar se o resultado final é válido
@@ -19,9 +30,14 @@ export class DataUtils {
 
       return dataConvertida;
     } catch (error) {      
-      throw new Error(`Erro ao converter string para data`);
+      throw new Error(`${error.message} : ${dataString}`);
     }
   }
+  static normalizarData(data: Date): Date {
+   // return new Date(data.getFullYear(), data.getMonth(), data.getDate());
+   return new Date(Date.UTC(data.getFullYear(), data.getMonth(), data.getDate()));
+  }
+
 
   static converterFormatoDataHora(dataString: string, horaString: string) {
     let dataFormada = null;
