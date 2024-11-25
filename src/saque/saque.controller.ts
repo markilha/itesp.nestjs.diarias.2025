@@ -15,6 +15,8 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { saquePrestacaoSwagger } from 'src/swagger/saqueswagger';
 import { AllExceptionsFilter } from 'src/interceptors/all-exceptions.filter';
+import { CurrentUser } from 'src/auth/current-user.decorator';
+import { AuthUserDto } from 'src/auth/use.auth.Dto';
 
 @UseGuards(AuthGuard)
 @ApiTags('saque')
@@ -27,13 +29,12 @@ export class SaqueController {
   @ApiOperation({ summary: 'Busca todos os saques' })
   @ApiResponse({ status: 200, description: 'Retorna todos os saques',type: returnSaqueDto, isArray: true  })
   @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
-  async findAll(@Query() params: FindParamsSaque): Promise<returnSaqueDto[]> {
-    if (!params.CHAPA) {
-      throw new HttpException(
-        'CHAPA não informada. Por favor, forneça uma CHAPA válida.',
-        HttpStatus.BAD_REQUEST,
-      );
+  async findAll(@CurrentUser() user: AuthUserDto, @Query() params: FindParamsSaque): Promise<returnSaqueDto[]> {
+   
+    if (!params.CHAPA){
+      params.CHAPA = user.chapa;
     }
+
     return await this.saqueService.findAll(params);
   }
 
@@ -57,8 +58,13 @@ export class SaqueController {
   @ApiResponse({ status: 201, description: 'Saque solicitado com sucesso'})
   @ApiResponse({ status: 404, description: 'Diária de viagem não encontrada' })
   @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
-  async solicitarSaque(@Body() params: SolitarDto): Promise<RetNumSaque> {
-    return this.saqueService.solicitarSaque(params);
+  async solicitarSaque(@CurrentUser() user: AuthUserDto,@Body() params: SolitarDto): Promise<RetNumSaque> {
+
+    if(!params.chapa){
+      params.chapa = user.chapa;
+    }  
+
+   return this.saqueService.solicitarSaque(params);
   }
 
   @Get('findone')

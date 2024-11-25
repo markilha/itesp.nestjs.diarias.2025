@@ -1,8 +1,16 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { SaquesMesService } from './saques-mes.service';
-import { FindAllParams, returnTransferenciaDto, SaqueMesDto } from './saque-mesDto';
+import {
+  ExtratoDto,
+  FindAllParams,
+  FindParamsExtrato,
+  returnTransferenciaDto,
+  SaqueMesDto,
+} from './saque-mesDto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiExcludeEndpoint, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from 'src/auth/current-user.decorator';
+import { AuthUserDto } from 'src/auth/use.auth.Dto';
 
 @UseGuards(AuthGuard)
 @ApiTags('saques-mes')
@@ -12,13 +20,45 @@ export class SaquesMesController {
 
   @ApiExcludeEndpoint()
   @Get()
-  async findAll(@Query() params: FindAllParams): Promise<SaqueMesDto[]> {
+  async findAll(
+    @CurrentUser() user: AuthUserDto,
+    @Query() params: FindAllParams,
+  ): Promise<SaqueMesDto[]> {
+    if (!params.chapa) {
+      params.chapa = user.chapa;
+    }
+
     return await this.saquesmesService.findOne(params.chapa, params.messaque);
-  } 
+  }
   //get transferencias
   @Get('transferencia')
-  @ApiResponse({ status: 200, description: 'Listagem de transferências', type: returnTransferenciaDto })
-  async findTransferencias(@Query() params: FindAllParams): Promise<returnTransferenciaDto[]> {
-    return await this.saquesmesService.findTransferenciaMes(params.chapa, params.messaque);
+  @ApiResponse({
+    status: 200,
+    description: 'Listagem de transferências',
+    type: returnTransferenciaDto,
+  })
+  async findTransferencias(
+    @CurrentUser() user: AuthUserDto,
+    @Query() params: { messaque: string; chapa: string },
+  ): Promise<returnTransferenciaDto[]> {
+    
+    if (!params.chapa) {
+      params.chapa = user.chapa;
+    }   
+
+    return await this.saquesmesService.findTransferenciaMes(user.chapa, params.messaque);
+  }
+
+  @Get('perfil/extrato')
+  @ApiResponse({ status: 200, description: 'Listagem de extrato', type: ExtratoDto, isArray: true })
+  async findExtrato(
+    @CurrentUser() user: AuthUserDto,
+    @Query('chapa') chapa: string,
+  ): Promise<ExtratoDto[]> {
+    if (!chapa) {
+      chapa = user.chapa;
+    }
+
+    return await this.saquesmesService.findExtrato(chapa);
   }
 }

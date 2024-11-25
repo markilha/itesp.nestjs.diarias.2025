@@ -1,30 +1,36 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { FuncsalarioService } from './funcsalario.service'; // Importa o serviço
 import { FindAllParams, FindParamsDadosPagamentoDto, FuncSalarioDto, returnFunPagDto } from './funcsalarioDto';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Roles } from '../auth/roles.decorator';
+import { CurrentUser } from 'src/auth/current-user.decorator';
+import { AuthUserDto } from 'src/auth/use.auth.Dto';
 
 @ApiTags('funcsalario')
 @Controller('funcsalario')
+// @Roles(Role.admin)
 @UseGuards(AuthGuard)
 export class FuncsalarioController {
   constructor(private readonly funcSalarioService: FuncsalarioService) {}
   
-  @Get()
-  // @Roles('admin')
-  async findAll(@Query() params: FindAllParams): Promise<FuncSalarioDto[]> {
+  @Get() 
+  async findAll(@Query() params: FindAllParams): Promise<FuncSalarioDto[]> { 
     return await this.funcSalarioService.findAll(params);
   }
 
   @Get(':chapa')
-  async findByCodigo(@Param('chapa') chapa: string): Promise<FuncSalarioDto>  {
+  async findByCodigo(@Param('chapa') chapa: string): Promise<FuncSalarioDto>  {    
     return await this.funcSalarioService.findByCodigo(chapa);
   }  
   @Get('perfil/dadosPagamento')
   @ApiResponse({ status: 200, description: 'Listagem de dados pagamento', type: returnFunPagDto })
-  async dadosPagamento(@Query() params: FindParamsDadosPagamentoDto): Promise<returnFunPagDto> {
+  async dadosPagamento(@CurrentUser() user: AuthUserDto,@Query() params: FindParamsDadosPagamentoDto): Promise<returnFunPagDto> {   
+    if(!params.chapa){
+      params.chapa = user.chapa;
+    }
     const dados = await this.funcSalarioService.dadosPagamento(params); 
     return dados;
   }
+
+
 }

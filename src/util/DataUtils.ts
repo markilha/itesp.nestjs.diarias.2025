@@ -18,8 +18,7 @@ export class DataUtils {
       }
 
       return dataConvertida;
-    } catch (error) {
-      console.log(error);
+    } catch (error) {      
       throw new Error(`Erro ao converter string para data`);
     }
   }

@@ -5,6 +5,8 @@ import { JwtService } from '@nestjs/jwt';
 import { compareSync as bcryptCompareSync } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { nivel } from 'src/util/variaveis/variaveis';
+import { preencherZeros } from 'src/util/preencherZero';
+import { AuthUserDto } from './use.auth.Dto';
 
 
 @Injectable()
@@ -32,10 +34,11 @@ export class AuthService {
       acesso
         .map((item) => {
           if (item.id_sistema === nivel.id_sistema) {
-            const role = Object.keys(nivel).find((key) => nivel[key] === item.id_perfil_acesso);
-            if (role) {
-              roles.push(role);
-            }
+            roles.push(item.id_perfil_acesso);
+            // const role = Object.keys(nivel).find((key) => nivel[key] === item.id_perfil_acesso);
+            // if (role) {
+            //   roles.push(role);
+            // }
           }
           return '';
         })
@@ -46,19 +49,13 @@ export class AuthService {
       throw new UnauthorizedException('Usuário sem acesso ao sistema');
     }
 
-    const payload = {
+    const payload: AuthUserDto = {
       sub: fountUser.id_usuario,
-      login: fountUser.login,
+      login: fountUser.login,   
+      chapa: preencherZeros(fountUser.chapa,6),   
       roles: roles,
     };
-
-    // const acessToken = this.jwtService.sign({ ...payload, type: 'access' }, { expiresIn: '60s' });
-    // const refreshToken = this.jwtService.sign({ ...payload, type: 'refresh' }, { expiresIn: '1h' });
-    // return {
-    //   acessToken,
-    //   refreshToken,
-    // }
-
+    
     const token = this.jwtService.sign(payload);
     return {
       token,

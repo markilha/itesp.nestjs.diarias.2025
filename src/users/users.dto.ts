@@ -1,15 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MaxLength, MinLength } from 'class-validator';
 
 export class UsersDto {
-  readonly id_usuario?: number;
-
-  @MinLength(3)
-  @MaxLength(100)
-  readonly nome: string;
-  readonly login: string;
+  id_usuario?: number;
+  nome: string;
+  login: string;
   senha: string;
+  chapa: string;
 }
+
 export class UserUpdateDto {
   readonly nome?: string;
   readonly login?: string;

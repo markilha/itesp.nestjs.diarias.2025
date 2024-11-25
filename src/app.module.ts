@@ -32,6 +32,7 @@ import { docsService } from './docs/docs.service';
 import { docsController } from './docs/docs.controller';
 import { docsModule } from './docs/docs.module';
 import { documentosModule } from './documentos/documento.module';
+import { AuthGuard } from './auth/auth.guard';
 
 @Module({
   imports: [

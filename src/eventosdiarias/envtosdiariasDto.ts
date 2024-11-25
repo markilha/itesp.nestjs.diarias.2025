@@ -4,7 +4,7 @@ export class EventosDiariasDto {
   }
 
   export interface FindAllParams {
-    chapa: string;
+    chapa?: string;
     total: number;
     page: number;
     limit: number;

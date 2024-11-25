@@ -7,6 +7,7 @@ import { formatDateToYYMM } from 'src/util/formatoYYMM';
 import { SaquesMesService } from 'src/saques-mes/saques-mes.service';
 import { DataUtils } from 'src/util/DataUtils';
 
+
 @Injectable()
 export class FuncsalarioService {
   constructor(
@@ -17,7 +18,7 @@ export class FuncsalarioService {
 
   async findAll(params: FindAllParams): Promise<FuncSalarioEntity[]> {
     const searchParams: FindOptionsWhere<FuncSalarioEntity> = {};
-
+  
     if (params.nome) {
       searchParams['nome'] = ILike(`%${params.nome}%`);
     }

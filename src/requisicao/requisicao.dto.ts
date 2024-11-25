@@ -178,7 +178,7 @@ export class FindAllParams {
 }
 
 export class FindAllAutorizadasParams {
-  @ApiProperty()
+  @ApiProperty({ required: false })
   chapa: string;
   @ApiProperty({ required: false })
   reqIdCodigo?: number;

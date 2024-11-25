@@ -5,6 +5,8 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AllExceptionsFilter } from 'src/interceptors/all-exceptions.filter';
 import { docpcontasnumEntity } from 'src/database/db_oracle/entities/docpcontasnum.entity';
+import { CurrentUser } from 'src/auth/current-user.decorator';
+import { UsersDto } from 'src/users/users.dto';
 
 @ApiTags('docpcontasnum')
 @UseGuards(AuthGuard)
@@ -18,7 +20,10 @@ export class docpcontasnumController {
   @ApiResponse({ status: 200, description: 'Listagem de docpcontasnum', type: returnData })
   @ApiResponse({ status: 500, description: 'Não foi possível buscar docpcontasnum' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
-  async findAll(@Query() params: FindAllParams): Promise<returnData> {
+  async findAll(@CurrentUser() user: UsersDto,@Query() params: FindAllParams): Promise<returnData> {
+    if (!params.CHAPA) {
+      params.CHAPA = user.chapa;
+    }
     return await this.docpcontasnumService.findAll(params);
   }
 

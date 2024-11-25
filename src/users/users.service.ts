@@ -72,7 +72,7 @@ export class UsersService {
     }
   }
 
-  async findByUserName(login: string): Promise<UsersDto | null> {
+  async findByUserName(login: string): Promise<UserEntity | null> {
     const userFound = await this.usersRepository.findOne({
       where: { login },
     });
