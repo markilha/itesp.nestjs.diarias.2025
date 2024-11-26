@@ -158,9 +158,13 @@ export class SaquesMesService {
     }
   }
 
-  async findExtrato(params:FindParamsExtrato): Promise<ReturnExtrato> {
+  async findExtrato(params: FindParamsExtrato): Promise<ReturnExtrato> {
     //filtro entre datas
     try {
+      const page = Number(params.page) || 1;
+      const limit = Number(params.limit) || 10;
+      const starrIndex = (page - 1) * limit;
+      const endIndex = starrIndex + limit;
       const consulta = await this.saqueMes.query(`
         SELECT DISTINCT
           B.ITE_ID_CODIGO,
@@ -199,7 +203,7 @@ export class SaquesMesService {
             dataNow = DataUtils.converterStringParaData(item.DT_CONCEDIDO);
             formatoYYMM = formatDateToYYMM(dataNow);
             saquemes = calcularTotalPorYYMM(consulta, formatoYYMM) || 0;
-          }       
+          }
 
           return {
             ITE_ID_CODIGO: item.ITE_ID_CODIGO,
@@ -214,42 +218,36 @@ export class SaquesMesService {
           };
         }),
       );
-      
-      let resultado: ExtratoDto[] = await result;   
 
+      let filtroData: ExtratoDto[] = await result;
 
-      if(params.dataInicio && params.dataFim){
-        const dataInicio = DataUtils.normalizarData(DataUtils.converterStringParaData(params.dataInicio)); 
-        const dataFinal = DataUtils.normalizarData(DataUtils.converterStringParaData(params.dataFim));
-        console.log(dataInicio, dataFinal);
-
-        
-
-        resultado = (await result).filter(item => {
+      if (params.dataInicio && params.dataFim) {
+        const dataInicio = DataUtils.normalizarData(
+          DataUtils.converterStringParaData(params.dataInicio),
+        );
+        const dataFinal = DataUtils.normalizarData(
+          DataUtils.converterStringParaData(params.dataFim),
+        );
+        filtroData = (await result).filter((item) => {
           if (!item.DT_CONCEDIDO) return false;
-        
-          // Converter e normalizar DT_CONCEDIDO
-          const dataConcedido = DataUtils.normalizarData(DataUtils.converterStringParaData(item.DT_CONCEDIDO));
-        
-          // Comparar as datas normalizadas
+          const dataConcedido = DataUtils.normalizarData(
+            DataUtils.converterStringParaData(item.DT_CONCEDIDO),
+          );
           return dataConcedido >= dataInicio && dataConcedido <= dataFinal;
         });
+      }
 
-        return {
-          data: resultado,
-          total: resultado.length
-        }
+      let paginateData = filtroData;
 
+      if (params.page && params.limit) {
+        paginateData = filtroData.slice(starrIndex, endIndex);
+      }
 
-      }else {
-        return {
-          data: resultado,
-          total: resultado.length
-        }
-      }         
-
+      return {
+        data: paginateData,
+        total: filtroData.length,
+      };
     } catch (error) {
-      console.log(error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

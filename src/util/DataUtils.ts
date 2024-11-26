@@ -1,6 +1,13 @@
-import { isValid, parse, parseISO } from 'date-fns';
+import { isValid, parse } from 'date-fns';
+
 
 export class DataUtils {
+
+  
+static formatarDataParaOracle(data: string): string {
+  const [dia, mes, ano] = data.split('/');
+  return `${dia}/${mes}/${ano} 00:00:00`; // Inclua horário padrão
+}
   static converterStringParaData(dataString: string): Date {
     if (!dataString || dataString.trim() === '') {
       return;

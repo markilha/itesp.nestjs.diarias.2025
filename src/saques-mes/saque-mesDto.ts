@@ -149,11 +149,15 @@ export class FindParamsExtrato {
   dataInicio?: string;
   @ApiProperty({ required: false })
   dataFim?: string;
+  @ApiProperty({ required: false })
+  page?: number;
+  @ApiProperty({ required: false })
+  limit?: number;
 }
 
 export class ReturnExtrato {
   data: ExtratoDto[];
-  total: number;
+  total: number; 
 }
 
 export class ExtratoDto {
