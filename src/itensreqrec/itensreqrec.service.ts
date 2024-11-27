@@ -13,6 +13,11 @@ export class itensreqrecService {
     private itensreqrecRepository: Repository<itensreqrecEntity>,
   ) {}  
 
+  async create(data: Partial<itensreqrecEntity>): Promise<itensreqrecEntity> {
+    const item = await this.itensreqrecRepository.create(data); 
+    return await this.itensreqrecRepository.save(item);   
+  }
+
   async findOne(ITE_ID_CODIGO: number) {
     try {
       return await this.itensreqrecRepository.findOneOrFail({

@@ -32,7 +32,7 @@ import { docsService } from './docs/docs.service';
 import { docsController } from './docs/docs.controller';
 import { docsModule } from './docs/docs.module';
 import { documentosModule } from './documentos/documento.module';
-import { AuthGuard } from './auth/auth.guard';
+import { agruparecursoModule } from './agruparecurso/agruparecurso.module';
 
 @Module({
   imports: [
@@ -66,6 +66,7 @@ import { AuthGuard } from './auth/auth.guard';
     psubstchefeModule,
     docsModule,
     documentosModule,
+    agruparecursoModule
   ],
   controllers: [docsController],
   providers: [docsService],
