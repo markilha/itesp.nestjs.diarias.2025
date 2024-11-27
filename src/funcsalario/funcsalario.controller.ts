@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { FuncsalarioService } from './funcsalario.service'; // Importa o serviço
-import { FindAllParams, FindParamsDadosPagamentoDto, FuncSalarioDto, returnFunPagDto } from './funcsalarioDto';
+import { FindAllParams, FindParamsDadosPagamentoDto, FuncSalarioDto } from './funcsalarioDto';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/current-user.decorator';
@@ -21,16 +21,6 @@ export class FuncsalarioController {
   @Get(':chapa')
   async findByCodigo(@Param('chapa') chapa: string): Promise<FuncSalarioDto>  {    
     return await this.funcSalarioService.findByCodigo(chapa);
-  }  
-  @Get('perfil/dadosPagamento')
-  @ApiResponse({ status: 200, description: 'Listagem de dados pagamento', type: returnFunPagDto })
-  async dadosPagamento(@CurrentUser() user: AuthUserDto,@Query() params: FindParamsDadosPagamentoDto): Promise<returnFunPagDto> {   
-    if(!params.chapa){
-      params.chapa = user.chapa;
-    }
-    const dados = await this.funcSalarioService.dadosPagamento(params); 
-    return dados;
-  }
-
+  } 
 
 }

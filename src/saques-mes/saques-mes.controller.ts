@@ -3,7 +3,10 @@ import { SaquesMesService } from './saques-mes.service';
 import {
   ExtratoDto,
   FindAllParams,
-  FindParamsExtrato,
+  FindParamsExtrato, 
+  FindPgParams,
+  infoPagamentoDto,
+  ReturnExtrato,
   returnTransferenciaDto,
   SaqueMesDto,
 } from './saque-mesDto';
@@ -41,24 +44,38 @@ export class SaquesMesController {
     @CurrentUser() user: AuthUserDto,
     @Query() params: { messaque: string; chapa: string },
   ): Promise<returnTransferenciaDto[]> {
-    
     if (!params.chapa) {
       params.chapa = user.chapa;
-    }   
+    }
 
     return await this.saquesmesService.findTransferenciaMes(user.chapa, params.messaque);
   }
 
+  @Get('perfil/infoPagamento')
+  @ApiResponse({
+    status: 200,
+    description: 'Informações de pagamento',
+    type: SaqueMesDto,
+  })
+  async infoPagamento(
+    @CurrentUser() user: AuthUserDto,
+    @Query() params: FindPgParams,
+  ): Promise<infoPagamentoDto> {
+    if (!params.chapa) {
+      params.chapa = user.chapa;
+    }
+    return await this.saquesmesService.infoPagamento(params);
+  }
+
   @Get('perfil/extrato')
-  @ApiResponse({ status: 200, description: 'Listagem de extrato', type: ExtratoDto, isArray: true })
+  @ApiResponse({ status: 200, description: 'Listagem de extrato', type: ReturnExtrato })
   async findExtrato(
     @CurrentUser() user: AuthUserDto,
-    @Query('chapa') chapa: string,
-  ): Promise<ExtratoDto[]> {
-    if (!chapa) {
-      chapa = user.chapa;
+    @Query() params:FindParamsExtrato,
+  ): Promise<ReturnExtrato> {
+    if (!params.chapa) {
+      params.chapa = user.chapa;
     }
-
-    return await this.saquesmesService.findExtrato(chapa);
+    return await this.saquesmesService.findExtrato(params);
   }
 }

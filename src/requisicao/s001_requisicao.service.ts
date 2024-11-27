@@ -138,7 +138,7 @@ export class S001RequisicaoService {
       try {
         const formatoYYMM = formatDateToYYMM(requisicao.reqDtSaida);
         saqueSalario = await this.SaquesMesService.findOne(requisicao.chapa, formatoYYMM);
-        saqueMes = Number(saqueSalario[0]?.TotalSaqueMes) || 0;
+        saqueMes = Number(saqueSalario[0]?.totalrealmes) || 0;
       } catch (error) {
         logger.error(`Erro ao buscar saque do mês para chapa (${requisicao.chapa}): `, error);
       }

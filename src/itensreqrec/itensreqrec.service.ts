@@ -2,6 +2,8 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { itensreqrecEntity } from '../database/db_oracle/entities/itensreqrec.entity';
 import { Repository } from 'typeorm';
+import { paramsItemRecurso } from './itensreq.Dto';
+import { SelecionaItenFunc, SelecionaItensFunc, SelecionaItensRecurso } from 'src/util/selects/itensRecurso';
 
 
 @Injectable()
@@ -18,6 +20,37 @@ export class itensreqrecService {
       });
     } catch (error) {
       throw new HttpException(`Item com codigo: ${ITE_ID_CODIGO} não encontrado`, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async selecionaItensRecurso(params: paramsItemRecurso): Promise<any> {
+    try {
+      let where = '';
+      let paramsWhere = [];
+
+      if (params.RRE_ID_CODIGO) {
+        where = SelecionaItenFunc;
+        paramsWhere = [params.CHAPA, params.RRE_ID_CODIGO];
+      } else {
+        where = SelecionaItensFunc;
+        paramsWhere = [params.CHAPA];
+      }
+
+      const result = await this.itensreqrecRepository.query(
+        `${SelecionaItensRecurso} ${where}`,
+        paramsWhere,
+      );
+      if (result.length > 0) {
+        return result;
+      } else {
+        throw new HttpException('Nenhum item  encontrado', HttpStatus.NOT_FOUND);
+      }
+    } catch (error) {      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException('Ocorreu erro ao buscar itens recurso', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
  

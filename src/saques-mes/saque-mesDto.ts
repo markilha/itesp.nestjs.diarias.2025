@@ -2,22 +2,93 @@ import { ApiProperty } from '@nestjs/swagger';
 import { SaqueMesEntity } from 'src/database/db_mysql/entities/saqueMes.entity';
 
 export class SaqueMesDto {
+  @ApiProperty()
+  nome: string;
+  @ApiProperty()
   CHAPA: string;
-  TDE_ID_CODIGO: number;
-  SQE_TIPOSAQUE: string;
+  @ApiProperty()
+  descricao: string;
+  @ApiProperty()
+  funcao: string;
+  @ApiProperty()
+  totSaqueEstCanc: number;  
+  @ApiProperty()
+  totsaque: number; 
+  @ApiProperty()
+  totalrealmes: number; 
+  @ApiProperty()
+  mesdev: string; 
+  @ApiProperty()
+  salario: number;
+  @ApiProperty()
+  metadesalario: number;
+  @ApiProperty()
+  codbancopagto: number;
+  @ApiProperty()
+  codagenciapagto: number;
+  @ApiProperty()
+  contapagamento: number;
+  @ApiProperty()
+  vldevolucao: number;
+  @ApiProperty()
   messaque: string;
+  @ApiProperty()
   totSaque: number;
-  TotalSaqueMes: number;
 
-  constructor(entity: SaqueMesEntity, totalSaqueMes: number) {
+  constructor(entity: Partial<SaqueMesDto>) {
     this.CHAPA = entity.CHAPA;
-    this.TDE_ID_CODIGO = entity.TDE_ID_CODIGO;
-    this.SQE_TIPOSAQUE = entity.SQE_TIPOSAQUE;
+    this.nome = entity.nome;
+    this.descricao = entity.descricao;
+    this.funcao = entity.funcao;
+    this.totSaqueEstCanc = entity.totSaqueEstCanc;
+    this.mesdev = entity.mesdev;
+    this.salario = entity.salario;
+    this.metadesalario = entity.metadesalario;
+    this.codbancopagto = entity.codbancopagto;
+    this.codagenciapagto = entity.codagenciapagto;
+    this.contapagamento = entity.contapagamento;
     this.messaque = entity.messaque;
-    this.totSaque = entity.TotSaque;
-    this.TotalSaqueMes = totalSaqueMes;
+    this.vldevolucao = entity.vldevolucao;
+    this.totSaque = entity.totSaque;
+    this.totalrealmes = entity.totalrealmes;
   }
 }
+
+export class infoPagamentoDto {
+  @ApiProperty()
+  totSaqueEstCanc: number; 
+  @ApiProperty() 
+  totalrealmes: number; 
+  @ApiProperty()
+  salario: number;
+  @ApiProperty()
+  metadesalario: number;
+  @ApiProperty()
+  saldodisponivel: number;
+  @ApiProperty()
+  codbancopagto: number;
+  @ApiProperty()
+  codagenciapagto: number;
+  @ApiProperty()
+  contapagamento: number;
+  @ApiProperty()
+  vldevolucao: number; 
+  @ApiProperty()
+  totalaguardando: number;
+
+  constructor(entity: Partial<infoPagamentoDto>) {
+    this.codagenciapagto = entity.codagenciapagto;
+    this.codbancopagto = entity.codbancopagto;
+    this.contapagamento = entity.contapagamento;
+    this.salario = entity.salario;
+    this.metadesalario = entity.metadesalario;
+    this.totalrealmes = entity.totalrealmes;
+    this.vldevolucao = entity.vldevolucao;
+    this.totalaguardando = entity.totalaguardando;
+    this.saldodisponivel = entity.saldodisponivel;
+  }
+}
+
 
 export class returnDevolucaoDto {
   CHAPA: string;
@@ -63,9 +134,30 @@ export class FindAllParams {
   @ApiProperty({ required: false })
   orderDirection?: string;
 }
+
+export class FindPgParams {
+  @ApiProperty({ required: false })
+  chapa?: string;
+  @ApiProperty({ required: false })
+  dataAtual?: string;
+
+}
 export class FindParamsExtrato {
-  @ApiProperty()
-  chapa: string; 
+  @ApiProperty({ required: false })
+  chapa?: string; 
+  @ApiProperty({ required: false })
+  dataInicio?: string;
+  @ApiProperty({ required: false })
+  dataFim?: string;
+  @ApiProperty({ required: false })
+  page?: number;
+  @ApiProperty({ required: false })
+  limit?: number;
+}
+
+export class ReturnExtrato {
+  data: ExtratoDto[];
+  total: number; 
 }
 
 export class ExtratoDto {
@@ -99,5 +191,4 @@ export class ExtratoDto {
     this.SQE_RESTANTE = item.SQE_RESTANTE;
     this.SQE_EFET_MES = item.SQE_EFET_MES;
   }
-
 }

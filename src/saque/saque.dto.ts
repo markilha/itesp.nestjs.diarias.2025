@@ -42,6 +42,13 @@ export class FindParamsSaque {
   orderDirection?: 'ASC' | 'DESC';
 }
 
+export class ParamsPendente {
+  @ApiProperty({required: false})
+  CHAPA: string;
+  @ApiProperty({required: false})
+  RRE_ID_CODIGO: string; 
+}
+
 export class SaqueDto {  
   @ApiProperty()
   sqeIdCodigo: number; 
@@ -154,6 +161,11 @@ export class returnSaqueDto {
   ID_DOC?: number;
   @ApiProperty({required: false})
   ORIGINAL_NAME?: string;
+  @ApiProperty({required: false})
+  STATUS_SAQUE?: string;
+  @ApiProperty({required: false})
+  STATUS_PREST?: string;
+
 
 
  
@@ -178,12 +190,13 @@ export class returnSaqueDto {
     this.SQE_EFETIVO = params.SQE_EFETIVO;
     this.PRA_ATIVO = params.PRA_ATIVO;
     this.SQE_TIPOSAQUE = params.SQE_TIPOSAQUE;
+    this.STATUS_SAQUE = params.STATUS_SAQUE;
+    this.STATUS_PREST = params.STATUS_PREST;  
     this.ID_DOC = params.ID_DOC;
     this.ORIGINAL_NAME = params.ORIGINAL_NAME;
-  
+   
   }
 }
-
 export class PrestacaoDto {
   @ApiProperty()
   NOME: string;

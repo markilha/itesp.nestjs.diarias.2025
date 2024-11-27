@@ -8,6 +8,7 @@ import {
   DateTimeParams,
   returnSaqueDto,
   buscarSaqueDto,
+  ParamsPendente,
 } from './saque.dto';
 
 import { SaqueEntity } from '../database/db_oracle/entities/saque.entity';
@@ -30,7 +31,7 @@ import { MotivodiariaService } from '../motivodiaria/motivodiaria.service';
 import { DiariaCalculadaDto } from './saque.dto';
 import { querySaque, querySaqueCount } from '../util/variaveis/querys';
 
-import { RetonaStatus } from '../util/variaveis/statusPrestacao';
+import { RetonaPrestacaoStatus, RetornaSaquePendentes } from '../util/variaveis/statusSaquePrestacao';
 import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
 import { ReqnumerarioDto } from '../reqnumerario/reqnumerarioDto';
 import { reembolsoService } from '../reembolso/reembolso.service';
@@ -44,6 +45,12 @@ import { formatDate } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
 import { documentosService } from 'src/documentos/documento.service';
 import { docsEntity } from 'src/database/db_mysql/entities/docs.entity';
+import {
+  SelecionaPendencia,
+  SelecionaPendencias,
+  selecionaSaquePendente,
+} from '../util/selects/saques';
+import e from 'express';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -332,7 +339,6 @@ export class SaqueService {
 
       let consulta = await Promise.all(
         result.map(async (item: any) => {
-
           // Calcular valores de extorno e devolução
           const { VL_DEVOLUCAO, VL_EXTORNO } = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
 
@@ -343,13 +349,23 @@ export class SaqueService {
           } catch (error) {}
 
           // Obter status
-          const STATUS = RetonaStatus(
+          const STATUS = RetonaPrestacaoStatus(
             item.SQE_EFETIVO,
             item.SQE_TIPOSAQUE,
             item.PRA_ATIVO,
             item.SQE_DTPREST,
             item.SQE_VLPREST,
           );
+
+          const STATUS_SAQUE = RetornaSaquePendentes(
+            item.SQE_EFETIVO,
+            item.SQE_TIPOSAQUE,
+            item.PRA_ATIVO,                     
+          );
+
+
+          //Obter status do saque
+
 
           // Retorna a estrutura do objeto
           return new returnSaqueDto({
@@ -374,9 +390,11 @@ export class SaqueService {
             SQE_EFETIVO: item.SQE_EFETIVO,
             PRA_ATIVO: item.PRA_ATIVO,
             SQE_TIPOSAQUE: item.SQE_TIPOSAQUE === 'N' ? 'Diária' : '',
+            STATUS_SAQUE: STATUS_SAQUE,
+            STATUS_PREST: item.SQE_VALPREST === null || item.SQE_VALPREST == '' ? 'Pendente' : 'Realizada',
             ID_DOC: docs && docs[0] ? docs[0].ID_DOC : null,
             ORIGINAL_NAME: docs && docs[0] ? docs[0].ORIGINAL_NAME : null,
-            
+           
           });
         }),
       );
@@ -385,10 +403,9 @@ export class SaqueService {
       if (params.STATUS) {
         consulta = consulta.filter((item: any) => item.STATUS === params.STATUS);
       }
-      return {       
+      return {
         data: consulta,
         total: totalCount,
-
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -415,13 +432,13 @@ export class SaqueService {
         throw new HttpException('Destino não encontrado', HttpStatus.NOT_FOUND);
       }
 
-      const STATUS = RetonaStatus(
+      const STATUS = RetonaPrestacaoStatus(
         consulta.SQE_EFETIVO,
         consulta.SQE_TIPOSAQUE,
         consulta.PRA_ATIVO,
         consulta.SQE_DTPREST,
         consulta.SQE_VLPREST,
-      );  
+      );
 
       const { calcDiaraInial, calcDiaraRetorn, diariaIntegral, diariaParcial, diaraPorc } =
         await this.calcularDiarias(
@@ -649,4 +666,36 @@ export class SaqueService {
     this.saqueRepository.merge(saque, { sqeDtPrest });
     return await this.saqueRepository.save(saque);
   }
+
+  async selecionaSaquePendentes(params: ParamsPendente): Promise<any> {
+    try {
+      let where = '';
+      let paramsWhere = [];
+
+      if (params.RRE_ID_CODIGO) {
+        where = SelecionaPendencia;
+        paramsWhere = [params.CHAPA, params.RRE_ID_CODIGO];
+      } else {
+        where = SelecionaPendencias;
+        paramsWhere = [params.CHAPA];
+      }
+      const result = await this.saqueRepository.query(
+        `${selecionaSaquePendente} ${where}`,
+        paramsWhere,
+      );
+      if (result.length > 0) {
+        return result;
+      } else {
+        throw new HttpException('Nenhum saque pendente encontrado', HttpStatus.NOT_FOUND);
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException('Ocorreu erro ao buscar pendentes', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
 }

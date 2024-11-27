@@ -18,8 +18,7 @@ export function calcularTotalPorYYMM(
   
     // Filtrar itens pelo mês e ano
     const itensFiltrados = itens.filter((item) => {
-      if (!item.DT_CONCEDIDO) {
-        console.warn(`Item ignorado: DT_CONCEDIDO nulo para ITE_ID_CODIGO ${item.ITE_ID_CODIGO}`);
+      if (!item.DT_CONCEDIDO) {       
         return false;
       }
   
@@ -27,8 +26,7 @@ export function calcularTotalPorYYMM(
       const data = parse(item.DT_CONCEDIDO, 'dd/MM/yyyy HH:mm:ss', new Date());
   
       // Verifica se a data é válida
-      if (!isValid(data)) {
-        console.warn(`Data inválida para ITE_ID_CODIGO ${item.ITE_ID_CODIGO}: ${item.DT_CONCEDIDO}`);
+      if (!isValid(data)) {        
         return false;
       }
   
@@ -37,10 +35,9 @@ export function calcularTotalPorYYMM(
   
     // Calcula o total
     const total = itensFiltrados.reduce((soma, item) => {
-      const vlConcedido = item.VL_CONCEDIDO ?? 0; // Usa 0 se for nulo/indefinido
+      const vlConcedido = item.VL_CONCEDIDO ?? 0; 
       const vlComplemento = item.VL_COMPREMENTO ?? 0;
-      const vlDevolucao = item.VL_DEVOLUCAO ?? 0;
-  
+      const vlDevolucao = item.VL_DEVOLUCAO ?? 0;  
       return soma + (vlConcedido + vlComplemento - vlDevolucao);
     }, 0);
   
