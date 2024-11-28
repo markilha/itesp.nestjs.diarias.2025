@@ -9,7 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FindParamsSaque, RetNumSaque, PrestacaoDto, SolitarDto, SaqueDto, returnSaqueDto, updateEfetivoDto, returnaTotal, ParamsPendente } from './saque.dto';
+import { FindParamsSaque, RetNumSaque, PrestacaoDto, SolitarDto, SaqueDto, returnSaqueDto, updateEfetivoDto, returnaTotal, ParamsPendente, ParamsCancela } from './saque.dto';
 import { SaqueService } from './saque.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -64,7 +64,7 @@ export class SaqueController {
       params.chapa = user.chapa;
     }  
 
-   return this.saqueService.solicitarSaque(params);
+   return this.saqueService.solicitarSaque(params,user);
   }
 
   @Get('findone')
@@ -95,6 +95,18 @@ export class SaqueController {
       params.CHAPA = user.chapa;
     }
     return await this.saqueService.selecionaSaquePendentes(params);
+  }
+
+  @Get('cancela')
+  @ApiOperation({ summary: 'Cancelar saque' })
+  @ApiResponse({ status: 200, description: 'Cancelamento efetuado com sucesso'})
+  @ApiResponse({ status: 404, description: 'Saque não encontrado' })
+  @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
+  async cancelarSaque(@CurrentUser() user: AuthUserDto, @Query() params: ParamsCancela): Promise<any> {
+    if (!params.CHAPA){
+      params.CHAPA = user.chapa;
+    }
+    return await this.saqueService.cancelarSaque(params);
   }
  
 }
