@@ -1,8 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
 
 @Entity('V009_ITENSREQREC', { schema: 'FINANCEIRO' }) 
 export class itensreqrecEntity {
-  @PrimaryGeneratedColumn({ name: 'ITE_ID_CODIGO', type: 'number' })
+  @PrimaryColumn({ name: 'ITE_ID_CODIGO', type: 'number' })
   ITE_ID_CODIGO: number;
 
   @Column({ name: 'RRE_ID_CODIGO', type: 'number', nullable: false })

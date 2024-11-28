@@ -64,7 +64,7 @@ export class SaqueController {
       params.chapa = user.chapa;
     }  
 
-   return this.saqueService.solicitarSaque(params);
+   return this.saqueService.solicitarSaque(params,user);
   }
 
   @Get('findone')
