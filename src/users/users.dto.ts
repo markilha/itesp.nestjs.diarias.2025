@@ -41,3 +41,37 @@ export class userNivelDto {
   @ApiProperty()
   id_sistema: number;
 }
+
+export class PerfilAcesso {
+  @ApiProperty()
+  id_perfil_acesso: number;
+  @ApiProperty()
+  id_sistema: number;
+  @ApiProperty()
+  descricao: string;
+  @ApiProperty()
+  incluir: string;
+  @ApiProperty()
+  alterar: string;
+  @ApiProperty()
+  consultar: string;
+  @ApiProperty()
+  deletar: string;
+  @ApiProperty()
+  permissao_usuario: string;
+}
+
+export class FindAllParamsDto {
+
+  @ApiProperty()
+  id_usuario: number;
+  @ApiProperty()
+  nome: string;
+
+  @ApiProperty()
+  chapa: string;
+
+  @ApiProperty()
+  login: string;
+
+}

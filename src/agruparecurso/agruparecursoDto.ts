@@ -9,5 +9,6 @@ export class FindAllParams {
   DIR_ID_CODIGO: number;
   @ApiProperty({ required: false })
   TDE_ID_CODIGO?: number;
-
+  @ApiProperty({ required: false })
+  RRE_ID_CODIGO ?: number; 
 }

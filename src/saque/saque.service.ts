@@ -9,6 +9,7 @@ import {
   returnSaqueDto,
   buscarSaqueDto,
   ParamsPendente,
+  ParamsCancela,
 } from './saque.dto';
 
 import { SaqueEntity } from '../database/db_oracle/entities/saque.entity';
@@ -30,8 +31,12 @@ import { MotivodiariaService } from '../motivodiaria/motivodiaria.service';
 
 import { DiariaCalculadaDto } from './saque.dto';
 import { querySaque, querySaqueCount } from '../util/variaveis/querys';
+import oracledb from 'oracledb';
 
-import { RetonaPrestacaoStatus, RetornaSaquePendentes } from '../util/variaveis/statusSaquePrestacao';
+import {
+  RetonaPrestacaoStatus,
+  RetornaSaquePendentes,
+} from '../util/variaveis/statusSaquePrestacao';
 import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
 import { ReqnumerarioDto } from '../reqnumerario/reqnumerarioDto';
 import { reembolsoService } from '../reembolso/reembolso.service';
@@ -360,12 +365,10 @@ export class SaqueService {
           const STATUS_SAQUE = RetornaSaquePendentes(
             item.SQE_EFETIVO,
             item.SQE_TIPOSAQUE,
-            item.PRA_ATIVO,                     
+            item.PRA_ATIVO,
           );
 
-
           //Obter status do saque
-
 
           // Retorna a estrutura do objeto
           return new returnSaqueDto({
@@ -391,10 +394,10 @@ export class SaqueService {
             PRA_ATIVO: item.PRA_ATIVO,
             SQE_TIPOSAQUE: item.SQE_TIPOSAQUE === 'N' ? 'Diária' : '',
             STATUS_SAQUE: STATUS_SAQUE,
-            STATUS_PREST: item.SQE_VALPREST === null || item.SQE_VALPREST == '' ? 'Pendente' : 'Realizada',
+            STATUS_PREST:
+              item.SQE_VALPREST === null || item.SQE_VALPREST == '' ? 'Pendente' : 'Realizada',
             ID_DOC: docs && docs[0] ? docs[0].ID_DOC : null,
             ORIGINAL_NAME: docs && docs[0] ? docs[0].ORIGINAL_NAME : null,
-           
           });
         }),
       );
@@ -538,7 +541,7 @@ export class SaqueService {
   //SOlicitar saque
   async solicitarSaque(params: SolitarDto): Promise<RetNumSaque> {
     try {
-      const PAR2 = 'S';
+      let PAR2 = 'N';
       const PAR3 = '7';
       const PAR10 = 'N';
       const MD = await this.motivoDiaria.findOne(params.chapa, params.reqIdCodigo);
@@ -697,5 +700,65 @@ export class SaqueService {
     }
   }
 
+  async cancelarSaque(params: ParamsCancela) {
+    try {
+      let grava = 0;
+      let gsaque = 0;
+      const saque = await this.findOne(params.SQE_ID_CODIGO);
 
+      if (saque.sqeEfetivo === 'S' || saque.sqeEfetivo === 'E' || saque.sqeEfetivo === 'P') {
+        throw new HttpException(
+          'O Saque efetuado pelo Financeiro, não permitido exclusão!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (saque.sqeEfetivo === 'D') {
+        gsaque = 1;
+        const itens = await this.itensreqrecService.findOne(saque.iteIdCodigo);
+        const updateValor = itens.IRR_VALOR_PREST - saque.sqeVlPrest;
+        itens.IRR_VALOR_PREST = updateValor;
+        try {
+          await this.itensreqrecService.update(itens);
+        } catch (error) {
+          grava = 1;
+        }
+      }
+
+      const PR1 = saque.sqeIdCodigo;
+      const PR2 = saque.sqeEfetivo;
+      const PR3 = saque.sqeTipoSaque;
+      const PR4 = saque.sqeVlPrest;
+      const PR5 = saque.sqeDtPrest;
+      const PR6 = saque.sqeUsuario;
+
+      if (grava === 0) {
+        try {
+          await this.saqueRepository.query(
+            `
+            BEGIN
+              FINANCEIRO.DELCASC_S009_SAQUE(:PR1, :PR2, :PR3, :PR4, :PR5, :PR6);
+            END;
+            `,
+            [PR1, PR2, PR3, PR4, PR5, PR6],
+          );
+        } catch (error) {
+          grava = 1;
+        }
+      }
+
+      if (grava === 0) {
+        if (gsaque === 1) {
+          return { message: 'Exclusão realizada com Sucesso!' };
+        }
+      }
+      if (grava === 1) {
+        if (gsaque === 1) {
+          return { message: 'Problema na operação, chame o Suporte Técnico!' };
+        }
+      }
+    } catch (error) {     
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

@@ -44,6 +44,8 @@ export class agruparecursoService {
     }
   }
 
+  
+
   async findOne(AGS_ID_CODIGO: number): Promise<agruparecursoEntity> {
     try {
       return await this.agruparecursoRepository.findOneOrFail({
@@ -53,4 +55,5 @@ export class agruparecursoService {
       throw new HttpException('Grupo não encontrado', HttpStatus.NOT_FOUND);
     }
   }
+
 }

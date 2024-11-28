@@ -1,8 +1,8 @@
 import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../database/db_mysql/entities/user.entity';
-import { FindOptionsWhere, ILike, Repository } from 'typeorm';
-import { FindAllParams, userNivelDto, UsersDto } from './users.dto';
+import { FindOptionsWhere, ILike, Like, Repository } from 'typeorm';
+import { FindAllParams, FindAllParamsDto, PerfilAcesso, userNivelDto, UsersDto } from './users.dto';
 import { hashSync as bcryptHashSync } from 'bcrypt';
 
 @Injectable()
@@ -32,9 +32,22 @@ export class UsersService {
     return users;
   }
 
-  async findOne(id_usuario: number): Promise<UserEntity> {
+  async findOne(params: FindAllParamsDto): Promise<UserEntity> {    
     try {
-      const user = await this.usersRepository.findOneOrFail({ where: { id_usuario } });
+      const searchParams: FindOptionsWhere<UserEntity> = {};  
+      if (params.id_usuario) {
+        searchParams['id_usuario'] = params.id_usuario;
+      }
+     
+      if (params.chapa) {
+        searchParams['chapa'] = params.chapa;
+      }
+
+      if (params.nome) {
+        searchParams['nome'] = ILike(`%${params.nome}%`);
+      }
+
+      const user = await this.usersRepository.findOneOrFail({ where: searchParams });
       return user;
     } catch (error) {
       throw new HttpException(
@@ -64,9 +77,26 @@ export class UsersService {
         [id_usuario],
       );
       return users;
-    } catch (error) {     
+    } catch (error) {
+      throw new HttpException(`Erro ao buscar nível do usuario`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  async findPerfilAcesso(id_sistema: number): Promise<PerfilAcesso[]> {
+    try {
+      const perfis = await this.usersRepository.query(
+        `
+        SELECT * FROM ace_perfil_acesso 
+        WHERE id_sistema = ?
+        `,
+        [id_sistema],
+      );
+      if (!perfis || perfis?.length === 0) {
+        throw new HttpException(`Perfil ${id_sistema} de acesso não encontrado`, HttpStatus.NOT_FOUND);
+      }
+      return perfis;
+    } catch (error) {
       throw new HttpException(
-        `Erro ao buscar nível do usuario`,
+        error.message || `Erro ao buscar perfil de acesso do sistema ${id_sistema}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

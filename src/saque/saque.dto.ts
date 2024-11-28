@@ -48,6 +48,12 @@ export class ParamsPendente {
   @ApiProperty({required: false})
   RRE_ID_CODIGO: string; 
 }
+export class ParamsCancela {
+  @ApiProperty({required: false})
+  CHAPA: string;
+  @ApiProperty({required: false})
+  SQE_ID_CODIGO: number; 
+}
 
 export class SaqueDto {  
   @ApiProperty()

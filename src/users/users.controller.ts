@@ -1,11 +1,15 @@
 import { Controller, Get, UseGuards, Param, Query,  UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { userNivelDto, UsersDto } from './users.dto';
+import { FindAllParamsDto, userNivelDto, UsersDto } from './users.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { FindAllParams } from './users.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoggingInterceptor } from 'src/interceptors/http-logging.interceptor';
 import { CurrentUser } from 'src/auth/current-user.decorator';
+import { Roles } from 'src/auth/roles.decorator';
+import { Role } from 'src/auth/role.enum';
+import { AuthUserDto } from 'src/auth/use.auth.Dto';
+
 
 @UseGuards(AuthGuard)
 @ApiTags('users')
@@ -21,13 +25,13 @@ export class UsersController {
     return await this.usersService.findAll(params);
   }
 
-  @Get('/:id')
+  @Get('findone')
   @ApiOperation({ summary: 'Retorna o usuário pelo id' })
-  findOne(@Param('id') id: number) {
-    return this.usersService.findOne(id);
+  findOne(@Query() params: FindAllParamsDto) {    
+    return this.usersService.findOne(params);
   }
 
-  @Get('nivel/:id')
+  @Get('nivel')
   @ApiOperation({ summary: 'Lista os acessos do usuário' })
   @ApiResponse({
     status: 200,
@@ -35,11 +39,13 @@ export class UsersController {
     type: userNivelDto,
     isArray: true,
   })  
-  findNivel(@Param('id') id: number): Promise<userNivelDto[]> {
+
+  findNivel(@Query('id') id: number): Promise<userNivelDto[]> {
     return this.usersService.findNivel(id);
   }
-  @Get('me/me')
-  getMe(@CurrentUser() user) {
+  @Roles(Role.SUPERVISOR)
+  @Get('me')
+  getMe(@CurrentUser() user: AuthUserDto) {
     return {
       id: user.sub,
       login: user.login,
