@@ -289,7 +289,7 @@ export class SaqueService {
       const orderDirection = params.orderDirection || 'ASC';
 
       const page = params.page || 1;
-      const itemsPerPage = params.limit || 100;
+      const itemsPerPage = params.limit || 500;
       const offset = (page - 1) * itemsPerPage;
 
       const filterConditions: string[] = [];
@@ -363,7 +363,7 @@ export class SaqueService {
           } catch (error) {}
 
           // Obter status
-          const STATUS = RetonaPrestacaoStatus(
+          const STATUS_PREST = RetonaPrestacaoStatus(
             item.SQE_EFETIVO,
             item.SQE_TIPOSAQUE,
             item.PRA_ATIVO,
@@ -397,24 +397,30 @@ export class SaqueService {
             REQ_STATUS: item.REQ_STATUS,
             CHAPA: item.CHAPA,
             VL_COMPLEMENTAR: VL_EXTORNO,
-            VL_EXTORNO: VL_DEVOLUCAO,
-            STATUS,
+            VL_EXTORNO: VL_DEVOLUCAO,           
             SQE_EFETIVO: item.SQE_EFETIVO,
             PRA_ATIVO: item.PRA_ATIVO,
             SQE_TIPOSAQUE: item.SQE_TIPOSAQUE === 'N' ? 'Diária' : '',
-            STATUS_SAQUE: STATUS_SAQUE,
-            STATUS_PREST:
-              item.SQE_VALPREST === null || item.SQE_VALPREST == '' ? 'Pendente' : 'Realizada',
+            STATUS_SAQUE,
+            STATUS_PREST,           
             ID_DOC: docs && docs[0] ? docs[0].ID_DOC : null,
             ORIGINAL_NAME: docs && docs[0] ? docs[0].ORIGINAL_NAME : null,
           });
         }),
       );
 
+      
       // Filtros adicionais
-      if (params.STATUS) {
-        consulta = consulta.filter((item: any) => item.STATUS === params.STATUS);
+      if (params.STATUS_PREST) {
+        consulta = consulta.filter((item: any) => item.STATUS_PREST === params.STATUS_PREST);
       }
+
+      if (params.STATUS_SAQUE) {
+        consulta = consulta.filter(
+          (item: any) => item.STATUS_SAQUE && item.STATUS_SAQUE === params.STATUS_SAQUE
+        );
+      }
+
       return {
         data: consulta,
         total: totalCount,
@@ -548,9 +554,8 @@ export class SaqueService {
   }
 
   //SOlicitar saque
-  async solicitarSaque(params: SolitarDto, user:AuthUserDto): Promise<any> {
+  async solicitarSaque(params: SolitarDto, user: AuthUserDto): Promise<any> {
     try {
-     
       if (!params.reqIdCodigo) {
         throw new HttpException('Requisição não informada', HttpStatus.INTERNAL_SERVER_ERROR);
       }
@@ -625,17 +630,17 @@ export class SaqueService {
         ]);
 
         if (agrupamento.length == 0) {
-          const PAR1 = null;//AGS_ID_CODIGO
-          const PAR2 = itemRecurso.RRE_ID_CODIGO;//RRE_ID_CODIGO
-          const PAR3 = itemRecurso.DIR_ID_CODIGO;//DIR_ID_CODIGO
-          const PAR4 = itemRecurso.TDE_ID_CODIGO;//TDE_ID_CODIGO
-          const PAR5 = '7';//STS_ID_CODIGO
-          const PAR6 = 0;//AGS_VALOR_SOLIC
-          const PAR7 = 0;//AGS_VALOR_CONC
-          const PAR8 = 0;//AGS_VALOR_PREST
-          const PAR9 = DataUtils.formatarDataAtualString();//AGS_OBSERVA
-          const PAR10 = 'S';//AGS_RECURSO
-          
+          const PAR1 = null; //AGS_ID_CODIGO
+          const PAR2 = itemRecurso.RRE_ID_CODIGO; //RRE_ID_CODIGO
+          const PAR3 = itemRecurso.DIR_ID_CODIGO; //DIR_ID_CODIGO
+          const PAR4 = itemRecurso.TDE_ID_CODIGO; //TDE_ID_CODIGO
+          const PAR5 = '7'; //STS_ID_CODIGO
+          const PAR6 = 0; //AGS_VALOR_SOLIC
+          const PAR7 = 0; //AGS_VALOR_CONC
+          const PAR8 = 0; //AGS_VALOR_PREST
+          const PAR9 = DataUtils.formatarDataAtualString(); //AGS_OBSERVA
+          const PAR10 = 'S'; //AGS_RECURSO
+
           await this.saqueRepository.query(
             `
         BEGIN
@@ -645,12 +650,11 @@ export class SaqueService {
             [PAR1, PAR2, PAR3, PAR4, PAR5, PAR6, PAR7, PAR8, PAR9, PAR10], //prettier-ignore
           );
         }
-      }else {
+      } else {
         itemRecurso = ItensReqRec[0];
       }
 
       const requisicao = await this.reqtransService.findOne(params.reqIdCodigo);
-      
 
       const PAR1 = 'N'; //SQE_TIPOSAQUE
       const PAR2 = 'S'; //RECURSO SOLICITADO
@@ -658,37 +662,37 @@ export class SaqueService {
       const PAR4 = itemRecurso.ITE_ID_CODIGO; //ITE_ID_CODIGO
       const PAR5 = itemRecurso.RRE_ID_CODIGO; //RRE_ID_CODIGO
       const PAR6 = itemRecurso.DIR_ID_CODIGO; //DIR_ID_CODIGO
-      const PAR7 = ""//SQE_VLPREST
-      const PAR8 = null;//SQE_DTPREST
+      const PAR7 = ''; //SQE_VLPREST
+      const PAR8 = null; //SQE_DTPREST
       const PAR9 = valorSaque; //SQE_VLSAQUE
       const PAR10 = 'N'; //SQE_TIPOSAQUE
       const PAR11 = 'T'; //SQE_EFETIVO
       const PAR12 = 'N'; //SQE_TERCEIRO
       const PAR13 = null; //PES_ID_CODIGO
       const PAR14 = null; //PES_PESSOA
-      const PAR15 = 47 //STS_ID_CODIGO
-      const PAR16 = user.chapa //SQE_USUARIO
-      const PAR17 = params.reqIdCodigo //REQ_ID_CODIGO
+      const PAR15 = 47; //STS_ID_CODIGO
+      const PAR16 = user.chapa; //SQE_USUARIO
+      const PAR17 = params.reqIdCodigo; //REQ_ID_CODIGO
 
-      const PAR18 = null //RNU_DTINICIO
-      const PAR19 = null //RNU_HORAINICIO
-      const PAR20 = null //RNU_DTFIM
-      const PAR21 = null //RNU_HORAFIM
-      const PAR22 = requisicao.REQ_INTEGRAL
-      const PAR23 = requisicao.REQ_PARCIAL
-      const PAR24 = null //RNU_PARREAL
-      const PAR25 = null //RNU_PARREAL
+      const PAR18 = null; //RNU_DTINICIO
+      const PAR19 = null; //RNU_HORAINICIO
+      const PAR20 = null; //RNU_DTFIM
+      const PAR21 = null; //RNU_HORAFIM
+      const PAR22 = requisicao.REQ_INTEGRAL;
+      const PAR23 = requisicao.REQ_PARCIAL;
+      const PAR24 = null; //RNU_PARREAL
+      const PAR25 = null; //RNU_PARREAL
 
-      const PAR26 = requisicao.REQ_PACOTE === '0' ? 'S' : 'N' //REQ_PACOTE
-      const PAR27 = requisicao.REQ_GOVERNADOR //REQ_GOVERNADOR
-      const PAR28 = "" //RRE_JUSTIFICATIVA
-      const PAR29 = 'SAQUE AGUARDANDO TRANSFERENCIA'//S001_REQUISICAO.REQ_STATUS
-      const PAR30 = null//RNU_VLINTEGRAL
-      const PAR31 = null//RNU_VLPARCIAL
-      const PAR32 = null//RNU_VLBASE
-      const ID = { type: oraccledb.NUMBER, dir: oraccledb.BIND_OUT };  
+      const PAR26 = requisicao.REQ_PACOTE === '0' ? 'S' : 'N'; //REQ_PACOTE
+      const PAR27 = requisicao.REQ_GOVERNADOR; //REQ_GOVERNADOR
+      const PAR28 = ''; //RRE_JUSTIFICATIVA
+      const PAR29 = 'SAQUE AGUARDANDO TRANSFERENCIA'; //S001_REQUISICAO.REQ_STATUS
+      const PAR30 = null; //RNU_VLINTEGRAL
+      const PAR31 = null; //RNU_VLPARCIAL
+      const PAR32 = null; //RNU_VLBASE
+      const ID = { type: oraccledb.NUMBER, dir: oraccledb.BIND_OUT };
 
-      const insSaque= await this.saqueRepository.query(
+      const insSaque = await this.saqueRepository.query(
         `
         BEGIN
           FINANCEIRO.INS_S009_SAQUE(
@@ -702,11 +706,7 @@ export class SaqueService {
          PAR23, PAR24, PAR25, PAR26, PAR27,PAR28,PAR29,PAR30,PAR31,PAR32,ID], //prettier-ignore
       );
 
-
-
       return { sqeIdCodigo: insSaque[0] };
-
-
 
       // const MD = await this.motivoDiaria.findOne(params.chapa, params.reqIdCodigo);
 
