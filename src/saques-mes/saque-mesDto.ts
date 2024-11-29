@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SaqueMesEntity } from 'src/database/db_mysql/entities/saqueMes.entity';
+
 
 export class SaqueMesDto {
   @ApiProperty()
@@ -155,10 +155,22 @@ export class FindParamsExtrato {
   limit?: number;
 }
 
-export class ReturnExtrato {
-  data: ExtratoDto[];
-  total: number; 
-}
+
+// export class returnaTotal {
+//   @ApiProperty({
+//     description: 'Array de objetos do tipo returnSaqueDto',
+//     type: [returnSaqueDto],
+//   })
+//   data: returnSaqueDto[];
+
+//   @ApiProperty({
+//     description: 'Valor total calculado',
+//     type: Number,
+//     example: 0,
+//   })
+//   total: number;
+// }
+
 
 export class ExtratoDto {
   @ApiProperty()
@@ -191,4 +203,15 @@ export class ExtratoDto {
     this.SQE_RESTANTE = item.SQE_RESTANTE;
     this.SQE_EFET_MES = item.SQE_EFET_MES;
   }
+}
+
+export class ReturnExtrato {
+  @ApiProperty(
+    {  
+     type: [ExtratoDto],
+    },
+  )
+  data: ExtratoDto[];
+  @ApiProperty()
+  total: number; 
 }
