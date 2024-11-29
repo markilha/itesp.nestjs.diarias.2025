@@ -5,13 +5,14 @@ export function RetonaPrestacaoStatus(
   sqedtprest: string,
   sqevlprest: number,
 ) {
+
+  //  praativo != 'N' &&
   const STATUS =
     ['P', 'S', 'E'].includes(sqeefetivo) &&
-    sqetiposaque === 'N' &&
-    praativo != 'N' &&
-    (sqedtprest === null || sqevlprest === 0)
+    sqetiposaque === 'N' &&  
+    (sqedtprest === null || sqevlprest === 0 || sqedtprest === '')
       ? 'Pendente'
-      : 'Realizada';
+      : (sqedtprest === null || sqevlprest === 0 || sqedtprest === '') ? null : 'Realizada';
 
   return STATUS;
 }
@@ -24,8 +25,9 @@ export function RetornaSaquePendentes(
   sqetiposaque: string,
   praativo: string,
 ) {
+  //&& praativo != 'N'
   const STATUS =
-    ['A', 'C', 'D', 'T'].includes(sqeefetivo) && sqetiposaque === 'N' && praativo != 'N'
+    ['A', 'C', 'D', 'T'].includes(sqeefetivo) && sqetiposaque === 'N' 
       ? 'Pendente'
       : 'Realizada';
 
