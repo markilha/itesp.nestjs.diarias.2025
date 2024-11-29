@@ -478,81 +478,53 @@ export class SaquePrestDto {
   }
 }
 
-export class InsS009SaqueDto {
+export class InsSaqueDto {
   // Parâmetros gerais
-  par1: string; // REEMBOLSO/COMPLEMENTO
-  par2: string; // SEM RECURSO
-  par3: string; // tipo de despesa
+  PAR1: string; // REEMBOLSO/COMPLEMENTO
+  PAR2: string; // SEM RECURSO
+  PAR3: string; // Tipo de despesa
+
   // Parâmetros de SAQUE
-  par4: number; // ITE_ID_CODIGO
-  par5: number; // RRE_ID_CODIGO
-  par6: number; // DIR_ID_CODIGO
-  par7: number; // SQE_VLPREST
-  par8: string; // SQE_DTPREST (assumido como VARCHAR2)
-  par9: number; // SQE_VLSAQUE
-  par10: string; // SQE_TIPOSAQUE (assumido como CHAR)
-  par11: string; // SQE_EFETIVO (assumido como CHAR)
-  par12: string; // SQE_TERCEIRO (assumido como CHAR)
-  par13: number; // PES_ID_CODIGO
-  par14: string; // PES_PESSOA (assumido como CHAR)
-  par15: number; // STS_ID_CODIGO
-  par16: string; // SQE_USUARIO
-  // Parâmetros de NUMERARIO
-  par17: number; // REQ_ID_CODIGO
-  par18: Date; // RNU_DTINICIO
-  par19: string; // RNU_HORAINICIO
-  par20: Date; // RNU_DTFIM
-  par21: string; // RNU_HORAFIM
-  par22: string; // RNU_INTPREV
-  par23: string; // RNU_PARPREV
-  par24: string; // RNU_INTREAL
-  par25: string; // RNU_PARREAL
-  par26: string; // RNU_PACOTE
-  par27: string; // RNU_GOVERNADOR
-  par28: string; // RRE_JUSTIFICATIVA (assumido como CHAR)
+  PAR4: number; // ITE_ID_CODIGO
+  PAR5: number; // RRE_ID_CODIGO
+  PAR6: number; // DIR_ID_CODIGO
+  PAR7: string; // SQE_VLPREST
+  PAR8: string; // SQE_DTPREST (assumido como VARCHAR2)
+  PAR9: number; // SQE_VLSAQUE
+  PAR10: string; // SQE_TIPOSAQUE (assumido como CHAR)
+  PAR11: string; // SQE_EFETIVO (assumido como CHAR)
+  PAR12: string; // SQE_TERCEIRO (assumido como CHAR)
+  PAR13: number; // PES_ID_CODIGO
+  PAR14: string; // PES_PESSOA (assumido como CHAR)
+  PAR15: number; // STS_ID_CODIGO
+  PAR16: string; // SQE_USUARIO
+
+  // Parâmetros de NUMERÁRIO
+  PAR17: number; // REQ_ID_CODIGO
+  PAR18: Date; // RNU_DTINICIO
+  PAR19: string; // RNU_HORAINICIO
+  PAR20: Date; // RNU_DTFIM
+  PAR21: string; // RNU_HORAFIM
+  PAR22: number; // RNU_INTPREV
+  PAR23: number; // RNU_PARPREV
+  PAR24: number; // RNU_INTREAL
+  PAR25: number; // RNU_PARREAL
+  PAR26: string; // RNU_PACOTE
+  PAR27: string; // RNU_GOVERNADOR
+  PAR28: string; // RRE_JUSTIFICATIVA (assumido como CHAR)
+
   // Parâmetros de REQUISIÇÃO DE TRANSPORTE
-  par29: string; // REQ_STATUS
-  // Parâmetros de NUMERARIO - INCLUSÃO DE VALORES EM 30/03/2010
-  par30: number; // RNU_VLINTEGRAL
-  par31: number; // RNU_VLPARCIAL
-  par32: number; // RNU_VLBASE
+  PAR29: string; // REQ_STATUS
+
+  // Parâmetros de NUMERÁRIO - Inclusão de valores
+  PAR30: number; // RNU_VLINTEGRAL
+  PAR31: number; // RNU_VLPARCIAL
+  PAR32: number; // RNU_VLBASE
+
+  ID: {}; // Identificador
  
-  constructor(params: any) {
-    this.par1 = params.par1;
-    this.par2 = params.par2;
-    this.par3 = params.par3;
-    this.par4 = params.par4;
-    this.par5 = params.par5;
-    this.par6 = params.par6;
-    this.par7 = params.par7;
-    this.par8 = params.par8;
-    this.par9 = params.par9;
-    this.par10 = params.par10;
-    this.par11 = params.par11;
-    this.par12 = params.par12;
-    this.par13 = params.par13;
-    this.par14 = params.par14;
-    this.par15 = params.par15;
-    this.par16 = params.par16;
-    this.par17 = params.par17;
-    this.par18 = params.par18;
-    this.par19 = params.par19;
-    this.par20 = params.par20;
-    this.par21 = params.par21;
-    this.par22 = params.par22;
-    this.par23 = params.par23;
-    this.par24 = params.par24;
-    this.par25 = params.par25;
-    this.par26 = params.par26;
-    this.par27 = params.par27;
-    this.par28 = params.par28;
-    this.par29 = params.par29;
-    this.par30 = params.par30;
-    this.par31 = params.par31;
-    this.par32 = params.par32;
- 
-  }
 }
+
 
 export class SolitarDto { 
   reqIdCodigo: number;
