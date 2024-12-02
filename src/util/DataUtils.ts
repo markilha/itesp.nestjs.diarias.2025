@@ -8,37 +8,63 @@ static formatarDataParaOracle(data: string): string {
   const [dia, mes, ano] = data.split('/');
   return `${dia}/${mes}/${ano} 00:00:00`; // Inclua horário padrão
 }
-  static converterStringParaData(dataString: string): Date {
-    if (!dataString || dataString.trim() === '') {
-      return;
-    }
-    try {      
+  // static converterStringParaData(dataString: string): Date {
+  //   if (!dataString || dataString.trim() === '') {
+  //     return;
+  //   }
+  //   try {      
       
-      // Tentar primeiro com o formato completo com hora
-      let dataConvertida = parse(dataString, 'dd/MM/yyyy HH:mm:ss', new Date());
+  //     // Tentar primeiro com o formato completo com hora
+  //     let dataConvertida = parse(dataString, 'dd/MM/yyyy HH:mm:ss', new Date());
 
-      // Se não for válido, tenta o formato sem a hora
-      if (!isValid(dataConvertida)) {
-        dataConvertida = parse(dataString, 'dd/MM/yy', new Date());
-      }
+  //     // Se não for válido, tenta o formato sem a hora
+  //     if (!isValid(dataConvertida)) {
+  //       dataConvertida = parse(dataString, 'dd/MM/yy', new Date());
+  //     }
 
-      if (!isValid(dataConvertida)) {
-        dataConvertida = parse(dataString, 'dd/MM/yyyy', new Date());
-      }  
+  //     if (!isValid(dataConvertida)) {
+  //       dataConvertida = parse(dataString, 'dd/MM/yyyy', new Date());
+  //     }  
 
-      if (!isValid(dataConvertida)) {
-        dataConvertida = parse(dataString, 'yyyy-MM-dd', new Date());
-      }
+  //     if (!isValid(dataConvertida)) {
+  //       dataConvertida = parse(dataString, 'yyyy-MM-dd', new Date());
+  //     }
 
-      // Verificar se o resultado final é válido
-      if (!isValid(dataConvertida)) {
-        throw new Error('Data inválida');
-      }
+  //     // Verificar se o resultado final é válido
+  //     if (!isValid(dataConvertida)) {
+  //       throw new Error('Data inválida');
+  //     }
 
-      return dataConvertida;
-    } catch (error) {      
-      throw new Error(`${error.message} : ${dataString}`);
+  //     return dataConvertida;
+  //   } catch (error) {      
+  //     throw new Error(`${error.message} : ${dataString}`);
+  //   }
+  // }
+
+  static converterStringParaData(dataString: string): Date | null {
+    if (!dataString || dataString.trim() === '') {
+      return null; // Retorna null para valores vazios ou inválidos
     }
+
+    const formatos = [
+      'd/M/yyyy HH:mm:ss',      // Suporta formatos como 7/4/2003 16:34:37
+      'dd/MM/yy HH:mm:ss',      // Suporta formatos como 31/10/03 15:50:30
+      'dd/MM/yyyy HH:mm:ss',    // Formato completo
+      'd/M/yyyy',               // Para datas como 7/4/2003
+      'dd/MM/yy',               // Para datas como 31/10/03
+      'dd/MM/yyyy',             // Formato completo sem hora
+      'yyyy-MM-dd',             // Formato de data com ano primeiro
+    ];
+
+    for (const formato of formatos) {
+      const dataConvertida = parse(dataString, formato, new Date());
+      if (isValid(dataConvertida)) {
+        return dataConvertida; // Retorna a data válida
+      }
+    }
+
+    // Caso nenhum formato seja válido, retorna null
+    return null;
   }
   static normalizarData(data: Date): Date {
    // return new Date(data.getFullYear(), data.getMonth(), data.getDate());

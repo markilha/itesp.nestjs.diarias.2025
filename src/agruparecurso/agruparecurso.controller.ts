@@ -32,5 +32,13 @@ export class agruparecursoController {
   async findAll(@Query() params: FindAllParams): Promise<agruparecursoEntity[]> {
     return await this.agruparecursoService.findAll(params);
   }
+  @Post()
+  async create(@Body() body: agruparecursoEntity): Promise<agruparecursoEntity> {
+    try {
+      return await this.agruparecursoService.create(body);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 
 }

@@ -17,8 +17,18 @@ export class itensreqrecService {
   ) {}
 
   async create(data: Partial<itensreqrecEntity>): Promise<itensreqrecEntity> {
-    const item = await this.itensreqrecRepository.create(data);
-    return await this.itensreqrecRepository.save(item);
+    try {
+      const item = await this.itensreqrecRepository.create(data);
+      return await this.itensreqrecRepository.save(item);
+      
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        "Ocorreu erro ao criar item recurso",
+        HttpStatus.NOT_FOUND,
+      );
+      
+    }
   }
 
   async findOne(ITE_ID_CODIGO: number) {

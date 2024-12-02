@@ -54,6 +54,7 @@ export function querySaque(
       a.SQE_ID_CODIGO as SQE_ID_CODIGO,
       a.SQE_EFETIVO as SQE_EFETIVO,
       a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,
+      a.SQE_DTPEDIDO as SQE_DTPEDIDO,
       a.SQE_DTSAQUE as SQE_DTSAQUE,
       a.SQE_VLSAQUE as SQE_VLSAQUE,
       a.SQE_DTPREST ,

@@ -33,6 +33,7 @@ import { docsController } from './docs/docs.controller';
 import { docsModule } from './docs/docs.module';
 import { documentosModule } from './documentos/documento.module';
 import { agruparecursoModule } from './agruparecurso/agruparecurso.module';
+import { itensreqModule } from './itensreq/itensreq.module';
 
 @Module({
   imports: [
@@ -66,7 +67,8 @@ import { agruparecursoModule } from './agruparecurso/agruparecurso.module';
     psubstchefeModule,
     docsModule,
     documentosModule,
-    agruparecursoModule
+    agruparecursoModule,
+    itensreqModule
   ],
   controllers: [docsController],
   providers: [docsService],
