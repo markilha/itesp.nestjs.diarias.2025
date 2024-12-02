@@ -82,6 +82,7 @@ export class ReqnumerarioService {
 
   async create(reqnumerario: ReqnumerarioDto): Promise<ReqnumerarioDto> {
     try {
+      reqnumerario.RNU_ID_CODIGO = await this.findLast();
       const newReqnumerario = await this.renumerarioRepository.save(
         reqnumerario,
       );

@@ -17,6 +17,7 @@ import { saquePrestacaoSwagger } from 'src/swagger/saqueswagger';
 import { AllExceptionsFilter } from 'src/interceptors/all-exceptions.filter';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
+import { SaqueEntity } from 'src/database/db_oracle/entities/saque.entity';
 
 @UseGuards(AuthGuard)
 @ApiTags('saque')
@@ -107,6 +108,11 @@ export class SaqueController {
       params.CHAPA = user.chapa;
     }
     return await this.saqueService.cancelarSaque(params);
+  }
+
+  @Post()
+  async create(@Body() saque: SaqueEntity): Promise<SaqueEntity> {
+    return await this.saqueService.create(saque);
   }
  
 }

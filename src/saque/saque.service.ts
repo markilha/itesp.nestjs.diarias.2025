@@ -10,6 +10,7 @@ import {
   buscarSaqueDto,
   ParamsPendente,
   ParamsCancela,
+  InsSaqueDto,
 } from './saque.dto';
 
 import { SaqueEntity } from '../database/db_oracle/entities/saque.entity';
@@ -65,6 +66,7 @@ import { itensreqrecEntity } from 'src/database/db_oracle/entities/itensreqrec.e
 import * as oraccledb from 'oracledb';
 import { obterParametros } from 'src/util/obterParametros_sqeefetivo';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
+import { ReqnumerarioDto } from 'src/reqnumerario/reqnumerarioDto';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -315,30 +317,7 @@ export class SaqueService {
       if (params.REQ_STATUS) {
         filterConditions.push('d.REQ_STATUS = :REQ_STATUS');
         filterValues.push(params.REQ_STATUS);
-      }
-
-      // Verifica se as datas foram fornecidas e adiciona os filtros
-      if (params.startDate && params.endDate) {
-        const prestDate = params.usePrestDate === 'true';
-        const dataColumn = prestDate ? 'a.SQE_DTPREST' : 'a.SQE_DTSAQUE';
-        // Formata as datas de entrada
-        const { startDate, endDate } = formatDates(params.startDate, params.endDate) || {};
-        // Adiciona a condição de filtro com o formato de data correto
-        filterConditions.push(
-          `TO_DATE(
-          CASE 
-            WHEN LENGTH(${dataColumn}) = 8 THEN ${dataColumn} || ' 00:00:00' -- Para o formato DD/MM/YY
-            ELSE ${dataColumn}
-          END,
-          'DD/MM/YYYY HH24:MI:SS'
-        ) BETWEEN TO_DATE(TRIM(:startDate), 'DD/MM/YYYY HH24:MI:SS') 
-        AND TO_DATE(TRIM(:endDate), 'DD/MM/YYYY HH24:MI:SS')`,
-        );
-
-        // Adiciona os valores de filtro
-        filterValues.push(startDate);
-        filterValues.push(endDate);
-      }
+      }   
 
       const result = await this.saqueRepository.query(
         querySaque(filterConditions, orderByField, orderDirection),
@@ -397,19 +376,31 @@ export class SaqueService {
             REQ_STATUS: item.REQ_STATUS,
             CHAPA: item.CHAPA,
             VL_COMPLEMENTAR: VL_EXTORNO,
-            VL_EXTORNO: VL_DEVOLUCAO,           
+            VL_EXTORNO: VL_DEVOLUCAO,
             SQE_EFETIVO: item.SQE_EFETIVO,
             PRA_ATIVO: item.PRA_ATIVO,
             SQE_TIPOSAQUE: item.SQE_TIPOSAQUE === 'N' ? 'Diária' : '',
             STATUS_SAQUE,
-            STATUS_PREST,           
+            STATUS_PREST,
             ID_DOC: docs && docs[0] ? docs[0].ID_DOC : null,
             ORIGINAL_NAME: docs && docs[0] ? docs[0].ORIGINAL_NAME : null,
           });
         }),
       );
 
+  
       
+      if (params.startDate && params.endDate) {
+        //FILTRAR ENTRE DATAS O ARRAY DE OBJETO CONSULTA  
+        const { startDate, endDate } = formatDates(params.startDate, params.endDate) || {};  
+        const filtered = consulta.filter((item) => {
+          const date = DataUtils.converterStringParaData(item.SQE_DTPEDIDO);
+          return date && date >= DataUtils.converterStringParaData(startDate) && date <= DataUtils.converterStringParaData(endDate);
+        });  
+        consulta = filtered
+      }
+
+
       // Filtros adicionais
       if (params.STATUS_PREST) {
         consulta = consulta.filter((item: any) => item.STATUS_PREST === params.STATUS_PREST);
@@ -417,7 +408,7 @@ export class SaqueService {
 
       if (params.STATUS_SAQUE) {
         consulta = consulta.filter(
-          (item: any) => item.STATUS_SAQUE && item.STATUS_SAQUE === params.STATUS_SAQUE
+          (item: any) => item.STATUS_SAQUE && item.STATUS_SAQUE === params.STATUS_SAQUE,
         );
       }
 
@@ -554,7 +545,15 @@ export class SaqueService {
   }
 
   //SOlicitar saque
-  async solicitarSaque(params: SolitarDto, user: AuthUserDto): Promise<any> {
+  async solicitarSaque_(params: SolitarDto, user: AuthUserDto): Promise<any> {
+    let Rg_Reembolsar = 1;
+    let Rg_TipoSaque = 1;
+    let TipoDespesa = '7';
+    let semrec = 1;
+    let ReembCompl = 1;
+    let Rg_Complemento = 1;
+    let Rg_Pagamento = 1;
+
     try {
       if (!params.reqIdCodigo) {
         throw new HttpException('Requisição não informada', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -587,8 +586,8 @@ export class SaqueService {
         const PAR3 = prazo[0].DIR_ID_CODIGO; //DIR_ID_CODIGO
         const PAR4 = null; //ORI_ID_CODIGO
         const PAR5 = null; //FPA_ID_CODIGO
-        const PAR6 = '7'; //STS_ID_CODIGO = 7 - Diária
-        const PAR7 = '7'; //TDE_ID_CODIGO
+        const PAR6 = TipoDespesa; //STS_ID_CODIGO = 7 - Diária
+        const PAR7 = TipoDespesa; //TDE_ID_CODIGO
         const PAR8 = params.chapa; //CHAPA
         const PAR9 = 1; //CODCOLIGADA
         const PAR10 = '0'; //IRR_VALOR_SOL
@@ -634,7 +633,7 @@ export class SaqueService {
           const PAR2 = itemRecurso.RRE_ID_CODIGO; //RRE_ID_CODIGO
           const PAR3 = itemRecurso.DIR_ID_CODIGO; //DIR_ID_CODIGO
           const PAR4 = itemRecurso.TDE_ID_CODIGO; //TDE_ID_CODIGO
-          const PAR5 = '7'; //STS_ID_CODIGO
+          const PAR5 = TipoDespesa; //STS_ID_CODIGO
           const PAR6 = 0; //AGS_VALOR_SOLIC
           const PAR7 = 0; //AGS_VALOR_CONC
           const PAR8 = 0; //AGS_VALOR_PREST
@@ -656,41 +655,174 @@ export class SaqueService {
 
       const requisicao = await this.reqtransService.findOne(params.reqIdCodigo);
 
-      const PAR1 = 'N'; //SQE_TIPOSAQUE
-      const PAR2 = 'S'; //RECURSO SOLICITADO
-      const PAR3 = '7'; //tipo de despesa
-      const PAR4 = itemRecurso.ITE_ID_CODIGO; //ITE_ID_CODIGO
-      const PAR5 = itemRecurso.RRE_ID_CODIGO; //RRE_ID_CODIGO
-      const PAR6 = itemRecurso.DIR_ID_CODIGO; //DIR_ID_CODIGO
-      const PAR7 = ''; //SQE_VLPREST
-      const PAR8 = null; //SQE_DTPREST
-      const PAR9 = valorSaque; //SQE_VLSAQUE
-      const PAR10 = 'N'; //SQE_TIPOSAQUE
-      const PAR11 = 'T'; //SQE_EFETIVO
-      const PAR12 = 'N'; //SQE_TERCEIRO
-      const PAR13 = null; //PES_ID_CODIGO
-      const PAR14 = null; //PES_PESSOA
-      const PAR15 = 47; //STS_ID_CODIGO
-      const PAR16 = user.chapa; //SQE_USUARIO
-      const PAR17 = params.reqIdCodigo; //REQ_ID_CODIGO
-
-      const PAR18 = null; //RNU_DTINICIO
-      const PAR19 = null; //RNU_HORAINICIO
-      const PAR20 = null; //RNU_DTFIM
-      const PAR21 = null; //RNU_HORAFIM
-      const PAR22 = requisicao.REQ_INTEGRAL;
-      const PAR23 = requisicao.REQ_PARCIAL;
-      const PAR24 = null; //RNU_PARREAL
-      const PAR25 = null; //RNU_PARREAL
-
-      const PAR26 = requisicao.REQ_PACOTE === '0' ? 'S' : 'N'; //REQ_PACOTE
-      const PAR27 = requisicao.REQ_GOVERNADOR; //REQ_GOVERNADOR
-      const PAR28 = ''; //RRE_JUSTIFICATIVA
-      const PAR29 = 'SAQUE AGUARDANDO TRANSFERENCIA'; //S001_REQUISICAO.REQ_STATUS
-      const PAR30 = null; //RNU_VLINTEGRAL
-      const PAR31 = null; //RNU_VLPARCIAL
-      const PAR32 = null; //RNU_VLBASE
       const ID = { type: oraccledb.NUMBER, dir: oraccledb.BIND_OUT };
+
+      let parametros: InsSaqueDto = new InsSaqueDto();
+
+      if (Rg_Reembolsar === 0) {
+        parametros.PAR1 = 'S'; // SQE_TIPOSAQUE
+      } else {
+        parametros.PAR1 = 'N';
+      }
+
+      if (semrec >= 1) {
+        parametros.PAR2 = 'S'; // RECURSO SOLICITADO
+      } else {
+        parametros.PAR2 = 'N';
+      }
+
+      parametros.PAR3 = TipoDespesa; // tipo de despesa
+      parametros.PAR4 = itemRecurso.ITE_ID_CODIGO; // ITE_ID_CODIGO
+      parametros.PAR5 = itemRecurso.RRE_ID_CODIGO; // RRE_ID_CODIGO
+      parametros.PAR6 = itemRecurso.DIR_ID_CODIGO; // DIR_ID_CODIGO
+
+      if (Rg_Reembolsar === 0 && Rg_TipoSaque === 1 && TipoDespesa === '7') {
+        parametros.PAR7 = valorSaque.toString(); // SQE_VLPREST
+        parametros.PAR8 = DataUtils.formatarDataAtualString(); // SQE_DTPREST
+        parametros.PAR9 = valorSaque; // SQE_VLSAQUE
+        parametros.PAR10 = 'N'; // SQE_TIPOSAQUE
+        if (semrec >= 1) {
+          parametros.PAR11 = 'F'; // /TRANSFERENCIA/Reembolso
+          parametros.PAR15 = 45; // STS_ID_CODIGO
+        } else {
+          parametros.PAR11 = 'D'; // REEMBOLSO
+          parametros.PAR15 = 32; // STS_ID_CODIGO
+        }
+      } else {
+        parametros.PAR7 = ''; // SQE_VLPREST
+        parametros.PAR8 = null; // SQE_DTPREST
+        parametros.PAR9 = valorSaque; // SQE_VLSAQUE
+        if (Rg_TipoSaque === 0) {
+          parametros.PAR10 = 'R'; // SQE_TIPOSAQUE
+        } else if (Rg_TipoSaque === 1) {
+          parametros.PAR10 = 'N'; // SQE_TIPOSAQUE
+        }
+        if (Rg_Reembolsar === 0 && semrec >= 1 && TipoDespesa === '7') {
+          parametros.PAR11 = 'K'; // /TRANSFERENCIA/Reembolso
+          parametros.PAR15 = 61; // STS_ID_CODIGO
+        } else if (Rg_Reembolsar === 0 && semrec >= 1 && ReembCompl === 1) {
+          parametros.PAR11 = 'B'; //Aguardando Transferência para Complemento-Reembolso'
+          parametros.PAR15 = 51; // STS_ID_CODIGO
+        } else if (Rg_Reembolsar === 0 && semrec >= 1) {
+          parametros.PAR11 = 'F'; //Aguardando Transferência para Reembolso'
+          parametros.PAR15 = 45; // STS_ID_CODIGO
+        } else if (Rg_Reembolsar === 0) {
+          parametros.PAR11 = 'R'; //Aguardando documentos/relatório para efetuar Pagamento
+          parametros.PAR15 = 29; // STS_ID_CODIGO
+        } else if (Rg_Complemento === 1 && semrec >= 1) {
+          parametros.PAR11 = 'T'; // Aguardando Transferência para saque
+          parametros.PAR15 = 47; // STS_ID_CODIGO
+        } else if (Rg_Complemento === 1) {
+          parametros.PAR11 = 'A'; // Aguardado Saque
+          parametros.PAR15 = 25; // STS_ID_CODIGO
+        } else if (Rg_Complemento === 0 && semrec >= 1) {
+          parametros.PAR11 = 'V'; //Aguardando Transferência para Complemento
+          parametros.PAR15 = 46; // STS_ID_CODIGO
+        } else if (Rg_Complemento === 0) {
+          parametros.PAR11 = 'C'; //Viagem-Complemento
+          parametros.PAR15 = 27; // STS_ID_CODIGO
+        }
+
+        //PAGAMENTO PARA TERCEIRO
+        if (Rg_Pagamento === 0) {
+          parametros.PAR12 = 'S'; // SQE_TERCEIRO
+        } else {
+          parametros.PAR12 = 'N';
+          parametros.PAR13 = null; // PES_PESSOA
+          parametros.PAR14 = null; // PES_ID_CODIGO
+        }
+        parametros.PAR16 = user.login; // SQE_USUARIO
+
+        //**** REQUISIÇÃO DE NUMERARIO
+        if (Rg_TipoSaque === 1) {
+          parametros.PAR17 = params.reqIdCodigo; // REQ_ID_CODIGO
+          if (Rg_Reembolsar === 0 && Rg_TipoSaque === 1 && TipoDespesa === '7') {
+            if (requisicao.TRA_ID_CODIGO !== 1) {
+              parametros.PAR18 = requisicao.REQ_DTSAIDA; // RNU_DTINICIO
+              parametros.PAR19 = requisicao.REQ_HSAIDA; // RNU_HORAINICIO
+              parametros.PAR20 = requisicao.REQ_DTRET; // RNU_DTFIM
+              parametros.PAR21 = requisicao.REQ_HRET; // RNU_HORAFIM
+            } else {
+              // parametros.PAR18 = requisicao.REQ_DTSAIDA; // RNU_DTINICIO
+              // parametros.PAR19 = requisicao.REQ_HSAIDA; // RNU_HORAINICIO
+              // parametros.PAR20 = requisicao.REQ_DTRET; // RNU_DTFIM
+              // parametros.PAR21 = requisicao.REQ_HRET; // RNU_HORAFIM
+            }
+            parametros.PAR22 = requisicao.REQ_INTEGRAL; // RNU_VLINTEGRAL
+            parametros.PAR23 = requisicao.REQ_PARCIAL; // RNU_VLPARCIAL
+            parametros.PAR24 = requisicao.REQ_INTEGRAL; // RNU_VLBASE
+            parametros.PAR25 = requisicao.REQ_PARCIAL; // RNU_VLBASE
+          } else {
+            parametros.PAR18 = null; // RNU_DTINICIO
+            parametros.PAR19 = null; // RNU_HORAINICIO
+            parametros.PAR20 = null; // RNU_DTFIM
+            parametros.PAR21 = null; // RNU_HORAFIM
+            parametros.PAR22 = requisicao.REQ_INTEGRAL; // RNU_VLINTEGRAL
+            parametros.PAR23 = requisicao.REQ_INTEGRAL; // RNU_VLPARCIAL
+            parametros.PAR24 = null; // RNU_VLBASE
+            parametros.PAR25 = null; // RNU_VLBASE
+          }
+          //pacote
+          parametros.PAR26 = requisicao.REQ_PACOTE === '0' ? 'S' : 'N'; // REQ_PACOTE
+          parametros.PAR27 = requisicao.REQ_GOVERNADOR; // REQ_GOVERNADOR
+        } else {
+          parametros.PAR17 = null; // REQ_ID_CODIGO
+          parametros.PAR18 = null; // RNU_DTINICIO
+          parametros.PAR19 = null; // RNU_HORAINICIO
+          parametros.PAR20 = null; // RNU_DTFIM
+          parametros.PAR21 = null; // RNU_HORAFIM
+          parametros.PAR22 = null; // RNU_VLINTEGRAL
+          parametros.PAR23 = null; // RNU_VLPARCIAL
+          parametros.PAR24 = null; // RNU_VLBASE
+          parametros.PAR25 = null; // RNU_VLBASE
+          parametros.PAR26 = null; // REQ_PACOTE
+          parametros.PAR27 = null; // REQ_GOVERNADOR
+        }
+        parametros.PAR28 = ''; // RRE_JUSTIFICATIVA
+        parametros.PAR29 = 'SAQUE AGUARDANDO TRANSFERENCIA'; // S001_REQUISICAO.REQ_STATUS
+        parametros.PAR30 = null; // RNU_VLINTEGRAL
+        parametros.PAR31 = null; // RNU_VLPARCIAL
+        parametros.PAR32 = null; // RNU_VLBASE
+        parametros.ID = ID;
+      }
+
+      const parametrosOrdenados = [
+        parametros.PAR1,
+        parametros.PAR2,
+        parametros.PAR3,
+        parametros.PAR4,
+        parametros.PAR5,
+        parametros.PAR6,
+        parametros.PAR7,
+        parametros.PAR8,
+        parametros.PAR9,
+        parametros.PAR10,
+        parametros.PAR11,
+        parametros.PAR12,
+        parametros.PAR13,
+        parametros.PAR14,
+        parametros.PAR15,
+        parametros.PAR16,
+        parametros.PAR17,
+        parametros.PAR18,
+        parametros.PAR19,
+        parametros.PAR20,
+        parametros.PAR21,
+        parametros.PAR22,
+        parametros.PAR23,
+        parametros.PAR24,
+        parametros.PAR25,
+        parametros.PAR26,
+        parametros.PAR27,
+        parametros.PAR28,
+        parametros.PAR29,
+        parametros.PAR30,
+        parametros.PAR31,
+        parametros.PAR32,
+        parametros.ID,
+      ];
+
+      const valoresArray = Object.values(parametrosOrdenados);
 
       const insSaque = await this.saqueRepository.query(
         `
@@ -701,9 +833,7 @@ export class SaqueService {
           :PR23, :PR24, :PR25, :PR26, :PR27, :PR28, :PR29, :PR30, :PR31, :PR32, :ID);         
         END;
         `,
-        [PAR1, PAR2, PAR3, PAR4, PAR5, PAR6, PAR7, PAR8, PAR9, PAR10, PAR11, PAR12,
-         PAR13, PAR14, PAR15, PAR16, PAR17, PAR18, PAR19, PAR20, PAR21, PAR22,
-         PAR23, PAR24, PAR25, PAR26, PAR27,PAR28,PAR29,PAR30,PAR31,PAR32,ID], //prettier-ignore
+        valoresArray, //prettier-ignore
       );
 
       return { sqeIdCodigo: insSaque[0] };
@@ -802,6 +932,337 @@ export class SaqueService {
       // return { sqeIdCodigo: newId };
     } catch (error) {
       console.error(error);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  async solicitarSaque(params: SolitarDto, user: AuthUserDto): Promise<any> {
+    let Rg_Reembolsar = 1;
+    let Rg_TipoSaque = 1;
+    let TipoDespesa = '7';
+    let semrec = 1;
+    let ReembCompl = 1;
+    let Rg_Complemento = 1;
+    let Rg_Pagamento = 1;
+
+    try {
+      if (!params.reqIdCodigo) {
+        throw new HttpException('Requisição não informada', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+      const valorSaque = params.diariaIntegral + params.diariaParcial;
+      if (valorSaque <= 0) {
+        throw new HttpException(
+          'Valor do Saque não pode ser Zero',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      const funcionario = await this.funcsalarioService.findByCodigo(params.chapa);
+
+      const prazo = await this.saqueRepository.query(selecionaUltimoPrazo, [
+        funcionario.regIdCodigo,
+      ]);
+
+      const where = `and A.Chapa =:NChapa and A.RRE_ID_CODIGO=:NREQ and A.TDE_ID_CODIGO=:TIPODESP AND A.IRR_RECURSO='S'`;
+      const ItensReqRec = await this.saqueRepository.query(`${SelecionaItensRecurso} ${where}`, [
+        params.chapa,
+        prazo[0].RRE_ID_CODIGO,
+        7,
+      ]);
+
+      let itemRecurso: itensreqrecEntity;
+
+      if (ItensReqRec.length == 0) {
+        const PAR1 = null; //ITE_ID_CODIGO
+        const PAR2 = prazo[0].RRE_ID_CODIGO; //RRE_ID_CODIGO
+        const PAR3 = prazo[0].DIR_ID_CODIGO; //DIR_ID_CODIGO
+        const PAR4 = null; //ORI_ID_CODIGO
+        const PAR5 = null; //FPA_ID_CODIGO
+        const PAR6 = TipoDespesa; //STS_ID_CODIGO = 7 - Diária
+        const PAR7 = TipoDespesa; //TDE_ID_CODIGO
+        const PAR8 = params.chapa; //CHAPA
+        const PAR9 = 1; //CODCOLIGADA
+        const PAR10 = '0'; //IRR_VALOR_SOL
+        const PAR11 = DataUtils.formatarDataAtualString(); //IRR_DATA_SOL
+        const PAR12 = null; //IRR_VALOR_CONC
+        const PAR13 = DataUtils.formatarDataAtualString(); //IRR_DATA_CONC
+        const PAR14 = ''; //IRR_VALOR_PREST
+        const PAR15 = ''; //IRR_DATA_PREST
+        const PAR16 = ''; //IRR_JUSTIFICA
+        const PAR17 = 'S'; //IRR_RECURSO
+        const PAR18 = null; //IRR_VALOR_AUT
+        const PAR19 = null; //IRR_VLRECEBIDO
+        const PAR20 = null; //IRR_SALDO
+        const PAR21 = null; //IRR_COMPLEMENTO
+        const PAR22 = null; //IRR_VLREGIONAL
+        const IDITE = { type: oraccledb.NUMBER, dir: oraccledb.BIND_OUT };
+
+        const req = await this.saqueRepository.query(
+          `
+          BEGIN
+            FINANCEIRO.INS_S009_ITENSREQREC(:PR1, :PR2, :PR3, :PR4, :PR5, :PR6 , :PR7, :PR8, :PR9, :PR10, :PR11, :PR12, :PR13, :PR14, :PR15, :PR16, :PR17, :PR18, :PR19, :PR20, :PR21, :PR22, :IDITE);
+          END;
+          `,
+          [PAR1, PAR2, PAR3, PAR4, PAR5, PAR6, PAR7, PAR8, PAR9, PAR10, PAR11, PAR12, PAR13, PAR14, PAR15, PAR16, PAR17, PAR18, PAR19, PAR20, PAR21, PAR22, IDITE], //prettier-ignore
+        );
+
+        itemRecurso = await this.itensreqrecService.findOne(req[0]);
+
+        const where = `
+        And A.DIR_ID_CODIGO=:CODDIR
+        And A.RRE_ID_CODIGO=:CODREQ
+        And A.TDE_ID_CODIGO=:CODDESP
+        `;
+
+        const agrupamento = await this.saqueRepository.query(`${SelecionaAgrupaRec} ${where}`, [
+          itemRecurso.DIR_ID_CODIGO,
+          itemRecurso.RRE_ID_CODIGO,
+          itemRecurso.TDE_ID_CODIGO,
+        ]);
+
+        if (agrupamento.length == 0) {
+          const PAR1 = null; //AGS_ID_CODIGO
+          const PAR2 = itemRecurso.RRE_ID_CODIGO; //RRE_ID_CODIGO
+          const PAR3 = itemRecurso.DIR_ID_CODIGO; //DIR_ID_CODIGO
+          const PAR4 = itemRecurso.TDE_ID_CODIGO; //TDE_ID_CODIGO
+          const PAR5 = TipoDespesa; //STS_ID_CODIGO
+          const PAR6 = 0; //AGS_VALOR_SOLIC
+          const PAR7 = 0; //AGS_VALOR_CONC
+          const PAR8 = 0; //AGS_VALOR_PREST
+          const PAR9 = DataUtils.formatarDataAtualString(); //AGS_OBSERVA
+          const PAR10 = 'S'; //AGS_RECURSO
+
+          await this.saqueRepository.query(
+            `
+        BEGIN
+          FINANCEIRO.INS_S009_AGRUPARECURSO(:PR1, :PR2, :PR3, :PR4, :PR5, :PR6 , :PR7, :PR8, :PR9, :PR10);
+        END;
+        `,
+            [PAR1, PAR2, PAR3, PAR4, PAR5, PAR6, PAR7, PAR8, PAR9, PAR10], //prettier-ignore
+          );
+        }
+      } else {
+        itemRecurso = ItensReqRec[0];
+      }
+
+      const requisicao = await this.reqtransService.findOne(params.reqIdCodigo);
+
+      const ID = { type: oraccledb.NUMBER, dir: oraccledb.BIND_OUT };
+
+      let parametros: InsSaqueDto = new InsSaqueDto();
+
+      if (Rg_Reembolsar === 0) {
+        parametros.PAR1 = 'S'; // SQE_TIPOSAQUE
+      } else {
+        parametros.PAR1 = 'N';
+      }
+
+      if (semrec >= 1) {
+        parametros.PAR2 = 'S'; // RECURSO SOLICITADO
+      } else {
+        parametros.PAR2 = 'N';
+      }
+
+      parametros.PAR3 = TipoDespesa; // tipo de despesa
+      parametros.PAR4 = itemRecurso.ITE_ID_CODIGO; // ITE_ID_CODIGO
+      parametros.PAR5 = itemRecurso.RRE_ID_CODIGO; // RRE_ID_CODIGO
+      parametros.PAR6 = itemRecurso.DIR_ID_CODIGO; // DIR_ID_CODIGO
+
+      if (Rg_Reembolsar === 0 && Rg_TipoSaque === 1 && TipoDespesa === '7') {
+        parametros.PAR7 = valorSaque.toString(); // SQE_VLPREST
+        parametros.PAR8 = DataUtils.formatarDataAtualString(); // SQE_DTPREST
+        parametros.PAR9 = valorSaque; // SQE_VLSAQUE
+        parametros.PAR10 = 'N'; // SQE_TIPOSAQUE
+        if (semrec >= 1) {
+          parametros.PAR11 = 'F'; // /TRANSFERENCIA/Reembolso
+          parametros.PAR15 = 45; // STS_ID_CODIGO
+        } else {
+          parametros.PAR11 = 'D'; // REEMBOLSO
+          parametros.PAR15 = 32; // STS_ID_CODIGO
+        }
+      } else {
+        parametros.PAR7 = ''; // SQE_VLPREST
+        parametros.PAR8 = null; // SQE_DTPREST
+        parametros.PAR9 = valorSaque; // SQE_VLSAQUE
+        if (Rg_TipoSaque === 0) {
+          parametros.PAR10 = 'R'; // SQE_TIPOSAQUE
+        } else if (Rg_TipoSaque === 1) {
+          parametros.PAR10 = 'N'; // SQE_TIPOSAQUE
+        }
+        if (Rg_Reembolsar === 0 && semrec >= 1 && TipoDespesa === '7') {
+          parametros.PAR11 = 'K'; // /TRANSFERENCIA/Reembolso
+          parametros.PAR15 = 61; // STS_ID_CODIGO
+        } else if (Rg_Reembolsar === 0 && semrec >= 1 && ReembCompl === 1) {
+          parametros.PAR11 = 'B'; //Aguardando Transferência para Complemento-Reembolso'
+          parametros.PAR15 = 51; // STS_ID_CODIGO
+        } else if (Rg_Reembolsar === 0 && semrec >= 1) {
+          parametros.PAR11 = 'F'; //Aguardando Transferência para Reembolso'
+          parametros.PAR15 = 45; // STS_ID_CODIGO
+        } else if (Rg_Reembolsar === 0) {
+          parametros.PAR11 = 'R'; //Aguardando documentos/relatório para efetuar Pagamento
+          parametros.PAR15 = 29; // STS_ID_CODIGO
+        } else if (Rg_Complemento === 1 && semrec >= 1) {
+          parametros.PAR11 = 'T'; // Aguardando Transferência para saque
+          parametros.PAR15 = 47; // STS_ID_CODIGO
+        } else if (Rg_Complemento === 1) {
+          parametros.PAR11 = 'A'; // Aguardado Saque
+          parametros.PAR15 = 25; // STS_ID_CODIGO
+        } else if (Rg_Complemento === 0 && semrec >= 1) {
+          parametros.PAR11 = 'V'; //Aguardando Transferência para Complemento
+          parametros.PAR15 = 46; // STS_ID_CODIGO
+        } else if (Rg_Complemento === 0) {
+          parametros.PAR11 = 'C'; //Viagem-Complemento
+          parametros.PAR15 = 27; // STS_ID_CODIGO
+        }
+
+        //PAGAMENTO PARA TERCEIRO
+        if (Rg_Pagamento === 0) {
+          parametros.PAR12 = 'S'; // SQE_TERCEIRO
+        } else {
+          parametros.PAR12 = 'N';
+          parametros.PAR13 = null; // PES_PESSOA
+          parametros.PAR14 = null; // PES_ID_CODIGO
+        }
+        parametros.PAR16 = user.login; // SQE_USUARIO
+
+        //**** REQUISIÇÃO DE NUMERARIO
+        if (Rg_TipoSaque === 1) {
+          parametros.PAR17 = params.reqIdCodigo; // REQ_ID_CODIGO
+          if (Rg_Reembolsar === 0 && Rg_TipoSaque === 1 && TipoDespesa === '7') {
+            if (requisicao.TRA_ID_CODIGO !== 1) {
+              parametros.PAR18 = requisicao.REQ_DTSAIDA; // RNU_DTINICIO
+              parametros.PAR19 = requisicao.REQ_HSAIDA; // RNU_HORAINICIO
+              parametros.PAR20 = requisicao.REQ_DTRET; // RNU_DTFIM
+              parametros.PAR21 = requisicao.REQ_HRET; // RNU_HORAFIM
+            } else {
+              // parametros.PAR18 = requisicao.REQ_DTSAIDA; // RNU_DTINICIO
+              // parametros.PAR19 = requisicao.REQ_HSAIDA; // RNU_HORAINICIO
+              // parametros.PAR20 = requisicao.REQ_DTRET; // RNU_DTFIM
+              // parametros.PAR21 = requisicao.REQ_HRET; // RNU_HORAFIM
+            }
+            parametros.PAR22 = requisicao.REQ_INTEGRAL; // RNU_VLINTEGRAL
+            parametros.PAR23 = requisicao.REQ_PARCIAL; // RNU_VLPARCIAL
+            parametros.PAR24 = requisicao.REQ_INTEGRAL; // RNU_VLBASE
+            parametros.PAR25 = requisicao.REQ_PARCIAL; // RNU_VLBASE
+          } else {
+            parametros.PAR18 = null; // RNU_DTINICIO
+            parametros.PAR19 = null; // RNU_HORAINICIO
+            parametros.PAR20 = null; // RNU_DTFIM
+            parametros.PAR21 = null; // RNU_HORAFIM
+            parametros.PAR22 = requisicao.REQ_INTEGRAL; // RNU_VLINTEGRAL
+            parametros.PAR23 = requisicao.REQ_PARCIAL; // RNU_VLPARCIAL
+            parametros.PAR24 = null; // RNU_VLBASE
+            parametros.PAR25 = null; // RNU_VLBASE
+          }
+          //pacote
+          parametros.PAR26 = requisicao.REQ_PACOTE === '0' ? 'S' : 'N'; // REQ_PACOTE
+          parametros.PAR27 = requisicao.REQ_GOVERNADOR; // REQ_GOVERNADOR
+        } else {
+          parametros.PAR17 = null; // REQ_ID_CODIGO
+          parametros.PAR18 = null; // RNU_DTINICIO
+          parametros.PAR19 = null; // RNU_HORAINICIO
+          parametros.PAR20 = null; // RNU_DTFIM
+          parametros.PAR21 = null; // RNU_HORAFIM
+          parametros.PAR22 = null; // RNU_VLINTEGRAL
+          parametros.PAR23 = null; // RNU_VLPARCIAL
+          parametros.PAR24 = null; // RNU_VLBASE
+          parametros.PAR25 = null; // RNU_VLBASE
+          parametros.PAR26 = null; // REQ_PACOTE
+          parametros.PAR27 = null; // REQ_GOVERNADOR
+        }
+        parametros.PAR28 = ''; // RRE_JUSTIFICATIVA
+        parametros.PAR29 = 'SAQUE AGUARDANDO TRANSFERENCIA'; // S001_REQUISICAO.REQ_STATUS
+        parametros.PAR30 = null; // RNU_VLINTEGRAL
+        parametros.PAR31 = null; // RNU_VLPARCIAL
+        parametros.PAR32 = null; // RNU_VLBASE
+        parametros.ID = ID;
+      }
+
+      const newSaque = {
+        iteIdCodigo: parametros.PAR4,
+        rreIdCodigo: parametros.PAR5,
+        dirIdCodigo: parametros.PAR6,
+        sqeDtSaque: null,
+        sqeVlPrest: parametros.PAR7,
+        fpaIdCodigo: null,
+        sqeDtPrest: parametros.PAR8,
+        sqeVlSaque: parametros.PAR9,
+        sqeTipoSaque: parametros.PAR10,
+        sqeEfetivo: parametros.PAR11,
+        sqeDtPedido: DataUtils.formatarDataAtualString(),
+        sqeLote: null,
+        sqeAnoLote: null,
+        stsIdCodigo: parametros.PAR15,
+        sqeTerceiro: parametros.PAR12,
+        pesIdCodigo: parametros.PAR13,
+        pesPessoa: parametros.PAR14,
+        sqeUsuario: parametros.PAR16,
+        sqeEmpenho: null,
+        sqeListaSiafem: null,
+      };
+
+      let resultSaque: any;
+
+      try {
+        resultSaque = await this.create(newSaque);
+      } catch (error) {
+        throw new HttpException(
+          `Erro ao inserir saque: ${error.message}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      if (parametros.PAR10 === 'N') {
+        try {
+          const numerario = new ReqnumerarioDto({
+            SQE_ID_CODIGO: resultSaque.sqeIdCodigo,
+            REQ_ID_CODIGO: requisicao.REQ_ID_CODIGO,
+            ITE_ID_CODIGO: parametros.PAR4,
+            RRE_ID_CODIGO: parametros.PAR5,
+            DIR_ID_CODIGO: parametros.PAR6,
+            RNU_DTINICIO: parametros.PAR18,
+            RNU_HORAINICIO: parametros.PAR19,
+            RNU_DTFIM: parametros.PAR20,
+            RNU_HORAFIM: parametros.PAR21,
+            RNU_INTPREV: String(parametros.PAR22) || '',
+            RNU_PARPREV: String(parametros.PAR23) || '',
+            RNU_INTREAL: String(parametros.PAR24) === 'null' ? '' : String(parametros.PAR24) || '',
+            RNU_PARREAL: String(parametros.PAR25) === 'null' ? '' : String(parametros.PAR24) || '',
+            RNU_MOTIVO: requisicao.REQ_MOTIVO,
+            RNU_PACOTE: parametros.PAR26,
+            RNU_GOVERNADOR: parametros.PAR27,
+            RNU_VLINTEGRAL: 0,
+            RNU_VLPARCIAL: 0,
+            RNU_VLBASE: 0,
+          });
+          await this.reqnumerarioService.create(numerario);
+        } catch (error) {
+          throw new HttpException(
+            `Erro ao inserir REQNUMERARIO. Numero do Saque: ${resultSaque.sqeIdCodigo}`,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+      }
+
+      // /*JUSTIFICATIVA*/
+      let rresaque = null;
+      if (parametros.PAR2 === 'S') {
+        rresaque = resultSaque.sqeIdCodigo;
+      }
+      await this.reembolsoService.inseriReembolso({
+        RRE_ID_CODIGO: parametros.PAR5,
+        DIR_ID_CODIGO: parametros.PAR6,
+        ITE_ID_CODIGO: parametros.PAR4,
+        SQE_ID_CODIGO: resultSaque.sqeIdCodigo,
+        RRE_JUSTIFICATIVA: '',
+        RRE_SAQUE: rresaque,
+      });
+
+      //   /*REQUISIÇÃO DE TRANSPORTE*/
+      if (parametros.PAR10 === 'N' && parametros.PAR3 === '7' && parametros.PAR2 === 'S') {
+        await this.reqtransService.updateStatus(requisicao.REQ_ID_CODIGO, parametros.PAR29);
+      }
+
+      return { sqeIdCodigo: resultSaque.sqeIdCodigo, requisicao: requisicao.REQ_ID_CODIGO };
+    } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -917,6 +1378,17 @@ export class SaqueService {
           return { message: 'Problema na operação, chame o Suporte Técnico!' };
         }
       }
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async create(saqueDto: any): Promise<SaqueEntity> {
+    try {
+      const id = await this.lastId();
+      saqueDto.sqeIdCodigo = id;
+      const saque = new SaqueDto(saqueDto);
+      return await this.saqueRepository.save(saque);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
