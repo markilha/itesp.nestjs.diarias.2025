@@ -942,7 +942,7 @@ export class SaqueService {
   //     throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
   //   }
   // }
-  
+
   async solicitarSaque(params: SolitarDto, user: AuthUserDto): Promise<any> {
     let Rg_Reembolsar = 1;
     let Rg_TipoSaque = 1;
@@ -1237,7 +1237,7 @@ export class SaqueService {
             RNU_INTPREV: String(parametros.PAR22) || '',
             RNU_PARPREV: String(parametros.PAR23) || '',
             RNU_INTREAL: String(parametros.PAR24) === 'null' ? '' : String(parametros.PAR24) || '',
-            RNU_PARREAL: String(parametros.PAR25) === 'null' ? '' : String(parametros.PAR24) || '',
+            RNU_PARREAL: String(parametros.PAR25) === 'null' ? '' : String(parametros.PAR25) || '',
             RNU_MOTIVO: requisicao.REQ_MOTIVO,
             RNU_PACOTE: parametros.PAR26,
             RNU_GOVERNADOR: parametros.PAR27,
@@ -1279,24 +1279,23 @@ export class SaqueService {
     }
   }
 
-
   async GravaSaqueReembolso(params: any, user: AuthUserDto): Promise<any> {
-
     try {
       let parametros: InsSaqueDto = new InsSaqueDto();
 
       if (!params.reqIdCodigo) {
         throw new HttpException('Requisição não informada', HttpStatus.INTERNAL_SERVER_ERROR);
       }
-      const requisicao = await this.reqtransService.findOne(params.reqIdCodigo);    
+      const requisicao = await this.reqtransService.findOne(params.reqIdCodigo);
+      const saque = await this.findOne(params.sqeIdCodigo);
 
       parametros.PAR1 = 'S';
       parametros.PAR2 = 'N';
 
-      parametros.PAR3 = params.TDE_ID_CODIGO; // TDE_ID_CODIGO
-      parametros.PAR4 = params.ITE_ID_CODIGO; // ITE_ID_CODIGO
-      parametros.PAR5 = params.RRE_ID_CODIGO; // RRE_ID_CODIGO
-      parametros.PAR6 = params.DIR_ID_CODIGO; // DIR_ID_CODIGO
+      parametros.PAR3 = '7'; // TDE_ID_CODIGO
+      parametros.PAR4 = saque.iteIdCodigo; // ITE_ID_CODIGO
+      parametros.PAR5 = saque.rreIdCodigo; // RRE_ID_CODIGO
+      parametros.PAR6 = saque.dirIdCodigo; // DIR_ID_CODIGO
 
       parametros.PAR7 = String(params.Ed_Diferenca); // SQE_VLSAQUE
       parametros.PAR8 = DataUtils.formatarDataAtualString();
@@ -1308,13 +1307,13 @@ export class SaqueService {
       parametros.PAR13 = null; // PES_PESSOA
       parametros.PAR14 = null; // PES_ID_CODIGO
       parametros.PAR16 = user.login; // SQE_USUARIO
-      parametros.PAR17 = requisicao.REQ_ID_CODIGO;
-      parametros.PAR18 = params.Ed_DtInicio; // RNU_DTINICIO
-      parametros.PAR19 = params.Ed_HInicio; // RNU_HORAINICIO
+      parametros.PAR17 = params.reqIdCodigo;
+      parametros.PAR18 = requisicao.REQ_DTSAIDA; // RNU_DTINICIO
+      parametros.PAR19 = requisicao.REQ_HSAIDA; // RNU_HORAINICIO
       parametros.PAR20 = params.Ed_DtFim; // RNU_DTFIM
       parametros.PAR21 = params.Ed_HFim; // RNU_HORAFIM
-      parametros.PAR22 = params.Ed_Integral; // RNU_INTPREV
-      parametros.PAR23 = params.Ed_Parcial; // RNU_PARPREV
+      parametros.PAR22 = requisicao.REQ_INTEGRAL; // RNU_INTPREV
+      parametros.PAR23 = requisicao.REQ_PARCIAL; // RNU_PARPREV
       parametros.PAR24 = params.Ed_RealI; // RNU_INTREAL
       parametros.PAR25 = params.Ed_RealP; // RNU_PARREAL
       if (requisicao.REQ_PACOTE === '0') {
@@ -1328,8 +1327,6 @@ export class SaqueService {
       parametros.PAR30 = params.Ed_TotDiariaI; // RNU_VLINTEGRAL
       parametros.PAR31 = params.Ed_TotDiariaP; // RNU_VLPARCIAL
       parametros.PAR32 = params.Ed_VlDiaria; // RNU_VLBASE
-
-   
 
       const newSaque = {
         iteIdCodigo: parametros.PAR4,
@@ -1354,7 +1351,6 @@ export class SaqueService {
         sqeListaSiafem: null,
       };
 
-      
       let resultSaque: any;
       try {
         resultSaque = await this.create(newSaque);
@@ -1364,8 +1360,6 @@ export class SaqueService {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
-
-      return resultSaque.sqeIdCodigo;
 
       const numerario = new ReqnumerarioDto({
         SQE_ID_CODIGO: resultSaque.sqeIdCodigo,
@@ -1380,7 +1374,7 @@ export class SaqueService {
         RNU_INTPREV: String(parametros.PAR22) || '',
         RNU_PARPREV: String(parametros.PAR23) || '',
         RNU_INTREAL: String(parametros.PAR24) === 'null' ? '' : String(parametros.PAR24) || '',
-        RNU_PARREAL: String(parametros.PAR25) === 'null' ? '' : String(parametros.PAR24) || '',
+        RNU_PARREAL: String(parametros.PAR25) === 'null' ? '' : String(parametros.PAR25) || '',
         RNU_MOTIVO: requisicao.REQ_MOTIVO,
         RNU_PACOTE: parametros.PAR26,
         RNU_GOVERNADOR: parametros.PAR27,
@@ -1419,9 +1413,8 @@ export class SaqueService {
       ndocumento.STS_ID_CODIGO = 12;
 
       await this.ndocumentoService.create(ndocumento);
-      return { message: 'Saque efetuado com sucesso!' };
+      return { sqeIdCodigo: resultSaque.sqeIdCodigo };
     } catch (error) {
-      console.log(error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
