@@ -114,5 +114,20 @@ export class SaqueController {
   async create(@Body() saque: SaqueEntity): Promise<SaqueEntity> {
     return await this.saqueService.create(saque);
   }
+
+  @Get('pend')
+  async selecionaPendentes(@Query() params: any): Promise<any> {
+    return await this.saqueService.verificaSaquePendente(params);
+  }
+  @Get('confereReembolso')
+  async confereReembolso(@Query('SQE_ID_CODIGO') SQE_ID_CODIGO: number): Promise<any> {
+    return await this.saqueService.ConfereReembolsoDoc(SQE_ID_CODIGO);
+  }
+
+  @Post('gravasaquereembolso')
+  async gravasaquereembolso(@CurrentUser() user: AuthUserDto,@Body() params: any): Promise<any> {
+    return await this.saqueService.GravaSaqueReembolso(params,user);
+  }
+ 
  
 }

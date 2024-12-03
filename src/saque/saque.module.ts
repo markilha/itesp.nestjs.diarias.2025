@@ -19,6 +19,9 @@ import { S001RequisicaoModule } from 'src/requisicao/s001_requisicao.module';
 import { destinoModule } from 'src/destino/destino.module';
 import { naotrabModule } from 'src/naotrab/naotrab.module';
 import { documentosModule } from 'src/documentos/documento.module';
+import { PcontasModule } from 'src/pcontas/pcontas.module';
+import { PcontasNumModule } from 'src/pcontasnum/pcontasnum.module';
+import { ndocumentoModule } from 'src/ndocumento/ndocumento.module';
 
 
 
@@ -40,7 +43,10 @@ import { documentosModule } from 'src/documentos/documento.module';
     destinoModule,
     naotrabModule,    
     forwardRef(() => extornoModule),
-    documentosModule
+    documentosModule,
+    forwardRef(() => PcontasModule),
+    PcontasNumModule,
+    ndocumentoModule
     
   ],
   providers: [SaqueService],

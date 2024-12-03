@@ -181,6 +181,8 @@ export class FindAllAutorizadasParams {
   @ApiProperty({ required: false })
   chapa: string;
   @ApiProperty({ required: false })
+  nome: string;
+  @ApiProperty({ required: false })
   reqIdCodigo?: number;
   @ApiProperty({ required: false })
   page?: number;
@@ -190,7 +192,10 @@ export class FindAllAutorizadasParams {
   orderBy?: string;
   @ApiProperty({ required: false })
   orderDirection?: 'ASC' | 'DESC';
+  @ApiProperty({ required: false })
+  all?: boolean;
 }
+
 export class findMesParams {
   @ApiProperty()
   chapa: string;
@@ -214,6 +219,9 @@ export class RequisDto {
   reqDtSaida?: Date;
   @ApiProperty({ required: false })
   periodoAprovacao?: string;
+  @ApiProperty({ required: false })
+  nome?: string;
+
   constructor(requis?: Partial<RequisDto>) {
     this.chapa = requis?.chapa;
     this.reqIdCodigo = requis?.reqIdCodigo;
@@ -221,7 +229,7 @@ export class RequisDto {
     this.reqDtReq = requis?.reqDtReq;
     this.reqDtSaida = requis?.reqDtSaida;
     this.periodoAprovacao = requis?.periodoAprovacao;
-
+    this.nome = requis?.nome;
   }
 }
 
@@ -248,7 +256,7 @@ export class requiPendente {
 
 export class requiTotal {
   @ApiProperty({
-    type: requiPendente   
+    type: requiPendente,
   })
   data: requiPendente[];
   @ApiProperty()

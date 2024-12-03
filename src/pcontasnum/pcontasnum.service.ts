@@ -55,4 +55,17 @@ export class PcontasNumService {
       );
     }
   }
+
+  async create(data: pcontasNumDto): Promise<pcontasNumDto> {
+    try {
+      const pcontasnum = this.pcontasnumRepository.create(data);
+      await this.pcontasnumRepository.save(pcontasnum);
+      return pcontasnum;
+    } catch (error) {     
+      throw new HttpException(
+        'Não foi possível criar a prestação de conta numerario',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
