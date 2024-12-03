@@ -63,11 +63,13 @@ export class S001RequisicaoController {
     description: 'Erro ao buscar requisições',
   })
   async findAllAprovadas(@CurrentUser() user: UsersDto,@Query() params: FindAllAutorizadasParams): Promise<RequisDto[]> {
-    if(!params.chapa){
-      params.chapa = user.chapa;
-     }
+    if(!params.all){
+      if(!params.chapa){
+        params.chapa = user.chapa;
+       }
+    }
     return await this.requisicao.findAllAprovadas(params);
-  }
+  }  
 
   @Get('mesatual')
   @ApiOperation({ summary: 'Lista todas requisições que estão no status aprovada no mês atual' })

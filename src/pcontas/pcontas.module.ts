@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PcontasService } from './pcontas.service';
 import { PcontasController } from './pcontas.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -14,7 +14,7 @@ import { ReqnumerarioModule } from '../reqnumerario/reqnumerario.module';
     PcontasNumModule,
     reembolsoModule,
     extornoModule,
-    SaqueModule,
+    forwardRef(() => SaqueModule),    
     ReqnumerarioModule,
   ],
   providers: [PcontasService],

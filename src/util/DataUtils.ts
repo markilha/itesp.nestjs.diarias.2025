@@ -216,6 +216,21 @@ static formatarDataParaOracle(data: string): string {
 
     return `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
   }
+
+  static criarDataFormatada(): Date {
+    const now = new Date();
+
+    // Formatar ano, mês, dia, horas, minutos, segundos e milissegundos
+    const ano = now.getFullYear();
+    const mes = now.getMonth(); // Mês começa em 0
+    const dia = now.getDate();
+    const horas = now.getHours();
+    const minutos = now.getMinutes();
+    const segundos = now.getSeconds();
+    const milissegundos = now.getMilliseconds();
+    // Criar um novo objeto Date com os valores
+    return new Date(ano, mes, dia, horas, minutos, segundos, milissegundos);
+  }
 }
 
 function isValidDateString(dateStr) {
@@ -223,5 +238,9 @@ function isValidDateString(dateStr) {
   if (!formatoData) return false;
   return true;
 }
+
+
+const dataAtualDate = DataUtils.criarDataFormatada();
+console.log(dataAtualDate);
 
 

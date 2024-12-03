@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { FindOptionsWhere, In, MoreThan, MoreThanOrEqual, Raw, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, In, Like, MoreThan, MoreThanOrEqual, Raw, Repository } from 'typeorm';
 import {
   FindAllAutorizadasParams,
   FindAllParams,
@@ -262,11 +262,12 @@ export class S001RequisicaoService {
       const pageSize = params.limit ?? 10;
       const skip = (pageNumber - 1) * pageSize;
 
-      // searchParams['reqStatus'] = In([
-      //   'AUTORIZADA PELO DIRETOR',
-      //   'AUTORIZADA PELO DIRETOR EXECUTIVO',
-      // ]);
       searchParams['reqDtSaida'] = MoreThanOrEqual(new Date('2009-08-10'));
+
+      searchParams['reqStatus'] = In([
+        'AUTORIZADA PELO DIRETOR',
+        'AUTORIZADA PELO DIRETOR EXECUTIVO',
+      ]);    
 
       const order: { [key: string]: 'ASC' | 'DESC' } = {};
       if (params.orderBy) {
@@ -280,13 +281,31 @@ export class S001RequisicaoService {
       }
 
       const requisicao = await this.requisicaoRepository.find({
-        where: searchParams,
+        where: {
+          ...searchParams,
+          funcSalario: {
+            nome: params.nome ? ILike(`%${params.nome}%`) : undefined,  
+          },
+        },
         skip,
         take: params.limit,
         order,
+        relations: ['funcSalario'],  
       });
+     
 
-      return requisicao.map((reqv) => new RequisDto(reqv));
+      return requisicao.map((reqv) => {
+        
+        return new RequisDto({
+          chapa: reqv.chapa,
+          reqIdCodigo: reqv.reqIdCodigo,
+          reqStatus: reqv.reqStatus,
+          reqDtReq: reqv.reqDtReq,
+          nome: reqv.funcSalario.nome,
+        });
+      }
+      );
+      
     } catch (error) {
       throw new HttpException(
         'Erro ao buscar requisições aprovadas',

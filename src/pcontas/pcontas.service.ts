@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { pcontasEntity } from '../database/db_oracle/entities/pcontas.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
@@ -17,9 +17,10 @@ export class PcontasService {
     @InjectRepository(pcontasEntity, 'oracleConnection')
     private pcontasRepository: Repository<pcontasEntity>,
     private reembolsosService: reembolsoService,
-    private extornoService: extornoService,
-    private saqueService: SaqueService,
+    private extornoService: extornoService,    
     private reqnumerarioService: ReqnumerarioService,
+    @Inject(forwardRef(() => SaqueService))
+    private saqueService: SaqueService,
 
     @InjectRepository(pcontasnumEntity, 'oracleConnection')
     private readonly pcontasnumRepository: Repository<pcontasnumEntity>,
@@ -47,7 +48,7 @@ export class PcontasService {
       return await this.pcontasRepository.find({
         where: searchParams,
       });
-    } catch (error) {      
+    } catch (error) {
       throw new HttpException(
         'Não foi possível as prestações de conta',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -62,6 +63,20 @@ export class PcontasService {
           PCO_ID_CODIGO,
         },
       });
+    } catch (error) {
+      throw new HttpException(
+        'Não foi possível as prestações de conta',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async lastid(): Promise<number> {
+    try {
+      const lastIdResult = await this.pcontasRepository.query(
+        `SELECT MAX(PCO_ID_CODIGO) as lastId FROM S009_PCONTAS`,
+      );
+      return lastIdResult[0]?.LASTID || 0;
     } catch (error) {
       throw new HttpException(
         'Não foi possível as prestações de conta',
@@ -105,7 +120,7 @@ export class PcontasService {
     await this.reqnumerarioService.updateChegada({
       RNU_ID_CODIGO: rnuIdCodigo[0]?.RNU_ID_CODIGO,
       RNU_INTREAL: params.INTREAL,
-      RNU_PARREAL: params.PARREAL
+      RNU_PARREAL: params.PARREAL,
     });
 
     await this.pcontasnumRepository.insert({
@@ -139,5 +154,17 @@ export class PcontasService {
 
     return { PCO_ID_CODIGO: pcoIdCodigo };
   }
- 
+
+  async create(pcontasDto: pcontasEntity): Promise<pcontasEntity> {
+    try {
+      const pc = this.pcontasRepository.create(pcontasDto);
+      await this.pcontasRepository.save(pc);
+      return pc;
+    } catch (error) {
+      throw new HttpException(
+        'Não foi possível criar a prestação de conta',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

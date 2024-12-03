@@ -34,6 +34,7 @@ import { docsModule } from './docs/docs.module';
 import { documentosModule } from './documentos/documento.module';
 import { agruparecursoModule } from './agruparecurso/agruparecurso.module';
 import { itensreqModule } from './itensreq/itensreq.module';
+import { ndocumentoModule } from './ndocumento/ndocumento.module';
 
 @Module({
   imports: [
@@ -68,7 +69,8 @@ import { itensreqModule } from './itensreq/itensreq.module';
     docsModule,
     documentosModule,
     agruparecursoModule,
-    itensreqModule
+    itensreqModule,
+    ndocumentoModule,
   ],
   controllers: [docsController],
   providers: [docsService],
