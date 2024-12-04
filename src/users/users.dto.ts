@@ -99,9 +99,9 @@ export class userInfo {
 export class returnTotal {
   @ApiProperty({
     description: 'Array de objetos do tipo UsersDto',
-    type: [UsersDto],
+    type: [returnUsersDto],
   })
-  data: UsersDto[];
+  data: returnUsersDto[];
     @ApiProperty({
     description: 'Valor total calculado',
     type: Number,
