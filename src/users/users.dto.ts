@@ -19,6 +19,10 @@ export class FindAllParams {
   nome?: string;
   @ApiProperty({ required: false })
   login?: string;
+  @ApiProperty({ required: false })
+  page?: number;
+  @ApiProperty({ required: false })
+  limit?: number;
 }
 
 export enum StatusDto {
@@ -91,3 +95,19 @@ export class userInfo {
   })
   roles: string[]
 }
+
+export class returnTotal {
+  @ApiProperty({
+    description: 'Array de objetos do tipo UsersDto',
+    type: [UsersDto],
+  })
+  data: UsersDto[];
+    @ApiProperty({
+    description: 'Valor total calculado',
+    type: Number,
+    example: 0,
+  })
+  total: number;
+
+}
+

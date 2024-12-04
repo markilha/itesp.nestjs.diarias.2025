@@ -1,8 +1,15 @@
 import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../database/db_mysql/entities/user.entity';
-import { FindOptionsWhere, ILike, Like, Repository } from 'typeorm';
-import { FindAllParams, FindAllParamsDto, PerfilAcesso, userNivelDto, UsersDto } from './users.dto';
+import { FindOptionsWhere, ILike, IsNull, Like, Not, Repository } from 'typeorm';
+import {
+  FindAllParams,
+  FindAllParamsDto,
+  PerfilAcesso,
+  returnTotal,
+  userNivelDto,
+  UsersDto,
+} from './users.dto';
 import { hashSync as bcryptHashSync } from 'bcrypt';
 
 @Injectable()
@@ -18,7 +25,7 @@ export class UsersService {
     return createUser;
   }
 
-  async findAll(params: FindAllParams): Promise<UserEntity[]> {
+  async findAll(params: FindAllParams): Promise<returnTotal> {
     const searchParams: FindOptionsWhere<UserEntity> = {};
 
     if (params.nome) {
@@ -28,17 +35,35 @@ export class UsersService {
       searchParams.login = ILike(`%${params.login}%`);
     }
 
-    const users = await this.usersRepository.find({ where: searchParams });
-    return users;
+    let users = [];
+
+    const filters = {
+      ...searchParams,
+      chapa: Not(IsNull()),
+    };
+    users = await this.usersRepository.find({ where: filters });
+    const total = users.length;
+
+    if (params.page && params.limit) {
+      const page = params.page || 1;
+      const limit = params.limit || 10;
+      users = await this.usersRepository.find({
+        where: filters,
+        take: limit,
+        skip: (page - 1) * limit,
+      });
+    }
+
+    return { data: users, total };
   }
 
-  async findOne(params: FindAllParamsDto): Promise<UserEntity> {    
+  async findOne(params: FindAllParamsDto): Promise<UserEntity> {
     try {
-      const searchParams: FindOptionsWhere<UserEntity> = {};  
+      const searchParams: FindOptionsWhere<UserEntity> = {};
       if (params.id_usuario) {
         searchParams['id_usuario'] = params.id_usuario;
       }
-     
+
       if (params.chapa) {
         searchParams['chapa'] = params.chapa;
       }
@@ -91,7 +116,10 @@ export class UsersService {
         [id_sistema],
       );
       if (!perfis || perfis?.length === 0) {
-        throw new HttpException(`Perfil ${id_sistema} de acesso não encontrado`, HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          `Perfil ${id_sistema} de acesso não encontrado`,
+          HttpStatus.NOT_FOUND,
+        );
       }
       return perfis;
     } catch (error) {
