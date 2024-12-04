@@ -9,6 +9,7 @@ export class UsersDto {
   chapa: string;
 }
 
+
 export class UserUpdateDto {
   readonly nome?: string;
   readonly login?: string;
@@ -99,9 +100,9 @@ export class userInfo {
 export class returnTotal {
   @ApiProperty({
     description: 'Array de objetos do tipo UsersDto',
-    type: [returnUsersDto],
+    type: [UsersDto],
   })
-  data: returnUsersDto[];
+  data: UsersDto[];
     @ApiProperty({
     description: 'Valor total calculado',
     type: Number,

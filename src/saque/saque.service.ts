@@ -1133,7 +1133,7 @@ export class SaqueService {
         parametros.PAR12 = terceiro;
         parametros.PAR13 = null; // PES_PESSOA
         parametros.PAR14 = null; // PES_ID_CODIGO
-        parametros.PAR16 = user.login; // SQE_USUARIO
+        parametros.PAR16 = user.chapa; // SQE_USUARIO
 
         //**** REQUISIÇÃO DE NUMERARIO
         if (Rg_TipoSaque === 1) {
@@ -1273,7 +1273,7 @@ export class SaqueService {
         await this.reqtransService.updateStatus(requisicao.REQ_ID_CODIGO, parametros.PAR29);
       }
 
-      return { sqeIdCodigo: resultSaque.sqeIdCodigo, requisicao: requisicao.REQ_ID_CODIGO };
+      return { sqeIdCodigo: resultSaque.sqeIdCodigo };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
