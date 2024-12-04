@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 
 @Injectable()
@@ -14,9 +14,9 @@ export class ndocumentoService {
 
   async lastId(): Promise<number> {
     try {
-      const lastId = await this.ndocumentoRepository.query(`SELECT MAX(ND_ID_CODIGO) as ND_ID_CODIGO FROM N_DOCUMENTO`);
-      return lastId[0].ND_ID_CODIGO;
-    } catch (error) {
+      const lastId = await this.ndocumentoRepository.query(`SELECT MAX(a.NDO_ID_CODIGO) AS lasId FROM S009_NDOCUMENTO a`);      
+      return lastId[0].LASID;
+    } catch (error) {      
       throw new HttpException('Não foi possível buscar o último ID', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

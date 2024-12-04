@@ -7,8 +7,7 @@ export class UserEntity {
   @PrimaryGeneratedColumn('increment')
   id_usuario: number;
   @Column({ name: 'nome', type: 'varchar' })
-  nome: string;
-
+  nome: string;  
   @Column({ name: 'login', type: 'varchar'})
   login: string;
 
