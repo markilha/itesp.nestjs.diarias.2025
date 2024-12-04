@@ -46,8 +46,10 @@ export function querySaque(
   filterConditions: string[] = [],
   orderByField: string,
   orderDirection: string,
+  paginacao : boolean
 ) {
   const whereClause = filterConditions.length > 0 ? `WHERE ${filterConditions.join(' AND ')}` : '';
+  const pag = paginacao ? `OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY`: '';
   return `
     SELECT
       a.SQE_DTPEDIDO as SQE_DTPEDIDO,
@@ -73,13 +75,12 @@ export function querySaque(
      ${whereClause}      
      AND d.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')
     ORDER BY ${orderByField} ${orderDirection}
-    OFFSET :offset ROWS FETCH NEXT :itemsPerPage ROWS ONLY
+    ${pag}
+    
     `;
 }
 
-export function querySaqueCount(
-  filterConditions: string[] = [] 
-) {
+export function querySaqueCount(filterConditions: string[] = []) {
   const whereClause = filterConditions.length > 0 ? `WHERE ${filterConditions.join(' AND ')}` : '';
   return `   
     SELECT COUNT(*) AS total_registros
