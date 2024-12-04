@@ -54,10 +54,11 @@ export class UsersService {
       });
     }
 
-    users = users.map(user => ({
+    users = users.map(({ senha, ...user }) => ({
       ...user,
       chapa: user.chapa.toString().padStart(6, '0'),
     }));
+    
 
     return { data: users, total };
   }
