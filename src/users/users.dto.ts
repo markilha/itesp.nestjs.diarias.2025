@@ -9,6 +9,7 @@ export class UsersDto {
   chapa: string;
 }
 
+
 export class UserUpdateDto {
   readonly nome?: string;
   readonly login?: string;
