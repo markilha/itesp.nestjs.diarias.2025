@@ -15,7 +15,7 @@ import {
 
 import { SaqueEntity } from '../database/db_oracle/entities/saque.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Like, Repository } from 'typeorm';
 import { calcularValores } from '../util/calculo_extorno';
 import { formatDates } from '../util/formatStarDateEndDate';
 import { ItinirarioService } from '../itinirario/itinirario.service';
@@ -297,15 +297,19 @@ export class SaqueService {
       const orderDirection = params.orderDirection || 'ASC';
 
       const page = params.page || 1;
-      const itemsPerPage = params.limit || 500;
+      const itemsPerPage = params.limit || 1000;
       const offset = (page - 1) * itemsPerPage;
 
       const filterConditions: string[] = [];
       const filterValues: any[] = [];
 
       // Adiciona o filtro de CHAPA
-      filterConditions.push('b.CHAPA = :chapa');
-      filterValues.push(chapa);
+      if (!params.full) {
+        if (params.CHAPA) {
+          filterConditions.push('b.CHAPA = :chapa');
+          filterValues.push(chapa);
+        }
+      }
 
       // Verifica e adiciona cada filtro dinamicamente
       if (params.SQE_ID_CODIGO) {
@@ -323,12 +327,15 @@ export class SaqueService {
       if (params.REQ_STATUS) {
         filterConditions.push('d.REQ_STATUS = :REQ_STATUS');
         filterValues.push(params.REQ_STATUS);
-      }
-
+      }  
+      
+     
       const result = await this.saqueRepository.query(
-        querySaque(filterConditions, orderByField, orderDirection),
+        querySaque(filterConditions, orderByField, orderDirection, true),
         [...filterValues, offset, itemsPerPage],
       );
+
+     
 
       const count = await this.saqueRepository.query(
         querySaqueCount(filterConditions),
@@ -416,6 +423,14 @@ export class SaqueService {
       if (params.STATUS_SAQUE) {
         consulta = consulta.filter(
           (item: any) => item.STATUS_SAQUE && item.STATUS_SAQUE === params.STATUS_SAQUE,
+        );
+      }
+
+     
+      if (params.NOME) {
+        const nomeBusca = params.NOME.toUpperCase();
+        consulta = consulta.filter(
+          (item: any) => item.NOME && item.NOME.toUpperCase().includes(nomeBusca),
         );
       }
 
@@ -949,16 +964,15 @@ export class SaqueService {
     let TipoDespesa = '7';
     let semrec = 1;
     let ReembCompl = 1;
-    let Rg_Complemento = 1;   
-    let terceiro = "N"
+    let Rg_Complemento = 1;
+    let terceiro = 'N';
 
     if (user.chapa != params.chapa && !user.roles.includes(Role.SUPERVISOR)) {
       throw new HttpException('Usuário não autorizado', HttpStatus.UNAUTHORIZED);
     }
-    if(user.chapa != params.chapa && user.roles.includes(Role.SUPERVISOR)){
-      terceiro = "S"     
+    if (user.chapa != params.chapa && user.roles.includes(Role.SUPERVISOR)) {
+      terceiro = 'S';
     }
-   
 
     try {
       if (!params.reqIdCodigo) {
