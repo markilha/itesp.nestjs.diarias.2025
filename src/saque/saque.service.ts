@@ -949,12 +949,16 @@ export class SaqueService {
     let TipoDespesa = '7';
     let semrec = 1;
     let ReembCompl = 1;
-    let Rg_Complemento = 1;
-    let Rg_Pagamento = 1;
+    let Rg_Complemento = 1;   
+    let terceiro = "N"
 
-    if (user.chapa != params.chapa && user.roles.includes(Role.SUPERVISOR)) {
+    if (user.chapa != params.chapa && !user.roles.includes(Role.SUPERVISOR)) {
       throw new HttpException('Usuário não autorizado', HttpStatus.UNAUTHORIZED);
     }
+    if(user.chapa != params.chapa && user.roles.includes(Role.SUPERVISOR)){
+      terceiro = "S"     
+    }
+   
 
     try {
       if (!params.reqIdCodigo) {
@@ -1126,13 +1130,9 @@ export class SaqueService {
         }
 
         //PAGAMENTO PARA TERCEIRO
-        if (Rg_Pagamento === 0) {
-          parametros.PAR12 = 'S'; // SQE_TERCEIRO
-        } else {
-          parametros.PAR12 = 'N';
-          parametros.PAR13 = null; // PES_PESSOA
-          parametros.PAR14 = null; // PES_ID_CODIGO
-        }
+        parametros.PAR12 = terceiro;
+        parametros.PAR13 = null; // PES_PESSOA
+        parametros.PAR14 = null; // PES_ID_CODIGO
         parametros.PAR16 = user.login; // SQE_USUARIO
 
         //**** REQUISIÇÃO DE NUMERARIO
