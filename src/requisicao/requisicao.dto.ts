@@ -181,7 +181,7 @@ export class FindAllAutorizadasParams {
   @ApiProperty({ required: false })
   chapa: string;
   @ApiProperty({ required: false })
-  nome: string;
+  nome?: string;
   @ApiProperty({ required: false })
   reqIdCodigo?: number;
   @ApiProperty({ required: false })

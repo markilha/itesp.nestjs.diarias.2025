@@ -46,7 +46,7 @@ import { itensreqrecService } from '../itensreqrec/itensreqrec.service';
 import { destinoService } from '../destino/destino.service';
 import { formatDate } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
-import { documentosService } from 'src/documentos/documento.service';
+import { documentosService } from '../documentos/documento.service';
 import { docsEntity } from 'src/database/db_mysql/entities/docs.entity';
 import {
   SelecionaPendencia,
@@ -58,19 +58,19 @@ import {
   SelecionaAgrupaRec,
   SelecionaItensRecurso,
   selecionaUltimoPrazo,
-} from 'src/util/selects/itensRecurso';
-import { itensreqrecEntity } from 'src/database/db_oracle/entities/itensreqrec.entity';
+} from '../util/selects/itensRecurso';
+import { itensreqrecEntity } from '../database/db_oracle/entities/itensreqrec.entity';
 
-import { AuthUserDto } from 'src/auth/use.auth.Dto';
-import { ReqnumerarioDto } from 'src/reqnumerario/reqnumerarioDto';
-import { Role } from 'src/auth/role.enum';
-import { selecionaDocPContasNum, selecionaPrestPendente } from 'src/util/selects/prestacao';
+import { AuthUserDto } from '../auth/use.auth.Dto';
+import { ReqnumerarioDto } from '../reqnumerario/reqnumerarioDto';
+import { Role } from '../auth/role.enum';
+import { selecionaDocPContasNum, selecionaPrestPendente } from '../util/selects/prestacao';
 import * as oraccledb from 'oracledb';
-import { PcontasService } from 'src/pcontas/pcontas.service';
-import { PcontasNumService } from 'src/pcontasnum/pcontasnum.service';
-import { ndocumentoService } from 'src/ndocumento/ndocumento.service';
-import { ndocumentoEntity } from 'src/database/db_oracle/entities/ndocumento.entity';
-import { resourceUsage } from 'process';
+import { PcontasService } from '../pcontas/pcontas.service';
+import { PcontasNumService } from '../pcontasnum/pcontasnum.service';
+import { ndocumentoService } from '../ndocumento/ndocumento.service';
+import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.entity';
+
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1

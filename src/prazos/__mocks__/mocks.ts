@@ -1,26 +1,30 @@
 export const mocksPrazos = [
-  {
+ {
+    ORR_ID_CODIGO: 16,
+    PER_APLICACAO: '273 dias',
+    PER_RECURSO: '282 dias',
+    PRA_ATIVO: 'A',
+    PRA_FIM_APLICA: '2024-04-05',
+    PRA_FIM_RECURSO: '2024-03-06',
     PRA_ID_CODIGO: 1,
-    PRA_PREVISAO: 'R',
-    PRA_INICIO_RECURSO: '2024-02-27',
-    PRA_FIM_RECURSO: '2024-03-06',
-    PRA_ATIVO: 'A',
     PRA_INICIO_APLICA: '2024-03-07',
-    PRA_FIM_APLICA: '2024-04-05',
+    PRA_INICIO_RECURSO: '2024-02-27',
+    PRA_PREVISAO: 'R',
     REG_ID_CODIGO: 0,
-    ORR_ID_CODIGO: 16,
   },
   {
-    PRA_ID_CODIGO: 2,
-    PRA_PREVISAO: 'R',
-    PRA_INICIO_RECURSO: '2024-02-27',
-    PRA_FIM_RECURSO: '2024-03-06',
-    PRA_ATIVO: 'A',
-    PRA_INICIO_APLICA: '2024-03-07',
-    PRA_FIM_APLICA: '2024-04-05',
-    REG_ID_CODIGO: 9,
     ORR_ID_CODIGO: 16,
-  },
+    PER_APLICACAO: '273 dias',
+    PER_RECURSO: '282 dias',
+    PRA_ATIVO: 'A',
+    PRA_FIM_APLICA: '2024-04-05',
+    PRA_FIM_RECURSO: '2024-03-06',
+    PRA_ID_CODIGO: 2,
+    PRA_INICIO_APLICA: '2024-03-07',
+    PRA_INICIO_RECURSO: '2024-02-27',
+    PRA_PREVISAO: 'R',
+    REG_ID_CODIGO: 0,
+  }
 ];
 
 export const mocksPpessoa = {
@@ -31,3 +35,5 @@ export const mocksPpessoa = {
   ORGAO: 'FUNDAÇÃO INSTITUTO DE TERRAS DO ESTADO DE SÃO PAULO',
   REG_ID_CODIGO: 4,
 };
+
+

@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { FileDto } from './docs.Dto';
-import { documentosService } from 'src/documentos/documento.service';
+import { documentosService } from '../documentos/documento.service';
 
 import * as OBS from 'esdk-obs-nodejs';
 import * as os from 'os';

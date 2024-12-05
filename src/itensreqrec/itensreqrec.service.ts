@@ -7,7 +7,7 @@ import {
   SelecionaItenFunc,
   SelecionaItensFunc,
   SelecionaItensRecurso,
-} from 'src/util/selects/itensRecurso';
+} from '../util/selects/itensRecurso';
 
 @Injectable()
 export class itensreqrecService {

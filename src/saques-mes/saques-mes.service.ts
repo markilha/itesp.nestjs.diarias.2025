@@ -13,10 +13,10 @@ import {
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SaqueMesEntity } from '../database/db_oracle/entities/saqueMes.entity';
-import { formatDateToYYMM } from 'src/util/formatoYYMM';
-import { DataUtils } from 'src/util/DataUtils';
-import { calcularTotalPorYYMM } from 'src/util/variaveis/calcula_total_mes';
-import { selects } from 'src/util/selects/selects';
+import { formatDateToYYMM } from '../util/formatoYYMM';
+import { DataUtils } from '../util/DataUtils';
+import { calcularTotalPorYYMM } from '../util/variaveis/calcula_total_mes';
+import { selects } from '../util/selects/selects';
 
 @Injectable()
 export class SaquesMesService {

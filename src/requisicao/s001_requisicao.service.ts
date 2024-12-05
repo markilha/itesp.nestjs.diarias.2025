@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { FindOptionsWhere, ILike, In, Like, MoreThan, MoreThanOrEqual, Raw, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, In, MoreThanOrEqual, Repository } from 'typeorm';
 import {
   FindAllAutorizadasParams,
   FindAllParams,
@@ -29,7 +29,7 @@ import { retornoItinerarioDto } from '../itinirario/itinerarioDto';
 import { DataUtils } from '../util/DataUtils';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
-import { calcularPeriodo } from 'src/util/calcula_periodo';
+import { calcularPeriodo } from '../util/calcula_periodo';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -259,7 +259,7 @@ export class S001RequisicaoService {
     try {
       const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
       const pageNumber = params.page ?? 1;
-      const pageSize = params.limit ?? 10;
+      const pageSize = params.limit ?? 500;
       const skip = (pageNumber - 1) * pageSize;
 
       searchParams['reqDtSaida'] = MoreThanOrEqual(new Date('2009-08-10'));
@@ -267,7 +267,7 @@ export class S001RequisicaoService {
       searchParams['reqStatus'] = In([
         'AUTORIZADA PELO DIRETOR',
         'AUTORIZADA PELO DIRETOR EXECUTIVO',
-      ]);    
+      ]);
 
       const order: { [key: string]: 'ASC' | 'DESC' } = {};
       if (params.orderBy) {
@@ -284,29 +284,25 @@ export class S001RequisicaoService {
         where: {
           ...searchParams,
           funcSalario: {
-            nome: params.nome ? ILike(`%${params.nome}%`) : undefined,  
+            nome: params.nome ? ILike(`%${params.nome}%`) : undefined,
           },
         },
         skip,
         take: params.limit,
         order,
-        relations: ['funcSalario'],  
+        relations: ['funcSalario'],
       });
-     
 
       return requisicao.map((reqv) => {
-        
         return new RequisDto({
           chapa: reqv.chapa,
           reqIdCodigo: reqv.reqIdCodigo,
           reqStatus: reqv.reqStatus,
           reqDtReq: reqv.reqDtReq,
-          nome: reqv.funcSalario.nome,
+          nome: reqv?.funcSalario?.nome,          
         });
-      }
-      );
-      
-    } catch (error) {
+      });
+    } catch (error) {    
       throw new HttpException(
         'Erro ao buscar requisições aprovadas',
         HttpStatus.INTERNAL_SERVER_ERROR,
