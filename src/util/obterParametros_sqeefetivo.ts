@@ -39,6 +39,3 @@ export function obterParametros(rgReembolsar, semrec, rgComplemento, reembCompl,
   const cbCodDesp = "7";
   
   
-  const parametros = obterParametros(rgReembolsar, semrec, rgComplemento, reembCompl, cbCodDesp);
-  console.log(parametros); // { PAR11: "K", PAR15: 61 }
-  

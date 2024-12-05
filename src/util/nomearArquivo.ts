@@ -24,6 +24,6 @@ export const generateUniqueFileName = (originalName: string,SQE_ID_CODIGO: numbe
   return `${SQE_ID_CODIGO}_${timestamp}${fileExtension}`;
 };
 
-console.log(generateUniqueFileName('arquivo com espaços e acentos.pdf', 1234));
+
 
 

@@ -240,7 +240,3 @@ function isValidDateString(dateStr) {
 }
 
 
-const dataAtualDate = DataUtils.criarDataFormatada();
-console.log(dataAtualDate);
-
-
