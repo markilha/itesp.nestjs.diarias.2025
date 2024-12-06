@@ -71,7 +71,6 @@ import { PcontasNumService } from '../pcontasnum/pcontasnum.service';
 import { ndocumentoService } from '../ndocumento/ndocumento.service';
 import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.entity';
 
-
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
     ? {
@@ -327,15 +326,12 @@ export class SaqueService {
       if (params.REQ_STATUS) {
         filterConditions.push('d.REQ_STATUS = :REQ_STATUS');
         filterValues.push(params.REQ_STATUS);
-      }  
-      
-     
+      }
+
       const result = await this.saqueRepository.query(
         querySaque(filterConditions, orderByField, orderDirection, true),
         [...filterValues, offset, itemsPerPage],
       );
-
-     
 
       const count = await this.saqueRepository.query(
         querySaqueCount(filterConditions),
@@ -426,7 +422,6 @@ export class SaqueService {
         );
       }
 
-     
       if (params.NOME) {
         const nomeBusca = params.NOME.toUpperCase();
         consulta = consulta.filter(
@@ -1289,6 +1284,7 @@ export class SaqueService {
 
       return { sqeIdCodigo: resultSaque.sqeIdCodigo };
     } catch (error) {
+      console.error(error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

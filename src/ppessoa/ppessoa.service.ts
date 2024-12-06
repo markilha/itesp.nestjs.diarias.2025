@@ -44,7 +44,7 @@ export class PpessoaService {
       
 
       const funcionario = new FuncionarioDto({
-        NOME: consulta[0].NOME,
+        NOME: consulta[0].NOME ,
         CPF: consulta[0].CPF,
         DESCFUNC: consulta[0].DESCFUNC,
         CHAPA: consulta[0].CHAPA,

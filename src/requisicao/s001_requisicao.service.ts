@@ -51,7 +51,7 @@ export class S001RequisicaoService {
   }
 
   async find(params: FindAllParams): Promise<any> {
-    try {
+    try {     
       const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
       const fields = ['reqIdCodigo', 'codMunicipio', 'reqStatus', 'chapa'];
       fields.forEach((field) => {
@@ -70,33 +70,42 @@ export class S001RequisicaoService {
       searchParams['reqDtSaida'] = MoreThanOrEqual(new Date('2009-08-10'));
 
       let requisicoes: RequisicaoEntity[];
+    
 
-      if (params.page && params.limit) {
-        const page = params.page;
-        const limit = params.limit;
-        const skip = (page - 1) * limit;
+     try {
+      
+       if (params.page && params.limit) {
+         const page = params.page;
+         const limit = params.limit;
+         const skip = (page - 1) * limit;
+  
+         requisicoes = await this.requisicaoRepository.find({
+           where: searchParams,
+           skip,
+           take: limit,
+           order,
+           relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
+         });
+       } else {
+         requisicoes = await this.requisicaoRepository.find({
+           where: searchParams,
+           order,
+          relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
+         });
+       }
+     } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);      
+     }
 
-        requisicoes = await this.requisicaoRepository.find({
-          where: searchParams,
-          skip,
-          take: limit,
-          order,
-          relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
-        });
-      } else {
-        requisicoes = await this.requisicaoRepository.find({
-          where: searchParams,
-          order,
-          relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
-        });
-      }
       if (!requisicoes || requisicoes.length === 0) {
         return [];
       }
+    
 
       const results = await Promise.all(
         requisicoes.map((requisicao) => this.processRequisicao(requisicao, params.chapa)),
       );
+     
 
       const count = await this.requisicaoRepository.find({
         where: searchParams,

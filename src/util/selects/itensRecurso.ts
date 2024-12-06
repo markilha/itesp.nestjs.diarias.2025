@@ -85,12 +85,14 @@ LEFT JOIN
 export const selecionaUltimoPrazo = `SELECT 
     RRE_ID_CODIGO, 
     DIR_ID_CODIGO,
+    REG_ID_CODIGO,
     PRA_FIM_RECURSO
 FROM (
     SELECT 
         A.RRE_ID_CODIGO, 
         A.DIR_ID_CODIGO,
         C.PRA_FIM_RECURSO,
+        C.REG_ID_CODIGO,
         ROW_NUMBER() OVER (ORDER BY C.PRA_FIM_RECURSO DESC) AS RN
     FROM 
         Financeiro.S009_REQRECURSOS A
@@ -102,7 +104,7 @@ FROM (
         ON A.PRA_ID_CODIGO = C.PRA_ID_CODIGO
     WHERE 
         A.STS_ID_CODIGO = 7
-        AND A.DIR_ID_CODIGO = :dir_id_codigo  -- Aqui está o parâmetro
+         AND C.REG_ID_CODIGO = :regidcodigo  
 ) 
 WHERE RN = 1`    
 
