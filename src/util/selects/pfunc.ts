@@ -15,7 +15,7 @@ setor, REG_ID_CODIGO, REG_DESCRICAO
 From Financeiro.V009_Funcsalario
 `
 export const selecionaPefilFunc = `
- SELECT 
+ SELECT DISTINCT
         A.CHAPA as CHAPA,
         A.CODSECAO as CODSECAO,
         UPPER(C.NOME) as NOME,
