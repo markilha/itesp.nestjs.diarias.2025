@@ -1,5 +1,3 @@
-import { RequisDto, ReturnRequisicaoDto } from '../requisicao.dto';
-
 export const mockRequisicaoDto = [
   {
     reqIdCodigo: 139836,
@@ -44,41 +42,68 @@ export const mockAprovadas = [
     chapa: '000081',
     reqIdCodigo: 101896,
     reqStatus: 'AUTORIZADA PELO DIRETOR EXECUTIVO',
+    reqDtReq: '22/06/2010 09:00:51',
+    reqDtSaida: undefined,
+    periodoAprovacao: undefined,
+    nome: undefined,
+  },
+];
+
+const mocksPrazos = [
+  {
+    ORR_ID_CODIGO: 16,
+    PER_APLICACAO: '273 dias',
+    PER_RECURSO: '282 dias',
+    PRA_ATIVO: 'A',
+    PRA_FIM_APLICA: '2024-04-05',
+    PRA_FIM_RECURSO: '2024-03-06',
+    PRA_ID_CODIGO: 1,
+    PRA_INICIO_APLICA: '2024-03-07',
+    PRA_INICIO_RECURSO: '2024-02-27',
+    PRA_PREVISAO: 'R',
+    REG_ID_CODIGO: 0,
   },
   {
-    chapa: '000081',
-    reqIdCodigo: 121514,
-    reqStatus: 'AUTORIZADA PELO DIRETOR EXECUTIVO',
+    ORR_ID_CODIGO: 16,
+    PER_APLICACAO: '273 dias',
+    PER_RECURSO: '282 dias',
+    PRA_ATIVO: 'A',
+    PRA_FIM_APLICA: '2024-04-05',
+    PRA_FIM_RECURSO: '2024-03-06',
+    PRA_ID_CODIGO: 2,
+    PRA_INICIO_APLICA: '2024-03-07',
+    PRA_INICIO_RECURSO: '2024-02-27',
+    PRA_PREVISAO: 'R',
+    REG_ID_CODIGO: 0,
   },
 ];
 
 export const mockReqMes = [
-  
-    {
-      requisicao_REQ_ID_CODIGO: 315184,
-      requisicao_REG_ID_CODIGO: 4,
-      requisicao_COD_MUNICIP: 351020,
-      requisicao_REQ_DTREQ: '29/11/2023 07:57:54',
-      requisicao_REQ_DTSAIDA: '2023-12-04T03:00:00.000Z',
-      requisicao_REQ_MOTORISTA: 'N',
-      requisicao_REQ_HSAIDA: '08:00:00',
-      requisicao_REQ_HRET: '17:00:00',
-      requisicao_REQ_MOTIVO: 'Levantamento topográfico para fins de titulação conforme determinação de Gerência de Arrecadação e Projetos e Diretoria Executiva',
-      requisicao_REQ_KM: 300,
-      requisicao_REQ_STATUS: 'AUTORIZADA PELO DIRETOR EXECUTIVO',
-      requisicao_REQ_DIARIA: '0',
-      requisicao_REQ_INTEGRAL: 4,
-      requisicao_REQ_PARCIAL: 20,
-      requisicao_REQ_ESPECIAL: 0,
-      requisicao_TRA_ID_CODIGO: 1,
-      requisicao_NME_MUNIC: 'CAPAO BONITO',
-      requisicao_REG_DESCRICAO: 'SUDOESTE - SOROCABA',
-      requisicao_TRA_DESCRICAO: 'VEICULO',
-      requisicao_CHAPA: '000081',
-      requisicao_REQ_PACOTE: '0',
-      requisicao_REQ_GOVERNADOR: 'N'
-    }
- 
+  {
+    requisicao_REQ_ID_CODIGO: 315184,
+    requisicao_REG_ID_CODIGO: 4,
+    requisicao_COD_MUNICIP: 351020,
+    requisicao_REQ_DTREQ: '29/11/2023 07:57:54',
+    requisicao_REQ_DTSAIDA: '2023-12-04T03:00:00.000Z',
+    requisicao_REQ_MOTORISTA: 'N',
+    requisicao_REQ_HSAIDA: '08:00:00',
+    requisicao_REQ_HRET: '17:00:00',
+    requisicao_REQ_MOTIVO:
+      'Levantamento topográfico para fins de titulação conforme determinação de Gerência de Arrecadação e Projetos e Diretoria Executiva',
+    requisicao_REQ_KM: 300,
+    requisicao_REQ_STATUS: 'AUTORIZADA PELO DIRETOR EXECUTIVO',
+    requisicao_REQ_DIARIA: '0',
+    requisicao_REQ_INTEGRAL: 4,
+    requisicao_REQ_PARCIAL: 20,
+    requisicao_REQ_ESPECIAL: 0,
+    requisicao_TRA_ID_CODIGO: 1,
+    requisicao_NME_MUNIC: 'CAPAO BONITO',
+    requisicao_REG_DESCRICAO: 'SUDOESTE - SOROCABA',
+    requisicao_TRA_DESCRICAO: 'VEICULO',
+    requisicao_CHAPA: '000081',
+    requisicao_REQ_PACOTE: '0',
+    requisicao_REQ_GOVERNADOR: 'N',
+  },
 ];
 export const mockReqMesResult = [
   {
@@ -88,7 +113,6 @@ export const mockReqMesResult = [
     reqDtReq: '29/11/2023 07:57:54',
   },
 ];
-
 
 export const mockQueryBuilder = {
   where: jest.fn().mockReturnThis(),

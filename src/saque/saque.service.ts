@@ -15,7 +15,7 @@ import {
 
 import { SaqueEntity } from '../database/db_oracle/entities/saque.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Like, Repository } from 'typeorm';
 import { calcularValores } from '../util/calculo_extorno';
 import { formatDates } from '../util/formatStarDateEndDate';
 import { ItinirarioService } from '../itinirario/itinirario.service';
@@ -46,7 +46,7 @@ import { itensreqrecService } from '../itensreqrec/itensreqrec.service';
 import { destinoService } from '../destino/destino.service';
 import { formatDate } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
-import { documentosService } from 'src/documentos/documento.service';
+import { documentosService } from '../documentos/documento.service';
 import { docsEntity } from 'src/database/db_mysql/entities/docs.entity';
 import {
   SelecionaPendencia,
@@ -58,19 +58,18 @@ import {
   SelecionaAgrupaRec,
   SelecionaItensRecurso,
   selecionaUltimoPrazo,
-} from 'src/util/selects/itensRecurso';
-import { itensreqrecEntity } from 'src/database/db_oracle/entities/itensreqrec.entity';
+} from '../util/selects/itensRecurso';
+import { itensreqrecEntity } from '../database/db_oracle/entities/itensreqrec.entity';
 
-import { AuthUserDto } from 'src/auth/use.auth.Dto';
-import { ReqnumerarioDto } from 'src/reqnumerario/reqnumerarioDto';
-import { Role } from 'src/auth/role.enum';
-import { selecionaDocPContasNum, selecionaPrestPendente } from 'src/util/selects/prestacao';
+import { AuthUserDto } from '../auth/use.auth.Dto';
+import { ReqnumerarioDto } from '../reqnumerario/reqnumerarioDto';
+import { Role } from '../auth/role.enum';
+import { selecionaDocPContasNum, selecionaPrestPendente } from '../util/selects/prestacao';
 import * as oraccledb from 'oracledb';
-import { PcontasService } from 'src/pcontas/pcontas.service';
-import { PcontasNumService } from 'src/pcontasnum/pcontasnum.service';
-import { ndocumentoService } from 'src/ndocumento/ndocumento.service';
-import { ndocumentoEntity } from 'src/database/db_oracle/entities/ndocumento.entity';
-import { resourceUsage } from 'process';
+import { PcontasService } from '../pcontas/pcontas.service';
+import { PcontasNumService } from '../pcontasnum/pcontasnum.service';
+import { ndocumentoService } from '../ndocumento/ndocumento.service';
+import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.entity';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -297,15 +296,19 @@ export class SaqueService {
       const orderDirection = params.orderDirection || 'ASC';
 
       const page = params.page || 1;
-      const itemsPerPage = params.limit || 500;
+      const itemsPerPage = params.limit || 1000;
       const offset = (page - 1) * itemsPerPage;
 
       const filterConditions: string[] = [];
       const filterValues: any[] = [];
 
       // Adiciona o filtro de CHAPA
-      filterConditions.push('b.CHAPA = :chapa');
-      filterValues.push(chapa);
+      if (!params.full) {
+        if (params.CHAPA) {
+          filterConditions.push('b.CHAPA = :chapa');
+          filterValues.push(chapa);
+        }
+      }
 
       // Verifica e adiciona cada filtro dinamicamente
       if (params.SQE_ID_CODIGO) {
@@ -326,7 +329,7 @@ export class SaqueService {
       }
 
       const result = await this.saqueRepository.query(
-        querySaque(filterConditions, orderByField, orderDirection),
+        querySaque(filterConditions, orderByField, orderDirection, true),
         [...filterValues, offset, itemsPerPage],
       );
 
@@ -416,6 +419,13 @@ export class SaqueService {
       if (params.STATUS_SAQUE) {
         consulta = consulta.filter(
           (item: any) => item.STATUS_SAQUE && item.STATUS_SAQUE === params.STATUS_SAQUE,
+        );
+      }
+
+      if (params.NOME) {
+        const nomeBusca = params.NOME.toUpperCase();
+        consulta = consulta.filter(
+          (item: any) => item.NOME && item.NOME.toUpperCase().includes(nomeBusca),
         );
       }
 
@@ -949,16 +959,15 @@ export class SaqueService {
     let TipoDespesa = '7';
     let semrec = 1;
     let ReembCompl = 1;
-    let Rg_Complemento = 1;   
-    let terceiro = "N"
+    let Rg_Complemento = 1;
+    let terceiro = 'N';
 
     if (user.chapa != params.chapa && !user.roles.includes(Role.SUPERVISOR)) {
       throw new HttpException('Usuário não autorizado', HttpStatus.UNAUTHORIZED);
     }
-    if(user.chapa != params.chapa && user.roles.includes(Role.SUPERVISOR)){
-      terceiro = "S"     
+    if (user.chapa != params.chapa && user.roles.includes(Role.SUPERVISOR)) {
+      terceiro = 'S';
     }
-   
 
     try {
       if (!params.reqIdCodigo) {
@@ -1275,6 +1284,7 @@ export class SaqueService {
 
       return { sqeIdCodigo: resultSaque.sqeIdCodigo };
     } catch (error) {
+      console.error(error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

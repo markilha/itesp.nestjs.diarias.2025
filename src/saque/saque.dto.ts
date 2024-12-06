@@ -21,6 +21,8 @@ export class FindParamsSaque {
   @ApiProperty({required: false})
   CHAPA?: string;
   @ApiProperty({required: false})
+  NOME?: string;
+  @ApiProperty({required: false})
   STS_DESCRICAO?: string;
   @ApiProperty({required: false})
   REQ_STATUS?: string;
@@ -42,6 +44,8 @@ export class FindParamsSaque {
   orderBy?: string;
   @ApiProperty({required: false})
   orderDirection?: 'ASC' | 'DESC';
+  @ApiProperty({required: false})
+  full?: boolean;
 }
 
 export class ParamsPendente {

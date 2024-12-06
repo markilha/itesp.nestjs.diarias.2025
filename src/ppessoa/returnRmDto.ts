@@ -27,8 +27,8 @@ export class returnRmDto {
   codprofissao?: number;
   codocupacao?: string;
   salario?: number;
-  CODFUNCAO?: string;;
-  
+  CODFUNCAO?: string;
+
   constructor(rmEntity: PPessoaEntity) {
     this.codigo = rmEntity.codigo;
     this.codusuario = rmEntity.codusuario;
@@ -53,27 +53,26 @@ export class returnRmDto {
     this.datachegada = rmEntity.datachegada;
     this.email = rmEntity.email;
     this.codprofissao = rmEntity.codprofissao;
-    this.codocupacao = rmEntity.codocupacao; 
+    this.codocupacao = rmEntity.codocupacao;
     this.salario = rmEntity.pfunc ? rmEntity.pfunc.SALARIO : undefined;
     this.CODFUNCAO = rmEntity.pfunc ? rmEntity.pfunc.CODFUNCAO : undefined;
-    
   }
 }
 
 export class FuncionarioDto {
   @ApiProperty()
-  CHAPA: string;   
-  @ApiProperty()     
-  NOME: string;     
-  @ApiProperty()    
-  DESCFUNC: string;    
-  @ApiProperty() 
-  CPF: string;    
-  @ApiProperty()      
-  ORGAO: string;  
-  @ApiProperty() 
-  REG_ID_CODIGO: number;   
-  @ApiProperty()  
+  CHAPA: string;
+  @ApiProperty()
+  NOME: string;
+  @ApiProperty()
+  DESCFUNC: string;
+  @ApiProperty()
+  CPF: string;
+  @ApiProperty()
+  ORGAO: string;
+  @ApiProperty()
+  REG_ID_CODIGO: number;
+  @ApiProperty()
   DTNASCIMENTO: Date;
   @ApiProperty()
   ENDERECO: string;
@@ -89,9 +88,14 @@ export class FuncionarioDto {
   NME_MUNIC: string;
   @ApiProperty()
   SUPERVISOR: string;
+  @ApiProperty()
+  CODSECAO: string;
+  @ApiProperty()
+  DIR_ID_CODIGO: number;
+  @ApiProperty()
+  GTC: string;
 
-
-  constructor(item?: any) {   
+  constructor(item?: any) {
     this.NOME = item?.NOME;
     this.CPF = item?.CPF;
     this.DTNASCIMENTO = item?.DTNASCIMENTO;
@@ -99,17 +103,29 @@ export class FuncionarioDto {
     this.EMAIL = item?.EMAIL;
     this.TELEFONE = item?.TELEFONE;
     this.DESCFUNC = item?.DESCFUNC;
-    this.CHAPA = item?.CHAPA;  
+    this.CHAPA = item?.CHAPA;
     this.DIRETORIA = item?.DIRETORIA;
     this.REG_DESCRICAO = item?.REG_DESCRICAO;
-  
+
     this.REG_ID_CODIGO = item?.REG_ID_CODIGO;
     this.ORGAO = item?.ORGAO;
     this.NME_MUNIC = item?.NME_MUNIC;
     this.SUPERVISOR = item?.SUPERVISOR;
-   
-  
-  } 
-
+    this.CODSECAO = item?.CODSECAO;
+    this.DIR_ID_CODIGO = item?.DIR_ID_CODIGO;
+    this.GTC = item?.GTC;
+  }
 }
 
+export class supervisorDto {
+  CHAPA: string;
+  NOME: string;
+  CODBANCOPAGTO: string;
+  CODAGENCIAPAGTO: string;
+  CONTAPAGAMENTO: string;
+  CODSECAO: string;
+  CODIGO: string;
+  constructor(partial: Partial<supervisorDto>) {
+    Object.assign(this, partial);
+  }
+}

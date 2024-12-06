@@ -4,8 +4,8 @@ import { PrazosEntity } from '../database/db_oracle/entities/prazos.entity';
 import { Between, FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, findPrazosMesDto, PrazosDto } from './prazosDto';
 import { PpessoaService } from '../ppessoa/ppessoa.service';
-import { endOfMonth, startOfMonth, format } from 'date-fns';
-import { calcularPeriodo } from 'src/util/calcula_periodo';
+import { endOfMonth, startOfMonth } from 'date-fns';
+import { calcularPeriodo } from '../util/calcula_periodo';
 
 @Injectable()
 export class PrazosService {

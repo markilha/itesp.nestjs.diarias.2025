@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { pcontasnumEntity } from 'src/database/db_oracle/entities/pcontasnum';
+import { pcontasnumEntity } from '../database/db_oracle/entities/pcontasnum';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, pcontasNumDto } from './pcontasnumDto';
 

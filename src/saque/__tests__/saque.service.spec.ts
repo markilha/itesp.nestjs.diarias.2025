@@ -15,6 +15,8 @@ import { naotrabService } from '../../naotrab/naotrab.service';
 import { itensreqrecService } from '../../itensreqrec/itensreqrec.service';
 import { S001RequisicaoService } from '../../requisicao/s001_requisicao.service';
 import { destinoService } from '../../destino/destino.service';
+import { documentosService } from '../../documentos/documento.service';
+import { PcontasService } from '../../pcontas/pcontas.service';
 import { Repository } from 'typeorm';
 import {
   mockDiariaChegada,
@@ -27,6 +29,8 @@ import {
 import { calcularDiariaValores } from '../../util/calculo_dia_retorno';
 import { Destino } from '../../util/diariaDto';
 import { calcularValores } from '../../util/calculo_extorno';
+import { PcontasNumService } from '../../pcontasnum/pcontasnum.service';
+import { ndocumentoService } from '../../ndocumento/ndocumento.service';
 
 
 
@@ -130,6 +134,32 @@ describe('SaqueService', () => {
             findOne: jest.fn(),
           },
         },
+        {
+          provide: documentosService,
+          useValue: {
+            findAll: jest.fn(),
+          },
+        },
+        {
+          provide: PcontasService,
+          useValue: {
+            findAll: jest.fn(),
+          },
+        },
+        {
+          provide: PcontasNumService,
+          useValue: {
+            findAll: jest.fn(),
+          },
+        },
+        {
+          provide: ndocumentoService,
+          useValue: {
+            findAll: jest.fn(),
+          },
+        },
+        
+         
       ],
     }).compile();
 

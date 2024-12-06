@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { FuncSalarioEntity } from '../database/db_oracle/entities/funcsalario.entity';
 import { FindAllParams } from './funcsalarioDto';
-import { SaquesMesService } from 'src/saques-mes/saques-mes.service';
+import { SaquesMesService } from '../saques-mes/saques-mes.service';
 
 
 

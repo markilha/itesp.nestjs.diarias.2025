@@ -383,5 +383,5 @@ selecionaSaqueSetor: `
   };
 
 
-  console.log(sqls.selecionaJustificativa);
+ 
   
