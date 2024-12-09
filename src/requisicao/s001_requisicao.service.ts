@@ -1,7 +1,15 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { FindOptionsWhere, ILike, In, Like, MoreThanOrEqual, Repository } from 'typeorm';
+import {
+  FindOperator,
+  FindOptionsWhere,
+  ILike,
+  In,
+  Like,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import {
   FindAllAutorizadasParams,
   FindAllParams,
@@ -42,7 +50,7 @@ export class S001RequisicaoService {
     private SaquesMesService: SaquesMesService,
     private itinirarioService: ItinirarioService,
     private naotrabservice: naotrabService,
-    private ppessoaService: PpessoaService
+    private ppessoaService: PpessoaService,
   ) {}
 
   private async buscarItinerario(reqIdCodigo: number) {
@@ -54,7 +62,7 @@ export class S001RequisicaoService {
   }
 
   async find(params: FindAllParams): Promise<any> {
-    try {     
+    try {
       const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
       const fields = ['reqIdCodigo', 'codMunicipio', 'reqStatus', 'chapa'];
       fields.forEach((field) => {
@@ -73,42 +81,38 @@ export class S001RequisicaoService {
       searchParams['reqDtSaida'] = MoreThanOrEqual(new Date('2009-08-10'));
 
       let requisicoes: RequisicaoEntity[];
-    
 
-     try {
-      
-       if (params.page && params.limit) {
-         const page = params.page;
-         const limit = params.limit;
-         const skip = (page - 1) * limit;
-  
-         requisicoes = await this.requisicaoRepository.find({
-           where: searchParams,
-           skip,
-           take: limit,
-           order,
-           relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
-         });
-       } else {
-         requisicoes = await this.requisicaoRepository.find({
-           where: searchParams,
-           order,
-          relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
-         });
-       }
-     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);      
-     }
+      try {
+        if (params.page && params.limit) {
+          const page = params.page;
+          const limit = params.limit;
+          const skip = (page - 1) * limit;
+
+          requisicoes = await this.requisicaoRepository.find({
+            where: searchParams,
+            skip,
+            take: limit,
+            order,
+            relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
+          });
+        } else {
+          requisicoes = await this.requisicaoRepository.find({
+            where: searchParams,
+            order,
+            relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
+          });
+        }
+      } catch (error) {
+        throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
 
       if (!requisicoes || requisicoes.length === 0) {
         return [];
       }
-    
 
       const results = await Promise.all(
         requisicoes.map((requisicao) => this.processRequisicao(requisicao, params.chapa)),
       );
-     
 
       const count = await this.requisicaoRepository.find({
         where: searchParams,
@@ -288,40 +292,37 @@ export class S001RequisicaoService {
         order['reqIdCodigo'] = 'ASC';
       }
 
-      // if (params.chapa) {
-      //   searchParams['chapa'] = params.chapa;
-      // }
+      // Busca o usuário logado para determinar a permissão
+      const ppessoa = await this.ppessoaService.find({ chapa: params.chapa });      
+      // Determina o filtro base para funcSalario
+      const funcSalarioFilter: Partial<{
+        nome: FindOperator<string>;
+        codsecao: FindOperator<string>;
+      }> = {
+        nome: params.nome ? ILike(`%${params.nome}%`) : undefined,
+      };
 
-      const ppessoa = await this.ppessoaService.find({ chapa: params.chapa });
-      const codigoSubstr = ppessoa.CODSECAO.substring(0, 15); 
-      
-      let  whereCondition: FindOptionsWhere<RequisicaoEntity> = {};
-
-
-      //Verifica se é GTCAMPO, TESOURARIA_INTERIOR, FINANCEIRO_INTERIOR      
+      // Ajusta os filtros com base na permissão do usuário
       if (
-        ppessoa.PERMISSAO === permissaoCargo.GTCAMPO ||
-        ppessoa.PERMISSAO === permissaoCargo.TESOURARIA_INTERIOR ||
-        ppessoa.PERMISSAO === permissaoCargo.FINANCEIRO_INTERIOR
+        [
+          permissaoCargo.GTCAMPO,
+          permissaoCargo.TESOURARIA_INTERIOR,
+          permissaoCargo.FINANCEIRO_INTERIOR,
+        ].includes(ppessoa.PERMISSAO)
       ) {
-        whereCondition = {
-          ...searchParams,
-          funcSalario: {
-            nome: params.nome ? ILike(`%${params.nome}%`) : undefined,
-            codsecao: Like(`${codigoSubstr}%`), 
-          },
-        }  
-      } else  {
+        funcSalarioFilter.codsecao = Like(`${ppessoa.CODSECAO.substring(0, 15)}%`);
+      } else if (params.chapa) {
         searchParams['chapa'] = params.chapa;
-        whereCondition = {
-          ...searchParams         
-        }  
       }
 
-   
+      // Combina os filtros no whereCondition
+      const whereCondition = {
+        ...searchParams,
+        ...(Object.keys(funcSalarioFilter).length > 0 && { funcSalario: funcSalarioFilter }),
+      };
 
       const requisicao = await this.requisicaoRepository.find({
-        where:whereCondition,
+        where: whereCondition,
         skip,
         take: params.limit,
         order,
@@ -334,10 +335,10 @@ export class S001RequisicaoService {
           reqIdCodigo: reqv.reqIdCodigo,
           reqStatus: reqv.reqStatus,
           reqDtReq: reqv.reqDtReq,
-          nome: reqv?.funcSalario?.nome,          
+          nome: reqv?.funcSalario?.nome,
         });
       });
-    } catch (error) {    
+    } catch (error) {
       throw new HttpException(
         'Erro ao buscar requisições aprovadas',
         HttpStatus.INTERNAL_SERVER_ERROR,
