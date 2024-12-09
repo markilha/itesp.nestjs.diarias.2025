@@ -8,6 +8,7 @@ import { SaquesMesModule } from 'src/saques-mes/saques-mes.module';
 import { ItinirarioModule } from 'src/itinirario/itinirario.module';
 import { RequisicaoEntity } from 'src/database/db_oracle/entities/requisicao.entity';
 import { naotrabModule } from 'src/naotrab/naotrab.module';
+import { PpessoaModule } from 'src/ppessoa/ppessoa.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { naotrabModule } from 'src/naotrab/naotrab.module';
     SaquesMesModule,
     ItinirarioModule,
     naotrabModule,
+    PpessoaModule,
    
   ],
   controllers: [S001RequisicaoController],

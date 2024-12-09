@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { FindOptionsWhere, ILike, In, MoreThanOrEqual, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, In, Like, MoreThanOrEqual, Repository } from 'typeorm';
 import {
   FindAllAutorizadasParams,
   FindAllParams,
@@ -30,6 +30,8 @@ import { DataUtils } from '../util/DataUtils';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
 import { calcularPeriodo } from '../util/calcula_periodo';
+import { PpessoaService } from 'src/ppessoa/ppessoa.service';
+import { permissaoCargo } from 'src/util/enums/cargo';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -40,6 +42,7 @@ export class S001RequisicaoService {
     private SaquesMesService: SaquesMesService,
     private itinirarioService: ItinirarioService,
     private naotrabservice: naotrabService,
+    private ppessoaService: PpessoaService
   ) {}
 
   private async buscarItinerario(reqIdCodigo: number) {
@@ -285,17 +288,40 @@ export class S001RequisicaoService {
         order['reqIdCodigo'] = 'ASC';
       }
 
-      if (params.chapa) {
-        searchParams['chapa'] = params.chapa;
-      }
+      // if (params.chapa) {
+      //   searchParams['chapa'] = params.chapa;
+      // }
 
-      const requisicao = await this.requisicaoRepository.find({
-        where: {
+      const ppessoa = await this.ppessoaService.find({ chapa: params.chapa });
+      const codigoSubstr = ppessoa.CODSECAO.substring(0, 15); 
+      
+      let  whereCondition: FindOptionsWhere<RequisicaoEntity> = {};
+
+
+      //Verifica se é GTCAMPO, TESOURARIA_INTERIOR, FINANCEIRO_INTERIOR      
+      if (
+        ppessoa.PERMISSAO === permissaoCargo.GTCAMPO ||
+        ppessoa.PERMISSAO === permissaoCargo.TESOURARIA_INTERIOR ||
+        ppessoa.PERMISSAO === permissaoCargo.FINANCEIRO_INTERIOR
+      ) {
+        whereCondition = {
           ...searchParams,
           funcSalario: {
             nome: params.nome ? ILike(`%${params.nome}%`) : undefined,
+            codsecao: Like(`${codigoSubstr}%`), 
           },
-        },
+        }  
+      } else  {
+        searchParams['chapa'] = params.chapa;
+        whereCondition = {
+          ...searchParams         
+        }  
+      }
+
+   
+
+      const requisicao = await this.requisicaoRepository.find({
+        where:whereCondition,
         skip,
         take: params.limit,
         order,
