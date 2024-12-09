@@ -25,6 +25,7 @@ import { ndocumentoModule } from 'src/ndocumento/ndocumento.module';
 
 
 
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([SaqueEntity], 'oracleConnection'),

@@ -8,7 +8,7 @@ import { IDSISTEMA } from 'src/util/variaveis/variaveis';
 import { preencherZeros } from 'src/util/preencherZero';
 import { AuthUserDto } from './use.auth.Dto';
 import { PerfilAcesso } from 'src/users/users.dto';
-import { Console } from 'console';
+
 
 
 @Injectable()

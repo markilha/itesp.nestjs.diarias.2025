@@ -101,3 +101,28 @@ WHERE
     AND B.CODFUNCAO = C.CODIGO 
     AND A.DATAFIM > SYSDATE
 `
+// . Verificação Inicial:
+// O código verifica se o usuário é um chefe (Assessor, Assistente, Chefe de Gabinete, Diretor).
+// Para isso, executa a query DmExt.SelecionaChefe, adicionando filtros com CHAPA do usuário atual (NCHAPA) e um conjunto de códigos de cargo (1, 2, 5, 7, 3, 4, 9).
+// 2. Definição de Permissões de Chefes:
+// Se o usuário for identificado como chefe (resultado da consulta não vazio), o código verifica o cargo específico (CODIGO) e atribui valores diferentes a Status.Tag:
+
+// 11: Diretor Executivo
+// 1: Diretor Adjunto
+// 12: Chefe de Gabinete
+// 2: Assistente
+// 3: Gerente
+
+// Verificação de Responsável Técnico (RT):
+// Caso o usuário não seja chefe (resultado da consulta vazio), realiza nova verificação:
+
+// Filtra chefes que não possuem os cargos anteriores.
+// Verifica se o usuário é um Responsável Técnico (RT).
+// Executa a consulta DmExt.SelecionaSubordina2, buscando informações sobre setores subordinados.
+// Com base no setor (CODIGO), define os seguintes níveis:
+// 6: Responsável Técnico do Transporte.
+// 16: Responsável Técnico do Orçamento.
+// 7: Outros responsáveis técnicos
+// Também verifica se o usuário pertence ao Grupo Técnico de Campo (GTC) do Departamento Agrário (DA):
+// 14: GTC do DA.
+// 4: GTC geral.

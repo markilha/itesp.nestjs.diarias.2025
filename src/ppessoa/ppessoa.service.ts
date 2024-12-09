@@ -11,7 +11,7 @@ import {
   SelecionaSubordina2,
 } from '../util/selects/diretoria';
 import { selecionaPefilFunc } from '../util/selects/pfunc';
-import { Cargo, PermissaoCargo } from 'src/util/enums/cargo';
+import { permissaoCargo } from 'src/util/enums/cargo';
 
 @Injectable()
 export class PpessoaService {
@@ -23,7 +23,6 @@ export class PpessoaService {
   async find(params: FindAllParams): Promise<FuncionarioDto> {
     try {
       const consulta = await this.rmRepository.query(selecionaPefilFunc, [params.chapa]);
-      
 
       if (consulta.length === 0) {
         throw new HttpException('Funcionário não encontrado!!!', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -35,15 +34,12 @@ export class PpessoaService {
         consulta[0].CODSECAO,
       ]);
 
-     
-
       const diretoria = await this.rmRepository.query(
         `${SelecionaDiretoriaGeral} WHERE A.DIR_ID_CODIGO = :DIR_ID_CODIGO`,
         [consulta[0].DIR_ID_CODIGO],
       );
 
       const PERMISSAO = await this.DetalhePermissao(params.chapa, consulta[0].CODSECAO);
-      
 
       const funcionario = new FuncionarioDto({
         NOME: consulta[0].NOME,
@@ -61,12 +57,11 @@ export class PpessoaService {
         REG_DESCRICAO: consulta[0].REG_DESCRICAO,
         NME_MUNIC: consulta[0].CIDADE,
         SUPERVISOR: selecionadaChefe[0]?.NOME,
+        CODIGO: consulta[0].CODIGO,
         CODSECAO: consulta[0].CODSECAO,
         DIR_ID_CODIGO: consulta[0].DIR_ID_CODIGO,
-        PERMISSAO
+        PERMISSAO,
       });
-
-      
 
       return funcionario;
     } catch (error) {
@@ -82,82 +77,89 @@ export class PpessoaService {
     return rm;
   }
 
-  async DetalhePermissao(chapa: string, codigo): Promise<number> {
+  async DetalhePermissao(chapa: string, CODSECAO: string): Promise<number> {
+    // Verifica se é chefe (Assessor, Assistente, Chefe de Gabinete, Diretor)
     //Verifica se o chefe
     const where = `AND c.codigo IN (1,2,5,7,3,4,9) AND B.CHAPA=:NCHAPA`;
-    const selecinachefe = await this.rmRepository.query(`${SelecionaChefe} ${where}`, [chapa]);
+    const chefe = await this.rmRepository.query(`${SelecionaChefe} ${where}`, [chapa]);
 
-    if (selecinachefe.length > 0) {
-      if (selecinachefe[0].CODIGO === Cargo.DiretorExecutivo) {
-        return 11; // Diretor Executivo
-      } else if (selecinachefe[0].CODIGO === Cargo.DiretorAdjunto) {
-        return 1; // Diretor Adjunto
-      } else if (selecinachefe[0].CODIGO === Cargo.ChefeGabinete) {
-        return 12; // Chefe Gabinete
-      } else if (selecinachefe[0].CODIGO === Cargo.Gerente) {
-        return 3; // gerente
-      } else if (
-        selecinachefe[0].CODIGO === Cargo.AssessorChefe ||
-        selecinachefe[0].CODIGO === Cargo.Ouvidor
-      ) {
-        return 5; // Assessoria/Ouvidor
+    if (chefe.length > 0) {
+      const codigo = chefe[0].CODIGO;
+      switch (codigo) {
+        case '01':          
+          return permissaoCargo.DIRETOR_EXECUTIVO; // Diretor Executivo
+        case '02':
+          return permissaoCargo.DIRETOR_ADJUNTO; // Diretor Adjunto
+        case '03':
+          return permissaoCargo.CHEFE_GABINETE; // Chefe de Gabinete
+        case '07':
+          return permissaoCargo.ASSISTENTE; // Assistente
+        case '04':
+          return permissaoCargo.GERENTE; // Gerente
+        case '05':
+          return permissaoCargo.ASSESSORIA_OUVIDORIA; // Assessoria/Ouvidor
+        case '09':
+          return permissaoCargo.ASSESSORIA_OUVIDORIA; // Assessoria/Ouvidor
+        default:
+          break;
       }
     } else {
+      // Não é chefe
       const where = `AND c.codigo NOT IN (1,2,5,7,3,4,9) AND B.CHAPA=:NCHAPA`;
-      const selecionachefe = await this.rmRepository.query(`${SelecionaChefe} ${where}`, [chapa]);
+      const chefeNaoCodigo = await this.rmRepository.query(`${SelecionaChefe} ${where}`, [chapa]);
 
-      if (selecionachefe.length > 0) {
+      if (chefeNaoCodigo.length > 0) {     
+
+        // Verifica se é responsável Técnico
         const where = `and A.CODIGO=:SETOR`;
         const subordina2 = await this.rmRepository.query(`${SelecionaSubordina2} ${where}`, [
-          codigo,
+          CODSECAO,
         ]);
+
         if (subordina2.length > 0) {
-          if (subordina2[0].CODIGO === '1.2.01.06.01.03.00') {
-            return 6; // Resp. Tec do Transporte
-          } else if (subordina2[0].CODIGO === '1.2.01.06.02.05.00') {
-            return 16; // Resp. Tec do Transporte
+          const subCodigo = subordina2[0].CODIGO;
+          if (subCodigo === '1.2.01.06.01.03.00') {
+            return permissaoCargo.RESP_TEC_TRANSPORTE; // Resp. Tec do Transporte
+          } else if (subCodigo === '1.2.01.06.02.05.00') {
+            return permissaoCargo.RESP_TEC_ORCAMENTO; // Resp. Técnico Orçamento
           } else {
-            return 7; // Resp. Técnico
+            return permissaoCargo.RESP_TECNICO; // Resp. Técnico
           }
-        } else if (codigo.startsWith('1.2')) {
-          return 14; // Resp. Grupo Tec. Campo DA
+        } else if (CODSECAO.startsWith('1.2')) {
+          return permissaoCargo.FINANCEIRO_INTERIOR; // Resp. Grupo Tec. Campo DA
         } else {
-          return PermissaoCargo.GrupoTecCampo; // Resp. Grupo Tec. Campo
+          return permissaoCargo.GTCAMPO; // Resp. Grupo Tec. Campo
         }
       } else {
-        if (selecionachefe.length === 0) {
-          const where = `and A.CODIGO=:CODSECAO`;
-          const subordina1 = await this.rmRepository.query(`${SelecionaSubordina1} ${where}`, [
-            codigo,
+        // Funcionário Nível 1 ou 2
+        const where = `and A.CODIGO=:CODSECAO`;
+        const subordina1 = await this.rmRepository.query(`${SelecionaSubordina1} ${where}`, [
+          CODSECAO,
+        ]);
+
+        if (subordina1.length > 0) {
+          if (CODSECAO.startsWith('1.2')) {
+            return permissaoCargo.TESOURARIA_INTERIOR; // Grupo Tec. Campo DA
+          } else {
+            return permissaoCargo.USUARIO_NIVEL1; // Usuário Nível 1
+          }
+        } else {
+          const where = `and A.CODIGO=:SETOR`;
+          const subordina2 = await this.rmRepository.query(`${SelecionaSubordina2} ${where}`, [
+            CODSECAO,
           ]);
 
-          if (subordina1.length > 0) {
-            if (codigo.startsWith('1.2')) {
-              return 15; // Grupo Tec. Campo DA
-            } else {
-              return 8; // Usuário Nível 1
-            }
+          if (subordina2.length > 0 && subordina2[0].TSB2_ID_CODIGO === 1) {
+            return permissaoCargo.APOIO; // Apoio
+          } else if (CODSECAO === '1.2.01.06.02.06.00') {
+            return permissaoCargo.TESOURARIA_SEDE; // Tesouraria
+          } else if (CODSECAO === '1.2.01.06.02.05.00') {
+            return permissaoCargo.ORCAMENTO; // Orçamento
           } else {
-            const where = `and A.CODIGO=:SETOR`;
-            const subordina2 = await this.rmRepository.query(`${SelecionaSubordina2} ${where}`, [
-              codigo,
-            ]);
-            if (subordina2.length > 0) {
-              if (subordina2[0].TSB2_ID_CODIGO === 1) {
-                return 10; //apoio
-              } else if (codigo === '1.2.01.06.02.06.00') {
-                return 13;// Tesouraria
-              } else if (codigo === '1.2.01.06.02.05.00') {
-                return 17; // Funcionário do Orçamento
-              } else {
-                return 8;
-              }
-            }
+            return permissaoCargo.USUARIO_NIVEL1; // Funcionário Nível 2
           }
         }
       }
     }
-
-    return codigo;
   }
 }

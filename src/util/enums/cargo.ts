@@ -45,24 +45,33 @@ export enum Cargo {
     TecnicoGestaoOrganizacionalIB = '621',
     TecnicoGestaoOrganizacionalVC = '662',
     AuxiliarGestaoOrganizacionalVA = '73',
-  }
+  } 
 
-  export enum PermissaoCargo {
-    DiretorExecutivo = 11, // Diretor Executivo
-    DiretorAdjunto = 1, // Diretor Adjunto
-    Gerente = 3, // Gerente
-    ChefeGabinete = 12, // Chefe de Gabinete 
-    AssessoriaOuvidor = 5, // Assessoria/Ouvidor
-    ResponsavelTecTransporte = 6, // Responsável Técnico do Transporte
-    ResponsavelTecTransporteOrcamento = 16, // Responsável Técnico do Transporte (orçamento)
-    ResponsavelTecnico = 7, // Responsável Técnico
-    GrupoTecCampoDA = 14, // Responsável Grupo Técnico Campo DA
-    GrupoTecCampo = 4, // Responsável Grupo Técnico Campo
-    UsuarioNivel1 = 8, // Usuário Nível 1
-    Apoio = 10, // Tesouraria
-    GrupoTecCampoDAAlt = 15, // Grupo Técnico Campo DA
-    Tesouraria = 13, // Tesouraria
-    FuncionarioOrcamento = 17, // Funcionário do Orçamento
+ 
+
+  export enum permissaoCargo {
+    FINANCEIRO_TESOURARIA = 0,      // Financeiro/Tesouraria
+    DIRETOR_ADJUNTO = 1,            // Diretor Adjunto
+    ASSISTENTE = 2,                 // Assistente
+    GERENTE = 3,                    // Gerente
+    GTCAMPO = 4,                    // Res. Tec. Grupo Técnico de Campo
+    ASSESSORIA_OUVIDORIA = 5,       // Assessoria, Ouvidoria, Coordenador
+    RESP_TEC_TRANSPORTE = 6,        // Responsável Tec. Transporte
+    RESP_TECNICO = 7,               // Responsável Técnico
+    USUARIO_NIVEL1 = 8,             // Usuário Nível 1
+    USUARIO_NIVEL2 = 9,             // Usuário Nível 2
+    APOIO = 10,                     // Apoio
+    DIRETOR_EXECUTIVO = 11,         // Diretor Executivo
+    CHEFE_GABINETE = 12,            // Chefe de Gabinete
+    TESOURARIA_SEDE = 13,           // Tesouraria Sede
+    FINANCEIRO_INTERIOR = 14,       // Resp. Grupo Tec. Campo DA
+    TESOURARIA_INTERIOR = 15,       // Tesouraria Interior
+    RESP_TEC_ORCAMENTO = 16,        // Resp. Técnico Orçamento
+    ORCAMENTO = 17,                 // Orçamento
+    ESTAGIARIO = 18,                // Estagiário
+    PERIODO_NAO_SELECIONADO = 100,  // Não existe período selecionado
   }
   
+  
+
   

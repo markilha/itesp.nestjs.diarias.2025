@@ -89,6 +89,8 @@ export class FuncionarioDto {
   @ApiProperty()
   SUPERVISOR: string;
   @ApiProperty()
+  CODIGO: number;
+  @ApiProperty()
   CODSECAO: string;
   @ApiProperty()
   DIR_ID_CODIGO: number;
@@ -96,6 +98,7 @@ export class FuncionarioDto {
   GTC: string;
   @ApiProperty()
   PERMISSAO: number;
+
 
   constructor(item?: any) {
     this.NOME = item?.NOME;
@@ -117,6 +120,7 @@ export class FuncionarioDto {
     this.DIR_ID_CODIGO = item?.DIR_ID_CODIGO;
     this.GTC = item?.GTC;
     this.PERMISSAO = item?.PERMISSAO;
+    this.CODIGO = item?.CODIGO;
   }
 }
 

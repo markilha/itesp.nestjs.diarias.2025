@@ -15,7 +15,7 @@ import {
 
 import { SaqueEntity } from '../database/db_oracle/entities/saque.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { calcularValores } from '../util/calculo_extorno';
 import { formatDates } from '../util/formatStarDateEndDate';
 import { ItinirarioService } from '../itinirario/itinirario.service';
@@ -70,6 +70,8 @@ import { PcontasService } from '../pcontas/pcontas.service';
 import { PcontasNumService } from '../pcontasnum/pcontasnum.service';
 import { ndocumentoService } from '../ndocumento/ndocumento.service';
 import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.entity';
+import { PpessoaService } from 'src/ppessoa/ppessoa.service';
+import { permissaoCargo } from 'src/util/enums/cargo';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -107,6 +109,7 @@ export class SaqueService {
     private pcontasService: PcontasService,
     private pcontasnumService: PcontasNumService,
     private ndocumentoService: ndocumentoService,
+    private ppessoaService: PpessoaService,
   ) {}
 
   private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
@@ -302,13 +305,23 @@ export class SaqueService {
       const filterConditions: string[] = [];
       const filterValues: any[] = [];
 
-      // Adiciona o filtro de CHAPA
-      if (!params.full) {
-        if (params.CHAPA) {
-          filterConditions.push('b.CHAPA = :chapa');
-          filterValues.push(chapa);
-        }
+      //Verifica Permissão do usuário
+      const ppessoa = await this.ppessoaService.find({ chapa: chapa });
+      if (
+        ppessoa.PERMISSAO === permissaoCargo.GTCAMPO ||
+        ppessoa.PERMISSAO === permissaoCargo.TESOURARIA_INTERIOR ||
+        ppessoa.PERMISSAO === permissaoCargo.FINANCEIRO_INTERIOR
+      ) {
+        filterConditions.push(`SUBSTR(b.CODSECAO, 0, 15) = '${ppessoa.CODSECAO.substring(0, 15)}'`);
+      } else  {
+        filterConditions.push('b.CHAPA = :chapa');
+        filterValues.push(chapa);
       }
+      // else if (ppessoa.PERMISSAO === permissaoCargo.GERENTE) {
+      //   filterConditions.push(`SUBSTR(b.CODSECAO, 0, 12) = '${ppessoa.CODSECAO.substring(0, 12)}'`);
+      // } else if (ppessoa.PERMISSAO === permissaoCargo.DIRETOR_ADJUNTO) {
+      //   filterConditions.push(`SUBSTR(b.CODSECAO, 0, 3) = '${ppessoa.CODSECAO.substring(0, 3)}'`);
+      // }
 
       // Verifica e adiciona cada filtro dinamicamente
       if (params.SQE_ID_CODIGO) {
@@ -378,6 +391,7 @@ export class SaqueService {
             ITE_ID_CODIGO: item.ITE_ID_CODIGO,
             SQE_DTPREST: DataUtils.converterParaData(item.SQE_DTPREST),
             NOME: item.NOME,
+            CODSECAO: item.CODSECAO,
             REQ_ID_CODIGO: item.REQ_ID_CODIGO,
             TDE_DESCRICAO: item.TDE_DESCRICAO,
             STS_DESCRICAO: item.STS_DESCRICAO,
@@ -408,6 +422,7 @@ export class SaqueService {
             date <= DataUtils.converterStringParaData(endDate)
           );
         });
+
         consulta = filtered;
       }
 
