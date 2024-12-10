@@ -346,10 +346,9 @@ export class S001RequisicaoService {
     }
   }
 
-  async findMesAtual(params: findMesParams): Promise<RequisDto[]> {
+  async findMesAtual2(params: findMesParams): Promise<RequisDto[]> {
     try {
       const dataatual = params.dataAtual ? params.dataAtual : new Date();
-      //const newdata = new Date();
       const inicioMes = format(startOfMonth(dataatual), 'dd/MM/yyyy 00:00:00');
       const fimMes = format(endOfMonth(dataatual), 'dd/MM/yyyy 00:00:00');
 
@@ -364,8 +363,6 @@ export class S001RequisicaoService {
           { inicioMes, fimMes },
         )
         .getRawMany();
-
-      // const perAplicacao = calcularPeriodo(datAplicacao);
 
       const retornoRequi = requisicao.map((requis) => {
         const newdate = DataUtils.converterStringParaData(requis?.requisicao_REQ_DTREQ);
@@ -388,6 +385,80 @@ export class S001RequisicaoService {
       );
     }
   }
+  async findMesAtual(params: findMesParams): Promise<any> {
+    try {
+      const dataatual = params.dataAtual ? params.dataAtual : new Date();
+      const inicioMes = format(startOfMonth(dataatual), 'dd/MM/yyyy 00:00:00');
+      const fimMes = format(endOfMonth(dataatual), 'dd/MM/yyyy 00:00:00');
+
+      const filterConditions = [];
+      const filterValues = [];
+
+      filterValues.push(inicioMes);
+      filterValues.push(fimMes);
+      const ppessoa = await this.ppessoaService.find({ chapa: params.chapa });
+      if (
+        ppessoa.PERMISSAO === permissaoCargo.GTCAMPO ||
+        ppessoa.PERMISSAO === permissaoCargo.TESOURARIA_INTERIOR ||
+        ppessoa.PERMISSAO === permissaoCargo.FINANCEIRO_INTERIOR
+      ) {
+        filterConditions.push(`SUBSTR(C.CODSECAO, 0, 15) = '${ppessoa.CODSECAO.substring(0, 15)}'`);
+      } else {
+        filterConditions.push('b.CHAPA = :chapa');
+        filterValues.push(params.chapa);
+      }
+
+      const query = ` 
+     SELECT     
+      A.REQ_ID_CODIGO as REQ_ID_CODIGO,
+      A.REQ_STATUS as REQ_STATUS,
+      A.REQ_DTREQ as REQ_DTREQ,
+       B.CHAPA as CHAPA,
+       C.CODSECAO as CODSECAO
+      from        
+        Transporte.S001_Requisicao A,        
+        Transporte.S001_Usureq B,
+        Rm.Pfunc C
+      Where        
+        A.REQ_ID_CODIGO = B.REQ_ID_CODIGO
+        and
+        B.CHAPA = C.CHAPA 
+      AND 
+         a.REQ_STATUS IN ('AUTORIZADA PELO DIRETOR', 'AUTORIZADA PELO DIRETOR EXECUTIVO')
+      AND
+        TO_DATE(A.REQ_DTREQ, 'DD/MM/YYYY HH24:MI:SS') 
+      BETWEEN 
+        TO_DATE(:inicioMes, 'DD/MM/YYYY HH24:MI:SS')
+      AND 
+        TO_DATE(:fimMes, 'DD/MM/YYYY HH24:MI:SS')
+      AND 
+        ${filterConditions.join(' AND ')}
+        `;
+
+      const requisicao = await this.requisicaoRepository.query(query, filterValues);
+
+      const retornoRequi = requisicao.map((requis) => {
+        const newdate = DataUtils.converterStringParaData(requis?.REQ_DTREQ);
+
+        const periodo = calcularPeriodo(newdate);
+        return new RequisDto({
+          chapa: requis?.CHAPA,
+          reqIdCodigo: requis?.REQ_ID_CODIGO,
+          reqStatus: requis?.REQ_STATUS,
+          reqDtReq: requis?.REQ_DTREQ,
+          periodoAprovacao: periodo,
+        });
+      });
+
+      return retornoRequi;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Erro ao buscar requisições aprovadas',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
   //findone
   async findOne(reqIdCodigo: number) {
@@ -399,7 +470,6 @@ export class S001RequisicaoService {
       throw new HttpException(`Requisição ${reqIdCodigo} não encontrada`, HttpStatus.NOT_FOUND);
     }
   }
-
 
   async findPendentes(chapa: string): Promise<requiTotal> {
     try {
@@ -414,11 +484,11 @@ export class S001RequisicaoService {
         ppessoa.PERMISSAO === permissaoCargo.FINANCEIRO_INTERIOR
       ) {
         filterConditions.push(`SUBSTR(b.CODSECAO, 0, 15) = '${ppessoa.CODSECAO.substring(0, 15)}'`);
-      } else  {
+      } else {
         filterConditions.push('b.CHAPA = :chapa');
         filterValues.push(chapa);
       }
-      //  AND b.CHAPA = '${chapa}' 
+      //  AND b.CHAPA = '${chapa}'
 
       const consulta = await this.requisicaoRepository.query(
         ` SELECT    
@@ -444,7 +514,9 @@ export class S001RequisicaoService {
       AND d.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')
       AND ${filterConditions.join(' AND ')}
     ORDER BY d.REQ_DTSAIDA DESC   
-    `, filterValues     );
+    `,
+        filterValues,
+      );
 
       const retorno = consulta.map((req) => {
         const periodo = calcularPeriodo(req.REQ_DTRET);
