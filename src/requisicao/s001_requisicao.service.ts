@@ -400,8 +400,26 @@ export class S001RequisicaoService {
     }
   }
 
+
   async findPendentes(chapa: string): Promise<requiTotal> {
     try {
+      const filterConditions = [];
+      const filterValues = [];
+
+      const ppessoa = await this.ppessoaService.find({ chapa: chapa });
+
+      if (
+        ppessoa.PERMISSAO === permissaoCargo.GTCAMPO ||
+        ppessoa.PERMISSAO === permissaoCargo.TESOURARIA_INTERIOR ||
+        ppessoa.PERMISSAO === permissaoCargo.FINANCEIRO_INTERIOR
+      ) {
+        filterConditions.push(`SUBSTR(b.CODSECAO, 0, 15) = '${ppessoa.CODSECAO.substring(0, 15)}'`);
+      } else  {
+        filterConditions.push('b.CHAPA = :chapa');
+        filterValues.push(chapa);
+      }
+      //  AND b.CHAPA = '${chapa}' 
+
       const consulta = await this.requisicaoRepository.query(
         ` SELECT    
         a.SQE_ID_CODIGO as SQE_ID_CODIGO, 
@@ -420,14 +438,13 @@ export class S001RequisicaoService {
       INNER JOIN FINANCEIRO.s009_reqnumerario c ON a.SQE_ID_CODIGO = c.SQE_ID_CODIGO
       INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO 
       WHERE a.SQE_TIPOSAQUE = 'N' 
-      AND b.PRA_ATIVO = 'N' 
-      AND b.CHAPA = '${chapa}' 
+      AND b.PRA_ATIVO = 'N'     
       AND a.SQE_EFETIVO IN ('S', 'C', 'R', 'E')
       AND (a.SQE_DTPREST IS NULL OR a.SQE_VLPREST = 0)
       AND d.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')
+      AND ${filterConditions.join(' AND ')}
     ORDER BY d.REQ_DTSAIDA DESC   
-    `,
-      );
+    `, filterValues     );
 
       const retorno = consulta.map((req) => {
         const periodo = calcularPeriodo(req.REQ_DTRET);
