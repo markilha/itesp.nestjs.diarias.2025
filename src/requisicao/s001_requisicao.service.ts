@@ -293,7 +293,7 @@ export class S001RequisicaoService {
       }
 
       // Busca o usuário logado para determinar a permissão
-      const ppessoa = await this.ppessoaService.find({ chapa: params.chapa });      
+      const ppessoa = await this.ppessoaService.find({ chapa: params.chapa });
       // Determina o filtro base para funcSalario
       const funcSalarioFilter: Partial<{
         nome: FindOperator<string>;
@@ -402,8 +402,6 @@ export class S001RequisicaoService {
 
   async findPendentes(chapa: string): Promise<requiTotal> {
     try {
-      const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
-
       const consulta = await this.requisicaoRepository.query(
         ` SELECT    
         a.SQE_ID_CODIGO as SQE_ID_CODIGO, 

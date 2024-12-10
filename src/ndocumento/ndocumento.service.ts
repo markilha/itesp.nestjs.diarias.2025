@@ -26,8 +26,10 @@ export class ndocumentoService {
     try {
       return await this.ndocumentoRepository.save(this.ndocumentoRepository.create(ndocumentoDto));
     } catch (error) {
+      console.log(error);
       throw new HttpException('Não foi possível criar o documento', HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    
   } 
 
 }

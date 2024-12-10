@@ -4,6 +4,9 @@ import { PcontasService } from './pcontas.service';
 import { createPcontasDto, FindAllParams, FindOneParams } from './pcontasDto';
 import { pcontasDto } from './pcontasDto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from 'src/auth/current-user.decorator';
+import { AuthUserDto } from 'src/auth/use.auth.Dto';
+
 
 
 
@@ -33,7 +36,7 @@ export class PcontasController {
     @ApiOperation({ summary: 'Inseri uma nova prestação de conta' })
     @ApiResponse({ status: 200, description: 'Retorna o id da prestações de conta criada',schema: { example: { PCO_ID_CODIGO: 1 } } })
     @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
-    async create(@Body() params: createPcontasDto): Promise<{PCO_ID_CODIGO: number}> {
-      return await this.pcontasService.createPcontas(params);
+    async create(@CurrentUser() user: AuthUserDto,@Body() params: createPcontasDto): Promise<{PCO_ID_CODIGO: number}> {
+      return await this.pcontasService.createPcontas(params, user);
     }
 }
