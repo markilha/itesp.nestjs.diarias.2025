@@ -1123,11 +1123,9 @@ export class SaqueService {
       }
       const itens = await this.itensreqrecService.findOne(saque.iteIdCodigo);
       verificaAutorizacao(itens.CHAPA, user);
-      const req = await this.reqnumerarioService.findOne(saque.sqeIdCodigo);      
-      const msg = `Saque:${itens.CHAPA}-Cancelado:${user.chapa}-${DataUtils.formatarDataAtualString()}-Req.Viagem:${req.REQ_ID_CODIGO}`;
       
-
-     
+      const req = await this.reqnumerarioService.findOne(saque.sqeIdCodigo);      
+      const msg = `Saque:${itens.CHAPA}-Cancelado:${user.chapa}-${DataUtils.formatarDataAtualString()}-Req.Viagem:${req.REQ_ID_CODIGO}`; 
 
       if (saque.sqeEfetivo === 'D') {
         gsaque = 1;
