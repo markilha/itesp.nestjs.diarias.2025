@@ -1,7 +1,14 @@
-import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
+import { Injectable, HttpStatus, HttpException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../database/db_mysql/entities/user.entity';
-import { FindOptionsWhere, ILike, IsNull, Like, Not, Repository } from 'typeorm';
+import { 
+  FindOptionsWhere,
+  ILike,
+  IsNull,
+
+  Not,
+  Repository,
+} from 'typeorm';
 import {
   FindAllParams,
   FindAllParamsDto,
@@ -11,6 +18,7 @@ import {
   UsersDto,
 } from './users.dto';
 import { hashSync as bcryptHashSync } from 'bcrypt';
+import { IDSISTEMA } from 'src/util/variaveis/variaveis';
 
 @Injectable()
 export class UsersService {
@@ -58,7 +66,6 @@ export class UsersService {
       ...user,
       chapa: user.chapa.toString().padStart(6, '0'),
     }));
-    
 
     return { data: users, total };
   }
@@ -146,6 +153,63 @@ export class UsersService {
     }
     return userFound;
   }
+
+  async resetPassword(login: string) {   
+    const fountUser = await this.findByUserName(login);   
+    if (!fountUser) {
+      throw new HttpException('Usuário não encontrado', HttpStatus.NOT_FOUND);
+    }   
+    const senha = process.env.SENHA_PADRAO;
+    fountUser.senha = bcryptHashSync(senha, 10);
+    await this.usersRepository.save(fountUser);   
+    return { message: 'Senha resetada com sucesso' };
+  }
+
+  async darAcesso(params: userNivelDto) {   
+    try {      
+      const fountUser = await this.findByUserName(params.login);   
+      if (!fountUser) {
+        throw new HttpException('Usuário não encontrado', HttpStatus.NOT_FOUND);
+      }   
+
+      let perfilAcesso: PerfilAcesso[];
+      perfilAcesso = await this.findPerfilAcesso(IDSISTEMA.id_sistema);
+  
+      const acesso = await this.findNivel(fountUser.id_usuario);
+
+      if(acesso.length > 0){ 
+        const acessoSistema = acesso.find((item) => item.id_perfil_acesso === Number(params.id_perfil_acesso));       
+        if(acessoSistema){
+          throw new HttpException('Usuário já tem acesso ao sistema', HttpStatus.BAD_REQUEST);
+        }
+        //se não tiver acesso ao sistema inserir o acesso
+        await this.usersRepository.query(
+          `
+          INSERT INTO ace_usuario_perfil_acesso (id_perfil_acesso, id_sistema,cpf_cnpj,id_usuario)
+          VALUES (?, ?,?, ?)
+          `,
+          [params.id_perfil_acesso, params.id_sistema,'F', fountUser.id_usuario],
+        );
+        return { message: 'Acesso concedido com sucesso' };
+      }
+
+     
+    } catch (error) {
+      
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      
+    }
+
+
+
+   
+  
+    // await this.usersRepository.save(fountUser);   
+    // return { message: 'Senha resetada com sucesso' };
+  }
+
+
+
 
   // async findByUserEmail(email: string): Promise<UsersDto | null> {
   //   const userFound = await this.usersRepository.findOne({

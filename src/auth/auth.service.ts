@@ -25,10 +25,10 @@ export class AuthService {
   }
 
   async signIn(login: string, senha: string): Promise<any> {
-    const fountUser = await this.usersService.findByUserName(login);
+    const fountUser = await this.usersService.findByUserName(login); 
 
-    if (!fountUser || !bcryptCompareSync(senha, fountUser.senha)) {
-      throw new UnauthorizedException('Usuário ou senha inválidos');
+       if (!fountUser || !bcryptCompareSync(senha, fountUser.senha)) {
+      throw new UnauthorizedException('Usuário ou senha não conferem!!!');
     }
 
     const acesso = await this.usersService.findNivel(fountUser.id_usuario);

@@ -72,6 +72,7 @@ import { ndocumentoService } from '../ndocumento/ndocumento.service';
 import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.entity';
 import { PpessoaService } from '../ppessoa/ppessoa.service';
 import { permissaoCargo } from '../util/enums/cargo';
+import { verificaAutorizacao } from 'src/util/variaveis/verifica_login';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -313,7 +314,7 @@ export class SaqueService {
         ppessoa.PERMISSAO === permissaoCargo.FINANCEIRO_INTERIOR
       ) {
         filterConditions.push(`SUBSTR(b.CODSECAO, 0, 15) = '${ppessoa.CODSECAO.substring(0, 15)}'`);
-      } else  {
+      } else {
         filterConditions.push('b.CHAPA = :chapa');
         filterValues.push(chapa);
       }
@@ -574,7 +575,7 @@ export class SaqueService {
       console.error('Erro ao buscar último ID:', error);
       throw new HttpException('Erro ao buscar último ID', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  } 
+  }
 
   async solicitarSaque(params: SolitarDto, user: AuthUserDto): Promise<any> {
     let Rg_Reembolsar = 1;
@@ -1120,10 +1121,16 @@ export class SaqueService {
           HttpStatus.BAD_REQUEST,
         );
       }
+      const itens = await this.itensreqrecService.findOne(saque.iteIdCodigo);
+      verificaAutorizacao(itens.CHAPA, user);
+      const req = await this.reqnumerarioService.findOne(saque.sqeIdCodigo);      
+      const msg = `Saque:${itens.CHAPA}-Cancelado:${user.chapa}-${DataUtils.formatarDataAtualString()}-Req.Viagem:${req.REQ_ID_CODIGO}`;
+      
+
+     
 
       if (saque.sqeEfetivo === 'D') {
         gsaque = 1;
-        const itens = await this.itensreqrecService.findOne(saque.iteIdCodigo);
         const updateValor = itens.IRR_VALOR_PREST - saque.sqeVlPrest;
         itens.IRR_VALOR_PREST = updateValor;
         try {
@@ -1133,13 +1140,12 @@ export class SaqueService {
         }
       }
 
-
       const PR1 = saque.sqeIdCodigo;
       const PR2 = saque.sqeEfetivo;
       const PR3 = saque.sqeTipoSaque;
       const PR4 = saque.sqeVlPrest;
       const PR5 = saque.sqeDtPrest;
-      const PR6 = saque.sqeUsuario;
+      const PR6 = msg;
 
       if (grava === 0) {
         try {

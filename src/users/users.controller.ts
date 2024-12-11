@@ -28,6 +28,19 @@ export class UsersController {
     return this.usersService.findOne(params);
   }
 
+  @Get('reset-password')
+  @ApiOperation({ summary: 'Redefinir senha' })
+  @ApiResponse({ status: 200, description: 'Senha redefinida' })
+  async resetPassword(@Query('login') login: string) {
+    return await this.usersService.resetPassword(login);
+  }
+  @Get('daracesso')
+  @ApiOperation({ summary: 'Redefinir senha' })
+  @ApiResponse({ status: 200, description: 'Senha redefinida' })
+  async acesso(@Query() params: userNivelDto) {
+    return await this.usersService.darAcesso(params);
+  }
+
   @Get('nivel')
   @ApiOperation({ summary: 'Lista os acessos do usuário' })
   @ApiResponse({

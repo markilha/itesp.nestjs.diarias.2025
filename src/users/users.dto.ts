@@ -82,6 +82,19 @@ export class FindAllParamsDto {
 
 }
 
+export class darAcessoParamsDto {
+
+  @ApiProperty()
+  id_usuario: number;
+  @ApiProperty()
+  login: string;
+
+  @ApiProperty()
+  chapa: string;
+
+
+}
+
 export class userInfo {
   @ApiProperty()
   id_usuario: number;
