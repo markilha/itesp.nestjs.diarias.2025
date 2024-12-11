@@ -8,6 +8,7 @@ import { IDSISTEMA } from 'src/util/variaveis/variaveis';
 import { preencherZeros } from 'src/util/preencherZero';
 import { AuthUserDto } from './use.auth.Dto';
 import { PerfilAcesso } from 'src/users/users.dto';
+import { PpessoaService } from 'src/ppessoa/ppessoa.service';
 
 
 
@@ -18,6 +19,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly ppessoaService: PpessoaService,
   ) {
     this.jwtExpirationTimeInSeconds = +this.configService.get<number>('JWT_EXPIRATION_TIME');
   }
@@ -52,12 +54,13 @@ export class AuthService {
     if (roles.length === 0) {
       throw new UnauthorizedException('Usuário sem acesso ao sistema');
     }
-    
+    const ppessoa = await this.ppessoaService.find({ chapa: fountUser.chapa}); 
     const payload: AuthUserDto = {
       sub: fountUser.id_usuario,
       login: fountUser.login,   
       chapa: preencherZeros(fountUser.chapa,6),   
-      roles: roles,
+      roles: roles,    
+      permissao: ppessoa.PERMISSAO,  
     }; 
     
     const token = this.jwtService.sign(payload);    

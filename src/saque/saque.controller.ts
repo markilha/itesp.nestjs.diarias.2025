@@ -107,7 +107,7 @@ export class SaqueController {
     if (!params.CHAPA){
       params.CHAPA = user.chapa;
     }
-    return await this.saqueService.cancelarSaque(params);
+    return await this.saqueService.cancelarSaque(params, user);
   }
 
   @Post()

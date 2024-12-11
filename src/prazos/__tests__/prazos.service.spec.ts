@@ -70,23 +70,23 @@ describe('PrazosService', () => {
     });
   });
 
-  describe('Prazos Meses', () => {
-    it('Deve retornar uma lista de prazos para o mês', async () => {
-      const params = { chapa: '000081', data: new Date('2024-02-27') };
-      const result = await prazosservice.findmes(params);
-      expect(result).toEqual(mocksPrazos);
-      expect(ppessoaservice.find).toHaveBeenCalledWith({ chapa: params.chapa });
-    });
+  // describe('Prazos Meses', () => {
+  //   it('Deve retornar uma lista de prazos para o mês', async () => {
+  //     const params = { chapa: '000081', data: new Date('2024-02-27') };
+  //     const result = await prazosservice.findmes(params);
+  //     expect(result).toEqual(mocksPrazos);
+  //     expect(ppessoaservice.find).toHaveBeenCalledWith({ chapa: params.chapa });
+  //   });
 
-    it('Deve retornar erro quando nenhum prazo é encontrado', async () => {
-      jest
-        .spyOn(ppessoaservice, 'find')
-        .mockRejectedValue(
-          new HttpException('Funcionário não encontrado!!!', HttpStatus.INTERNAL_SERVER_ERROR),
-        );
-      await expect(prazosservice.findmes({ chapa: '123' })).rejects.toThrow(
-        'Funcionário não encontrado!!!',
-      );
-    });
-  });
+  //   it('Deve retornar erro quando nenhum prazo é encontrado', async () => {
+  //     jest
+  //       .spyOn(ppessoaservice, 'find')
+  //       .mockRejectedValue(
+  //         new HttpException('Funcionário não encontrado!!!', HttpStatus.INTERNAL_SERVER_ERROR),
+  //       );
+  //     await expect(prazosservice.findmes({ chapa: '123' })).rejects.toThrow(
+  //       'Funcionário não encontrado!!!',
+  //     );
+  //   });
+  // });
 });

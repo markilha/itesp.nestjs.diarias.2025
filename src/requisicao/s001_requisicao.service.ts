@@ -38,8 +38,8 @@ import { DataUtils } from '../util/DataUtils';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
 import { calcularPeriodo } from '../util/calcula_periodo';
-import { PpessoaService } from 'src/ppessoa/ppessoa.service';
-import { permissaoCargo } from 'src/util/enums/cargo';
+import { PpessoaService } from '../ppessoa/ppessoa.service';
+import { permissaoCargo } from '../util/enums/cargo';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -346,46 +346,8 @@ export class S001RequisicaoService {
     }
   }
 
-  async findMesAtual2(params: findMesParams): Promise<RequisDto[]> {
-    try {
-      const dataatual = params.dataAtual ? params.dataAtual : new Date();
-      const inicioMes = format(startOfMonth(dataatual), 'dd/MM/yyyy 00:00:00');
-      const fimMes = format(endOfMonth(dataatual), 'dd/MM/yyyy 00:00:00');
 
-      const requisicao = await this.requisicaoRepository
-        .createQueryBuilder('requisicao')
-        .where('requisicao.reqStatus IN (:...statuses)', {
-          statuses: ['AUTORIZADA PELO DIRETOR', 'AUTORIZADA PELO DIRETOR EXECUTIVO'],
-        })
-        .andWhere('requisicao.chapa = :chapa', { chapa: params.chapa })
-        .andWhere(
-          `TO_DATE(requisicao.reqDtReq, 'DD/MM/YYYY HH24:MI:SS') BETWEEN TO_DATE(:inicioMes, 'DD/MM/YYYY HH24:MI:SS') AND TO_DATE(:fimMes, 'DD/MM/YYYY HH24:MI:SS')`,
-          { inicioMes, fimMes },
-        )
-        .getRawMany();
-
-      const retornoRequi = requisicao.map((requis) => {
-        const newdate = DataUtils.converterStringParaData(requis?.requisicao_REQ_DTREQ);
-
-        const periodo = calcularPeriodo(newdate);
-        return new RequisDto({
-          chapa: requis?.requisicao_CHAPA,
-          reqIdCodigo: requis?.requisicao_REQ_ID_CODIGO,
-          reqStatus: requis?.requisicao_REQ_STATUS,
-          reqDtReq: requis?.requisicao_REQ_DTREQ,
-          periodoAprovacao: periodo,
-        });
-      });
-
-      return retornoRequi;
-    } catch (error) {
-      throw new HttpException(
-        'Erro ao buscar requisições aprovadas',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-  async findMesAtual(params: findMesParams): Promise<any> {
+  async findMesAtual(params: findMesParams): Promise<RequisDto[]> {
     try {
       const dataatual = params.dataAtual ? params.dataAtual : new Date();
       const inicioMes = format(startOfMonth(dataatual), 'dd/MM/yyyy 00:00:00');
@@ -409,12 +371,12 @@ export class S001RequisicaoService {
       }
 
       const query = ` 
-     SELECT     
-      A.REQ_ID_CODIGO as REQ_ID_CODIGO,
-      A.REQ_STATUS as REQ_STATUS,
-      A.REQ_DTREQ as REQ_DTREQ,
-       B.CHAPA as CHAPA,
-       C.CODSECAO as CODSECAO
+      SELECT     
+        A.REQ_ID_CODIGO as REQ_ID_CODIGO,
+        A.REQ_STATUS as REQ_STATUS,
+        A.REQ_DTREQ as REQ_DTREQ,
+        B.CHAPA as CHAPA,
+        C.CODSECAO as CODSECAO
       from        
         Transporte.S001_Requisicao A,        
         Transporte.S001_Usureq B,
@@ -424,7 +386,7 @@ export class S001RequisicaoService {
         and
         B.CHAPA = C.CHAPA 
       AND 
-         a.REQ_STATUS IN ('AUTORIZADA PELO DIRETOR', 'AUTORIZADA PELO DIRETOR EXECUTIVO')
+        a.REQ_STATUS IN ('AUTORIZADA PELO DIRETOR', 'AUTORIZADA PELO DIRETOR EXECUTIVO')
       AND
         TO_DATE(A.REQ_DTREQ, 'DD/MM/YYYY HH24:MI:SS') 
       BETWEEN 
@@ -451,8 +413,7 @@ export class S001RequisicaoService {
       });
 
       return retornoRequi;
-    } catch (error) {
-      console.log(error);
+    } catch (error) {     
       throw new HttpException(
         'Erro ao buscar requisições aprovadas',
         HttpStatus.INTERNAL_SERVER_ERROR,

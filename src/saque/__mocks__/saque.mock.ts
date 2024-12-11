@@ -47,7 +47,7 @@ export const mockSaque = {
   PRA_ATIVO: 'N',
   SQE_TIPOSAQUE: '',
   ID_DOC: null,
-  ORIGINAL_NAME: null,
+  ORIGINAL_NAME: null
 };
 
 export const mocktotal = {

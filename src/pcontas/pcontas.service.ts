@@ -10,8 +10,8 @@ import { extornoDto } from '../extorno/extornoDto';
 import { SaqueService } from '../saque/saque.service';
 import { DataUtils } from '../util/DataUtils';
 import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
-import { ndocumentoService } from 'src/ndocumento/ndocumento.service';
-import { AuthUserDto } from 'src/auth/use.auth.Dto';
+import { ndocumentoService } from '../ndocumento/ndocumento.service';
+import { AuthUserDto } from '../auth/use.auth.Dto';
 
 @Injectable()
 export class PcontasService {

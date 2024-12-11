@@ -17,6 +17,7 @@ import { S001RequisicaoService } from '../../requisicao/s001_requisicao.service'
 import { destinoService } from '../../destino/destino.service';
 import { documentosService } from '../../documentos/documento.service';
 import { PcontasService } from '../../pcontas/pcontas.service';
+import { PpessoaService } from '../../ppessoa/ppessoa.service';
 import { Repository } from 'typeorm';
 import {
   mockDiariaChegada,
@@ -158,7 +159,12 @@ describe('SaqueService', () => {
             findAll: jest.fn(),
           },
         },
-        
+        {
+          provide: PpessoaService,
+          useValue: {
+            find: jest.fn(),
+          },
+        },       
          
       ],
     }).compile();
@@ -173,7 +179,7 @@ describe('SaqueService', () => {
   });
 
   it('Buscar todos saques', async () => {
-    let saques = await service.findAll({  CHAPA: '000081' }); 
+    let saques = await service.findAll({  CHAPA: '000081' });     
     expect(saques).toEqual(mocktotal);
   });
 

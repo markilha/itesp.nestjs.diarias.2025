@@ -11,7 +11,7 @@ import {
   SelecionaSubordina2,
 } from '../util/selects/diretoria';
 import { selecionaPefilFunc } from '../util/selects/pfunc';
-import { permissaoCargo } from 'src/util/enums/cargo';
+import { permissaoCargo } from '../util/enums/cargo';
 
 @Injectable()
 export class PpessoaService {

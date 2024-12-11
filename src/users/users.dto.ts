@@ -95,6 +95,8 @@ export class userInfo {
     description: 'Roles do usuário',
   })
   roles: string[]
+  @ApiProperty()
+  permissao: number;
 }
 
 export class returnTotal {

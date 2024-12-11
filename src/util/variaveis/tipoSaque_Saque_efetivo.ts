@@ -142,5 +142,3 @@ const combinacoes = [
     EFETUADO: 'Aguardando Transferência para Complemento-Reembolso',
   },
 ];
-
-

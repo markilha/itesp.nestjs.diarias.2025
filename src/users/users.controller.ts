@@ -55,6 +55,7 @@ export class UsersController {
       login: user.login,
       chapa: user.chapa,
       roles: user.roles,
+      permissao: user.permissao,
     };
   }
 }
