@@ -1,3 +1,5 @@
+import { permissaoCargo } from "../enums/cargo";
+
 export const queryPrestacao = `
 SELECT
   a.SQE_DTPEDIDO as SQE_DTPEDIDO,
@@ -62,7 +64,8 @@ export function querySaque(
       a.SQE_DTPREST ,
       a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,     
       b.CHAPA as CHAPA,
-      b.NOME as NOME,     
+      b.NOME as NOME,   
+      b.CODSECAO as CODSECAO,  
       b.TDE_DESCRICAO as TDE_DESCRICAO,
       b.STS_DESCRICAO as STS_DESCRICAO,
       b.PRA_ATIVO as PRA_ATIVO,
@@ -91,3 +94,4 @@ export function querySaqueCount(filterConditions: string[] = []) {
     ${whereClause}
     `;
 }
+

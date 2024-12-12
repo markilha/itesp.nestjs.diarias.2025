@@ -8,12 +8,14 @@ import { reembolsoModule } from '../reembolso/reembolso.module';
 import { extornoModule } from '../extorno/extorno.module';
 import { SaqueModule } from '../saque/saque.module';
 import { ReqnumerarioModule } from '../reqnumerario/reqnumerario.module';
+import { ndocumentoModule } from 'src/ndocumento/ndocumento.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([pcontasEntity], 'oracleConnection'),
     PcontasNumModule,
     reembolsoModule,
     extornoModule,
+    ndocumentoModule,
     forwardRef(() => SaqueModule),    
     ReqnumerarioModule,
   ],

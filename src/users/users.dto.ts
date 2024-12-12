@@ -82,6 +82,19 @@ export class FindAllParamsDto {
 
 }
 
+export class darAcessoParamsDto {
+
+  @ApiProperty()
+  id_usuario: number;
+  @ApiProperty()
+  login: string;
+
+  @ApiProperty()
+  chapa: string;
+
+
+}
+
 export class userInfo {
   @ApiProperty()
   id_usuario: number;
@@ -95,6 +108,10 @@ export class userInfo {
     description: 'Roles do usuário',
   })
   roles: string[]
+  @ApiProperty()
+  permissao: number;
+  @ApiProperty()
+  codsecao: string;
 }
 
 export class returnTotal {

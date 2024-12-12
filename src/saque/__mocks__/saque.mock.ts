@@ -147,3 +147,12 @@ export const mockDiariaChegada = {
   VL_DIARIA: 462.51,
   PARPERC: 20,
 };
+
+export const userMock= {
+  sub: 26878,
+  login: 'AISOUZA',
+  chapa: '000081',
+  roles: [],
+  permissao: 8,
+  codsecao: '1.3.02.07.04.17.00',
+};

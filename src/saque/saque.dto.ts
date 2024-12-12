@@ -31,6 +31,8 @@ export class FindParamsSaque {
   @ApiProperty({required: false})
   STATUS_SAQUE?: string;
   @ApiProperty({required: false})
+  SQE_EFETIVO?: string;
+  @ApiProperty({required: false})
   usePrestDate?: string;
   @ApiProperty({required: false})
   startDate?: string;
@@ -177,6 +179,8 @@ export class returnSaqueDto {
   STATUS_SAQUE?: string;
   @ApiProperty({required: false})
   STATUS_PREST?: string;
+  @ApiProperty({required: false})
+  CODSECAO?: string;
 
 
 
@@ -206,6 +210,7 @@ export class returnSaqueDto {
     this.STATUS_PREST = params.STATUS_PREST;  
     this.ID_DOC = params.ID_DOC;
     this.ORIGINAL_NAME = params.ORIGINAL_NAME;
+    this.CODSECAO = params.CODSECAO;
    
   }
 }

@@ -10,6 +10,8 @@ import { extornoDto } from '../extorno/extornoDto';
 import { SaqueService } from '../saque/saque.service';
 import { DataUtils } from '../util/DataUtils';
 import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
+import { ndocumentoService } from '../ndocumento/ndocumento.service';
+import { AuthUserDto } from '../auth/use.auth.Dto';
 
 @Injectable()
 export class PcontasService {
@@ -19,6 +21,7 @@ export class PcontasService {
     private reembolsosService: reembolsoService,
     private extornoService: extornoService,    
     private reqnumerarioService: ReqnumerarioService,
+    private ndocumentoService: ndocumentoService,
     @Inject(forwardRef(() => SaqueService))
     private saqueService: SaqueService,
 
@@ -85,37 +88,32 @@ export class PcontasService {
     }
   }
 
-  async createPcontas(params: createPcontasDto): Promise<{ PCO_ID_CODIGO: number }> {
+  async createPcontas(params: createPcontasDto, users:AuthUserDto): Promise<{ PCO_ID_CODIGO: number }> {
     // se não encontrar SQE_ID_CODIGO, retorna erro
     const saque = await this.saqueService.findOne(params.SQE_ID_CODIGO);
+    // //verifica se o reembolso existe
+    // if (params.TOTALCOMPLEMENTAR > 0) {
+    //   const reembolso = await this.reembolsosService.findone(params.SQE_ID_CODIGO);
+    //   if (!reembolso) {
+    //     throw new HttpException('Reembolso não encontrado', HttpStatus.NOT_FOUND);
+    //   }
+    // }
 
-    //verifica se o reembolso existe
-    if (params.TOTALCOMPLEMENTAR > 0) {
-      const reembolso = await this.reembolsosService.findone(params.SQE_ID_CODIGO);
-      if (!reembolso) {
-        throw new HttpException('Reembolso não encontrado', HttpStatus.NOT_FOUND);
-      }
-    }
-
-    const lastIdResult = await this.pcontasRepository.query(
-      `SELECT MAX(PCO_ID_CODIGO) as lastId FROM S009_PCONTAS`,
-    );
-    const lastId = lastIdResult[0]?.LASTID || 0;
-    const newId = lastId + 1;
+    const newId = await this.lastid() + 1;  
 
     const pcontas = {
       PCO_ID_CODIGO: newId,
-      PCO_TIPO: params.PCO_TIPO,
-      PCO_TOTDOC: params.PCO_TOTDOC,
+      PCO_TIPO: 'N',
+      PCO_TOTDOC: 1,
     };
 
-    const insertResult = await this.pcontasRepository.insert(pcontas);
-    const pcoIdCodigo = insertResult.identifiers[0].PCO_ID_CODIGO;
+     await this.pcontasRepository.insert(pcontas);
+    
 
     const rnuIdCodigo = await this.pcontasRepository.query(
       `SELECT RNU_ID_CODIGO FROM S009_REQNUMERARIO WHERE SQE_ID_CODIGO = :sqeIdCodigo`,
       [params.SQE_ID_CODIGO],
-    );
+    );  
 
     await this.reqnumerarioService.updateChegada({
       RNU_ID_CODIGO: rnuIdCodigo[0]?.RNU_ID_CODIGO,
@@ -124,35 +122,51 @@ export class PcontasService {
     });
 
     await this.pcontasnumRepository.insert({
-      PCO_ID_CODIGO: pcoIdCodigo,
+      PCO_ID_CODIGO: newId,
       RNU_ID_CODIGO: rnuIdCodigo[0]?.RNU_ID_CODIGO,
     });
 
-    // Atualiza a justificativa do reembolso
-    if (params.TOTALCOMPLEMENTAR > 0) {
-      await this.reembolsosService.atualizarJustificativa({
-        SQE_ID_CODIGO: params.SQE_ID_CODIGO,
-        RRE_JUSTIFICATIVA: params.JUSTIFICATIVA,
-        RRE_SAQUE: params.SQE_ID_CODIGO,
-      });
-    }
+    // // Atualiza a justificativa do reembolso
+    // if (params.TOTALCOMPLEMENTAR > 0) {
+    //   await this.reembolsosService.atualizarJustificativa({
+    //     SQE_ID_CODIGO: params.SQE_ID_CODIGO,
+    //     RRE_JUSTIFICATIVA: params.JUSTIFICATIVA,
+    //     RRE_SAQUE: params.SQE_ID_CODIGO,
+    //   });
+    // }
 
-    if (params.TOTALDEVOLUCAO > 0) {
-      const newExtorno = new extornoDto({
-        SQE_ID_CODIGO: saque.sqeIdCodigo,
-        ITE_ID_CODIGO: saque.iteIdCodigo,
-        RRE_ID_CODIGO: saque.rreIdCodigo,
-        DIR_ID_CODIGO: saque.dirIdCodigo,
-        PCO_ID_CODIGO: newId,
-        FPA_ID_CODIGO: saque.fpaIdCodigo,
-        EXT_VALOR: params.TOTALDEVOLUCAO,
-        EXT_DATA: DataUtils.formatarDataAtualString(),
-        EXT_JUSTIFICA: params.JUSTIFICATIVA,
-      });
-      await this.extornoService.create(newExtorno);
-    }
 
-    return { PCO_ID_CODIGO: pcoIdCodigo };
+    // if (params.TOTALDEVOLUCAO > 0) {
+    //   const newExtorno = new extornoDto({
+    //     SQE_ID_CODIGO: saque.sqeIdCodigo,
+    //     ITE_ID_CODIGO: saque.iteIdCodigo,
+    //     RRE_ID_CODIGO: saque.rreIdCodigo,
+    //     DIR_ID_CODIGO: saque.dirIdCodigo,
+    //     PCO_ID_CODIGO: newId,
+    //     FPA_ID_CODIGO: saque.fpaIdCodigo,
+    //     EXT_VALOR: params.TOTALDEVOLUCAO,
+    //     EXT_DATA: DataUtils.formatarDataAtualString(),
+    //     EXT_JUSTIFICA: params.JUSTIFICATIVA,
+    //   });
+    //   await this.extornoService.create(newExtorno);
+    // }
+
+    await this.ndocumentoService.create({
+      NDO_ID_CODIGO: await this.ndocumentoService.lastId(),
+      PCO_ID_CODIGO: newId,
+      PES_ID_CODIGO: 2227,
+      PES_PESSOA: 'J',
+      NDO_ID_NUMERO: 'S/DOCUM',
+      NDO_DATA:new Date(), 
+      NDO_SERIE: null,
+      NDO_TITULO: null,
+      NDO_DTENTREGA: DataUtils.formatarDataAtualString(),
+      NDO_OPERADOR: users.chapa,
+      STS_ID_CODIGO: 12,
+    }) 
+
+
+   return { PCO_ID_CODIGO: newId };
   }
 
   async create(pcontasDto: pcontasEntity): Promise<pcontasEntity> {

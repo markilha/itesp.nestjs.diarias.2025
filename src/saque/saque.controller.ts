@@ -36,7 +36,7 @@ export class SaqueController {
       params.CHAPA = user.chapa;
     }
 
-    return await this.saqueService.findAll(params);
+    return await this.saqueService.findAll(params,user);
   }
 
   @ApiOperation({ summary: 'Lista todas as prestações de conta' })
@@ -107,7 +107,7 @@ export class SaqueController {
     if (!params.CHAPA){
       params.CHAPA = user.chapa;
     }
-    return await this.saqueService.cancelarSaque(params);
+    return await this.saqueService.cancelarSaque(params, user);
   }
 
   @Post()

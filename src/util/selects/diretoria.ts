@@ -3,7 +3,8 @@ Select  a.DIR_ID_CODIGO, a.codigo, a.DESCRICAO,  a.CHAPACHEFE
 from Financeiro.V009_DiretoriaGeral A
 `;
 
-export const SelecionaSubordina1 = `SELECT 
+export const SelecionaSubordina1 =
+ `SELECT 
     A.CODCOLIGADA, 
     A.CODIGO, 
     A.DESCRICAO, 

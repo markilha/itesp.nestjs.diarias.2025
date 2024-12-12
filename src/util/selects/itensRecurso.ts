@@ -38,8 +38,13 @@ JOIN
 JOIN 
     RM.PSECAO D ON E.CODIGO = D.CODIGO`;
 
+export const verificaExistGrupoRec = `
+${SelecionaAgrupaRec} 
+And A.DIR_ID_CODIGO=:CODDIR And A.RRE_ID_CODIGO=:CODREQ
+And A.TDE_ID_CODIGO=7
+`
 
-  export const SelecionaRequisicao = `SELECT 
+export const SelecionaRequisicao = `SELECT 
     A.RRE_ID_CODIGO, 
     A.DIR_ID_CODIGO, 
     A.RRE_APROVACAO, 
@@ -80,7 +85,7 @@ JOIN
     ON D.CODIGO = E.CODIGO
 LEFT JOIN 
     Rm.Pfunc F 
-    ON D.CHAPACHEFE = F.CHAPA`
+    ON D.CHAPACHEFE = F.CHAPA`;
 
 export const selecionaUltimoPrazo = `SELECT 
     RRE_ID_CODIGO, 
@@ -106,6 +111,12 @@ FROM (
         A.STS_ID_CODIGO = 7
          AND C.REG_ID_CODIGO = :regidcodigo  
 ) 
-WHERE RN = 1`    
+WHERE RN = 1`;
+
+export const verificaSeExisteRecurso = `
+${SelecionaItensRecurso}
+and A.Chapa =:NChapa and A.RRE_ID_CODIGO=:NREQ and A.TDE_ID_CODIGO=7
+Order By A.NOME  
+`;
 
 

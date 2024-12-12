@@ -4,6 +4,8 @@
     login: string;
     chapa: string;
     roles: string[];
+    permissao: number;
+    codsecao: string;
   }
 
   

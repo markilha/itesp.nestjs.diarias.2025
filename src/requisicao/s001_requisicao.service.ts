@@ -1,7 +1,15 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { FindOptionsWhere, ILike, In, MoreThanOrEqual, Repository } from 'typeorm';
+import {
+  FindOperator,
+  FindOptionsWhere,
+  ILike,
+  In,
+  Like,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import {
   FindAllAutorizadasParams,
   FindAllParams,
@@ -30,6 +38,8 @@ import { DataUtils } from '../util/DataUtils';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
 import { calcularPeriodo } from '../util/calcula_periodo';
+import { permissaoFindAll } from '../util/permissao/permissao';
+import { AuthUserDto } from '../auth/use.auth.Dto';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -39,7 +49,7 @@ export class S001RequisicaoService {
     private ufespService: UfespService,
     private SaquesMesService: SaquesMesService,
     private itinirarioService: ItinirarioService,
-    private naotrabservice: naotrabService,
+    private naotrabservice: naotrabService  
   ) {}
 
   private async buscarItinerario(reqIdCodigo: number) {
@@ -51,7 +61,7 @@ export class S001RequisicaoService {
   }
 
   async find(params: FindAllParams): Promise<any> {
-    try {     
+    try {
       const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
       const fields = ['reqIdCodigo', 'codMunicipio', 'reqStatus', 'chapa'];
       fields.forEach((field) => {
@@ -70,42 +80,38 @@ export class S001RequisicaoService {
       searchParams['reqDtSaida'] = MoreThanOrEqual(new Date('2009-08-10'));
 
       let requisicoes: RequisicaoEntity[];
-    
 
-     try {
-      
-       if (params.page && params.limit) {
-         const page = params.page;
-         const limit = params.limit;
-         const skip = (page - 1) * limit;
-  
-         requisicoes = await this.requisicaoRepository.find({
-           where: searchParams,
-           skip,
-           take: limit,
-           order,
-           relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
-         });
-       } else {
-         requisicoes = await this.requisicaoRepository.find({
-           where: searchParams,
-           order,
-          relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
-         });
-       }
-     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);      
-     }
+      try {
+        if (params.page && params.limit) {
+          const page = params.page;
+          const limit = params.limit;
+          const skip = (page - 1) * limit;
+
+          requisicoes = await this.requisicaoRepository.find({
+            where: searchParams,
+            skip,
+            take: limit,
+            order,
+            relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
+          });
+        } else {
+          requisicoes = await this.requisicaoRepository.find({
+            where: searchParams,
+            order,
+            relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
+          });
+        }
+      } catch (error) {
+        throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
 
       if (!requisicoes || requisicoes.length === 0) {
         return [];
       }
-    
 
       const results = await Promise.all(
         requisicoes.map((requisicao) => this.processRequisicao(requisicao, params.chapa)),
       );
-     
 
       const count = await this.requisicaoRepository.find({
         where: searchParams,
@@ -264,7 +270,10 @@ export class S001RequisicaoService {
     }
   }
 
-  async findAllAprovadas(params: FindAllAutorizadasParams): Promise<RequisDto[]> {
+  async findAllAprovadas(
+    params: FindAllAutorizadasParams,
+    user: AuthUserDto,
+  ): Promise<RequisDto[]> {
     try {
       const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
       const pageNumber = params.page ?? 1;
@@ -285,17 +294,30 @@ export class S001RequisicaoService {
         order['reqIdCodigo'] = 'ASC';
       }
 
-      if (params.chapa) {
+      const funcSalarioFilter: Partial<{
+        nome: FindOperator<string>;
+        codsecao: FindOperator<string>;
+      }> = {
+        nome: params.nome ? ILike(`%${params.nome}%`) : undefined,
+      };
+
+      const per = permissaoFindAll(user.permissao);
+     
+
+      if (per) {
+        funcSalarioFilter.codsecao = Like(`${user.codsecao.substring(0, per)}%`);
+      } else if (params.chapa) {
         searchParams['chapa'] = params.chapa;
       }
 
+      // Combina os filtros no whereCondition
+      const whereCondition = {
+        ...searchParams,
+        ...(Object.keys(funcSalarioFilter).length > 0 && { funcSalario: funcSalarioFilter }),
+      };
+
       const requisicao = await this.requisicaoRepository.find({
-        where: {
-          ...searchParams,
-          funcSalario: {
-            nome: params.nome ? ILike(`%${params.nome}%`) : undefined,
-          },
-        },
+        where: whereCondition,
         skip,
         take: params.limit,
         order,
@@ -308,10 +330,10 @@ export class S001RequisicaoService {
           reqIdCodigo: reqv.reqIdCodigo,
           reqStatus: reqv.reqStatus,
           reqDtReq: reqv.reqDtReq,
-          nome: reqv?.funcSalario?.nome,          
+          nome: reqv?.funcSalario?.nome,
         });
       });
-    } catch (error) {    
+    } catch (error) {
       throw new HttpException(
         'Erro ao buscar requisições aprovadas',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -319,36 +341,66 @@ export class S001RequisicaoService {
     }
   }
 
-  async findMesAtual(params: findMesParams): Promise<RequisDto[]> {
+  async findMesAtual(params: findMesParams, user: AuthUserDto): Promise<RequisDto[]> {
     try {
       const dataatual = params.dataAtual ? params.dataAtual : new Date();
-      //const newdata = new Date();
       const inicioMes = format(startOfMonth(dataatual), 'dd/MM/yyyy 00:00:00');
       const fimMes = format(endOfMonth(dataatual), 'dd/MM/yyyy 00:00:00');
 
-      const requisicao = await this.requisicaoRepository
-        .createQueryBuilder('requisicao')
-        .where('requisicao.reqStatus IN (:...statuses)', {
-          statuses: ['AUTORIZADA PELO DIRETOR', 'AUTORIZADA PELO DIRETOR EXECUTIVO'],
-        })
-        .andWhere('requisicao.chapa = :chapa', { chapa: params.chapa })
-        .andWhere(
-          `TO_DATE(requisicao.reqDtReq, 'DD/MM/YYYY HH24:MI:SS') BETWEEN TO_DATE(:inicioMes, 'DD/MM/YYYY HH24:MI:SS') AND TO_DATE(:fimMes, 'DD/MM/YYYY HH24:MI:SS')`,
-          { inicioMes, fimMes },
-        )
-        .getRawMany();
+      const filterConditions = [];
+      const filterValues = [];
 
-      // const perAplicacao = calcularPeriodo(datAplicacao);
+      filterValues.push(inicioMes);
+      filterValues.push(fimMes);
+
+      const per = permissaoFindAll(user.permissao);
+      if (per) {
+        filterConditions.push(
+          `SUBSTR(C.CODSECAO, 0, ${per}) = '${user.codsecao.substring(0, per)}'`,
+        );
+      } else {
+        filterConditions.push('b.CHAPA = :chapa');
+        filterValues.push(params.chapa);
+      }
+
+      const query = ` 
+      SELECT     
+        A.REQ_ID_CODIGO as REQ_ID_CODIGO,
+        A.REQ_STATUS as REQ_STATUS,
+        A.REQ_DTREQ as REQ_DTREQ,
+        B.CHAPA as CHAPA,
+        C.CODSECAO as CODSECAO
+      from        
+        Transporte.S001_Requisicao A,        
+        Transporte.S001_Usureq B,
+        Rm.Pfunc C
+      Where        
+        A.REQ_ID_CODIGO = B.REQ_ID_CODIGO
+        and
+        B.CHAPA = C.CHAPA 
+      AND 
+        a.REQ_STATUS IN ('AUTORIZADA PELO DIRETOR', 'AUTORIZADA PELO DIRETOR EXECUTIVO')
+      AND
+        TO_DATE(A.REQ_DTREQ, 'DD/MM/YYYY HH24:MI:SS') 
+      BETWEEN 
+        TO_DATE(:inicioMes, 'DD/MM/YYYY HH24:MI:SS')
+      AND 
+        TO_DATE(:fimMes, 'DD/MM/YYYY HH24:MI:SS')
+      AND 
+        ${filterConditions.join(' AND ')}
+        `;
+
+      const requisicao = await this.requisicaoRepository.query(query, filterValues);
 
       const retornoRequi = requisicao.map((requis) => {
-        const newdate = DataUtils.converterStringParaData(requis?.requisicao_REQ_DTREQ);
+        const newdate = DataUtils.converterStringParaData(requis?.REQ_DTREQ);
 
         const periodo = calcularPeriodo(newdate);
         return new RequisDto({
-          chapa: requis?.requisicao_CHAPA,
-          reqIdCodigo: requis?.requisicao_REQ_ID_CODIGO,
-          reqStatus: requis?.requisicao_REQ_STATUS,
-          reqDtReq: requis?.requisicao_REQ_DTREQ,
+          chapa: requis?.CHAPA,
+          reqIdCodigo: requis?.REQ_ID_CODIGO,
+          reqStatus: requis?.REQ_STATUS,
+          reqDtReq: requis?.REQ_DTREQ,
           periodoAprovacao: periodo,
         });
       });
@@ -373,9 +425,21 @@ export class S001RequisicaoService {
     }
   }
 
-  async findPendentes(chapa: string): Promise<requiTotal> {
+  async findPendentes(chapa: string, user: AuthUserDto): Promise<requiTotal> {
     try {
-      const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
+      const filterConditions = [];
+      const filterValues = [];
+
+      const per = permissaoFindAll(user.permissao);
+      if (per) {
+        filterConditions.push(
+          `SUBSTR(b.CODSECAO, 0, ${per}) = '${user.codsecao.substring(0, per)}'`,
+        );
+      } else {
+        filterConditions.push('b.CHAPA = :chapa');
+        filterValues.push(chapa);
+      }
+      //  AND b.CHAPA = '${chapa}'
 
       const consulta = await this.requisicaoRepository.query(
         ` SELECT    
@@ -395,13 +459,14 @@ export class S001RequisicaoService {
       INNER JOIN FINANCEIRO.s009_reqnumerario c ON a.SQE_ID_CODIGO = c.SQE_ID_CODIGO
       INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO 
       WHERE a.SQE_TIPOSAQUE = 'N' 
-      AND b.PRA_ATIVO = 'N' 
-      AND b.CHAPA = '${chapa}' 
+      AND b.PRA_ATIVO = 'N'     
       AND a.SQE_EFETIVO IN ('S', 'C', 'R', 'E')
       AND (a.SQE_DTPREST IS NULL OR a.SQE_VLPREST = 0)
       AND d.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')
+      AND ${filterConditions.join(' AND ')}
     ORDER BY d.REQ_DTSAIDA DESC   
     `,
+        filterValues,
       );
 
       const retorno = consulta.map((req) => {

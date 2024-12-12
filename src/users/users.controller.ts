@@ -28,6 +28,19 @@ export class UsersController {
     return this.usersService.findOne(params);
   }
 
+  @Get('reset-password')
+  @ApiOperation({ summary: 'Redefinir senha' })
+  @ApiResponse({ status: 200, description: 'Senha redefinida' })
+  async resetPassword(@Query('login') login: string) {
+    return await this.usersService.resetPassword(login);
+  }
+  @Get('daracesso')
+  @ApiOperation({ summary: 'Redefinir senha' })
+  @ApiResponse({ status: 200, description: 'Senha redefinida' })
+  async acesso(@Query() params: userNivelDto) {
+    return await this.usersService.darAcesso(params);
+  }
+
   @Get('nivel')
   @ApiOperation({ summary: 'Lista os acessos do usuário' })
   @ApiResponse({
@@ -45,16 +58,18 @@ export class UsersController {
    @ApiResponse({
     status: 200,
     description: 'Lista o usuário logado!',
-    type: userInfo,
-   
+    type: userInfo  
   
   })
+  
   getInfo(@CurrentUser() user: AuthUserDto): userInfo {
     return {
       id_usuario: user.sub,
       login: user.login,
       chapa: user.chapa,
       roles: user.roles,
+      permissao: user.permissao,
+      codsecao: user.codsecao,
     };
   }
 }
