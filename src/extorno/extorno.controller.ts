@@ -4,6 +4,8 @@ import { extornoService } from './extorno.service';
 import { FindAllParams, upateExtornoDto } from './extornoDto';
 import { extornoDto } from './extornoDto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from 'src/auth/current-user.decorator';
+import { AuthUserDto } from 'src/auth/use.auth.Dto';
 
 @UseGuards(AuthGuard)
 @ApiTags('extorno')
@@ -58,7 +60,7 @@ export class extornoController {
     },  
   })
   @ApiResponse({ status: 500, description: 'Erro ao extornar viagem não realizada' })
-  async extornar(@Body() dados: extornoDto): Promise<extornoDto> {
-   return await this.extornoService.extornoViagemNaoRealizada(dados);
+  async extornar(@CurrentUser() user: AuthUserDto,@Body() dados: extornoDto): Promise<any> {
+   return await this.extornoService.extornoViagemNaoRealizada(dados,user);
   }
 }

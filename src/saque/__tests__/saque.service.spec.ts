@@ -19,13 +19,14 @@ import { documentosService } from '../../documentos/documento.service';
 import { PcontasService } from '../../pcontas/pcontas.service';
 import { PpessoaService } from '../../ppessoa/ppessoa.service';
 import { Repository } from 'typeorm';
-import {
+import {  
   mockDiariaChegada,
   mockDiariaInicial,
   mockMD,
   mockReturnSaque,
   mockSaque,
   mocktotal,
+  userMock,
 } from '../__mocks__/saque.mock';
 import { calcularDiariaValores } from '../../util/calculo_dia_retorno';
 import { Destino } from '../../util/diariaDto';
@@ -179,7 +180,7 @@ describe('SaqueService', () => {
   });
 
   it('Buscar todos saques', async () => {
-    let saques = await service.findAll({  CHAPA: '000081' });     
+    let saques = await service.findAll({  CHAPA: '000081' },userMock);     
     expect(saques).toEqual(mocktotal);
   });
 

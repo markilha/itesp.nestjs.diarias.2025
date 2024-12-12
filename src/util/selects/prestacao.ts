@@ -22,3 +22,7 @@ tDE_DESCRICAO, TDE_ID_CODIGO, SQE_VLSAQUE, SQE_VLPREST, SQE_DTSAQUE,
 PCO_TIPO, PCO_TOTDOC, PRA_ID_CODIGO, REQ_ID_CODIGO, SQE_EFETIVO, REG_ID_CODIGO
 FROM Financeiro.v009_DocPContasNum
 `
+export const  selecionaDocPContasNumPorSqe_id_codigo = `
+${selecionaDocPContasNum}
+Where SQE_ID_CODIGO=:CODSAQUE
+`

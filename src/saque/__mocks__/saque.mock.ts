@@ -47,7 +47,7 @@ export const mockSaque = {
   PRA_ATIVO: 'N',
   SQE_TIPOSAQUE: '',
   ID_DOC: null,
-  ORIGINAL_NAME: null
+  ORIGINAL_NAME: null,
 };
 
 export const mocktotal = {
@@ -146,4 +146,13 @@ export const mockDiariaChegada = {
   VL_DIARIA_TOTAL: 555.01,
   VL_DIARIA: 462.51,
   PARPERC: 20,
+};
+
+export const userMock= {
+  sub: 26878,
+  login: 'AISOUZA',
+  chapa: '000081',
+  roles: [],
+  permissao: 8,
+  codsecao: '1.3.02.07.04.17.00',
 };

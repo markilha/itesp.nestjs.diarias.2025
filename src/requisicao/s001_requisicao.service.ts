@@ -38,8 +38,8 @@ import { DataUtils } from '../util/DataUtils';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
 import { calcularPeriodo } from '../util/calcula_periodo';
-import { permissaoFindAll } from 'src/util/permissao/permissao';
-import { AuthUserDto } from 'src/auth/use.auth.Dto';
+import { permissaoFindAll } from '../util/permissao/permissao';
+import { AuthUserDto } from '../auth/use.auth.Dto';
 
 @Injectable()
 export class S001RequisicaoService {

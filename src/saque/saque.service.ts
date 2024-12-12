@@ -71,7 +71,7 @@ import { PcontasNumService } from '../pcontasnum/pcontasnum.service';
 import { ndocumentoService } from '../ndocumento/ndocumento.service';
 import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.entity';
 import { PpessoaService } from '../ppessoa/ppessoa.service';
-import { verificaAutorizacao } from 'src/util/permissao/permissao';
+import { verificaAutorizacao } from '../util/permissao/permissao';
 import { permissaoFindAll } from '../util/permissao/permissao';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
