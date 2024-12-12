@@ -71,9 +71,8 @@ import { PcontasNumService } from '../pcontasnum/pcontasnum.service';
 import { ndocumentoService } from '../ndocumento/ndocumento.service';
 import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.entity';
 import { PpessoaService } from '../ppessoa/ppessoa.service';
-import { verificaAutorizacao } from 'src/util/variaveis/verifica_login';
+import { verificaAutorizacao } from 'src/util/permissao/permissao';
 import { permissaoFindAll } from '../util/permissao/permissao';
-import { permissaoCargo } from 'src/util/enums/cargo';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -314,8 +313,7 @@ export class SaqueService {
       } else {
         filterConditions.push('b.CHAPA = :chapa');
         filterValues.push(chapa);
-      }
-    
+      }    
 
       // Verifica e adiciona cada filtro dinamicamente
       if (params.SQE_ID_CODIGO) {
@@ -900,8 +898,7 @@ export class SaqueService {
       }
 
       return { sqeIdCodigo: resultSaque.sqeIdCodigo };
-    } catch (error) {
-      console.error(error);
+    } catch (error) {     
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
