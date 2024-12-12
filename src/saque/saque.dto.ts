@@ -31,6 +31,8 @@ export class FindParamsSaque {
   @ApiProperty({required: false})
   STATUS_SAQUE?: string;
   @ApiProperty({required: false})
+  SQE_EFETIVO?: string;
+  @ApiProperty({required: false})
   usePrestDate?: string;
   @ApiProperty({required: false})
   startDate?: string;

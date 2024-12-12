@@ -328,9 +328,14 @@ export class SaqueService {
         filterConditions.push('b.STS_DESCRICAO = :STS_DESCRICAO');
         filterValues.push(params.STS_DESCRICAO);
       }
+
       if (params.REQ_STATUS) {
         filterConditions.push('d.REQ_STATUS = :REQ_STATUS');
         filterValues.push(params.REQ_STATUS);
+      }
+      if (params.SQE_EFETIVO) {
+        filterConditions.push('a.SQE_EFETIVO = :SQE_EFETIVO');
+        filterValues.push(params.SQE_EFETIVO);
       }
 
       const result = await this.saqueRepository.query(
