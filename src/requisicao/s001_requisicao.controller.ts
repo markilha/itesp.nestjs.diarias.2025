@@ -14,6 +14,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { requisicaoAutorizadaSwagger, requisicaoSwagger } from 'src/swagger/requisicaoswagger';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { UsersDto } from 'src/users/users.dto';
+import { AuthUserDto } from 'src/auth/use.auth.Dto';
 
 @UseGuards(AuthGuard)
 @ApiTags('usureq')
@@ -37,7 +38,7 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async find(@CurrentUser() user: UsersDto,@Query() params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
+  async find(@CurrentUser() user: AuthUserDto,@Query() params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
 
     if(!params.chapa){
      params.chapa = user.chapa;
@@ -62,13 +63,13 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async findAllAprovadas(@CurrentUser() user: UsersDto,@Query() params: FindAllAutorizadasParams): Promise<RequisDto[]> {
+  async findAllAprovadas(@CurrentUser() user: AuthUserDto,@Query() params: FindAllAutorizadasParams): Promise<RequisDto[]> {
     if(!params.all){
       if(!params.chapa){
         params.chapa = user.chapa;
        }
     }
-    return await this.requisicao.findAllAprovadas(params);
+    return await this.requisicao.findAllAprovadas(params,user);
   }  
 
   @Get('mesatual')
@@ -87,11 +88,11 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async findMes(@CurrentUser() user: UsersDto,@Query() params: findMesParams): Promise<RequisDto[]> {
+  async findMes(@CurrentUser() user: AuthUserDto,@Query() params: findMesParams): Promise<RequisDto[]> {
     if(!params.chapa){
       params.chapa = user.chapa;
      }
-    return await this.requisicao.findMesAtual(params);
+    return await this.requisicao.findMesAtual(params,user);
   }
 
   @Get('pendentes')
@@ -99,8 +100,7 @@ export class S001RequisicaoController {
   @ApiResponse({
     status: 200,
     description: 'Requições encontradas',
-    type: requiTotal
-   
+    type: requiTotal   
   })
   @ApiResponse({
     status: 401,
@@ -110,10 +110,10 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async findPendentes(@CurrentUser() user: UsersDto,@Query('chapa') chapa: string): Promise<requiTotal> {    
+  async findPendentes(@CurrentUser() user: AuthUserDto,@Query('chapa') chapa: string): Promise<requiTotal> {    
     if(!chapa){
       chapa = user.chapa;
      } 
-    return await this.requisicao.findPendentes(chapa);
+    return await this.requisicao.findPendentes(chapa, user);
   }
 }

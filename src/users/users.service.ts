@@ -175,7 +175,7 @@ export class UsersService {
       let perfilAcesso: PerfilAcesso[];
       perfilAcesso = await this.findPerfilAcesso(IDSISTEMA.id_sistema);
   
-      const acesso = await this.findNivel(fountUser.id_usuario);
+      const acesso = await this.findNivel(fountUser.id_usuario);     
 
       if(acesso.length > 0){ 
         const acessoSistema = acesso.find((item) => item.id_perfil_acesso === Number(params.id_perfil_acesso));       
@@ -191,10 +191,21 @@ export class UsersService {
           [params.id_perfil_acesso, params.id_sistema,'F', fountUser.id_usuario],
         );
         return { message: 'Acesso concedido com sucesso' };
+      }else{
+        //se não tiver acesso ao sistema inserir o acesso
+        await this.usersRepository.query(
+          `
+          INSERT INTO ace_usuario_perfil_acesso (id_perfil_acesso, id_sistema,cpf_cnpj,id_usuario)
+          VALUES (?, ?,?, ?)
+          `,
+          [params.id_perfil_acesso, params.id_sistema,'F', fountUser.id_usuario],
+        );
+        return { message: 'Acesso concedido com sucesso' };
       }
 
      
     } catch (error) {
+      console.log(error);
       
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
       

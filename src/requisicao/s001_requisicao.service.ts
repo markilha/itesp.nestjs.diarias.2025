@@ -38,8 +38,8 @@ import { DataUtils } from '../util/DataUtils';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
 import { calcularPeriodo } from '../util/calcula_periodo';
-import { PpessoaService } from '../ppessoa/ppessoa.service';
-import { permissaoCargo } from '../util/enums/cargo';
+import { permissaoFindAll } from 'src/util/permissao/permissao';
+import { AuthUserDto } from 'src/auth/use.auth.Dto';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -49,8 +49,7 @@ export class S001RequisicaoService {
     private ufespService: UfespService,
     private SaquesMesService: SaquesMesService,
     private itinirarioService: ItinirarioService,
-    private naotrabservice: naotrabService,
-    private ppessoaService: PpessoaService,
+    private naotrabservice: naotrabService  
   ) {}
 
   private async buscarItinerario(reqIdCodigo: number) {
@@ -271,7 +270,10 @@ export class S001RequisicaoService {
     }
   }
 
-  async findAllAprovadas(params: FindAllAutorizadasParams): Promise<RequisDto[]> {
+  async findAllAprovadas(
+    params: FindAllAutorizadasParams,
+    user: AuthUserDto,
+  ): Promise<RequisDto[]> {
     try {
       const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
       const pageNumber = params.page ?? 1;
@@ -292,9 +294,6 @@ export class S001RequisicaoService {
         order['reqIdCodigo'] = 'ASC';
       }
 
-      // Busca o usuário logado para determinar a permissão
-      const ppessoa = await this.ppessoaService.find({ chapa: params.chapa });
-      // Determina o filtro base para funcSalario
       const funcSalarioFilter: Partial<{
         nome: FindOperator<string>;
         codsecao: FindOperator<string>;
@@ -302,15 +301,11 @@ export class S001RequisicaoService {
         nome: params.nome ? ILike(`%${params.nome}%`) : undefined,
       };
 
-      // Ajusta os filtros com base na permissão do usuário
-      if (
-        [
-          permissaoCargo.GTCAMPO,
-          permissaoCargo.TESOURARIA_INTERIOR,
-          permissaoCargo.FINANCEIRO_INTERIOR,
-        ].includes(ppessoa.PERMISSAO)
-      ) {
-        funcSalarioFilter.codsecao = Like(`${ppessoa.CODSECAO.substring(0, 15)}%`);
+      const per = permissaoFindAll(user.permissao);
+     
+
+      if (per) {
+        funcSalarioFilter.codsecao = Like(`${user.codsecao.substring(0, per)}%`);
       } else if (params.chapa) {
         searchParams['chapa'] = params.chapa;
       }
@@ -346,8 +341,7 @@ export class S001RequisicaoService {
     }
   }
 
-
-  async findMesAtual(params: findMesParams): Promise<RequisDto[]> {
+  async findMesAtual(params: findMesParams, user: AuthUserDto): Promise<RequisDto[]> {
     try {
       const dataatual = params.dataAtual ? params.dataAtual : new Date();
       const inicioMes = format(startOfMonth(dataatual), 'dd/MM/yyyy 00:00:00');
@@ -358,13 +352,12 @@ export class S001RequisicaoService {
 
       filterValues.push(inicioMes);
       filterValues.push(fimMes);
-      const ppessoa = await this.ppessoaService.find({ chapa: params.chapa });
-      if (
-        ppessoa.PERMISSAO === permissaoCargo.GTCAMPO ||
-        ppessoa.PERMISSAO === permissaoCargo.TESOURARIA_INTERIOR ||
-        ppessoa.PERMISSAO === permissaoCargo.FINANCEIRO_INTERIOR
-      ) {
-        filterConditions.push(`SUBSTR(C.CODSECAO, 0, 15) = '${ppessoa.CODSECAO.substring(0, 15)}'`);
+
+      const per = permissaoFindAll(user.permissao);
+      if (per) {
+        filterConditions.push(
+          `SUBSTR(C.CODSECAO, 0, ${per}) = '${user.codsecao.substring(0, per)}'`,
+        );
       } else {
         filterConditions.push('b.CHAPA = :chapa');
         filterValues.push(params.chapa);
@@ -413,7 +406,7 @@ export class S001RequisicaoService {
       });
 
       return retornoRequi;
-    } catch (error) {     
+    } catch (error) {
       throw new HttpException(
         'Erro ao buscar requisições aprovadas',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -432,19 +425,16 @@ export class S001RequisicaoService {
     }
   }
 
-  async findPendentes(chapa: string): Promise<requiTotal> {
+  async findPendentes(chapa: string, user: AuthUserDto): Promise<requiTotal> {
     try {
       const filterConditions = [];
       const filterValues = [];
 
-      const ppessoa = await this.ppessoaService.find({ chapa: chapa });
-
-      if (
-        ppessoa.PERMISSAO === permissaoCargo.GTCAMPO ||
-        ppessoa.PERMISSAO === permissaoCargo.TESOURARIA_INTERIOR ||
-        ppessoa.PERMISSAO === permissaoCargo.FINANCEIRO_INTERIOR
-      ) {
-        filterConditions.push(`SUBSTR(b.CODSECAO, 0, 15) = '${ppessoa.CODSECAO.substring(0, 15)}'`);
+      const per = permissaoFindAll(user.permissao);
+      if (per) {
+        filterConditions.push(
+          `SUBSTR(b.CODSECAO, 0, ${per}) = '${user.codsecao.substring(0, per)}'`,
+        );
       } else {
         filterConditions.push('b.CHAPA = :chapa');
         filterValues.push(chapa);

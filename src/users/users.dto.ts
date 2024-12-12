@@ -110,6 +110,8 @@ export class userInfo {
   roles: string[]
   @ApiProperty()
   permissao: number;
+  @ApiProperty()
+  codsecao: string;
 }
 
 export class returnTotal {

@@ -71,8 +71,9 @@ import { PcontasNumService } from '../pcontasnum/pcontasnum.service';
 import { ndocumentoService } from '../ndocumento/ndocumento.service';
 import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.entity';
 import { PpessoaService } from '../ppessoa/ppessoa.service';
-import { permissaoCargo } from '../util/enums/cargo';
 import { verificaAutorizacao } from 'src/util/variaveis/verifica_login';
+import { permissaoFindAll } from '../util/permissao/permissao';
+import { permissaoCargo } from 'src/util/enums/cargo';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -291,10 +292,9 @@ export class SaqueService {
   }
 
   //BUSCAR TODOS OS SAQUES
-  async findAll(params: FindParamsSaque): Promise<any> {
+  async findAll(params: FindParamsSaque, user: AuthUserDto): Promise<any> {
+    
     try {
-      // total de registros por params.chapa
-
       const chapa = params.CHAPA;
       const orderByField = params.orderBy || 'a.SQE_DTPEDIDO';
       const orderDirection = params.orderDirection || 'ASC';
@@ -306,23 +306,16 @@ export class SaqueService {
       const filterConditions: string[] = [];
       const filterValues: any[] = [];
 
-      //Verifica Permissão do usuário
-      const ppessoa = await this.ppessoaService.find({ chapa: chapa });
-      if (
-        ppessoa.PERMISSAO === permissaoCargo.GTCAMPO ||
-        ppessoa.PERMISSAO === permissaoCargo.TESOURARIA_INTERIOR ||
-        ppessoa.PERMISSAO === permissaoCargo.FINANCEIRO_INTERIOR
-      ) {
-        filterConditions.push(`SUBSTR(b.CODSECAO, 0, 15) = '${ppessoa.CODSECAO.substring(0, 15)}'`);
+      const per = permissaoFindAll(user.permissao);
+      if (per) {
+        filterConditions.push(
+          `SUBSTR(b.CODSECAO, 0, ${per}) = '${user.codsecao.substring(0, per)}'`,
+        );
       } else {
         filterConditions.push('b.CHAPA = :chapa');
         filterValues.push(chapa);
       }
-      // else if (ppessoa.PERMISSAO === permissaoCargo.GERENTE) {
-      //   filterConditions.push(`SUBSTR(b.CODSECAO, 0, 12) = '${ppessoa.CODSECAO.substring(0, 12)}'`);
-      // } else if (ppessoa.PERMISSAO === permissaoCargo.DIRETOR_ADJUNTO) {
-      //   filterConditions.push(`SUBSTR(b.CODSECAO, 0, 3) = '${ppessoa.CODSECAO.substring(0, 3)}'`);
-      // }
+    
 
       // Verifica e adiciona cada filtro dinamicamente
       if (params.SQE_ID_CODIGO) {
@@ -1123,9 +1116,9 @@ export class SaqueService {
       }
       const itens = await this.itensreqrecService.findOne(saque.iteIdCodigo);
       verificaAutorizacao(itens.CHAPA, user);
-      
-      const req = await this.reqnumerarioService.findOne(saque.sqeIdCodigo);      
-      const msg = `Saque:${itens.CHAPA}-Cancelado:${user.chapa}-${DataUtils.formatarDataAtualString()}-Req.Viagem:${req.REQ_ID_CODIGO}`; 
+
+      const req = await this.reqnumerarioService.findOne(saque.sqeIdCodigo);
+      const msg = `Saque:${itens.CHAPA}-Cancelado:${user.chapa}-${DataUtils.formatarDataAtualString()}-Req.Viagem:${req.REQ_ID_CODIGO}`;
 
       if (saque.sqeEfetivo === 'D') {
         gsaque = 1;

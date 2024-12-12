@@ -58,10 +58,10 @@ export class UsersController {
    @ApiResponse({
     status: 200,
     description: 'Lista o usuário logado!',
-    type: userInfo,
-   
+    type: userInfo  
   
   })
+  
   getInfo(@CurrentUser() user: AuthUserDto): userInfo {
     return {
       id_usuario: user.sub,
@@ -69,6 +69,7 @@ export class UsersController {
       chapa: user.chapa,
       roles: user.roles,
       permissao: user.permissao,
+      codsecao: user.codsecao,
     };
   }
 }

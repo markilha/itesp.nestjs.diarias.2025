@@ -51,9 +51,10 @@ export class AuthService {
         .filter((accessLevel) => accessLevel);
     }    
 
-    if (roles.length === 0) {
-      throw new UnauthorizedException('Usuário sem acesso ao sistema');
-    }
+    // if (roles.length === 0) {
+    //   throw new UnauthorizedException('Usuário sem acesso ao sistema');
+    // }
+    
     const ppessoa = await this.ppessoaService.find({ chapa: fountUser.chapa}); 
     const payload: AuthUserDto = {
       sub: fountUser.id_usuario,
@@ -61,6 +62,7 @@ export class AuthService {
       chapa: preencherZeros(fountUser.chapa,6),   
       roles: roles,    
       permissao: ppessoa.PERMISSAO,  
+      codsecao: ppessoa.CODSECAO
     }; 
     
     const token = this.jwtService.sign(payload);    
