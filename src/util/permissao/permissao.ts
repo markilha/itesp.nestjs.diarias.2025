@@ -6,7 +6,7 @@ export const permissaoFind = [
   {
     roles: [
       permissaoCargo.GTCAMPO,
-      permissaoCargo.FINANCEIRO_INTERIOR,
+      permissaoCargo.TESOURARIA_INTERIOR,
       permissaoCargo.FINANCEIRO_TESOURARIA,
     ],
     secao: 15,
@@ -20,11 +20,11 @@ export const permissaoFind = [
     secao: 3,
   },
 ];
-export const permissaoFindAll = (permissao: number) => {
-  const permissaoFindAllSaqueSecao = permissaoFind.find((p) => p.roles.includes(permissao));
+export const permissaoFindAll = (permissao: number) => {  
+  const permissaoFindAllSaqueSecao = permissaoFind.find((p) => p.roles.includes(permissao));  
   if (!permissaoFindAllSaqueSecao) {
     return null;
-  }
+  }  
   return permissaoFindAllSaqueSecao.secao;
 };
 

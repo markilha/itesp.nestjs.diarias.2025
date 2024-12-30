@@ -12,8 +12,8 @@ import { SaquesMesService } from '../../saques-mes/saques-mes.service';
 import { PpessoaService } from '../../ppessoa/ppessoa.service';
 import { mockAprovadas, mockQueryBuilder, mockReqMes, mockReqMesResult } from '../__mocks__/mocks';
 import { FindAllAutorizadasParams } from '../requisicao.dto';
-
-
+import { userAuthMock } from '../../users/__mocks__/user.mock';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 describe('requsicaoService', () => {
   let requiservice: S001RequisicaoService;
@@ -93,36 +93,35 @@ describe('requsicaoService', () => {
     expect(requisicaoRepository).toBeDefined();
   });
 
-  // describe('findAllAprovadas', () => {
-  //   it('Deve retornar todas as requisições aprovadas', async () => {
-  //     const parms: FindAllAutorizadasParams = {
-  //       chapa: '000081'         
-  //     };
-  //     const requisicoes = await requiservice.findAllAprovadas(parms);     
-  //     expect(requisicoes).toEqual(mockAprovadas);
-  //     expect(requisicaoRepository.find).toHaveBeenCalledTimes(1);
-  //   });
-  //   it('deve lançar uma HttpException se o reqIdCodigo não for fornecido', async () => {
-  //     jest.spyOn(requiservice, 'findAllAprovadas').mockRejectedValue(new Error());
-  //     await expect(requiservice.findAllAprovadas(null)).rejects.toThrow();
-  //   });
-  // });
+  describe('findAllAprovadas', () => {
+    it('Deve retornar todas as requisições aprovadas', async () => {
+      const parms: FindAllAutorizadasParams = {
+        chapa: '000081',
+      };
+      const requisicoes = await requiservice.findAllAprovadas(parms, userAuthMock);
+      expect(requisicoes).toEqual(mockAprovadas);
+      expect(requisicaoRepository.find).toHaveBeenCalledTimes(1);
+    });
 
-  // describe('findMesAtual', () => {
-  //   it('deve retornar requisições do mês atual', async () => {
-  //     29 / 11 / 2023;
-  //     const result = await requiservice.findMesAtual({
-  //       chapa: '000081',
-  //       dataAtual: new Date('2023-11-29'),
-  //     });
+    it('deve lançar uma HttpException se o reqIdCodigo não for fornecido', async () => {
+      jest.spyOn(requiservice, 'findAllAprovadas').mockRejectedValue(new Error());
+      await expect(requiservice.findAllAprovadas(null, null)).rejects.toThrow();
+    });
+  });
 
-      
-  //     expect(result).toEqual(mockReqMesResult);
-  //   });
+  const params = {
+    chapa: '000081',
+    dataAtual: new Date('2023-11-29'),
+  };
 
-  //   it('deve lançar HttpException quando ocorrer erro', async () => {
-  //     jest.spyOn(requiservice, 'findMesAtual').mockRejectedValue(new Error());
-  //     await expect(requiservice.findMesAtual(null)).rejects.toThrow();
-  //   });
-  // });
+
+  describe('findMesAtual', () => {
+    it('deve retornar requisições do mês atual', async () => {
+      const result = await requiservice.findMesAtual(params, userAuthMock);
+      expect(result).toEqual(mockReqMesResult);
+    }); 
+    
+  });
+  
+  
 });

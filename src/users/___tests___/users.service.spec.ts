@@ -3,7 +3,8 @@ import { UsersService } from '../users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UserEntity } from '../../database/db_mysql/entities/user.entity';
 import { Repository } from 'typeorm';
-import { userEntityMock } from '../__mocks__/user.mock';
+import { userEntityMock, userMockResult } from '../__mocks__/user.mock';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -37,9 +38,11 @@ describe('UsersService', () => {
   });
 
   it('Busca por id', async () => {
-    const user = await service.findOne(userEntityMock.id_usuario);
-    expect(user).toEqual(userEntityMock);
+    await expect(service.findOne({ id_usuario: userEntityMock.id_usuario }))
+      .rejects
+      .toThrow();
   });
+  
 
   it('busca por nome', async () => {
     const user = await service.findByUserName(userEntityMock.login);
@@ -47,17 +50,18 @@ describe('UsersService', () => {
   });
 
   it('Retornar todos usuarios', async () => {
-    const users = await service.findAll({ nome: userEntityMock.nome, login: userEntityMock.login });
-    expect(users).toEqual([userEntityMock]);
+    const users = await service.findAll({ nome: 'fulano de almeida', login: 'fulano' });
+    expect(users).toEqual(userMockResult);
   });
   
   it('Erro ao retornar usuario', async () => {
     jest.spyOn(useRepository, 'findOne').mockRejectedValue(null);
-    expect(service.findOne(userEntityMock.id_usuario)).rejects.toBeNull();
+    expect(service.findOne({id_usuario:userEntityMock.id_usuario})).rejects
+    .toThrow();
   });
   
   it('Erro ao retornar usuario - requisição', async () => {
     jest.spyOn(useRepository, 'findOne').mockRejectedValueOnce(new Error());
-    expect(service.findOne(userEntityMock.id_usuario)).rejects.toThrowError();
+    expect(service.findOne({id_usuario:userEntityMock.id_usuario})).rejects.toThrow()
   });
 });

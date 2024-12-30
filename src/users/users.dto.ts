@@ -70,15 +70,15 @@ export class PerfilAcesso {
 export class FindAllParamsDto {
 
   @ApiProperty()
-  id_usuario: number;
+  id_usuario?: number;
   @ApiProperty()
-  nome: string;
+  nome?: string;
 
   @ApiProperty()
-  chapa: string;
+  chapa?: string;
 
   @ApiProperty()
-  login: string;
+  login?: string;
 
 }
 

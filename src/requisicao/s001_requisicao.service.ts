@@ -49,7 +49,7 @@ export class S001RequisicaoService {
     private ufespService: UfespService,
     private SaquesMesService: SaquesMesService,
     private itinirarioService: ItinirarioService,
-    private naotrabservice: naotrabService  
+    private naotrabservice: naotrabService,
   ) {}
 
   private async buscarItinerario(reqIdCodigo: number) {
@@ -302,7 +302,6 @@ export class S001RequisicaoService {
       };
 
       const per = permissaoFindAll(user.permissao);
-     
 
       if (per) {
         funcSalarioFilter.codsecao = Like(`${user.codsecao.substring(0, per)}%`);
@@ -354,9 +353,10 @@ export class S001RequisicaoService {
       filterValues.push(fimMes);
 
       const per = permissaoFindAll(user.permissao);
+
       if (per) {
         filterConditions.push(
-          `SUBSTR(C.CODSECAO, 0, ${per}) = '${user.codsecao.substring(0, per)}'`,
+          `TRIM(SUBSTR(C.CODSECAO, 0, ${per})) = TRIM('${user.codsecao.substring(0, per)}')`,
         );
       } else {
         filterConditions.push('b.CHAPA = :chapa');
@@ -407,10 +407,7 @@ export class S001RequisicaoService {
 
       return retornoRequi;
     } catch (error) {
-      throw new HttpException(
-        'Erro ao buscar requisições aprovadas',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('buscar requisições aprovadas', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

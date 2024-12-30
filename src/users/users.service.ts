@@ -18,7 +18,7 @@ import {
   UsersDto,
 } from './users.dto';
 import { hashSync as bcryptHashSync } from 'bcrypt';
-import { IDSISTEMA } from 'src/util/variaveis/variaveis';
+import { IDSISTEMA } from '../util/variaveis/variaveis';
 
 @Injectable()
 export class UsersService {
@@ -210,26 +210,6 @@ export class UsersService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
       
     }
-
-
-
-   
-  
-    // await this.usersRepository.save(fountUser);   
-    // return { message: 'Senha resetada com sucesso' };
   }
 
-
-
-
-  // async findByUserEmail(email: string): Promise<UsersDto | null> {
-  //   const userFound = await this.usersRepository.findOne({
-  //     where: { email },
-  //   });
-
-  //   if (!userFound) {
-  //     return null;
-  //   }
-  //   return userFound;
-  // }
 }
