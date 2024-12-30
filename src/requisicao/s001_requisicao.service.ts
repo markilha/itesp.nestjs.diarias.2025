@@ -407,7 +407,8 @@ export class S001RequisicaoService {
 
       return retornoRequi;
     } catch (error) {
-      throw new HttpException('buscar requisições aprovadas', HttpStatus.INTERNAL_SERVER_ERROR);
+      console.log(error.message)
+     throw new HttpException('buscar requisições aprovadas', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -430,7 +431,7 @@ export class S001RequisicaoService {
       const per = permissaoFindAll(user.permissao);
       if (per) {
         filterConditions.push(
-          `SUBSTR(b.CODSECAO, 0, ${per}) = '${user.codsecao.substring(0, per)}'`,
+          `TRIM(SUBSTR(C.CODSECAO, 0, ${per})) = TRIM('${user.codsecao.substring(0, per)}')`,
         );
       } else {
         filterConditions.push('b.CHAPA = :chapa');

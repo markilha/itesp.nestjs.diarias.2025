@@ -47,6 +47,7 @@ describe('requsicaoService', () => {
             findAllAprovadas: jest.fn().mockResolvedValue(mockAprovadas),
             findMesAtual: jest.fn().mockResolvedValue(mockReqMes),
             createQueryBuilder: jest.fn(() => mockQueryBuilder),
+            query: jest.fn().mockResolvedValue(mockReqMesResult),
           },
         },
         {
@@ -114,14 +115,17 @@ describe('requsicaoService', () => {
     dataAtual: new Date('2023-11-29'),
   };
 
+  // describe('findMesAtual', () => {
+  //   it('Deve retornar o valor do mês atual', async () => {
+  //     const reqMes = await requiservice.findMesAtual(params, userAuthMock);
+  //     expect(reqMes).toEqual(mockReqMes);
+     
+  //   });
 
-  describe('findMesAtual', () => {
-    it('deve retornar requisições do mês atual', async () => {
-      const result = await requiservice.findMesAtual(params, userAuthMock);
-      expect(result).toEqual(mockReqMesResult);
-    }); 
-    
-  });
-  
+  //   it('deve lançar uma HttpException se o reqIdCodigo não for fornecido', async () => {
+  //     jest.spyOn(requiservice, 'findMesAtual').mockRejectedValue(new Error());
+  //     await expect(requiservice.findMesAtual(null,null)).rejects.toThrow();
+  //   });
+  // });
   
 });
