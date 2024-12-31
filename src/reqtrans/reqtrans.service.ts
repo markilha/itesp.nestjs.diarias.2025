@@ -47,8 +47,7 @@ export class reqtransService {
     try {
       const newreqtrans = await this.reqtransRepository.save(reqtrans);
       return new reqtransDto(newreqtrans);
-    } catch (error) {
-      console.log(error);
+    } catch (error) {     
       throw new HttpException('Erro ao criar o requisicao', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -107,20 +106,6 @@ export class reqtransService {
       );
     }
   }
-
-  // async updateStatus(reqIdCodigo: number, status: string) {
-  //   const reqtransToUpdate = await this.findOne(reqIdCodigo);
-  //   // Verifica se o status atual é 'FINALIZADA' ou 'AUTORIZADA PELO DIRETOR EXECUTIVO'
-  //   if (['FINALIZADA', 'AUTORIZADA PELO DIRETOR EXECUTIVO'].includes(reqtransToUpdate.REQ_STATUS)) {
-  //     throw new HttpException(
-  //       'requisição finalizada ou já autorizada',
-  //       HttpStatus.BAD_REQUEST,
-  //     );
-  //   }
-
-  //   reqtransToUpdate.REQ_STATUS = status;
-  //   return this.reqtransRepository.save(reqtransToUpdate);
-  // }
 
   async cancela(reqIdCodigo: number): Promise<reqtransEntity> {
     if (!reqIdCodigo) {

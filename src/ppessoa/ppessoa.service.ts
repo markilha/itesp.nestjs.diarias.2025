@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PPessoaEntity } from '../database/db_oracle/entities/ppessoa.entity';

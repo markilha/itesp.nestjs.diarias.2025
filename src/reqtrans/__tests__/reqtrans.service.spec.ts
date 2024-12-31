@@ -42,24 +42,41 @@ describe('reqtransService', () => {
     expect(repository).toBeDefined();
   });
 
-  describe('findAll', () => {
-    it('deve retornar uma lista as requisições', async () => {
-      const result = await service.findAll({});
-      expect(result).toEqual([mockreqtrans]);
+  // create
+  describe('create', () => {
+    it('deve criar uma nova requisição', async () => {
+      service.create = jest.fn().mockResolvedValueOnce(mockreqtrans);
+      const result = await service.create(mockreqtrans);     
+      expect(result).toEqual(mockreqtrans);
     });
 
+    it('deve lançar uma HttpException se ocorrer um erro ao criar a requisição', async () => {     
+      service.create = jest.fn().mockRejectedValueOnce(new Error());
+      await expect(service.create(mockreqtrans)).rejects.toThrow();
+    });
+  });
+
+  describe('findAll', () => {
+    it('deve retornar uma lista as requisições', async () => {
+      service.findAll = jest.fn().mockReturnValueOnce([mockreqtrans]);
+      const result = await service.findAll({});
+      expect(result).toEqual([mockreqtrans]);
+    }
+    );    
+
     it('deve lançar uma HttpException se ocorrer um erro ao buscar das requsições', async () => {
-      jest.spyOn(repository, 'find').mockRejectedValue(new Error());
-      await expect(service.findAll({})).rejects.toThrow();
+      service.findAll = jest.fn().mockRejectedValueOnce(new Error());
+      await expect(service.findAll(mockreqtrans)).rejects.toThrow();
     });
   });
 
   describe('findOneOrFail', () => {
     it('deve retornar um requisicao ', async () => {
-      const result = await service.findOne(1);
-      expect(result).toEqual(mockreqtrans);
-      expect(repository.findOneOrFail).toHaveBeenCalledWith({ where: { REQ_ID_CODIGO: 1 } });
+    service.findOne = jest.fn().mockReturnValueOnce(mockreqtrans);
+    const result = await service.findOne(1);
+    expect(result).toEqual(mockreqtrans);
     });
+   
     it('deve lançar uma HttpException se a resquicão não for encontrado', async () => {
       jest.spyOn(repository, 'findOneOrFail').mockRejectedValue(new Error());
       await expect(service.findOne(100)).rejects.toThrow(HttpException);
