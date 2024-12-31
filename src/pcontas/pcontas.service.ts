@@ -4,9 +4,9 @@ import { pcontasEntity } from '../database/db_oracle/entities/pcontas.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { createPcontasDto, FindAllParams, pcontasDto } from './pcontasDto';
 import { pcontasnumEntity } from '../database/db_oracle/entities/pcontasnum';
-import { reembolsoService } from '../reembolso/reembolso.service';
-import { extornoService } from '../extorno/extorno.service';
-import { extornoDto } from '../extorno/extornoDto';
+//import { reembolsoService } from '../reembolso/reembolso.service';
+//import { extornoService } from '../extorno/extorno.service';
+//import { extornoDto } from '../extorno/extornoDto';
 import { SaqueService } from '../saque/saque.service';
 import { DataUtils } from '../util/DataUtils';
 import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
@@ -18,8 +18,8 @@ export class PcontasService {
   constructor(
     @InjectRepository(pcontasEntity, 'oracleConnection')
     private pcontasRepository: Repository<pcontasEntity>,
-    private reembolsosService: reembolsoService,
-    private extornoService: extornoService,    
+    //private reembolsosService: reembolsoService,
+    //private extornoService: extornoService,    
     private reqnumerarioService: ReqnumerarioService,
     private ndocumentoService: ndocumentoService,
     @Inject(forwardRef(() => SaqueService))
@@ -51,7 +51,7 @@ export class PcontasService {
       return await this.pcontasRepository.find({
         where: searchParams,
       });
-    } catch (error) {
+    } catch (error) {     
       throw new HttpException(
         'Não foi possível as prestações de conta',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -61,14 +61,10 @@ export class PcontasService {
 
   async findOne(PCO_ID_CODIGO: number): Promise<pcontasDto> {
     try {
-      return await this.pcontasRepository.findOne({
-        where: {
-          PCO_ID_CODIGO,
-        },
-      });
+      return await this.pcontasRepository.findOneByOrFail({PCO_ID_CODIGO});
     } catch (error) {
       throw new HttpException(
-        'Não foi possível as prestações de conta',
+        'Erro ao buscar a prestação de conta',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -82,7 +78,7 @@ export class PcontasService {
       return lastIdResult[0]?.LASTID || 0;
     } catch (error) {
       throw new HttpException(
-        'Não foi possível as prestações de conta',
+        'Erro ao buscar o último ID',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -174,7 +170,7 @@ export class PcontasService {
       const pc = this.pcontasRepository.create(pcontasDto);
       await this.pcontasRepository.save(pc);
       return pc;
-    } catch (error) {
+    } catch (error) {       
       throw new HttpException(
         'Não foi possível criar a prestação de conta',
         HttpStatus.INTERNAL_SERVER_ERROR,

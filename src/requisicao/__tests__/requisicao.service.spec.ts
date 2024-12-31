@@ -119,15 +119,26 @@ describe('requsicaoService', () => {
     it('Deve retornar o valor do mês atual', async () => {
       requiservice.findMesAtual = jest.fn().mockResolvedValue(mockReqMes);
       const reqMes = await requiservice.findMesAtual(params, userAuthMock);
-      expect(reqMes).toEqual(mockReqMes); 
+      expect(reqMes).toEqual(mockReqMes);
     });
 
     it('deve lançar uma HttpException se o reqIdCodigo não for fornecido', async () => {
       jest.spyOn(requiservice, 'findMesAtual').mockRejectedValue(new Error());
-      await expect(requiservice.findMesAtual(null,null)).rejects.toThrow();
+      await expect(requiservice.findMesAtual(null, null)).rejects.toThrow();
     });
   });
 
-  
-  
+  describe('findPendentes', () => {
+    it('Deve retornar as prestações pendentes', async () => {
+      requiservice.findPendentes = jest.fn().mockReturnValueOnce(mockReqMes);
+      const reqMes = await requiservice.findPendentes('000081', userAuthMock);
+      expect(reqMes).toEqual(mockReqMes);
+      expect(requiservice.findPendentes).toHaveBeenCalledWith('000081', userAuthMock);
+    });
+
+    it('deve lançar uma HttpException quando inserido uma chapa que não existe', async () => {
+      jest.spyOn(requiservice, 'findPendentes').mockRejectedValue(new Error());
+      await expect(requiservice.findPendentes(null,null)).rejects.toThrow();
+    });
+  });
 });
