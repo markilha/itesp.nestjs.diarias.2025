@@ -170,8 +170,7 @@ export class SaqueService {
   }
 
   private async buscarUfespCargo(chapa: string): Promise<number> {
-    const funcsalario = await this.funcsalarioService.findByCodigo(chapa);
-    console.log(funcsalario);
+    const funcsalario = await this.funcsalarioService.findByCodigo(chapa);   
 
     if (!funcsalario) {
       throw new HttpException('Funcionário não encontrado', HttpStatus.NOT_FOUND);

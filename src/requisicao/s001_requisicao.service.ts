@@ -60,78 +60,7 @@ export class S001RequisicaoService {
     }
   }
 
-  // Busca todas as requisições prestação de contas
 
-  // async find(params: FindAllParams, user: AuthUserDto): Promise<any> {
-  //   try {
-  //     const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
-
-  //     searchParams['chapa'] = user.chapa;
-
-  //     const fields = ['reqIdCodigo', 'codMunicipio', 'reqStatus'];
-
-  //     fields.forEach((field) => {
-  //       if (params[field]) {
-  //         searchParams[field] = params[field];
-  //       }
-  //     });
-
-  //     const order: { [key: string]: 'ASC' | 'DESC' } = {};
-  //     if (params.orderBy) {
-  //       order[params.orderBy] = params.orderDirection === 'DESC' ? 'DESC' : 'ASC';
-  //     } else {
-  //       order['reqIdCodigo'] = 'ASC';
-  //     }
-
-  //     searchParams['reqDtSaida'] = MoreThanOrEqual(new Date('2009-08-10'));
-
-  //     let requisicoes: RequisicaoEntity[];
-
-  //     try {
-  //       if (params.page && params.limit) {
-  //         const page = params.page;
-  //         const limit = params.limit;
-  //         const skip = (page - 1) * limit;
-
-  //         requisicoes = await this.requisicaoRepository.find({
-  //           where: searchParams,
-  //           skip,
-  //           take: limit,
-  //           order,
-  //           relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
-  //         });
-  //       } else {
-  //         requisicoes = await this.requisicaoRepository.find({
-  //           where: searchParams,
-  //           order,
-  //           relations: ['destino', 'funcSalario', 'funcSalario.despesaDiaria'],
-  //         });
-  //       }
-  //     } catch (error) {
-  //       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-  //     }
-
-  //     if (!requisicoes || requisicoes.length === 0) {
-  //       return [];
-  //     }
-
-  //     const results = await Promise.all(
-  //       requisicoes.map((requisicao) => this.processRequisicao(requisicao, params.chapa)),
-  //     );
-
-  //     const count = await this.requisicaoRepository.find({
-  //       where: searchParams,
-  //     });
-
-  //     return {
-  //       data: results,
-  //       total: count.length || 0,
-  //     };
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-  //   }
-  // }
 
   async find(params: FindAllParams, user: AuthUserDto): Promise<any> {
     try {
@@ -388,77 +317,7 @@ export class S001RequisicaoService {
     }
   }
 
-  // Busca requisições aprovadas
-
-  // async findAllAprovadas(
-  //   params: FindAllAutorizadasParams,
-  //   user: AuthUserDto,
-  // ): Promise<RequisDto[]> {
-  //   try {
-  //     const searchParams: FindOptionsWhere<RequisicaoEntity> = {};
-  //     const pageNumber = params.page ?? 1;
-  //     const pageSize = params.limit ?? 500;
-  //     const skip = (pageNumber - 1) * pageSize;
-
-  //     searchParams['reqDtSaida'] = MoreThanOrEqual(new Date('2009-08-10'));
-
-  //     searchParams['reqStatus'] = In([
-  //       'AUTORIZADA PELO DIRETOR',
-  //       'AUTORIZADA PELO DIRETOR EXECUTIVO',
-  //     ]);
-
-  //     const order: { [key: string]: 'ASC' | 'DESC' } = {};
-  //     if (params.orderBy) {
-  //       order[params.orderBy] = params.orderDirection === 'DESC' ? 'DESC' : 'ASC';
-  //     } else {
-  //       order['reqIdCodigo'] = 'ASC';
-  //     }
-
-  //     const funcSalarioFilter: Partial<{
-  //       nome: FindOperator<string>;
-  //       codsecao: FindOperator<string>;
-  //     }> = {
-  //       nome: params.nome ? ILike(`%${params.nome}%`) : undefined,
-  //     };
-
-  //     const per = permissaoFindAll(user.permissao);
-
-  //     if (per) {
-  //       funcSalarioFilter.codsecao = Like(`${user.codsecao.substring(0, per)}%`);
-  //     } else if (params.chapa) {
-  //       searchParams['chapa'] = user.chapa;
-  //     }
-
-  //     // Combina os filtros no whereCondition
-  //     const whereCondition = {
-  //       ...searchParams,
-  //       ...(Object.keys(funcSalarioFilter).length > 0 && { funcSalario: funcSalarioFilter }),
-  //     };
-
-  //     const requisicao = await this.requisicaoRepository.find({
-  //       where: whereCondition,
-  //       skip,
-  //       take: params.limit,
-  //       order,
-  //       relations: ['funcSalario'],
-  //     });
-
-  //     return requisicao.map((reqv) => {
-  //       return new RequisDto({
-  //         chapa: reqv.chapa,
-  //         reqIdCodigo: reqv.reqIdCodigo,
-  //         reqStatus: reqv.reqStatus,
-  //         reqDtReq: reqv.reqDtReq,
-  //         nome: reqv?.funcSalario?.nome,
-  //       });
-  //     });
-  //   } catch (error) {
-  //     throw new HttpException(
-  //       'Erro ao buscar requisições aprovadas',
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
+  
 
   async findAllAprovadas(params: FindAllAutorizadasParams, user: AuthUserDto): Promise<any> {
     try {
@@ -601,8 +460,7 @@ export class S001RequisicaoService {
         `;
        
 
-      const requisicao = await this.requisicaoRepository.query(query);
-      console.log(query);
+      const requisicao = await this.requisicaoRepository.query(query);    
 
       const retornoRequi = requisicao.map((requis) => {
         const newdate = DataUtils.converterStringParaData(requis?.REQ_DTREQ);
