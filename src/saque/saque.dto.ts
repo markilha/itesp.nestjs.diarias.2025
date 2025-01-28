@@ -844,5 +844,13 @@ export class updateEfetivoDto {
   sqeEfetivo: string;
 }
 
+export class ParamsAltera { 
+  @ApiProperty({required: false})
+  SQE_ID_CODIGO: number; 
+  @ApiProperty({required: false})
+  SQE_VLPREST: number;
+}
+
+
 
 

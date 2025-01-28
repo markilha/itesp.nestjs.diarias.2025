@@ -11,6 +11,7 @@ import {
   ParamsPendente,
   ParamsCancela,
   InsSaqueDto,
+  ParamsAltera,
 } from './saque.dto';
 
 import { SaqueEntity } from '../database/db_oracle/entities/saque.entity';
@@ -48,11 +49,7 @@ import { formatDate } from 'date-fns';
 import { naotrabService } from '../naotrab/naotrab.service';
 import { documentosService } from '../documentos/documento.service';
 import { docsEntity } from 'src/database/db_mysql/entities/docs.entity';
-import {
-  SelecionaPendencia,
-  SelecionaPendencias,
-  selecionaSaquePendente,
-} from '../util/selects/saques';
+import { selecionaSaquePendente } from '../util/selects/saques';
 
 import {
   SelecionaAgrupaRec,
@@ -70,9 +67,9 @@ import { PcontasService } from '../pcontas/pcontas.service';
 import { PcontasNumService } from '../pcontasnum/pcontasnum.service';
 import { ndocumentoService } from '../ndocumento/ndocumento.service';
 import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.entity';
-import { PpessoaService } from '../ppessoa/ppessoa.service';
 import { verificaAutorizacao } from '../util/permissao/permissao';
 import { permissaoFindAll } from '../util/permissao/permissao';
+import { permissaoCargo } from 'src/util/enums/cargo';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -110,18 +107,13 @@ export class SaqueService {
     private pcontasService: PcontasService,
     private pcontasnumService: PcontasNumService,
     private ndocumentoService: ndocumentoService,
-    private ppessoaService: PpessoaService,
   ) {}
 
   private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
     const saque = await this.findOne(sqeIdCodigo);
-
     const itensreq = await this.itensreqrecService.findOne(saque.iteIdCodigo);
-
-    const reqnumerario = await this.reqnumerarioService.findOne(saque.sqeIdCodigo);
-
+    const reqnumerario = await this.reqnumerarioService.findOne(saque.iteIdCodigo);
     const reqtrans = await this.reqtransService.findOne(reqnumerario.REQ_ID_CODIGO);
-
     const destino = await this.destinoService.findOne(reqnumerario.REQ_ID_CODIGO);
 
     const saquedto: buscarSaqueDto = {
@@ -149,10 +141,10 @@ export class SaqueService {
       REQ_MOTIVO: reqtrans.REQ_MOTIVO,
       MUN_ID_CODIGO: destino.MUN_ID_CODIGO,
       DES_LOCAL: destino.DES_LOCAL,
-      MUN_CIDADE: reqtrans?.muni?.nmeMunic,
-      NME_MUNIC: reqtrans?.muni?.nmeMunic,
-      TRA_DESCRICAO: reqtrans?.transmeio?.traDescricao,
-      REG_DESCRICAO: reqtrans?.regional?.REG_DESCRICAO,
+      MUN_CIDADE: reqtrans?.NME_MUNIC,
+      NME_MUNIC: reqtrans?.NME_MUNIC,
+      TRA_DESCRICAO: reqtrans?.TRA_DESCRICAO
+     
     };
 
     return saquedto;
@@ -168,19 +160,26 @@ export class SaqueService {
   }
 
   private async buscarUfesp(dataSaida: string): Promise<number> {
-    const { ufeValor } = await this.ufespService.findValueByDate(dataSaida);
-    return ufeValor;
+    try {
+      const { ufeValor } = await this.ufespService.findValueByDate(dataSaida);      
+      return ufeValor;
+    } catch (error) {
+      console.error('Erro ao buscar ufesp:', error);
+      return null;
+    }
   }
 
   private async buscarUfespCargo(chapa: string): Promise<number> {
     const funcsalario = await this.funcsalarioService.findByCodigo(chapa);
+    console.log(funcsalario);
 
     if (!funcsalario) {
       throw new HttpException('Funcionário não encontrado', HttpStatus.NOT_FOUND);
     }
+    
+    const UFESPcargo = await this.despesaDiaria.findOne(funcsalario.CARGO);    
 
-    const UFESPcargo = await this.despesaDiaria.findOne(funcsalario.cargo);
-    return Number(UFESPcargo?.dtdValorMax);
+    return Number(UFESPcargo?.DTD_VALOR_MAX);
   }
 
   private async calcularDiarias(
@@ -280,7 +279,6 @@ export class SaqueService {
 
       return { itinerario, UFESP, UFESPcargoValor };
     } catch (error) {
-      // Propaga o erro específico para ser tratado no nível superior
       throw error instanceof HttpException
         ? error
         : new HttpException(
@@ -291,13 +289,12 @@ export class SaqueService {
   }
 
   //BUSCAR TODOS OS SAQUES
+
   async findAll(params: FindParamsSaque, user: AuthUserDto): Promise<any> {
-    
     try {
-      const chapa = params.CHAPA;
+      const chapa = user.chapa;
       const orderByField = params.orderBy || 'a.SQE_DTPEDIDO';
       const orderDirection = params.orderDirection || 'ASC';
-
       const page = params.page || 1;
       const itemsPerPage = params.limit || 1000;
       const offset = (page - 1) * itemsPerPage;
@@ -313,7 +310,7 @@ export class SaqueService {
       } else {
         filterConditions.push('b.CHAPA = :chapa');
         filterValues.push(chapa);
-      }    
+      }
 
       // Verifica e adiciona cada filtro dinamicamente
       if (params.SQE_ID_CODIGO) {
@@ -463,7 +460,8 @@ export class SaqueService {
       }
 
       const { itinerario, UFESP, UFESPcargoValor } = await this.buscarDadosNecessarios(consulta);
-
+   
+    
       try {
         destino = verificarDestino(consulta.MUN_ID_CODIGO) as Destino;
       } catch (error) {
@@ -477,6 +475,7 @@ export class SaqueService {
         consulta.SQE_DTPREST,
         consulta.SQE_VLPREST,
       );
+
 
       const { calcDiaraInial, calcDiaraRetorn, diariaIntegral, diariaParcial, diaraPorc } =
         await this.calcularDiarias(
@@ -514,8 +513,7 @@ export class SaqueService {
         SQE_VLPREST: consulta.IRR_VALOR_PREST,
         REQ_DTREQ: DataUtils.converterParaData(consulta.REQ_DTREQ),
         TRA_DESCRICAO: consulta.TRA_DESCRICAO,
-        NME_MUNIC: consulta.NME_MUNIC,
-        REG_DESCRICAO: consulta.REG_DESCRICAO,
+        NME_MUNIC: consulta.NME_MUNIC,     
         MUN_CIDADE: consulta.MUN_CIDADE,
         DES_LOCAL: consulta.DES_LOCAL,
         REQ_DTSAIDA: formatDate(consulta.REQ_DTSAIDA, 'yyyy-mm-dd 00:00:00'),
@@ -561,6 +559,7 @@ export class SaqueService {
   }
 
   //Buscar ultimo id
+
   async lastId(): Promise<number> {
     try {
       const lastIdResult = await this.saqueRepository.query(
@@ -903,7 +902,7 @@ export class SaqueService {
       }
 
       return { sqeIdCodigo: resultSaque.sqeIdCodigo };
-    } catch (error) {     
+    } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -1050,13 +1049,40 @@ export class SaqueService {
 
   async findOne(sqeIdCodigo: number): Promise<SaqueDto> {
     try {
-      const result = await this.saqueRepository.findOneOrFail({
-        where: {
-          sqeIdCodigo,
-        },
-      });
+      const result = await this.saqueRepository
+        .createQueryBuilder('SaqueEntity')
+        .select([
+          'SaqueEntity.SQE_ID_CODIGO AS "sqeIdCodigo"',
+          'SaqueEntity.ITE_ID_CODIGO AS "iteIdCodigo"',
+          'SaqueEntity.RRE_ID_CODIGO AS "rreIdCodigo"',
+          'SaqueEntity.DIR_ID_CODIGO AS "dirIdCodigo"',
+          'SaqueEntity.FPA_ID_CODIGO AS "fpaIdCodigo"',
+          'SaqueEntity.SQE_DTSAQUE AS "sqeDtSaque"',
+          'SaqueEntity.SQE_VLPREST AS "sqeVlPrest"',
+          'SaqueEntity.SQE_DTPREST AS "sqeDtPrest"',
+          'SaqueEntity.SQE_VLSAQUE AS "sqeVlSaque"',
+          'SaqueEntity.SQE_TIPOSAQUE AS "sqeTipoSaque"',
+          'SaqueEntity.SQE_EFETIVO AS "sqeEfetivo"',
+          'SaqueEntity.SQE_DTPEDIDO AS "sqeDtPedido"',
+          'SaqueEntity.SQE_LOTE AS "sqeLote"',
+          'SaqueEntity.SQE_ANOLOTE AS "sqeAnoLote"',
+          'SaqueEntity.STS_ID_CODIGO AS "stsIdCodigo"',
+          'SaqueEntity.SQE_TERCEIRO AS "sqeTerceiro"',
+          'SaqueEntity.PES_ID_CODIGO AS "pesIdCodigo"',
+          'SaqueEntity.PES_PESSOA AS "pesPessoa"',
+          'SaqueEntity.SQE_USUARIO AS "sqeUsuario"',
+          'SaqueEntity.SQE_EMPENHO AS "sqeEmpenho"',
+          'SaqueEntity.SQE_LISTASIAFEM AS "sqeListaSiafem"',
+        ])
+        .where('SaqueEntity.sqeIdCodigo = :sqeIdCodigo', { sqeIdCodigo })
+        .andWhere('ROWNUM = 1')
+        .getRawOne();
+      if (!result) {
+        throw new Error('Saque não encontrado');
+      }
       return result;
     } catch (error) {
+      console.error(error);
       throw new HttpException('Saque não encontrado', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -1074,22 +1100,20 @@ export class SaqueService {
     return await this.saqueRepository.save(saque);
   }
 
-  async selecionaSaquePendentes(params: ParamsPendente): Promise<any> {
+  // RETORNA SAQUE PENDENTES
+  async selecionaSaquePendentes(params: ParamsPendente, user: AuthUserDto): Promise<any> {
     try {
       let where = '';
-      let paramsWhere = [];
 
       if (params.RRE_ID_CODIGO) {
-        where = SelecionaPendencia;
-        paramsWhere = [params.CHAPA, params.RRE_ID_CODIGO];
+        where = `and A.RRE_ID_CODIGO= ${params.RRE_ID_CODIGO}`;
       } else {
-        where = SelecionaPendencias;
-        paramsWhere = [params.CHAPA];
+        where = `and A.Chapa = ${user.chapa}`;
       }
-      const result = await this.saqueRepository.query(
-        `${selecionaSaquePendente} ${where}`,
-        paramsWhere,
-      );
+
+      const stringQuery = `${selecionaSaquePendente} ${where}`;
+
+      const result = await this.saqueRepository.query(stringQuery);
       if (result.length > 0) {
         return result;
       } else {
@@ -1110,17 +1134,26 @@ export class SaqueService {
       let gsaque = 0;
       const saque = await this.findOne(params.SQE_ID_CODIGO);
 
-      if (saque.sqeEfetivo === 'S' || saque.sqeEfetivo === 'E' || saque.sqeEfetivo === 'P') {
-        throw new HttpException(
-          'O Saque efetuado pelo Financeiro, não permitido exclusão!',
-          HttpStatus.BAD_REQUEST,
-        );
+      if (
+        !(
+          user.permissao === permissaoCargo.TESOURARIA_INTERIOR ||
+          user.permissao === permissaoCargo.TESOURARIA_SEDE
+        )
+      ) {
+        if (saque.sqeEfetivo === 'S' || saque.sqeEfetivo === 'E' || saque.sqeEfetivo === 'P') {
+          throw new HttpException(
+            'O Saque efetuado pelo Financeiro, não permitido exclusão!',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
       }
-      const itens = await this.itensreqrecService.findOne(saque.iteIdCodigo);
-      verificaAutorizacao(itens.CHAPA, user);
 
+      const itens = await this.itensreqrecService.findOne(saque.iteIdCodigo);
+      const res = verificaAutorizacao(itens.CHAPA, user);
       const req = await this.reqnumerarioService.findOne(saque.sqeIdCodigo);
+
       const msg = `Saque:${itens.CHAPA}-Cancelado:${user.chapa}-${DataUtils.formatarDataAtualString()}-Req.Viagem:${req.REQ_ID_CODIGO}`;
+      await this.itensreqrecService.update(itens);
 
       if (saque.sqeEfetivo === 'D') {
         gsaque = 1;
@@ -1156,7 +1189,7 @@ export class SaqueService {
       }
 
       if (grava === 0) {
-        return { message: 'Exclusão realizada com Sucesso!' };
+        return { message: 'Cancelada com Sucesso!' };
       }
       if (grava === 1) {
         if (gsaque === 1) {
@@ -1239,5 +1272,27 @@ export class SaqueService {
       documento = 'OK';
     }
     return { documento };
+  }
+
+  async AlteraValorPrestacao(params: ParamsAltera): Promise<SaqueEntity> {
+    try {
+      const saque = await this.findOne(params.SQE_ID_CODIGO);
+      const sqeDtPrest = DataUtils.formatarDataAtualString();
+      let sqeVlPrest: number = Number(params.SQE_VLPREST);
+      let sqeEfetivo = saque.sqeEfetivo;
+
+      if (saque.sqeVlPrest) {
+        sqeVlPrest = Number(saque.sqeDtPrest + params.SQE_VLPREST);
+      }
+      // Verifica se o saque já foi efetivado; caso contrário, atualiza o status para 'Viagem-c/Lanc. Documentos'
+      if (saque.sqeEfetivo !== 'S' && saque.sqeEfetivo !== 'E') {
+        sqeEfetivo = 'D';
+      }
+      this.saqueRepository.merge(saque, { sqeDtPrest, sqeVlPrest, sqeEfetivo });
+      this.saqueRepository.save(saque);
+      return saque;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

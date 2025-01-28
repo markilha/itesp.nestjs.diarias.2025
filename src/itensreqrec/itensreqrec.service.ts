@@ -21,8 +21,7 @@ export class itensreqrecService {
       const item = await this.itensreqrecRepository.create(data);
       return await this.itensreqrecRepository.save(item);
       
-    } catch (error) {
-      console.log(error);
+    } catch (error) {     
       throw new HttpException(
         "Ocorreu erro ao criar item recurso",
         HttpStatus.NOT_FOUND,
@@ -33,16 +32,39 @@ export class itensreqrecService {
 
   async findOne(ITE_ID_CODIGO: number) {
     try {
-      return await this.itensreqrecRepository.findOneOrFail({
-        where: { ITE_ID_CODIGO },
-      });
+      const item = await this.itensreqrecRepository.query(
+        `SELECT 
+        i.*,
+        s.STS_DESCRICAO ,
+        d.TDE_DESCRICAO,
+        f.NOME,
+        re.PRA_ID_CODIGO,
+        p.PRA_ATIVO     
+        FROM FINANCEIRO.S009_ITENSREQREC i
+        LEFT JOIN RM.PFUNC f ON f.CHAPA = i.CHAPA 
+        LEFT JOIN FINANCEIRO.S009_STATUS s ON s.STS_ID_CODIGO = i.STS_ID_CODIGO 
+        LEFT JOIN FINANCEIRO.S009_REQRECURSOS re ON re.DIR_ID_CODIGO  = i.DIR_ID_CODIGO 
+        LEFT JOIN FINANCEIRO.S009_PRAZOS p ON p.PRA_ID_CODIGO = re.PRA_ID_CODIGO
+        LEFT JOIN FINANCEIRO.S009_TIPODESP d ON d.TDE_ID_CODIGO = i.TDE_ID_CODIGO
+        WHERE ITE_ID_CODIGO = :ITE_ID_CODIGO`,
+        [ITE_ID_CODIGO],
+      );    
+  
+      if (!item || item.length === 0) {
+        throw new HttpException(
+          `Item com código: ${ITE_ID_CODIGO} não encontrado`,
+          HttpStatus.NOT_FOUND,
+        );
+      }  
+      return item[0];
     } catch (error) {
       throw new HttpException(
-        `Item com codigo: ${ITE_ID_CODIGO} não encontrado`,
-        HttpStatus.NOT_FOUND,
+        `Erro ao buscar o item com código: ${ITE_ID_CODIGO}. ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
+  
 
   async selecionaItensRecurso(params: paramsItemRecurso): Promise<any> {
     try {
@@ -79,8 +101,30 @@ export class itensreqrecService {
   }
 
   async update(newItem: itensreqrecEntity): Promise<itensreqrecEntity> {
-    const item = await this.findOne(newItem.ITE_ID_CODIGO);
-    this.itensreqrecRepository.merge(item, newItem);
-    return await this.itensreqrecRepository.save(item);
-  }
+    try {
+      // Busca o item existente no banco de dados
+      const item = await this.findOne(newItem.ITE_ID_CODIGO);
+      if (!item) {
+        throw new HttpException(
+          `Item com código: ${newItem.ITE_ID_CODIGO} não encontrado`,
+          HttpStatus.NOT_FOUND,
+        );
+      }  
+      const updatedItem = this.itensreqrecRepository.merge(item, newItem); 
+      await this.itensreqrecRepository
+        .createQueryBuilder()
+        .update("FINANCEIRO.S009_ITENSREQREC")
+        .set(updatedItem)
+        .where("ITE_ID_CODIGO = :ITE_ID_CODIGO", { ITE_ID_CODIGO: newItem.ITE_ID_CODIGO })
+        .execute();
+      return updatedItem;
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        `Erro ao atualizar o item com código: ${newItem.ITE_ID_CODIGO}. ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }  
+
 }

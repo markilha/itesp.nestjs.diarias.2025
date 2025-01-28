@@ -39,10 +39,8 @@ export class ItinirarioService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
-  async findUltimo(reqIdCodigo: number): Promise<retornoItinerarioDto> {
-    try {      
-      // Consulta para buscar a primeira saída (menor data e hora de saída)
+  async findUltimo(reqIdCodigo: number): Promise<retornoItinerarioDto> {   
+    try {     
       const primeiroRegistro = await this.itinerarioRepository
         .createQueryBuilder('itinerario')
         .select([
@@ -53,34 +51,45 @@ export class ItinirarioService {
           'itinerario.ITI_HSAIDA',
         ])
         .where('itinerario.REQ_ID_CODIGO = :reqIdCodigo', { reqIdCodigo })
+        .andWhere('ROWNUM = 1') 
         .orderBy('itinerario.ITI_DTSAIDA', 'ASC')
         .addOrderBy('itinerario.ITI_HSAIDA', 'ASC')
-        .limit(1)
-        .getOne();
-    
+        .getOne();      
+
+      // Se não encontrar nenhum registro, lança erro
+      if (!primeiroRegistro) {
+       return null;
+      }
+
       // Consulta para buscar a última chegada (maior data e hora de chegada)
       const ultimoRegistro = await this.itinerarioRepository
         .createQueryBuilder('itinerario')
-        .select([
-          'itinerario.ITI_DTCHEGADA',
-          'itinerario.ITI_HCHEGADA',
-        ])
+        .select(['itinerario.ITI_DTCHEGADA', 'itinerario.ITI_HCHEGADA'])
         .where('itinerario.REQ_ID_CODIGO = :reqIdCodigo', { reqIdCodigo })
+        .andWhere('ROWNUM = 1') // Limitar para 1 linha no Oracle 11
         .orderBy('itinerario.ITI_DTCHEGADA', 'DESC')
         .addOrderBy('itinerario.ITI_HCHEGADA', 'DESC')
-        .limit(1)
-        .getOne();
-    
-      // Combine os resultados
-      return {
-        ITI_DTSAIDA: primeiroRegistro?.ITI_DTSAIDA || null,
-        ITI_HSAIDA: primeiroRegistro?.ITI_HSAIDA || null,
-        ITI_DTCHEGADA: ultimoRegistro?.ITI_DTCHEGADA || null,
-        ITI_HCHEGADA: ultimoRegistro?.ITI_HCHEGADA || null,
-      } 
-    } catch (error) {
-      throw new HttpException("Itinerário não encontrado!!!", HttpStatus.INTERNAL_SERVER_ERROR);      
-    }
-  } 
+        .getOne();       
 
+      // Se não encontrar nenhum registro, lança erro
+      if (!ultimoRegistro) {
+        return null;
+      }
+
+      // Combine os resultados e retorne
+      return {
+        ITI_DTSAIDA: primeiroRegistro.ITI_DTSAIDA || null,
+        ITI_HSAIDA: primeiroRegistro.ITI_HSAIDA || null,
+        ITI_DTCHEGADA: ultimoRegistro.ITI_DTCHEGADA || null,
+        ITI_HCHEGADA: ultimoRegistro.ITI_HCHEGADA || null,
+      };
+    } catch (error) {
+      // Log do erro para depuração
+      console.error(error);
+      throw new HttpException(
+        error.message || 'Erro ao buscar itinerário',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

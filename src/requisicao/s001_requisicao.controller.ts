@@ -13,7 +13,6 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { requisicaoAutorizadaSwagger, requisicaoSwagger } from 'src/swagger/requisicaoswagger';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { UsersDto } from 'src/users/users.dto';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
 
 @UseGuards(AuthGuard)
@@ -21,7 +20,6 @@ import { AuthUserDto } from 'src/auth/use.auth.Dto';
 @Controller('usureq')
 export class S001RequisicaoController {
   constructor(private readonly requisicao: S001RequisicaoService) {}
-
   @Get()
   @ApiOperation({ summary: 'Lista todas requisições de viagem pela chapa do funcionário' })
   @ApiResponse({
@@ -38,13 +36,8 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async find(@CurrentUser() user: AuthUserDto,@Query() params: FindAllParams): Promise<ReturnRequisicaoDto[]> {
-
-    if(!params.chapa){
-     params.chapa = user.chapa;
-    }
-
-    return await this.requisicao.find(params);
+  async find(@CurrentUser() user: AuthUserDto,@Query() params: FindAllParams): Promise<ReturnRequisicaoDto[]> {   
+    return await this.requisicao.find(params,user);
   }
 
   @Get('aprovadas')
@@ -89,10 +82,7 @@ export class S001RequisicaoController {
     description: 'Erro ao buscar requisições',
   })
   async findMes(@CurrentUser() user: AuthUserDto,@Query() params: findMesParams): Promise<RequisDto[]> {
-    if(!params.chapa){
-      params.chapa = user.chapa;
-     }
-    return await this.requisicao.findMesAtual(params,user);
+      return await this.requisicao.findMesAtual(params,user);
   }
 
   @Get('pendentes')
@@ -110,10 +100,7 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async findPendentes(@CurrentUser() user: AuthUserDto,@Query('chapa') chapa: string): Promise<requiTotal> {    
-    if(!chapa){
-      chapa = user.chapa;
-     } 
-    return await this.requisicao.findPendentes(chapa, user);
+  async findPendentes(@CurrentUser() user: AuthUserDto): Promise<requiTotal> {  
+    return await this.requisicao.findPendentes(user);
   }
 }

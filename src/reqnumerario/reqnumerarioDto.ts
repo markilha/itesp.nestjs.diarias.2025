@@ -42,7 +42,7 @@ export class ReqnumerarioDto {
   RNU_VLPARCIAL: number;
   @ApiProperty({ required: false })
   RNU_VLBASE: number;
-  constructor(item:Partial<ReqNumerarioEntity>) {
+  constructor(item?:Partial<ReqNumerarioEntity>) {
     this.RNU_ID_CODIGO = item?.RNU_ID_CODIGO;
     this.SQE_ID_CODIGO = item.SQE_ID_CODIGO;
     this.REQ_ID_CODIGO = item.REQ_ID_CODIGO;

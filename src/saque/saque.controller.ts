@@ -9,7 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FindParamsSaque, RetNumSaque, PrestacaoDto, SolitarDto, SaqueDto, returnSaqueDto, updateEfetivoDto, returnaTotal, ParamsPendente, ParamsCancela } from './saque.dto';
+import { FindParamsSaque, RetNumSaque, PrestacaoDto, SolitarDto, SaqueDto, returnSaqueDto, updateEfetivoDto, returnaTotal, ParamsPendente, ParamsCancela, ParamsAltera } from './saque.dto';
 import { SaqueService } from './saque.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -24,21 +24,17 @@ import { SaqueEntity } from 'src/database/db_oracle/entities/saque.entity';
 @Controller('saque')
 @UseInterceptors(AllExceptionsFilter)
 export class SaqueController {
-  constructor(private readonly saqueService: SaqueService) {}  
-  
+  constructor(private readonly saqueService: SaqueService) {}    
+  //SAQUE GERAL
   @Get()
   @ApiOperation({ summary: 'Busca todos os saques' })
   @ApiResponse({ status: 200, description: 'Retorna todos os saques',type: returnSaqueDto, isArray: true  })
   @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
-  async findAll(@CurrentUser() user: AuthUserDto, @Query() params: FindParamsSaque): Promise<returnSaqueDto[]> {
-   
-    if (!params.CHAPA){
-      params.CHAPA = user.chapa;
-    }
-
+  async findAll(@CurrentUser() user: AuthUserDto, @Query() params: FindParamsSaque): Promise<returnSaqueDto[]> { 
     return await this.saqueService.findAll(params,user);
   }
 
+  //GET ALL PRESTAÇÃO
   @ApiOperation({ summary: 'Lista todas as prestações de conta' })
   @ApiResponse({ status: 200, description: 'Retorna todos as prestações',type: saquePrestacaoSwagger, isArray: true  })
   @ApiResponse({ status: 500, description: 'Erro interno do servidor' }) 
@@ -92,10 +88,8 @@ export class SaqueController {
   @ApiResponse({ status: 404, description: 'Saque não encontrado' })
   @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
   async selecionaSaquePendente(@CurrentUser() user: AuthUserDto, @Query() params: ParamsPendente): Promise<SaqueDto> {
-    if (!params.CHAPA){
-      params.CHAPA = user.chapa;
-    }
-    return await this.saqueService.selecionaSaquePendentes(params);
+   
+    return await this.saqueService.selecionaSaquePendentes(params,user);
   }
 
   @Get('cancela')
@@ -127,6 +121,11 @@ export class SaqueController {
   @Post('gravasaquereembolso')
   async gravasaquereembolso(@CurrentUser() user: AuthUserDto,@Body() params: any): Promise<any> {
     return await this.saqueService.GravaSaqueReembolso(params,user);
+  }
+
+  @Post('alteravalorprestacao')
+  async alteravalorprestacao(@Body() params: ParamsAltera): Promise<SaqueEntity> {
+    return await this.saqueService.AlteraValorPrestacao(params);
   }
  
  

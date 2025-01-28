@@ -6,9 +6,12 @@ import { extornoEntity } from 'src/database/db_oracle/entities/extorno.entity';
 import { SaqueModule } from 'src/saque/saque.module';
 
 
+
 @Module({
   imports: [TypeOrmModule.forFeature([extornoEntity], 'oracleConnection'),
-  forwardRef(() => SaqueModule)],
+  forwardRef(() => SaqueModule),
+ 
+],
   providers: [extornoService],
   controllers: [extornoController],
   exports: [extornoService],

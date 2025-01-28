@@ -8,16 +8,18 @@ import { ReqnumerarioService } from '../../reqnumerario/reqnumerario.service';
 import { ndocumentoService } from '../../ndocumento/ndocumento.service';
 import { pcontasnumEntity } from '../../database/db_oracle/entities/pcontasnum';
 import { pcontasDtoMock } from '../pcontasDto';
-import { find } from 'rxjs';
-import exp from 'constants';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { create } from 'domain';
+import { userAuthMock } from '../../users/__mocks__/user.mock';
+import { createChegadaDto } from '../__Mocks__/mocks';
+import { ReqNumerarioEntity } from '../../database/db_oracle/entities/reqnumerario.entity';
 
 describe('PcontasService', () => {
   let servicePContas: PcontasService;
   let pcontasRepository: Repository<pcontasEntity>;
   let saqueService: SaqueService;
   let reqnumerarioService: ReqnumerarioService;
+  let reqnumerarioRepository: Repository<ReqNumerarioEntity>;
+
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -31,6 +33,8 @@ describe('PcontasService', () => {
             query: jest.fn(),
             save: jest.fn().mockResolvedValue(pcontasDtoMock[0]),
             create: jest.fn().mockResolvedValue(pcontasDtoMock[0]),
+            insert: jest.fn().mockResolvedValue(pcontasDtoMock[0]),
+            createPcontas: jest.fn().mockResolvedValueOnce(1),
           },
         },
         {
@@ -46,7 +50,8 @@ describe('PcontasService', () => {
         {
           provide: ReqnumerarioService,
           useValue: {
-            updateChegada: jest.fn(),
+            updateChegada: jest.fn().mockResolvedValue(createChegadaDto),
+            save: jest.fn().mockResolvedValue(createChegadaDto),
           },
         },
         {
@@ -62,8 +67,10 @@ describe('PcontasService', () => {
     pcontasRepository = module.get<Repository<pcontasEntity>>(
       getRepositoryToken(pcontasEntity, 'oracleConnection'),
     );
+   
     saqueService = module.get<SaqueService>(SaqueService);
     reqnumerarioService = module.get<ReqnumerarioService>(ReqnumerarioService);
+  
   });
 
   it('should be defined', () => {
@@ -170,6 +177,81 @@ describe('PcontasService', () => {
      await expect(servicePContas.create(null)).rejects.toThrow(
       new HttpException(
         'Não foi possível criar a prestação de conta',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      ),
+    );
+    });
+  });
+
+  describe('createPcontas', () => {
+    it('Deve criar uma prestação de conta', async () => {         
+      //Act
+      const result = await servicePContas.findOne(1);
+      //Assert
+      expect(result).toEqual(pcontasDtoMock[0]);
+      expect(pcontasRepository.findOneByOrFail).toHaveBeenCalledTimes(1);
+    });
+    it('lastid', async () => {
+      //Arrange
+      jest.spyOn(pcontasRepository, 'query').mockResolvedValueOnce([{ LASTID: 1 }]);
+      //Act
+      const result = await servicePContas.lastid();
+      //Assert
+      expect(result).toEqual(1);
+      expect(pcontasRepository.query).toHaveBeenCalledTimes(1);
+    });
+
+    it('insert', async () => {
+      //Arrange
+      const createDto = {
+        "PCO_ID_CODIGO": 3,
+        "PCO_TIPO": "N",
+        "PCO_TOTDOC": 0
+      };
+      //Act
+      const result = await pcontasRepository.insert(createDto);
+      //Assert
+      expect(result).toEqual(pcontasDtoMock[0]);
+      expect(pcontasRepository.insert).toHaveBeenCalledTimes(1);
+    });
+
+    it('query', async () => {
+      //Arrange
+      jest.spyOn(pcontasRepository, 'query').mockResolvedValueOnce(1);
+      //Act
+      const result = await pcontasRepository.query(`SELECT MAX(PCO_ID_CODIGO) as lastId FROM S009_PCONTAS`);
+      //Assert
+      expect(result).toEqual(1);
+      expect(pcontasRepository.query).toHaveBeenCalledTimes(1);
+    });
+
+    it('updateChegada', async () => {    
+      //Act
+      const result = await reqnumerarioService.updateChegada(createChegadaDto);
+      //Assert
+      expect(result).toEqual(createChegadaDto);     
+      
+    });
+
+
+    it('Deve retornar um erro', async () => {
+         //Arrange
+         const createDto = {     
+          SQE_ID_CODIGO: 1,         
+          PCO_TIPO: 'N',          
+          PCO_TOTDOC: 1,        
+          JUSTIFICATIVA: 'justificativa',       
+          TOTALCOMPLEMENTAR: 0,        
+          TOTALDEVOLUCAO: 0,     
+          INTREAL: '1',        
+          PARREAL: '1',
+        }
+      //Arrange
+      jest.spyOn(pcontasRepository, 'save').mockRejectedValueOnce(new Error());     
+    // Assert
+    await expect(servicePContas.createPcontas(createDto,userAuthMock)).rejects.toThrow(
+      new HttpException(
+        'Erro ao buscar o último ID',
         HttpStatus.INTERNAL_SERVER_ERROR,
       ),
     );

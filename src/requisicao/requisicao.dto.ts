@@ -221,6 +221,8 @@ export class RequisDto {
   periodoAprovacao?: string;
   @ApiProperty({ required: false })
   nome?: string;
+  @ApiProperty({ required: false })
+  codsecao?: string;
 
   constructor(requis?: Partial<RequisDto>) {
     this.chapa = requis?.chapa;
@@ -230,6 +232,7 @@ export class RequisDto {
     this.reqDtSaida = requis?.reqDtSaida;
     this.periodoAprovacao = requis?.periodoAprovacao;
     this.nome = requis?.nome;
+    this.codsecao = requis?.codsecao;
   }
 }
 

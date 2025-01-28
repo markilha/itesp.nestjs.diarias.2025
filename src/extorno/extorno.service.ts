@@ -5,7 +5,7 @@ import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, extornoDto, upateExtornoDto } from './extornoDto';
 import { DataUtils } from '../util/DataUtils';
 import { SaqueService } from '../saque/saque.service';
-import { selecionaReqNumerario } from '../util/selects/reqNumerario';
+import { selecinaReqNumerario, selecionaReqNumerario } from '../util/selects/reqNumerario';
 import {
   alteraControleTrafego,
   alteraControleVoo,
@@ -17,6 +17,9 @@ import {
 } from '../util/selects/extorno';
 import { AuthUserDto } from '../auth/use.auth.Dto';
 import { verificaAutorizacao } from '../util/permissao/permissao';
+import { ReqNumerarioEntity } from 'src/database/db_mysql/entities/ReqNumerario.entity';
+import { ReqnumerarioDto } from 'src/reqnumerario/reqnumerarioDto';
+
 
 @Injectable()
 export class extornoService {
@@ -26,6 +29,9 @@ export class extornoService {
 
     @Inject(forwardRef(() => SaqueService))
     private saqueService: SaqueService,
+
+
+   
   ) {}
 
   async findAll(params: FindAllParams): Promise<extornoDto[]> {
@@ -91,13 +97,21 @@ export class extornoService {
   async extornoViagemNaoRealizada(dados: extornoDto, user: AuthUserDto) {
     try {
       const where = `And B.SQE_ID_CODIGO=:NSaque`;
-      const reqNumerario = await this.extornoRepository.query(`${selecionaReqNumerario} ${where}`, [
+      const reqNumerario: selecinaReqNumerario[]= await this.extornoRepository.query(`${selecionaReqNumerario} ${where}`, [
         dados.SQE_ID_CODIGO,
       ]);
       verificaAutorizacao(reqNumerario[0].CHAPA, user);
-
       const dataViagem = DataUtils.formatarDataAtualString();
       const saque = await this.saqueService.findOne(dados.SQE_ID_CODIGO);
+      const dtSaida = DataUtils.formatDateToString(reqNumerario[0].REQ_DTSAIDA);      
+
+      const msg = `
+      ESTORNO VIAGEM - Requisição de Viagem = ${reqNumerario[0]?.REQ_ID_CODIGO}, Meio de Transporte:${reqNumerario[0]?.TRA_ID_CODIGO}
+      Data Prevista Saída:  ${dtSaida} , Hora Prevista Saída: ${reqNumerario[0]?.REQ_HRET}
+      Data Prevista Retorno:${reqNumerario[0].REQ_DTREQ}, Hora Prevista Retorno: ${reqNumerario[0].REQ_HRET}
+      Motitvo: ${reqNumerario[0].REQ_MOTIVO}
+      ------------------------------------------------------------------ 
+      Justificativa para o Estono: ${dados.EXT_JUSTIFICA}`;      
 
       const extorno = new extornoDto({
         SQE_ID_CODIGO: dados.SQE_ID_CODIGO,
@@ -108,11 +122,12 @@ export class extornoService {
         FPA_ID_CODIGO: saque.fpaIdCodigo,
         EXT_VALOR: dados.EXT_VALOR,
         EXT_DATA: dataViagem,
-        EXT_JUSTIFICA: dados.EXT_JUSTIFICA,
-      });
+        EXT_JUSTIFICA: msg,
+      }); 
+
       //06/10/2005 15:19:38
       //update data saque da tabela saque
-      await this.saqueService.updateDataPrestacao(dados.SQE_ID_CODIGO, dataViagem);
+      //await this.saqueService.updateDataPrestacao(dados.SQE_ID_CODIGO, dataViagem);
       return await this.extornoRepository.save(this.extornoRepository.create(extorno));
     } catch (error) {
       console.log(error);

@@ -58,6 +58,9 @@ WHERE A.SQE_DTPREST IS NULL
 AND SQE_EFETIVO IN ('P', 'S', 'E')
 AND E.PRA_ATIVO <> 'N'
 `
+export const selecionaPrestPendenteView = `
+Select * From Financeiro.V009_prestpendente a
+`
 
 export const SelecionaSaqueSetor= `
 Select A.*, b.descricao from Financeiro.V009_SAQUESETOR A, Financeiro.V001_Diretoria B

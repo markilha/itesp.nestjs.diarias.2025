@@ -57,6 +57,13 @@ export class FindAllParams {
   @ApiProperty({ required: false })
   limit?: number;
 }
+
+export class FindLancDocParams {
+  @ApiProperty({ required: false })
+  PCO_ID_CODIGO: number;  
+  @ApiProperty({ required: false })
+  SQE_ID_CODIGO: number;  
+}
 export class FindOneParams {
   @ApiProperty({ required: false })
   PCO_ID_CODIGO: number;   
@@ -74,3 +81,4 @@ export const pcontasDtoMock = [
     "PCO_TOTDOC": 0
   }),
 ]
+

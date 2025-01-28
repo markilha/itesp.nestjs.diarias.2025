@@ -49,16 +49,25 @@ export class ReqnumerarioService {
     }
   }
 
-  //find one pelo sqe_id_codigo
-  async findOne(SQE_ID_CODIGO: number): Promise<ReqnumerarioDto> {
+  
+  async findOne(ITE_ID_CODIGO: number) {
     try {
-      const reqnumerario = await this.renumerarioRepository.findOne({
-        where: { SQE_ID_CODIGO},
-      });
-      return new ReqnumerarioDto(reqnumerario);
+      const item = await this.renumerarioRepository.query(
+        `SELECT * FROM FINANCEIRO.S009_REQNUMERARIO  WHERE ITE_ID_CODIGO = :ITE_ID_CODIGO`,
+        [ITE_ID_CODIGO],
+      );    
+  
+      if (!item || item.length === 0) {
+        throw new HttpException(
+          `Reqnumerario com código: ${ITE_ID_CODIGO} não encontrado`,
+          HttpStatus.NOT_FOUND,
+        );
+      }  
+      return item[0];
     } catch (error) {
+      console.log(error);
       throw new HttpException(
-        `Numerario com SQE_ID_CODIGO ${SQE_ID_CODIGO} não encontrado`,
+        `Erro ao buscar o reqnumerario(${ITE_ID_CODIGO}). ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

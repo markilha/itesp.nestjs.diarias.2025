@@ -4439,9 +4439,9 @@ ora@5.4.1, ora@^5.4.1:
     strip-ansi "^6.0.0"
     wcwidth "^1.0.1"
 
-oracledb@^6.6.0:
+oracledb@6.6.0:
   version "6.6.0"
-  resolved "https://registry.npmjs.org/oracledb/-/oracledb-6.6.0.tgz"
+  resolved "https://registry.npmjs.org/oracledb/-/oracledb-6.6.0.tgz#bb40adbe81a84a1e544c48af9f120c61f030e936"
   integrity sha512-T3dx+o3j+tVN53wQyr4yGTmoPHLy+a2V8yb1T2PmWrsj3ZlSt2Yu1BgV2yTDqnmBZYpRi/I3yJXRCOHHD7PiyA==
 
 os-tmpdir@~1.0.2:

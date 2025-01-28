@@ -20,6 +20,7 @@ export class PpessoaService {
     @InjectRepository(PPessoaEntity, 'oracleConnection')
     private rmRepository: Repository<PPessoaEntity>,
   ) {}
+  
 
   async find(params: FindAllParams): Promise<FuncionarioDto> {
     try {

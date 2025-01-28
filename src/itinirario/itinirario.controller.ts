@@ -8,11 +8,14 @@ import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 @Controller('itinerario')
 export class ItinirarioController {
     constructor(private readonly intinerarioService: ItinirarioService) {}
-
     @UseGuards(AuthGuard)
     @ApiExcludeEndpoint()
     @Get()
     async findAll(@Query() params: FindAllParams): Promise<ItinerarioDto[]> {
       return await this.intinerarioService.findAll(params);
+    }
+    @Get('ultimo')
+    async findultimo(@Query() params: FindAllParams): Promise<any> {
+      return await this.intinerarioService.findUltimo(params.REQ_ID_CODIGO);
     }
 }

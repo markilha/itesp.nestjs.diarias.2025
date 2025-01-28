@@ -45,9 +45,7 @@ export enum Cargo {
     TecnicoGestaoOrganizacionalIB = '621',
     TecnicoGestaoOrganizacionalVC = '662',
     AuxiliarGestaoOrganizacionalVA = '73',
-  } 
-
- 
+  }  
 
   export enum permissaoCargo {
     FINANCEIRO_TESOURARIA = 0,      // Financeiro/Tesouraria

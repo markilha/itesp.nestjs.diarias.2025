@@ -2,10 +2,10 @@ import { permissaoCargo } from '../enums/cargo';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
+
 export const permissaoFind = [
   {
-    roles: [
-      permissaoCargo.GTCAMPO,
+    roles: [      
       permissaoCargo.TESOURARIA_INTERIOR,
       permissaoCargo.FINANCEIRO_TESOURARIA,
     ],

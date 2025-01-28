@@ -83,25 +83,30 @@ export class UfespService {
 
   // Inserir uma data e retornar o valor da UFESP naquela data
 
-  async findValueByDate(dateString: string | Date): Promise<UfespDto | null> {
-    const date = dateString instanceof Date ? dateString : new Date(dateString);    
-  
-    // Tenta encontrar o valor correspondente à data utilizando BETWEEN
-    let result = await this.uferpsRepository
-      .createQueryBuilder('u')
-      .where(':date BETWEEN u.ufeDtInicio AND u.ufeDtFinal', { date }) // Utiliza BETWEEN para simplificar
-      .getOne();
-  
-    // Se não encontrar, busca o valor anterior à data
-    if (!result) {
-      result = await this.uferpsRepository
+  async findValueByDate(dateString: string | Date): Promise<UfespDto | null> {   
+    try {      
+      const date = dateString instanceof Date ? dateString : new Date(dateString);    
+     
+      let result = await this.uferpsRepository
         .createQueryBuilder('u')
-        .where('u.ufeDtFinal < :date', { date }) // Reutiliza o mesmo valor
-        .orderBy('u.ufeDtFinal', 'DESC')
-        .getOne();
+        .where(':date BETWEEN u.ufeDtInicio AND u.ufeDtFinal', { date }) // Utiliza BETWEEN para simplificar
+        .getOne();       
+    
+      // Se não encontrar, busca o valor anterior à data
+      if (!result) {
+        result = await this.uferpsRepository
+          .createQueryBuilder('u')
+          .where('u.ufeDtFinal < :date', { date }) // Reutiliza o mesmo valor
+          .orderBy('u.ufeDtFinal', 'DESC')
+          .getOne();
+      }  
+      return result;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException('Erro ao buscar a ufesp', HttpStatus.INTERNAL_SERVER_ERROR);
+      
     }
-  
-    return result;
+
   }
   
 }

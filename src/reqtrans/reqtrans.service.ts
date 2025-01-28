@@ -52,16 +52,33 @@ export class reqtransService {
     }
   }
 
-  //findOne
-  async findOne(REQ_ID_CODIGO: number): Promise<reqtransEntity> {
+  async findOne(REQ_ID_CODIGO: number) {
     try {
-      return await this.reqtransRepository.findOneOrFail({
-        where: { REQ_ID_CODIGO },
-        relations: ['muni', 'transmeio','regional'],
-        
-      });
+           
+      const item = await this.reqtransRepository.query(
+        `SELECT 
+        r.*,
+        c.NME_MUNIC,
+        t.TRA_DESCRICAO       
+        FROM TRANSPORTE.S001_REQUISICAO r
+        LEFT JOIN COMUM.MUNICIPIOS_IBGE_IGC c ON r.COD_MUNICIP = c.COD_MUNICIP
+        LEFT JOIN TRANSPORTE.S001_TRANSMEIO t ON t.TRA_ID_CODIGO = r.TRA_ID_CODIGO                   
+        WHERE r.REQ_ID_CODIGO = :REQ_ID_CODIGO`,
+        [REQ_ID_CODIGO],
+      );  
+      if (!item || item.length === 0) {
+        throw new HttpException(
+          `Requisicao com código: ${REQ_ID_CODIGO} não encontrada`,
+          HttpStatus.NOT_FOUND,
+        );
+      }  
+      return item[0];
     } catch (error) {
-      throw new HttpException('Requisição não encontrada', HttpStatus.NOT_FOUND);
+      console.log(error)
+      throw new HttpException(        
+        `Erro ao buscar o Requisicao com código: ${REQ_ID_CODIGO}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 

@@ -26,3 +26,18 @@ export const  selecionaDocPContasNumPorSqe_id_codigo = `
 ${selecionaDocPContasNum}
 Where SQE_ID_CODIGO=:CODSAQUE
 `
+
+export const selecionaPContas = `
+  SELECT A.PCO_ID_CODIGO, A.PCO_TIPO, A.PCO_TOTDOC
+  FROM Financeiro.S009_PContas A
+`
+export const selecionaExtPrestContasNum = `
+SELECT DTC_ID_ITEM, DTC_CODDETALHE, DTC_DESCRICAO, DTC_QTDADE, UN_SIGLA, UN_SIGLA,
+       DTC_VALOR, DTC_VLTOTAL, NDO_DATA, NDO_ID_CODIGO, NDO_ID_NUMERO, NDO_DTENTREGA,
+       DES_DESCRICAO, PES_NOME, PES_TIPO, NOMEPESSOA, DOCUMENTO, PES_ID_CODIGO, PCO_ID_CODIGO, PCO_TIPO,
+       PCO_TOTDOC, CHAPA, CODSECAO, nome, fpa_descricao, sqe_id_codigo,
+       ITE_ID_CODIGO, rre_id_codigo, dir_id_codigo, fpa_id_codigo, SQE_DTSAQUE,
+       sqe_vlprest, SQE_DTPREST, SQE_VLSAQUE, SQE_TIPOSAQUE, Sqe_Efetivo, SQE_DTPEDIDO,
+       sqe_lote, sqe_anolote, REQ_ID_CODIGO, TDE_DESCRICAO, CPF
+FROM Financeiro.V009_ExtPContasNum
+`

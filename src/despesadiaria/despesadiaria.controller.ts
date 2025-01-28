@@ -22,7 +22,7 @@ export class DespesadiariaController {
     @UseGuards(AuthGuard)
     @Get('findOne')
     @ApiExcludeEndpoint()
-    async findOne(@Query('cargo') cargo: string): Promise<DespesaDiariaEntity> {
+    async findOne(@Query('cargo') cargo: string): Promise<any> {
       return await this.despesadiariaService.findOne(cargo);
     }
 

@@ -51,10 +51,6 @@ export class AuthService {
         .filter((accessLevel) => accessLevel);
     }    
 
-    // if (roles.length === 0) {
-    //   throw new UnauthorizedException('Usuário sem acesso ao sistema');
-    // }
-    
     const ppessoa = await this.ppessoaService.find({ chapa: fountUser.chapa}); 
     const payload: AuthUserDto = {
       sub: fountUser.id_usuario,
@@ -72,48 +68,14 @@ export class AuthService {
     };
   }
 
-  async refresh(refreshToken: string) {
-    const payload = this.jwtService.verify(refreshToken);
-    if (payload.type !== 'refresh') {
-      throw new UnauthorizedException('Invalid token type');
-    }
-    const users = await this.usersService.findByUserName(payload.login);
-
-    const user = users.id_usuario === payload.sub;
-    if (!user) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-
-    const newPayload = {
-      sub: payload.id_usuario,
-      login: payload.login,
-      roles: payload.roles,
-    };
-    const newAccessToken = this.jwtService.sign(
-      { ...newPayload, type: 'access' },
-      { expiresIn: '60s' },
-    );
-
-    const newRefreshToken = this.jwtService.sign(
-      { ...newPayload, type: 'refresh' },
-      { expiresIn: '1h' },
-    );
-
-    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
-  }
-
+ 
   async createPasswordResetToken(email: string): Promise<any> {
-    try {
-      
-      // const user = await this.usersService.findByUserName(email);
-      // if (!user) {
-      //   throw new BadRequestException('Login não encontrado');
-      // }
-      
+    try {      
+     
       const payload = {
         sub: email,     
       };    
-     // const token = this.jwtService.sign(payload);
+    
      const token = 'token teste 123';
       return {
         token,
@@ -126,8 +88,5 @@ export class AuthService {
 
   }
 
-  // async sendPasswordResetEmail(email: string, token: string) {
-  //   const resetUrl = `http://localhost:3000/auth/reset-password?token=${token}`;
 
-  // }
 }

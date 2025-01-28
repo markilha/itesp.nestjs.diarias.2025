@@ -11,8 +11,7 @@ import { SaquesMesService } from '../saques-mes/saques-mes.service';
 export class FuncsalarioService {
   constructor(
     @InjectRepository(FuncSalarioEntity, 'oracleConnection')
-    private funcSalarioRepository: Repository<FuncSalarioEntity>,
-    private SaquesMesService: SaquesMesService,
+    private funcSalarioRepository: Repository<FuncSalarioEntity>   
   ) {}
 
   async findAll(params: FindAllParams): Promise<FuncSalarioEntity[]> {
@@ -43,21 +42,20 @@ export class FuncsalarioService {
     });
   }
 
-  async findByCodigo(chapa: string): Promise<FuncSalarioEntity> {
-    const pfuncao = await this.funcSalarioRepository.findOne({
-      where: { chapa: chapa },
-    });
-
-    // Se não encontrar, lança uma exceção 404
-    if (!pfuncao) {
+  async findByCodigo(chapa: string): Promise<any> {
+   
+    const pfuncao = await this.funcSalarioRepository.query(`
+    Select * From FINANCEIRO.V009_FUNCSALARIO Where Chapa = :chapa
+      `,[chapa]);    
+       
+    if (pfuncao?.length === 0) {
       const outros = await this.findOutros(chapa);
       if (outros.length > 0) {
         return outros[0];
       }
-      throw new NotFoundException(`Funcionário com a chapa ${chapa} não foi encontrado`);
+      return null;
     }
-
-    return pfuncao;
+    return pfuncao[0];
   }
 
   async findOutros(chapa: string) {

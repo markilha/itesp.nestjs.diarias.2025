@@ -2,7 +2,7 @@ import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nest
 import { InjectRepository } from '@nestjs/typeorm';
 import { pcontasEntity } from '../database/db_oracle/entities/pcontas.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { createPcontasDto, FindAllParams, pcontasDto } from './pcontasDto';
+import { createPcontasDto, FindAllParams, FindLancDocParams, pcontasDto } from './pcontasDto';
 import { pcontasnumEntity } from '../database/db_oracle/entities/pcontasnum';
 //import { reembolsoService } from '../reembolso/reembolso.service';
 //import { extornoService } from '../extorno/extorno.service';
@@ -12,6 +12,8 @@ import { DataUtils } from '../util/DataUtils';
 import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
 import { ndocumentoService } from '../ndocumento/ndocumento.service';
 import { AuthUserDto } from '../auth/use.auth.Dto';
+import { selecionaExtPrestContasNum, selecionaPContas } from 'src/util/selects/prestacao';
+import { selecionaPrestPendente, selecionaPrestPendenteView } from 'src/util/selects/saques';
 
 @Injectable()
 export class PcontasService {
@@ -19,7 +21,7 @@ export class PcontasService {
     @InjectRepository(pcontasEntity, 'oracleConnection')
     private pcontasRepository: Repository<pcontasEntity>,
     //private reembolsosService: reembolsoService,
-    //private extornoService: extornoService,    
+    //private extornoService: extornoService,
     private reqnumerarioService: ReqnumerarioService,
     private ndocumentoService: ndocumentoService,
     @Inject(forwardRef(() => SaqueService))
@@ -51,7 +53,7 @@ export class PcontasService {
       return await this.pcontasRepository.find({
         where: searchParams,
       });
-    } catch (error) {     
+    } catch (error) {
       throw new HttpException(
         'Não foi possível as prestações de conta',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -59,9 +61,21 @@ export class PcontasService {
     }
   }
 
+  async selecionaPrestPendente(): Promise<pcontasDto[]> {
+    try {
+      const prestPendente = await this.pcontasRepository.query(selecionaPrestPendenteView);
+      return prestPendente;
+    } catch (error) {
+      throw new HttpException(
+        'Erro ao buscar as prestações de conta pendentes',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   async findOne(PCO_ID_CODIGO: number): Promise<pcontasDto> {
     try {
-      return await this.pcontasRepository.findOneByOrFail({PCO_ID_CODIGO});
+      return await this.pcontasRepository.findOneByOrFail({ PCO_ID_CODIGO });
     } catch (error) {
       throw new HttpException(
         'Erro ao buscar a prestação de conta',
@@ -77,14 +91,14 @@ export class PcontasService {
       );
       return lastIdResult[0]?.LASTID || 0;
     } catch (error) {
-      throw new HttpException(
-        'Erro ao buscar o último ID',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Erro ao buscar o último ID', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async createPcontas(params: createPcontasDto, users:AuthUserDto): Promise<{ PCO_ID_CODIGO: number }> {
+  async createPcontas(
+    params: createPcontasDto,
+    users: AuthUserDto,
+  ): Promise<{ PCO_ID_CODIGO: number }> {
     // se não encontrar SQE_ID_CODIGO, retorna erro
     const saque = await this.saqueService.findOne(params.SQE_ID_CODIGO);
     // //verifica se o reembolso existe
@@ -95,7 +109,7 @@ export class PcontasService {
     //   }
     // }
 
-    const newId = await this.lastid() + 1;  
+    const newId = (await this.lastid()) + 1;
 
     const pcontas = {
       PCO_ID_CODIGO: newId,
@@ -103,13 +117,12 @@ export class PcontasService {
       PCO_TOTDOC: 1,
     };
 
-     await this.pcontasRepository.insert(pcontas);
-    
+    await this.pcontasRepository.insert(pcontas);
 
     const rnuIdCodigo = await this.pcontasRepository.query(
       `SELECT RNU_ID_CODIGO FROM S009_REQNUMERARIO WHERE SQE_ID_CODIGO = :sqeIdCodigo`,
       [params.SQE_ID_CODIGO],
-    );  
+    );
 
     await this.reqnumerarioService.updateChegada({
       RNU_ID_CODIGO: rnuIdCodigo[0]?.RNU_ID_CODIGO,
@@ -130,7 +143,6 @@ export class PcontasService {
     //     RRE_SAQUE: params.SQE_ID_CODIGO,
     //   });
     // }
-
 
     // if (params.TOTALDEVOLUCAO > 0) {
     //   const newExtorno = new extornoDto({
@@ -153,16 +165,15 @@ export class PcontasService {
       PES_ID_CODIGO: 2227,
       PES_PESSOA: 'J',
       NDO_ID_NUMERO: 'S/DOCUM',
-      NDO_DATA:new Date(), 
+      NDO_DATA: new Date(),
       NDO_SERIE: null,
       NDO_TITULO: null,
       NDO_DTENTREGA: DataUtils.formatarDataAtualString(),
       NDO_OPERADOR: users.chapa,
       STS_ID_CODIGO: 12,
-    }) 
+    });
 
-
-   return { PCO_ID_CODIGO: newId };
+    return { PCO_ID_CODIGO: newId };
   }
 
   async create(pcontasDto: pcontasEntity): Promise<pcontasEntity> {
@@ -170,11 +181,41 @@ export class PcontasService {
       const pc = this.pcontasRepository.create(pcontasDto);
       await this.pcontasRepository.save(pc);
       return pc;
-    } catch (error) {       
+    } catch (error) {
       throw new HttpException(
         'Não foi possível criar a prestação de conta',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
+
+  async documentosLancados(
+    params: FindLancDocParams,
+    user: AuthUserDto,
+  ): Promise<boolean | { message: string }> {
+    try {
+      const prestPendente = await this.selecionaPrestPendente();
+      if (prestPendente.length > 0) {
+        const selecionapcontas: pcontasDto = await this.findOne(params.PCO_ID_CODIGO);
+
+        if (selecionapcontas.PCO_TIPO === 'N') {
+          const stringExtPrest = `${selecionaExtPrestContasNum} Where SQE_ID_CODIGO=:SAQUE `;
+          const selecionaextprestcontasNum = await this.pcontasnumRepository.query(stringExtPrest, [
+            params.SQE_ID_CODIGO,
+          ]);
+          if (!(selecionaextprestcontasNum.NDO_DTENTREGA === '')) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else {
+        return { message: 'Não existem mais prestaçăo de contas com documentos pendentes' };
+      }
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  
 }

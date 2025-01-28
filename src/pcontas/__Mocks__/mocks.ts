@@ -45,5 +45,11 @@ export const saqueMock = {
   sqeListaSiafem: null,
 };
 
+export const createChegadaDto = {
+  RNU_ID_CODIGO: 1,
+  RNU_INTREAL: '1',
+  RNU_PARREAL: '1',
+}
+
 
 
