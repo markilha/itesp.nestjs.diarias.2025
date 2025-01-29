@@ -100,9 +100,7 @@ export class reqtransService {
 
   async updateStatus(reqIdCodigo: number, status: string): Promise<boolean> {
     try {
-      const reqtransToUpdate = await this.reqtransRepository.findOne({
-        where: { REQ_ID_CODIGO: reqIdCodigo },
-      });
+      await this.findOne(reqIdCodigo);   
 
       await this.reqtransRepository.query(
         `UPDATE TRANSPORTE.S001_REQUISICAO SET
@@ -117,6 +115,7 @@ export class reqtransService {
       );
       return true;
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         'Erro ao atualizar o status da requisição',
         HttpStatus.INTERNAL_SERVER_ERROR,

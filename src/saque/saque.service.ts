@@ -580,9 +580,12 @@ export class SaqueService {
     if (user.chapa != params.chapa && !user.roles.includes(Role.SUPERVISOR)) {
       throw new HttpException('Usuário não autorizado', HttpStatus.UNAUTHORIZED);
     }
+    
+
     if (user.chapa != params.chapa && user.roles.includes(Role.SUPERVISOR)) {
       terceiro = 'S';
     }
+   
 
     try {
       if (!params.reqIdCodigo) {
@@ -595,11 +598,11 @@ export class SaqueService {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
-      const funcionario = await this.funcsalarioService.findByCodigo(params.chapa);
+      const funcionario = await this.funcsalarioService.findByCodigo(params.chapa);     
 
       const prazo = await this.saqueRepository.query(selecionaUltimoPrazo, [
-        funcionario.regIdCodigo,
-      ]);
+        funcionario.REG_ID_CODIGO,
+      ]);      
 
       const where = `and A.Chapa =:NChapa and A.RRE_ID_CODIGO=:NREQ and A.TDE_ID_CODIGO=:TIPODESP AND A.IRR_RECURSO='S'`;
       const ItensReqRec = await this.saqueRepository.query(`${SelecionaItensRecurso} ${where}`, [
@@ -684,6 +687,7 @@ export class SaqueService {
       }
 
       const requisicao = await this.reqtransService.findOne(params.reqIdCodigo);
+     
 
       const ID = { type: oraccledb.NUMBER, dir: oraccledb.BIND_OUT };
 
@@ -892,13 +896,17 @@ export class SaqueService {
         RRE_SAQUE: rresaque,
       });
 
+    
       //   /*REQUISIÇÃO DE TRANSPORTE*/
       if (parametros.PAR10 === 'N' && parametros.PAR3 === '7' && parametros.PAR2 === 'S') {
         await this.reqtransService.updateStatus(requisicao.REQ_ID_CODIGO, parametros.PAR29);
       }
 
+     
+
       return { sqeIdCodigo: resultSaque.sqeIdCodigo };
     } catch (error) {
+      console.error('Erro ao solicitar saque:', error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -1149,7 +1157,7 @@ export class SaqueService {
       verificaAutorizacao(itens.CHAPA, user);
       const req = await this.reqnumerarioService.findOne(saque.sqeIdCodigo);
 
-      const msg = `Saque:${itens.CHAPA}-Cancelado:${user.chapa}-${DataUtils.formatarDataAtualString()}-Req.Viagem:${req.REQ_ID_CODIGO}`;
+      const msg = `Saque:${saque.sqeIdCodigo}-Cancelado:${user.chapa}-${DataUtils.formatarDataAtualString()}-Req.Viagem:${req.REQ_ID_CODIGO}`;
       await this.itensreqrecService.update(itens);
       if (saque.sqeEfetivo === 'D') {
         gsaque = 1;
