@@ -1,4 +1,5 @@
 export function getPaginatedQuery(queryBuilder, startRow:number, endRow:number) {
+  
     return `
        WITH base_query AS (${queryBuilder.getQuery()}),
       count_query AS (SELECT COUNT(*) as total_count FROM base_query),

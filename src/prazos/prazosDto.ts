@@ -59,3 +59,10 @@ export class FindAllParams {
   @ApiProperty({ required: false })
   limit?: number;
 }
+
+export class returnData {
+  @ApiProperty({ type: [PrazosEntity] })
+  data: PrazosEntity[];
+  @ApiProperty()
+  total: number;
+}

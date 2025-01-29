@@ -6,7 +6,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { PrazosService } from './prazos.service';
-import { PrazosDto, FindAllParams, findPrazosMesDto } from './prazosDto';
+import { PrazosDto, FindAllParams, findPrazosMesDto, returnData } from './prazosDto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AllExceptionsFilter } from 'src/interceptors/all-exceptions.filter';
@@ -26,7 +26,7 @@ export class PrazosController {
   @ApiResponse({ status: 500, description: 'Não foi possível buscar prazos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
 
-  async findAll(@Query() params: FindAllParams): Promise<PrazosDto[]> {
+  async findAll(@Query() params: FindAllParams): Promise<returnData> {
     return await this.PrazosService.findAll(params);
   }
 
