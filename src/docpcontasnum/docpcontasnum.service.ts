@@ -6,6 +6,7 @@ import { FindAllParams, returnData } from './docpcontasnumDto';
 
 import { permissaoFindAll } from 'src/util/permissao/permissao';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
+import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
 
 @Injectable()
 export class docpcontasnumService {
@@ -81,18 +82,21 @@ export class docpcontasnumService {
       }
      
       // Paginação
-      const paginatedQuery = `
-      WITH base_query AS (${queryBuilder.getQuery()}),
-      count_query AS (SELECT COUNT(*) as total_count FROM base_query),
-      paginated_data AS (SELECT a.*, ROWNUM rnum 
-        FROM (SELECT * FROM base_query) a 
-        WHERE ROWNUM <= ${endRow}
-      )
-      SELECT pd.*, cq.total_count
-      FROM paginated_data pd
-      CROSS JOIN count_query cq
-      WHERE pd.rnum >= ${startRow}`;
-      
+      // const paginatedQuery = `
+      // WITH base_query AS (${queryBuilder.getQuery()}),
+      // count_query AS (SELECT COUNT(*) as total_count FROM base_query),
+      // paginated_data AS (SELECT a.*, ROWNUM rnum 
+      //   FROM (SELECT * FROM base_query) a 
+      //   WHERE ROWNUM <= ${endRow}
+      // )
+      // SELECT pd.*, cq.total_count
+      // FROM paginated_data pd
+      // CROSS JOIN count_query cq
+      // WHERE pd.rnum >= ${startRow}`;
+
+     const paginatedQuery = getPaginatedQuery(queryBuilder, startRow, endRow);
+     console.log(paginatedQuery);
+
       const parameters = Object.values(queryBuilder.getParameters());
       const result = await this.docpcontasnumRepository.query(paginatedQuery, parameters);
 
