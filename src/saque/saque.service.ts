@@ -143,8 +143,7 @@ export class SaqueService {
       DES_LOCAL: destino.DES_LOCAL,
       MUN_CIDADE: reqtrans?.NME_MUNIC,
       NME_MUNIC: reqtrans?.NME_MUNIC,
-      TRA_DESCRICAO: reqtrans?.TRA_DESCRICAO
-     
+      TRA_DESCRICAO: reqtrans?.TRA_DESCRICAO,
     };
 
     return saquedto;
@@ -161,7 +160,7 @@ export class SaqueService {
 
   private async buscarUfesp(dataSaida: string): Promise<number> {
     try {
-      const { ufeValor } = await this.ufespService.findValueByDate(dataSaida);      
+      const { ufeValor } = await this.ufespService.findValueByDate(dataSaida);
       return ufeValor;
     } catch (error) {
       console.error('Erro ao buscar ufesp:', error);
@@ -170,13 +169,13 @@ export class SaqueService {
   }
 
   private async buscarUfespCargo(chapa: string): Promise<number> {
-    const funcsalario = await this.funcsalarioService.findByCodigo(chapa);   
+    const funcsalario = await this.funcsalarioService.findByCodigo(chapa);
 
     if (!funcsalario) {
       throw new HttpException('Funcionário não encontrado', HttpStatus.NOT_FOUND);
     }
-    
-    const UFESPcargo = await this.despesaDiaria.findOne(funcsalario.CARGO);    
+
+    const UFESPcargo = await this.despesaDiaria.findOne(funcsalario.CARGO);
 
     return Number(UFESPcargo?.DTD_VALOR_MAX);
   }
@@ -459,8 +458,7 @@ export class SaqueService {
       }
 
       const { itinerario, UFESP, UFESPcargoValor } = await this.buscarDadosNecessarios(consulta);
-   
-    
+
       try {
         destino = verificarDestino(consulta.MUN_ID_CODIGO) as Destino;
       } catch (error) {
@@ -474,7 +472,6 @@ export class SaqueService {
         consulta.SQE_DTPREST,
         consulta.SQE_VLPREST,
       );
-
 
       const { calcDiaraInial, calcDiaraRetorn, diariaIntegral, diariaParcial, diaraPorc } =
         await this.calcularDiarias(
@@ -512,7 +509,7 @@ export class SaqueService {
         SQE_VLPREST: consulta.IRR_VALOR_PREST,
         REQ_DTREQ: DataUtils.converterParaData(consulta.REQ_DTREQ),
         TRA_DESCRICAO: consulta.TRA_DESCRICAO,
-        NME_MUNIC: consulta.NME_MUNIC,     
+        NME_MUNIC: consulta.NME_MUNIC,
         MUN_CIDADE: consulta.MUN_CIDADE,
         DES_LOCAL: consulta.DES_LOCAL,
         REQ_DTSAIDA: formatDate(consulta.REQ_DTSAIDA, 'yyyy-mm-dd 00:00:00'),
@@ -1148,12 +1145,12 @@ export class SaqueService {
       }
 
       const itens = await this.itensreqrecService.findOne(saque.iteIdCodigo);
-      const res = verificaAutorizacao(itens.CHAPA, user);
+
+      verificaAutorizacao(itens.CHAPA, user);
       const req = await this.reqnumerarioService.findOne(saque.sqeIdCodigo);
 
       const msg = `Saque:${itens.CHAPA}-Cancelado:${user.chapa}-${DataUtils.formatarDataAtualString()}-Req.Viagem:${req.REQ_ID_CODIGO}`;
       await this.itensreqrecService.update(itens);
-
       if (saque.sqeEfetivo === 'D') {
         gsaque = 1;
         const updateValor = itens.IRR_VALOR_PREST - saque.sqeVlPrest;
