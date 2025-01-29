@@ -110,11 +110,12 @@ export class SaqueService {
   ) {}
 
   private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
-    const saque = await this.findOne(sqeIdCodigo);
+    const saque = await this.findOne(sqeIdCodigo); 
     const itensreq = await this.itensreqrecService.findOne(saque.iteIdCodigo);
     const reqnumerario = await this.reqnumerarioService.findOne(saque.iteIdCodigo);
     const reqtrans = await this.reqtransService.findOne(reqnumerario.REQ_ID_CODIGO);
     const destino = await this.destinoService.findOne(reqnumerario.REQ_ID_CODIGO);
+   
 
     const saquedto: buscarSaqueDto = {
       SQE_ID_CODIGO: saque.sqeIdCodigo,
@@ -150,7 +151,7 @@ export class SaqueService {
   }
 
   private async buscarItinerario(reqIdCodigo: number) {
-    try {
+    try {      
       return await this.itinerarioService.findUltimo(reqIdCodigo);
     } catch (error) {
       console.error('Erro ao buscar itinerário:', error);
@@ -445,11 +446,15 @@ export class SaqueService {
     }
   }
 
+
+
+  //buscar prestação de conta
+
   async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto> {
     let destino: Destino | null = null;
     try {
       const consulta = await this.buscarConsulta(params.SQE_ID_CODIGO);
-
+      
       if (!consulta) {
         throw new HttpException(
           `Saque com codigo: ${params.SQE_ID_CODIGO} não encontrado`,
@@ -457,7 +462,12 @@ export class SaqueService {
         );
       }
 
-      const { itinerario, UFESP, UFESPcargoValor } = await this.buscarDadosNecessarios(consulta);
+      const { itinerario, UFESP, UFESPcargoValor } = await this.buscarDadosNecessarios(consulta); 
+   
+      if (!itinerario && consulta.TRA_ID_CODIGO === 1) {
+        throw new HttpException('Meio de transporte veiculo sem itinerário!!!', HttpStatus.NOT_FOUND);
+      }   
+      
 
       try {
         destino = verificarDestino(consulta.MUN_ID_CODIGO) as Destino;
@@ -472,6 +482,8 @@ export class SaqueService {
         consulta.SQE_DTPREST,
         consulta.SQE_VLPREST,
       );
+
+
 
       const { calcDiaraInial, calcDiaraRetorn, diariaIntegral, diariaParcial, diaraPorc } =
         await this.calcularDiarias(

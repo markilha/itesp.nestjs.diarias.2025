@@ -563,6 +563,7 @@ export class S001RequisicaoService {
         total: retorno.length || 0,
       };
     } catch (error) {
+      console.log(error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

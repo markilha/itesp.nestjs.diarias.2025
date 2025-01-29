@@ -50,7 +50,7 @@ export class ReqnumerarioService {
   }
 
   
-  async findOne(ITE_ID_CODIGO: number) {
+  async findOne(ITE_ID_CODIGO: number) {  
     try {
       const item = await this.renumerarioRepository.query(
         `SELECT * FROM FINANCEIRO.S009_REQNUMERARIO  WHERE ITE_ID_CODIGO = :ITE_ID_CODIGO`,
@@ -107,10 +107,12 @@ export class ReqnumerarioService {
   
   async updateChegada(reqnumerario: updatChegadaDto): Promise<ReqnumerarioDto> {
     try {
-      const reqnumerarioEntity = await this.renumerarioRepository.findOne({
-        where: { RNU_ID_CODIGO: reqnumerario.RNU_ID_CODIGO },
-      });
-
+    
+      const reqnumerarioEntity = await this.renumerarioRepository.query(
+        `SELECT * FROM FINANCEIRO.S009_REQNUMERARIO  WHERE RNU_ID_CODIGO = :RNU_ID_CODIGO`,
+        [reqnumerario.RNU_ID_CODIGO],
+      );
+      
       if (!reqnumerarioEntity) {
         throw new HttpException(
           'Requisição não encontrada',

@@ -59,7 +59,7 @@ export class reqtransService {
         `SELECT 
         r.*,
         c.NME_MUNIC,
-        t.TRA_DESCRICAO       
+        t.TRA_DESCRICAO        
         FROM TRANSPORTE.S001_REQUISICAO r
         LEFT JOIN COMUM.MUNICIPIOS_IBGE_IGC c ON r.COD_MUNICIP = c.COD_MUNICIP
         LEFT JOIN TRANSPORTE.S001_TRANSMEIO t ON t.TRA_ID_CODIGO = r.TRA_ID_CODIGO                   

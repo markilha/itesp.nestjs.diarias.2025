@@ -4,24 +4,19 @@ import { pcontasEntity } from '../database/db_oracle/entities/pcontas.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { createPcontasDto, FindAllParams, FindLancDocParams, pcontasDto } from './pcontasDto';
 import { pcontasnumEntity } from '../database/db_oracle/entities/pcontasnum';
-//import { reembolsoService } from '../reembolso/reembolso.service';
-//import { extornoService } from '../extorno/extorno.service';
-//import { extornoDto } from '../extorno/extornoDto';
 import { SaqueService } from '../saque/saque.service';
 import { DataUtils } from '../util/DataUtils';
 import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
 import { ndocumentoService } from '../ndocumento/ndocumento.service';
 import { AuthUserDto } from '../auth/use.auth.Dto';
-import { selecionaExtPrestContasNum, selecionaPContas } from 'src/util/selects/prestacao';
-import { selecionaPrestPendente, selecionaPrestPendenteView } from 'src/util/selects/saques';
+import { selecionaExtPrestContasNum } from 'src/util/selects/prestacao';
+import {  selecionaPrestPendenteView } from 'src/util/selects/saques';
 
 @Injectable()
 export class PcontasService {
   constructor(
     @InjectRepository(pcontasEntity, 'oracleConnection')
-    private pcontasRepository: Repository<pcontasEntity>,
-    //private reembolsosService: reembolsoService,
-    //private extornoService: extornoService,
+    private pcontasRepository: Repository<pcontasEntity>,  
     private reqnumerarioService: ReqnumerarioService,
     private ndocumentoService: ndocumentoService,
     @Inject(forwardRef(() => SaqueService))
@@ -99,30 +94,23 @@ export class PcontasService {
     params: createPcontasDto,
     users: AuthUserDto,
   ): Promise<{ PCO_ID_CODIGO: number }> {
-    // se não encontrar SQE_ID_CODIGO, retorna erro
-    const saque = await this.saqueService.findOne(params.SQE_ID_CODIGO);
-    // //verifica se o reembolso existe
-    // if (params.TOTALCOMPLEMENTAR > 0) {
-    //   const reembolso = await this.reembolsosService.findone(params.SQE_ID_CODIGO);
-    //   if (!reembolso) {
-    //     throw new HttpException('Reembolso não encontrado', HttpStatus.NOT_FOUND);
-    //   }
-    // }
-
-    const newId = (await this.lastid()) + 1;
+   
+    await this.saqueService.findOne(params.SQE_ID_CODIGO);   
+    
+    const newId = (await this.lastid()) + 1;   
 
     const pcontas = {
       PCO_ID_CODIGO: newId,
       PCO_TIPO: 'N',
       PCO_TOTDOC: 1,
-    };
+    };    
 
-    await this.pcontasRepository.insert(pcontas);
+    await this.pcontasRepository.insert(pcontas);   
 
     const rnuIdCodigo = await this.pcontasRepository.query(
       `SELECT RNU_ID_CODIGO FROM S009_REQNUMERARIO WHERE SQE_ID_CODIGO = :sqeIdCodigo`,
       [params.SQE_ID_CODIGO],
-    );
+    );   
 
     await this.reqnumerarioService.updateChegada({
       RNU_ID_CODIGO: rnuIdCodigo[0]?.RNU_ID_CODIGO,
@@ -134,31 +122,7 @@ export class PcontasService {
       PCO_ID_CODIGO: newId,
       RNU_ID_CODIGO: rnuIdCodigo[0]?.RNU_ID_CODIGO,
     });
-
-    // // Atualiza a justificativa do reembolso
-    // if (params.TOTALCOMPLEMENTAR > 0) {
-    //   await this.reembolsosService.atualizarJustificativa({
-    //     SQE_ID_CODIGO: params.SQE_ID_CODIGO,
-    //     RRE_JUSTIFICATIVA: params.JUSTIFICATIVA,
-    //     RRE_SAQUE: params.SQE_ID_CODIGO,
-    //   });
-    // }
-
-    // if (params.TOTALDEVOLUCAO > 0) {
-    //   const newExtorno = new extornoDto({
-    //     SQE_ID_CODIGO: saque.sqeIdCodigo,
-    //     ITE_ID_CODIGO: saque.iteIdCodigo,
-    //     RRE_ID_CODIGO: saque.rreIdCodigo,
-    //     DIR_ID_CODIGO: saque.dirIdCodigo,
-    //     PCO_ID_CODIGO: newId,
-    //     FPA_ID_CODIGO: saque.fpaIdCodigo,
-    //     EXT_VALOR: params.TOTALDEVOLUCAO,
-    //     EXT_DATA: DataUtils.formatarDataAtualString(),
-    //     EXT_JUSTIFICA: params.JUSTIFICATIVA,
-    //   });
-    //   await this.extornoService.create(newExtorno);
-    // }
-
+   
     await this.ndocumentoService.create({
       NDO_ID_CODIGO: await this.ndocumentoService.lastId(),
       PCO_ID_CODIGO: newId,
