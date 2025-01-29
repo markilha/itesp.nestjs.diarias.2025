@@ -1,13 +1,16 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { itensreqrecEntity } from '../database/db_oracle/entities/itensreqrec.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { itemRecursoDto, paramsItemRecurso } from './itensreq.Dto';
 import {
   SelecionaItenFunc,
   SelecionaItensFunc,
   SelecionaItensRecurso,
 } from '../util/selects/itensRecurso';
+import { AuthUserDto } from 'src/auth/use.auth.Dto';
+import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
+import { permissaoFindAll } from 'src/util/permissao/permissao';
 
 @Injectable()
 export class itensreqrecService {
@@ -59,30 +62,78 @@ export class itensreqrecService {
       );
     }
   }
-
-  async selecionaItensRecurso(params: paramsItemRecurso): Promise<any> {
+  async selecionaItensRecurso(params: paramsItemRecurso, user: AuthUserDto): Promise<any> {
     try {
-      let where = '';
-      let paramsWhere = [];
+      const pageNumber = params.page ?? 1;
+      const pageSize = params.limit ?? 500;
+      const startRow = (pageNumber - 1) * pageSize + 1;
+      const endRow = pageNumber * pageSize;
+
+      const queryBuilder = this.itensreqrecRepository
+        .createQueryBuilder('A')
+        .select([
+          'A.ITE_ID_CODIGO as ITE_ID_CODIGO',
+          'A.RRE_ID_CODIGO as RRE_ID_CODIGO',
+          'A.DIR_ID_CODIGO as DIR_ID_CODIGO',
+          'A.ORI_ID_CODIGO as ORI_ID_CODIGO',
+          'A.FPA_ID_CODIGO as FPA_ID_CODIGO',
+          'A.STS_ID_CODIGO as STS_ID_CODIGO',
+          'A.TDE_ID_CODIGO as TDE_ID_CODIGO',
+          'A.CHAPA as CHAPA',
+          'A.CODCOLIGADA as CODCOLIGADA',
+          'A.IRR_VALOR_SOL as IRR_VALOR_SOL',
+          'A.IRR_DATA_SOL as IRR_DATA_SOL',
+          'A.IRR_VALOR_CONC as IRR_VALOR_CONC',
+          'A.IRR_DATA_CONC as IRR_DATA_CONC',
+          'A.IRR_VALOR_PREST as IRR_VALOR_PREST',
+          'A.IRR_DATA_PREST as IRR_DATA_PREST',
+          'A.IRR_JUSTIFICA as IRR_JUSTIFICA',
+          'A.IRR_RECURSO as IRR_RECURSO',
+          'A.IRR_VALOR_AUT as IRR_VALOR_AUT',
+          'A.IRR_VLRECEBIDO as IRR_VLRECEBIDO',
+          'A.IRR_VLDEVOLUCAO as IRR_VLDEVOLUCAO',
+          'A.IRR_VLSAQUE as IRR_VLSAQUE',
+          'A.IRR_VLTRANSFERIDO as IRR_VLTRANSFERIDO',
+          'A.IRR_SALDO as IRR_SALDO',
+          'A.NOME as NOME',
+          'A.CODSECAO as CODSECAO',
+          'A.DESCRICAO as DESCRICAO',
+          'A.TDE_DESCRICAO as TDE_DESCRICAO',
+          'A.RRE_DATA as RRE_DATA',
+          'A.RRE_DATAFIMPROC as RRE_DATAFIMPROC',
+          'A.PRA_INICIO_RECURSO as PRA_INICIO_RECURSO',
+          'A.PRA_FIM_RECURSO as PRA_FIM_RECURSO',
+          'A.IRR_COMPLEMENTO as IRR_COMPLEMENTO',
+          'A.PRA_ATIVO as PRA_ATIVO',
+          'A.PRA_ID_CODIGO as PRA_ID_CODIGO',
+          'A.STS_DESCRICAO as STS_DESCRICAO',
+          'B.DESCRICAO AS DIRETORIA',
+          'A.IRR_VLREGIONAL as IRR_VLREGIONAL',
+        ])
+        .innerJoin('V001_DIRETORIA', 'B', 'A.DIR_ID_CODIGO = B.DIR_ID_CODIGO');
 
       if (params.RRE_ID_CODIGO) {
-        where = SelecionaItenFunc;
-        paramsWhere = [params.CHAPA, params.RRE_ID_CODIGO];
+        queryBuilder.where('A.RRE_ID_CODIGO = :codigo', { codigo: params.RRE_ID_CODIGO });
       } else {
-        where = SelecionaItensFunc;
-        paramsWhere = [params.CHAPA];
+        const per = permissaoFindAll(user.permissao);
+        if (per) {
+          queryBuilder.where('A.CODSECAO LIKE :codsecao', {
+            codsecao: `${user.codsecao.substring(0, per)}%`,
+          });
+        } else if (params.CHAPA) {
+          queryBuilder.where('A.CHAPA = :chapa', { chapa: user.chapa });
+        }
       }
 
-      const result = await this.itensreqrecRepository.query(
-        `${SelecionaItensRecurso} ${where}`,
-        paramsWhere,
-      );
-      if (result.length > 0) {
-        return result;
-      } else {
-        throw new HttpException('Nenhum item  encontrado', HttpStatus.NOT_FOUND);
-      }
+      const paginatedQuery = getPaginatedQuery(queryBuilder, startRow, endRow);
+
+      const parameters = Object.values(queryBuilder.getParameters());
+
+      const result = await this.itensreqrecRepository.query(paginatedQuery, parameters);
+
+      return result;
     } catch (error) {
+      console.error('Erro ao buscar itens recurso', error);
       if (error instanceof HttpException) {
         throw error;
       }

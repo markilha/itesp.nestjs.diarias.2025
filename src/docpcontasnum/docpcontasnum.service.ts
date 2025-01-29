@@ -16,7 +16,7 @@ export class docpcontasnumService {
     private docpcontasnumRepository: Repository<docpcontasnumEntity>,
   ) {}
 
-  async findAll(params: FindAllParams, user: AuthUserDto): Promise<returnData> {
+  async findAll(params: FindAllParams, user: AuthUserDto): Promise<any> {
     try {
       const pageNumber = params.page ?? 1;
       const pageSize = params.limit ?? 500;
@@ -90,15 +90,13 @@ export class docpcontasnumService {
 
       const result = await this.docpcontasnumRepository.query(paginatedQuery, parameters);
 
-      return {
-        data: result,
-        total: result?.length > 0 ? result[0].TOTAL_COUNT : 0,
-      };
+      return result;
     } catch (error) {
       console.log(error);
       throw new HttpException('Não foi possível buscar os docs', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
 
   async findOne(SQE_ID_CODIGO: number, request?: Request): Promise<docpcontasnumEntity> {
     try {

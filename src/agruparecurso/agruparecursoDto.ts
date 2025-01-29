@@ -11,4 +11,8 @@ export class FindAllParams {
   TDE_ID_CODIGO?: number;
   @ApiProperty({ required: false })
   RRE_ID_CODIGO ?: number; 
+  @ApiProperty({ required: false })
+  page?: number;
+  @ApiProperty({ required: false })
+  limit?: number;
 }

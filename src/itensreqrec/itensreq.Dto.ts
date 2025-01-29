@@ -7,6 +7,10 @@ export class paramsItemRecurso {
   CHAPA: string;
   @ApiProperty({ required: false })
   RRE_ID_CODIGO?: number;
+  @ApiProperty({ required: false })
+  page?: number;
+  @ApiProperty({ required: false })
+  limit?: number;
 }
 
 export class itemRecursoDto {
