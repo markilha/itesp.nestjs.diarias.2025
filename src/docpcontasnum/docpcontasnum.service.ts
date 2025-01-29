@@ -3,10 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { docpcontasnumEntity } from '../database/db_oracle/entities/docpcontasnum.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, returnData } from './docpcontasnumDto';
-
+import { Request } from 'express';
 import { permissaoFindAll } from 'src/util/permissao/permissao';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
 import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
+import { formatError } from 'src/components/error/error.service';
 
 @Injectable()
 export class docpcontasnumService {
@@ -80,24 +81,13 @@ export class docpcontasnumService {
       } else if (params.CHAPA) {
         queryBuilder.andWhere('r.CHAPA = :chapa', { chapa: user.chapa });
       }
-     
-      // Paginação
-      // const paginatedQuery = `
-      // WITH base_query AS (${queryBuilder.getQuery()}),
-      // count_query AS (SELECT COUNT(*) as total_count FROM base_query),
-      // paginated_data AS (SELECT a.*, ROWNUM rnum 
-      //   FROM (SELECT * FROM base_query) a 
-      //   WHERE ROWNUM <= ${endRow}
-      // )
-      // SELECT pd.*, cq.total_count
-      // FROM paginated_data pd
-      // CROSS JOIN count_query cq
-      // WHERE pd.rnum >= ${startRow}`;
 
-     const paginatedQuery = getPaginatedQuery(queryBuilder, startRow, endRow);
-     console.log(paginatedQuery);
+      
+
+      const paginatedQuery = getPaginatedQuery(queryBuilder, startRow, endRow);
 
       const parameters = Object.values(queryBuilder.getParameters());
+
       const result = await this.docpcontasnumRepository.query(paginatedQuery, parameters);
 
       return {
@@ -110,13 +100,30 @@ export class docpcontasnumService {
     }
   }
 
-  async findOne(SQE_ID_CODIGO: number): Promise<docpcontasnumEntity> {
+  async findOne(SQE_ID_CODIGO: number, request?: Request): Promise<docpcontasnumEntity> {
     try {
-      return await this.docpcontasnumRepository.findOneOrFail({
-        where: { SQE_ID_CODIGO },
-      });
+      const result = await this.docpcontasnumRepository
+        .createQueryBuilder('r')
+        .where('r.SQE_ID_CODIGO = :codigo', { codigo: SQE_ID_CODIGO })
+        .maxExecutionTime(10000)
+        .cache(false)
+        .getOne();
+
+      if (!result) {
+        throw new HttpException('Não encontrou nenhum registro', HttpStatus.NOT_FOUND);
+      }
+      return result;
     } catch (error) {
-      throw new HttpException('Não encontrou nenhum registro', HttpStatus.NOT_FOUND);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error('Erro ao buscar registro:', error);     
+      const formattedError = formatError(error, request);      
+      throw new HttpException(
+        formattedError,
+        formattedError.statusCode
+      );
     }
   }
 }
+
