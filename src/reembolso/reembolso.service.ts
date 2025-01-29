@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, reembolsoDto, upadteJustificativaDto, updateDto } from './reembolsoDto';
 import { reembolsoEntity } from '../database/db_oracle/entities/reembolso.entity';
+import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
 
 @Injectable()
 export class reembolsoService {
@@ -14,6 +15,10 @@ export class reembolsoService {
 
   async findAll(params: FindAllParams): Promise<reembolsoDto[]> {
     try {
+      const pageNumber = params.page ?? 1;
+      const pageSize = params.limit ?? 500;
+      const startRow = (pageNumber - 1) * pageSize + 1;
+      const endRow = pageNumber * pageSize;
       const searchParams: FindOptionsWhere<reembolsoEntity> = {};
 
       if (params.ITE_ID_CODIGO) {
@@ -22,25 +27,25 @@ export class reembolsoService {
       if (params.SQE_ID_CODIGO) {
         searchParams.SQE_ID_CODIGO = params.SQE_ID_CODIGO;
       }
+      const queryBuilder = this.reembolsoRepository
+        .createQueryBuilder('r')
+        .select([
+          'r.RRE_ID_CODIGO as RRE_ID_CODIGO',
+          'r.DIR_ID_CODIGO as DIR_ID_CODIGO',
+          'r.ITE_ID_CODIGO as ITE_ID_CODIGO',
+          'r.SQE_ID_CODIGO as SQE_ID_CODIGO',
+          'r.RRE_JUSTIFICATIVA as RRE_JUSTIFICATIVA',
+          'r.RRE_SAQUE as RRE_SAQUE',
+        ])
+        .where(searchParams);
 
-      let reembolsos: reembolsoEntity[] = [];
+      const paginatedQuery = getPaginatedQuery(queryBuilder, startRow, endRow);
 
-      if (params.page && params.limit) {
-        const page = params.page;
-        const limit = params.limit;
-        const skip = (page - 1) * limit;
+      const parameters = Object.values(queryBuilder.getParameters());
 
-        reembolsos = await this.reembolsoRepository.find({
-          where: searchParams,
-          skip,
-          take: limit,
-        });
-      } else {
-        reembolsos = await this.reembolsoRepository.find({
-          where: searchParams,
-        });
-      }
-      return reembolsos.map((reqv) => new reembolsoDto(reqv));
+      const result = await this.reembolsoRepository.query(paginatedQuery, parameters);
+
+      return result.map((reqv) => new reembolsoDto(reqv));
     } catch (error) {
       throw new HttpException('Erro ao buscar as requisições', HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -113,15 +118,25 @@ export class reembolsoService {
     }
   }
 
-  //find by id
+  
   async findone(SQE_ID_CODIGO: number): Promise<reembolsoDto> {
     try {
-      const reembolso = await this.reembolsoRepository.findOne({
-        where: { SQE_ID_CODIGO },
-      });
-      return new reembolsoDto(reembolso);
+      const result = await this.reembolsoRepository
+      .createQueryBuilder('r')
+      .where('r.SQE_ID_CODIGO = :codigo', { codigo: SQE_ID_CODIGO })
+      .maxExecutionTime(10000)
+      .cache(false)
+      .getOne();
+
+      return result;
+
     } catch (error) {
-      throw new HttpException('Reembolso não encontrado!!!!', HttpStatus.INTERNAL_SERVER_ERROR);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error('Erro ao buscar registro:', error);
+
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -129,9 +144,7 @@ export class reembolsoService {
   async update(ree: updateDto): Promise<{ message: string }> {
     try {
       const codigo = Number(ree.RRE_ID_CODIGO);
-      const reembolsoExist = await this.reembolsoRepository.findOne({
-        where: { RRE_ID_CODIGO: codigo },
-      });
+      const reembolsoExist = await this.findone(codigo);
 
       if (!reembolsoExist) {
         throw new HttpException('Reembolso não encontrado', HttpStatus.NOT_FOUND);

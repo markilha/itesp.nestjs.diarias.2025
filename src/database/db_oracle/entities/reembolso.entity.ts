@@ -25,4 +25,8 @@ export class reembolsoEntity {
 
   @Column({ name: 'RRE_SAQUE' })
   RRE_SAQUE: number;
+  constructor(item?: Partial<reembolsoEntity>) {
+    Object.assign(this, item);
+  }
+
 }

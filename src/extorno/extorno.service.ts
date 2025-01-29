@@ -17,9 +17,7 @@ import {
 } from '../util/selects/extorno';
 import { AuthUserDto } from '../auth/use.auth.Dto';
 import { verificaAutorizacao } from '../util/permissao/permissao';
-import { ReqNumerarioEntity } from 'src/database/db_mysql/entities/ReqNumerario.entity';
-import { ReqnumerarioDto } from 'src/reqnumerario/reqnumerarioDto';
-
+import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
 
 @Injectable()
 export class extornoService {
@@ -29,33 +27,40 @@ export class extornoService {
 
     @Inject(forwardRef(() => SaqueService))
     private saqueService: SaqueService,
-
-
-   
   ) {}
 
   async findAll(params: FindAllParams): Promise<extornoDto[]> {
     try {
+      const pageNumber = params.page ?? 1;
+      const pageSize = params.limit ?? 500;
+      const startRow = (pageNumber - 1) * pageSize + 1;
+      const endRow = pageNumber * pageSize;
       const searchParams: FindOptionsWhere<extornoDto> = {};
       if (params.SQE_ID_CODIGO) {
         searchParams['SQE_ID_CODIGO'] = params.SQE_ID_CODIGO;
       }
 
-      if (params.page && params.limit) {
-        const page = params.page;
-        const limit = params.limit;
-        const skip = (page - 1) * limit;
+      const queryBuilder = this.extornoRepository
+        .createQueryBuilder('r')
+        .select([
+          'r.SQE_ID_CODIGO as SQE_ID_CODIGO',
+          'r.ITE_ID_CODIGO as ITE_ID_CODIGO',
+          'r.RRE_ID_CODIGO as RRE_ID_CODIGO',
+          'r.DIR_ID_CODIGO as DIR_ID_CODIGO',
+          'r.PCO_ID_CODIGO as PCO_ID_CODIGO',
+          'r.FPA_ID_CODIGO as FPA_ID_CODIGO',
+          'r.EXT_VALOR as EXT_VALOR',
+          'r.EXT_DATA as EXT_DATA',
+          'r.EXT_JUSTIFICA as EXT_JUSTIFICA',
+        ])
+        .where(searchParams);
 
-        return await this.extornoRepository.find({
-          where: searchParams,
-          skip,
-          take: limit,
-        });
-      }
+      const paginatedQuery = getPaginatedQuery(queryBuilder, startRow, endRow);
 
-      return await this.extornoRepository.find({
-        where: searchParams,
-      });
+      const parameters = Object.values(queryBuilder.getParameters());
+
+      const result = await this.extornoRepository.query(paginatedQuery, parameters);
+      return result;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -63,14 +68,55 @@ export class extornoService {
 
   async findOneOrFail(SQE_ID_CODIGO: number): Promise<extornoDto> {
     try {
-      const result = await this.extornoRepository.findOneOrFail({
-        where: {
-          SQE_ID_CODIGO,
-        },
-      });
+      const result = await this.extornoRepository
+        .createQueryBuilder('r')
+        .where('r.SQE_ID_CODIGO = :codigo', { codigo: SQE_ID_CODIGO })
+        .maxExecutionTime(10000)
+        .cache(false)
+        .getOne();
+
+      if (!result) {
+        throw new HttpException('Não encontrou nenhum registro', HttpStatus.NOT_FOUND);
+      }
       return result;
     } catch (error) {
-      throw new HttpException('Extorno não encontrado', HttpStatus.INTERNAL_SERVER_ERROR);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error('Erro ao buscar registro:', error);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async findOne(SQE_ID_CODIGO: number, PCO_ID_CODIGO: number): Promise<extornoDto> {
+    try {
+      const result = await this.extornoRepository
+        .createQueryBuilder('r')
+        .select([
+          'r.SQE_ID_CODIGO',
+          'r.ITE_ID_CODIGO',
+          'r.RRE_ID_CODIGO',
+          'r.DIR_ID_CODIGO',
+          'r.PCO_ID_CODIGO',
+          'r.FPA_ID_CODIGO',
+          'r.EXT_VALOR',
+          'r.EXT_DATA',
+          'r.EXT_JUSTIFICA',
+        ])
+        .where('r.SQE_ID_CODIGO = :codigo', { codigo: SQE_ID_CODIGO })
+        .andWhere('r.PCO_ID_CODIGO = :codigo2', { codigo2: PCO_ID_CODIGO })
+        .getOne();
+
+      if (!result) {
+        throw new HttpException('Não encontrou nenhum registro', HttpStatus.NOT_FOUND);
+      }
+      return result;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error('Erro ao buscar registro:', error);
+      throw new HttpException('Erro interno do servidor', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -82,13 +128,17 @@ export class extornoService {
     }
   }
 
-  async update(ex: upateExtornoDto) {
+  async update(ex: any) {
     try {
-      const extorno = await this.extornoRepository.findOneOrFail({
-        where: { SQE_ID_CODIGO: ex.SQE_ID_CODIGO, PCO_ID_CODIGO: ex.PCO_ID_CODIGO },
+      const extorno = await this.findOne(ex.SQE_ID_CODIGO, ex.PCO_ID_CODIGO);
+
+      const newExtorno = new extornoEntity({
+        ...extorno,
       });
-      this.extornoRepository.merge(extorno, ex);
-      return await this.extornoRepository.save(extorno);
+
+      const result = this.extornoRepository.merge(newExtorno, ex);
+
+      return await this.extornoRepository.save(result);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -97,13 +147,14 @@ export class extornoService {
   async extornoViagemNaoRealizada(dados: extornoDto, user: AuthUserDto) {
     try {
       const where = `And B.SQE_ID_CODIGO=:NSaque`;
-      const reqNumerario: selecinaReqNumerario[]= await this.extornoRepository.query(`${selecionaReqNumerario} ${where}`, [
-        dados.SQE_ID_CODIGO,
-      ]);
+      const reqNumerario: selecinaReqNumerario[] = await this.extornoRepository.query(
+        `${selecionaReqNumerario} ${where}`,
+        [dados.SQE_ID_CODIGO],
+      );
       verificaAutorizacao(reqNumerario[0].CHAPA, user);
       const dataViagem = DataUtils.formatarDataAtualString();
       const saque = await this.saqueService.findOne(dados.SQE_ID_CODIGO);
-      const dtSaida = DataUtils.formatDateToString(reqNumerario[0].REQ_DTSAIDA);      
+      const dtSaida = DataUtils.formatDateToString(reqNumerario[0].REQ_DTSAIDA);
 
       const msg = `
       ESTORNO VIAGEM - Requisição de Viagem = ${reqNumerario[0]?.REQ_ID_CODIGO}, Meio de Transporte:${reqNumerario[0]?.TRA_ID_CODIGO}
@@ -111,7 +162,7 @@ export class extornoService {
       Data Prevista Retorno:${reqNumerario[0].REQ_DTREQ}, Hora Prevista Retorno: ${reqNumerario[0].REQ_HRET}
       Motitvo: ${reqNumerario[0].REQ_MOTIVO}
       ------------------------------------------------------------------ 
-      Justificativa para o Estono: ${dados.EXT_JUSTIFICA}`;      
+      Justificativa para o Estono: ${dados.EXT_JUSTIFICA}`;
 
       const extorno = new extornoDto({
         SQE_ID_CODIGO: dados.SQE_ID_CODIGO,
@@ -123,7 +174,7 @@ export class extornoService {
         EXT_VALOR: dados.EXT_VALOR,
         EXT_DATA: dataViagem,
         EXT_JUSTIFICA: msg,
-      }); 
+      });
 
       //06/10/2005 15:19:38
       //update data saque da tabela saque
