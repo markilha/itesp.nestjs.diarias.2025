@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, reembolsoDto, upadteJustificativaDto, updateDto } from './reembolsoDto';
 import { reembolsoEntity } from '../database/db_oracle/entities/reembolso.entity';
-import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
+import { getPaginatedQuery } from '../util/paginacao/paginaQuery';
 
 @Injectable()
 export class reembolsoService {

@@ -8,7 +8,7 @@ import { PpessoaService } from '../ppessoa/ppessoa.service';
 import { endOfMonth, startOfMonth } from 'date-fns';
 import { calcularPeriodo } from '../util/calcula_periodo';
 import { formatError } from 'src/components/error/error.service';
-import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
+import { getPaginatedQuery } from '../util/paginacao/paginaQuery';
 
 @Injectable()
 export class PrazosService {

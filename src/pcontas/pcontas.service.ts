@@ -9,9 +9,9 @@ import { DataUtils } from '../util/DataUtils';
 import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
 import { ndocumentoService } from '../ndocumento/ndocumento.service';
 import { AuthUserDto } from '../auth/use.auth.Dto';
-import { selecionaExtPrestContasNum } from 'src/util/selects/prestacao';
-import { selecionaPrestPendenteView } from 'src/util/selects/saques';
-import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
+import { selecionaExtPrestContasNum } from '../util/selects/prestacao';
+import { selecionaPrestPendenteView } from '../util/selects/saques';
+import { getPaginatedQuery } from '../util/paginacao/paginaQuery';
 
 @Injectable()
 export class PcontasService {

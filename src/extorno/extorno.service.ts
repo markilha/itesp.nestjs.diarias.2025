@@ -17,7 +17,9 @@ import {
 } from '../util/selects/extorno';
 import { AuthUserDto } from '../auth/use.auth.Dto';
 import { verificaAutorizacao } from '../util/permissao/permissao';
-import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
+import { getPaginatedQuery } from '../util/paginacao/paginaQuery';
+import { ErrorMessages } from '../components/error/error.constants';
+
 
 @Injectable()
 export class extornoService {
@@ -70,13 +72,11 @@ export class extornoService {
     try {
       const result = await this.extornoRepository
         .createQueryBuilder('r')
-        .where('r.SQE_ID_CODIGO = :codigo', { codigo: SQE_ID_CODIGO })
-        .maxExecutionTime(10000)
-        .cache(false)
+        .where('r.SQE_ID_CODIGO = :codigo', { codigo: SQE_ID_CODIGO })      
         .getOne();
 
       if (!result) {
-        throw new HttpException('Não encontrou nenhum registro', HttpStatus.NOT_FOUND);
+        throw new HttpException(ErrorMessages.NOT_FOUND, HttpStatus.NOT_FOUND);
       }
       return result;
     } catch (error) {
@@ -84,7 +84,7 @@ export class extornoService {
         throw error;
       }
       console.error('Erro ao buscar registro:', error);
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(ErrorMessages.INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -124,7 +124,7 @@ export class extornoService {
     try {
       return await this.extornoRepository.save(this.extornoRepository.create(extorno));
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(`Erro ao criar extorno`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -140,7 +140,8 @@ export class extornoService {
 
       return await this.extornoRepository.save(result);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      console.log(error);
+      throw new HttpException(`Erro ao Atualizar extorno`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

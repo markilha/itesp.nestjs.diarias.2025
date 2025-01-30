@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, In, Repository } from 'typeorm';
 import { FindAllParams, reqtransDto, updateStatusDto } from './reqtransDto';
 import { reqtransEntity } from '../database/db_oracle/entities/requisicaoTrans.entity';
+import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
 
 @Injectable()
 export class reqtransService {
@@ -14,30 +15,46 @@ export class reqtransService {
 
   async findAll(params: FindAllParams): Promise<reqtransDto[]> {
     try {
+      const pageNumber = params.page ?? 1;
+      const pageSize = params.limit ?? 500;
+      const startRow = (pageNumber - 1) * pageSize + 1;
+      const endRow = pageNumber * pageSize;
       const searchParams: FindOptionsWhere<reqtransEntity> = {};
 
       if (params.REQ_ID_CODIGO) {
         searchParams.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
       }
+ const queryBuilder = this.reqtransRepository
+        .createQueryBuilder('r')
+        .select([
+          'r.REQ_ID_CODIGO as REQ_ID_CODIGO',
+          'r.REG_ID_CODIGO as REG_ID_CODIGO',
+          'r.COD_MUNICIP as COD_MUNICIP',
+          'r.TRA_ID_CODIGO  as TRA_ID_CODIGO',
+          'r.REQ_DTREQ  as REQ_DTREQ',
+          'r.REQ_DTSAIDA  as REQ_DTSAIDA',
+          'r.REQ_MOTORISTA  as REQ_MOTORISTA',
+          'r.REQ_HSAIDA as REQ_HSAIDA',
+          'r.REQ_DTRET  as REQ_DTRET',
+          'r.REQ_MOTIVO as REQ_MOTIVO',
+          'r.REQ_HRET as REQ_HRET',
+          'r.REQ_KM as REQ_KM',
+          'r.REQ_STATUS as REQ_STATUS',
+          'r.REQ_DIARIA as REQ_DIARIA',
+          'r.REQ_INTEGRAL as REQ_INTEGRAL',
+          'r.REQ_PARCIAL  as REQ_PARCIAL',
+          'r.REQ_ESPECIAL as REQ_ESPECIAL',
+          'r.REQ_PACOTE as REQ_PACOTE',
+          'r.REQ_GOVERNADOR as REQ_GOVERNADOR',       
+         
+        ])
+        .where(searchParams);
+      const paginatedQuery = getPaginatedQuery(queryBuilder, startRow, endRow);
+      const parameters = Object.values(queryBuilder.getParameters());
+      const result = await this.reqtransRepository.query(paginatedQuery, parameters);
+      return result;
 
-      let reqtranss: reqtransEntity[] = [];
-
-      if (params.page && params.limit) {
-        const page = params.page;
-        const limit = params.limit;
-        const skip = (page - 1) * limit;
-
-        reqtranss = await this.reqtransRepository.find({
-          where: searchParams,
-          skip,
-          take: limit,
-        });
-      } else {
-        reqtranss = await this.reqtransRepository.find({
-          where: searchParams,
-        });
-      }
-      return reqtranss.map((reqv) => new reqtransDto(reqv));
+      
     } catch (error) {
       throw new HttpException('Erro ao buscar as requisições', HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -82,7 +99,6 @@ export class reqtransService {
     }
   }
 
-  //update
   async update(reqtrans: reqtransDto): Promise<reqtransDto> {
     try {
       const reqtransToUpdate = await this.reqtransRepository.findOne({

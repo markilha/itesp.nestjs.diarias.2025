@@ -69,7 +69,7 @@ import { ndocumentoService } from '../ndocumento/ndocumento.service';
 import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.entity';
 import { verificaAutorizacao } from '../util/permissao/permissao';
 import { permissaoFindAll } from '../util/permissao/permissao';
-import { permissaoCargo } from 'src/util/enums/cargo';
+import { permissaoCargo } from '../util/enums/cargo';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1

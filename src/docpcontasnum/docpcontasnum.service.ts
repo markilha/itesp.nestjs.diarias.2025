@@ -2,12 +2,13 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { docpcontasnumEntity } from '../database/db_oracle/entities/docpcontasnum.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, returnData } from './docpcontasnumDto';
-import { Request } from 'express';
-import { permissaoFindAll } from 'src/util/permissao/permissao';
-import { AuthUserDto } from 'src/auth/use.auth.Dto';
-import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
-import { formatError } from 'src/components/error/error.service';
+import { FindAllParams} from './docpcontasnumDto';
+
+import { permissaoFindAll } from '../util/permissao/permissao';
+import { AuthUserDto } from '../auth/use.auth.Dto';
+import { getPaginatedQuery } from '../util/paginacao/paginaQuery';
+import { ErrorMessages } from '../components/error/error.constants';
+
 
 @Injectable()
 export class docpcontasnumService {
@@ -81,46 +82,37 @@ export class docpcontasnumService {
         });
       } else if (params.CHAPA) {
         queryBuilder.andWhere('r.CHAPA = :chapa', { chapa: user.chapa });
-      }
-
-      
+      }      
 
       const paginatedQuery = getPaginatedQuery(queryBuilder, startRow, endRow);
-
       const parameters = Object.values(queryBuilder.getParameters());
-
       const result = await this.docpcontasnumRepository.query(paginatedQuery, parameters);
 
       return result;
-    } catch (error) {
-      console.log(error);
-      throw new HttpException('Não foi possível buscar os docs', HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error) { 
+      throw new HttpException(ErrorMessages.INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
 
-  async findOne(SQE_ID_CODIGO: number, request?: Request): Promise<docpcontasnumEntity> {
+  async findOne(SQE_ID_CODIGO: number): Promise<docpcontasnumEntity> {
     try {
       const result = await this.docpcontasnumRepository
         .createQueryBuilder('r')
-        .where('r.SQE_ID_CODIGO = :codigo', { codigo: SQE_ID_CODIGO })
-        .maxExecutionTime(10000)
-        .cache(false)
+        .where('r.SQE_ID_CODIGO = :codigo', { codigo: SQE_ID_CODIGO }) 
         .getOne();
 
       if (!result) {
-        throw new HttpException('Não encontrou nenhum registro', HttpStatus.NOT_FOUND);
+        throw new HttpException(ErrorMessages.NOT_FOUND, HttpStatus.NOT_FOUND);
       }
       return result;
-    } catch (error) {
+    } catch (error) {     
       if (error instanceof HttpException) {
         throw error;
-      }
-      console.error('Erro ao buscar registro:', error);     
-      const formattedError = formatError(error, request);      
+      } 
       throw new HttpException(
-        formattedError,
-        formattedError.statusCode
+        `${ErrorMessages.INTERNAL_ERROR}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

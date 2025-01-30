@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { pcontasnumEntity } from '../database/db_oracle/entities/pcontasnum';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, pcontasNumDto } from './pcontasnumDto';
-import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
+import { getPaginatedQuery } from '../util/paginacao/paginaQuery';
 
 @Injectable()
 export class PcontasNumService {

@@ -1,16 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { itensreqrecEntity } from '../database/db_oracle/entities/itensreqrec.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import {  Repository } from 'typeorm';
 import { itemRecursoDto, paramsItemRecurso } from './itensreq.Dto';
-import {
-  SelecionaItenFunc,
-  SelecionaItensFunc,
-  SelecionaItensRecurso,
-} from '../util/selects/itensRecurso';
-import { AuthUserDto } from 'src/auth/use.auth.Dto';
-import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
-import { permissaoFindAll } from 'src/util/permissao/permissao';
+
+import { AuthUserDto } from '../auth/use.auth.Dto';
+import { getPaginatedQuery } from '../util/paginacao/paginaQuery';
+import { permissaoFindAll } from '../util/permissao/permissao';
 
 @Injectable()
 export class itensreqrecService {

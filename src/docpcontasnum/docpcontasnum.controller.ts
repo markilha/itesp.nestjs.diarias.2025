@@ -1,12 +1,12 @@
 import { Controller, Get, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { docpcontasnumService } from './docpcontasnum.service';
 import { FindAllParams, returnData } from './docpcontasnumDto';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AllExceptionsFilter } from 'src/interceptors/all-exceptions.filter';
-import { docpcontasnumEntity } from 'src/database/db_oracle/entities/docpcontasnum.entity';
-import { CurrentUser } from 'src/auth/current-user.decorator';
-import { AuthUserDto } from 'src/auth/use.auth.Dto';
+import { AllExceptionsFilter } from '../interceptors/all-exceptions.filter';
+import { docpcontasnumEntity } from '../database/db_oracle/entities/docpcontasnum.entity';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { AuthUserDto } from '../auth/use.auth.Dto';
 
 @ApiTags('docpcontasnum')
 @UseGuards(AuthGuard)

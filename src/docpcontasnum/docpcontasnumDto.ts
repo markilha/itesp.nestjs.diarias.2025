@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { docpcontasnumEntity } from 'src/database/db_oracle/entities/docpcontasnum.entity';
+import { docpcontasnumEntity } from '../database/db_oracle/entities/docpcontasnum.entity';
 
 
 export class FindAllParams {

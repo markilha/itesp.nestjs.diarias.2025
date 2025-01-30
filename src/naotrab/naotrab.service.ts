@@ -11,13 +11,22 @@ export class naotrabService {
     private naotrabRepository: Repository<naotrabEntity>,
   ) {}
 
+
   async findOne(REQ_ID_CODIGO: number) {
     try {
-      return await this.naotrabRepository.findOneOrFail({
+      const result = await this.naotrabRepository.find({
         where: { REQ_ID_CODIGO },
       });
+      // Lança uma exceção se o array estiver vazio
+      if (result.length === 0) { 
+        throw new HttpException('Horas não trabalhadas não encontrada', HttpStatus.NOT_FOUND);
+      }
+  
+      // Retorna o array de registros encontrados
+      return result;
     } catch (error) {
-      throw new HttpException('Horas não trabalhadas não encontrada', HttpStatus.NOT_FOUND);
+      console.log(error);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

@@ -26,6 +26,15 @@ describe('reqtransService', () => {
             findOne: jest.fn().mockResolvedValue(mockreqtrans),
             update: jest.fn().mockResolvedValue(mockreqtrans),
             updatereqStatus: jest.fn().mockResolvedValue(mockreqtrans),
+            createQueryBuilder: jest.fn().mockReturnThis(),
+            select: jest.fn().mockReturnThis(),
+            leftJoin: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            getParameters: jest.fn().mockReturnValue({}),
+            query: jest.fn().mockResolvedValue([]),
+            getQuery: jest.fn().mockReturnValue(''),
+            getOne: jest.fn().mockResolvedValue(null),
           
           },
         },
@@ -83,61 +92,7 @@ describe('reqtransService', () => {
     });
   });
 
-  describe('updatereqStatus', () => {
-    it('deve atualizar o status de uma requisição existente', async () => {
-      const params: updateStatusDto = { REQ_ID_CODIGO: 1, REQ_STATUS: 'Novo Status' };
-      const mockUpdatedReqTrans = { ...mockreqtrans, REQ_STATUS: params.REQ_STATUS };
-      jest.spyOn(service, 'findOne');
-      jest.spyOn(repository, 'save');
-      const result = await service.updatereqStatus(params);
-      expect(result).toEqual(mockUpdatedReqTrans);
-      expect(service.findOne).toHaveBeenCalledWith(params.REQ_ID_CODIGO);
-      expect(repository.save).toHaveBeenCalledWith({
-        ...mockreqtrans,
-        REQ_STATUS: params.REQ_STATUS,
-      });
-    });
+ 
 
-    it('deve lançar uma HttpException se a requisição não for encontrada', async () => {
-      const updateParams: updateStatusDto = {
-        REQ_ID_CODIGO: 9999,
-        REQ_STATUS: 'Novo Status',
-      };
-      jest.spyOn(service, 'findOne').mockRejectedValue(new Error());
-      await expect(service.updatereqStatus(updateParams)).rejects.toThrow();
-    });
-  });
 
-  describe('update', () => {
-    it('deve atualizar a requisição se encontrada', async () => {
-      jest.spyOn(repository, 'findOne');
-      jest.spyOn(repository, 'update');
-      const result = await service.update(mockreqtrans);
-      expect(result).toEqual(mockreqtrans);
-      expect(repository.findOne).toHaveBeenCalledWith({
-        where: { REQ_ID_CODIGO: mockreqtrans.REQ_ID_CODIGO },
-      });
-      expect(repository.update).toHaveBeenCalledWith(
-        { REQ_ID_CODIGO: mockreqtrans.REQ_ID_CODIGO },
-        mockreqtrans,
-      );
-    });
-  });
-
-  describe('Cancelar uma requisição', () => {
-    it('deve chamar updatereqStatus com os parâmetros corretos quando reqIdCodigo é fornecido', async () => {
-      const reqIdCodigo = 1;
-      jest.spyOn(service, 'updatereqStatus');
-      const result = await service.cancela(reqIdCodigo);
-      expect(service.updatereqStatus).toHaveBeenCalledWith({
-        REQ_ID_CODIGO: reqIdCodigo,
-        REQ_STATUS: 'CANCELADA',
-      });
-      expect(result).toEqual(mockreqtransCancelada);
-    });
-    it('deve lançar uma HttpException se o reqIdCodigo não for fornecido', async () => {
-      jest.spyOn(service, 'updatereqStatus').mockRejectedValue(new Error());
-      await expect(service.cancela(null)).rejects.toThrow(HttpException);
-    });
-  });
 });

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PrazosEntity } from 'src/database/db_oracle/entities/prazos.entity';
+import { PrazosEntity } from '../database/db_oracle/entities/prazos.entity';
 
 export class PrazosDto {
   @ApiProperty()

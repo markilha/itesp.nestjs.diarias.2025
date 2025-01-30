@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DespesaDiariaEntity } from '../database/db_oracle/entities/despesaDiaria.entity';
-import { FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, Raw, Repository } from 'typeorm';
 import { CargoDto, FindAllParams } from './despesadiariaDto';
 
 @Injectable()
@@ -16,7 +16,9 @@ export class DespesadiariaService {
       const searchParams: FindOptionsWhere<DespesaDiariaEntity> = {};
 
       if (params.nome) {
-        searchParams['nome'] = ILike(`%${params.nome}%`);
+        searchParams['nome'] = Raw((alias) => `UPPER(${alias}) LIKE UPPER(:value)`, {
+          value: `%${params.nome}%`,
+        });
       }
 
       if (params.cargo) {
@@ -31,6 +33,7 @@ export class DespesadiariaService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  
 
   async findOne(cargo: string): Promise<CargoDto> {
     try {

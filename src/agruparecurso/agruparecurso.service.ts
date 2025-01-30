@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { agruparecursoEntity } from '../database/db_oracle/entities/agruparecurso.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams } from './agruparecursoDto';
-import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
+import { getPaginatedQuery } from '../util/paginacao/paginaQuery';
 
 @Injectable()
 export class agruparecursoService {

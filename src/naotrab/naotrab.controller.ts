@@ -23,9 +23,9 @@ export class naotrabController {
   @ApiResponse({ status: 200, description: 'Listagem de horas não trabalhadas', type: naotrabEntity, isArray: true })
   @ApiResponse({ status: 500, description: 'Não foi possível buscar as horas' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
-  async findOne(@Query('REQ_ID_CODIGO') REQ_ID_CODIGO: number): Promise<naotrabEntity> {
-    const naotrab = await this.naotrabService.findOne(REQ_ID_CODIGO);   
-    return naotrab;
+  async findOne(@Query('REQ_ID_CODIGO') REQ_ID_CODIGO: number): Promise<naotrabEntity[]> {
+      const naotrab = await this.naotrabService.findOne(REQ_ID_CODIGO);   
+      return naotrab;
   }
 
   @Get('totaldiarianaotrabalhada')  

@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UferpsEntity } from '../database/db_oracle/entities/UferpsEntity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, UfespDto } from './ufespDto';
-import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
+import { getPaginatedQuery } from '../util/paginacao/paginaQuery';
 
 @Injectable()
 export class UfespService {
