@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UferpsEntity } from '../database/db_oracle/entities/UferpsEntity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, UfespDto } from './ufespDto';
+import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
 
 @Injectable()
 export class UfespService {
@@ -34,7 +35,7 @@ export class UfespService {
       return await this.uferpsRepository.findOneOrFail({
         where: { ufeIdCodigo: id },
       });
-    } catch (error) {      
+    } catch (error) {
       throw new HttpException('Ufesp não encontrada', HttpStatus.NOT_FOUND);
     }
   }
@@ -49,27 +50,36 @@ export class UfespService {
   }
 
   async findAll(params: FindAllParams): Promise<UfespDto[]> {
-    const searchParams: FindOptionsWhere<UferpsEntity> = {};
+    try {
+      const pageNumber = params.page ?? 1;
+      const pageSize = params.limit ?? 500;
+      const startRow = (pageNumber - 1) * pageSize + 1;
+      const endRow = pageNumber * pageSize;
+      const searchParams: FindOptionsWhere<UferpsEntity> = {};
 
-    if (params.ufeIdCodigo) {
-      searchParams['ufeIdCodigo'] = params.ufeIdCodigo;
+      if (params.ufeIdCodigo) {
+        searchParams['ufeIdCodigo'] = params.ufeIdCodigo;
+      }
+      const queryBuilder = this.uferpsRepository
+        .createQueryBuilder('r')
+        .select([
+          'r.UFE_ID_CODIGO as "ufeIdCodigo"',
+          'r.TDE_ID_CODIGO as "tdeIdCodigo"',
+          'r.UFE_VALOR as "ufeValor"',
+          'r.UFE_DTINICIO as "ufeDtInicio"',
+          'r.UFE_DTFINAL as "ufeDtFinal"',
+        ])
+        .where(searchParams);
+
+      const paginatedQuery = getPaginatedQuery(queryBuilder, startRow, endRow);
+      const parameters = Object.values(queryBuilder.getParameters());
+      const result = await this.uferpsRepository.query(paginatedQuery, parameters);
+
+      return result;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException('Não foi possível buscar os docs', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-    if (params.page && params.limit) {
-      const page = params.page;
-      const limit = params.limit;
-      const skip = (page - 1) * limit;
-
-      return await this.uferpsRepository.find({
-        where: searchParams,
-        skip,
-        take: limit,
-      });
-    }
-
-    return await this.uferpsRepository.find({
-      where: searchParams,
-    });
   }
 
   // Novo método para encontrar o valor mais atual
@@ -83,15 +93,15 @@ export class UfespService {
 
   // Inserir uma data e retornar o valor da UFESP naquela data
 
-  async findValueByDate(dateString: string | Date): Promise<UfespDto | null> {   
-    try {      
-      const date = dateString instanceof Date ? dateString : new Date(dateString);    
-     
+  async findValueByDate(dateString: string | Date): Promise<UfespDto | null> {
+    try {
+      const date = dateString instanceof Date ? dateString : new Date(dateString);
+
       let result = await this.uferpsRepository
         .createQueryBuilder('u')
         .where(':date BETWEEN u.ufeDtInicio AND u.ufeDtFinal', { date }) // Utiliza BETWEEN para simplificar
-        .getOne();       
-    
+        .getOne();
+
       // Se não encontrar, busca o valor anterior à data
       if (!result) {
         result = await this.uferpsRepository
@@ -99,14 +109,11 @@ export class UfespService {
           .where('u.ufeDtFinal < :date', { date }) // Reutiliza o mesmo valor
           .orderBy('u.ufeDtFinal', 'DESC')
           .getOne();
-      }  
+      }
       return result;
     } catch (error) {
       console.log(error);
       throw new HttpException('Erro ao buscar a ufesp', HttpStatus.INTERNAL_SERVER_ERROR);
-      
     }
-
   }
-  
 }
