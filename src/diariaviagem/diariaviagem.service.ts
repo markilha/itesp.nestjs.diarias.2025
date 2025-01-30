@@ -100,9 +100,7 @@ export class DiariaviagemService {
           diariaParcial20: calc.diariaParcial20,
           diariaBase: calc.diariaBase,
         };
-      });
-
-      //sortByField(result, params.orderBy, params.orderDirection);
+      });    
 
       return result;
     } catch (error) {
@@ -110,22 +108,32 @@ export class DiariaviagemService {
       throw new HttpException('Erro ao buscar prestações', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
-  async findOne(requisicao: number, chapa: string): Promise<DiariaviagemDto> {
-    try {
-      return await this.diariaviagemRepository.findOneOrFail({
-        where: { REQ_ID_CODIGO: requisicao, CHAPA: chapa },
-      });
-    } catch (error) {
-      if (error.name === 'EntityNotFoundError') {       
-        throw new HttpException('Diária de Viagem não encontrada', HttpStatus.NOT_FOUND);
-      } else {       
+  
+   async findOne(requisicao: number,chapa: string): Promise<DiariaviagemDto> {
+      try {
+        const result = await this.diariaviagemRepository
+          .createQueryBuilder('r')
+          .where('r.REQ_ID_CODIGO = :codigo', { codigo: requisicao })
+          .where('r.CHAPA = :codigo', { codigo: chapa })
+          .maxExecutionTime(10000)
+          .cache(false)
+          .getOne();
+  
+        if (!result) {
+          throw new HttpException('Não encontrou nenhum registro', HttpStatus.NOT_FOUND);
+        }
+        return result;
+      } catch (error) {
+        if (error instanceof HttpException) {
+          throw error;
+        }
+        console.error('Erro ao buscar registro:', error);     
+         
         throw new HttpException(
           'Erro interno no servidor ao buscar a Diária de Viagem',
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
     }
-  }
   
 }
