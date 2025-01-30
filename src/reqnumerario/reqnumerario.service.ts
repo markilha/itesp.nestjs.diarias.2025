@@ -4,18 +4,23 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { FindAllParams, ReqnumerarioDto, updatChegadaDto } from './reqnumerarioDto';
 import { ReqNumerarioEntity } from '../database/db_oracle/entities/reqnumerario.entity';
+import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
 
 @Injectable()
 export class ReqnumerarioService {
-  constructor(   
+  constructor(
     @InjectRepository(ReqNumerarioEntity, 'oracleConnection')
-    private readonly renumerarioRepository: Repository<ReqNumerarioEntity>
+    private readonly renumerarioRepository: Repository<ReqNumerarioEntity>,
   ) {}
-
+  
   async findAll(params: FindAllParams): Promise<ReqnumerarioDto[]> {
     try {
-      const searchParams: FindOptionsWhere<ReqNumerarioEntity> = {};
+      const pageNumber = params.page ?? 1;
+      const pageSize = params.limit ?? 500;
+      const startRow = (pageNumber - 1) * pageSize + 1;
+      const endRow = pageNumber * pageSize;
 
+      const searchParams: FindOptionsWhere<ReqNumerarioEntity> = {};
       if (params.RNU_ID_CODIGO) {
         searchParams.RNU_ID_CODIGO = params.RNU_ID_CODIGO;
       }
@@ -23,46 +28,56 @@ export class ReqnumerarioService {
         searchParams.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
       }
 
-      let reqnumerarios: ReqNumerarioEntity[] = [];
+      const queryBuilder = this.renumerarioRepository
+        .createQueryBuilder('r')
+        .select([
+          'r.RNU_ID_CODIGO as RNU_ID_CODIGO',
+          'r.SQE_ID_CODIGO as SQE_ID_CODIGO',
+          'r.REQ_ID_CODIGO as REQ_ID_CODIGO',
+          'r.ITE_ID_CODIGO as ITE_ID_CODIGO',
+          'r.RRE_ID_CODIGO as RRE_ID_CODIGO',
+          'r.DIR_ID_CODIGO as DIR_ID_CODIGO',
+          'r.RNU_DTINICIO as RNU_DTINICIO',
+          'r.RNU_HORAINICIO as RNU_HORAINICIO',
+          'r.RNU_DTFIM as RNU_DTFIM',
+          'r.RNU_HORAFIM as RNU_HORAFIM',
+          'r.RNU_INTPREV as RNU_INTPREV',
+          'r.RNU_PARPREV as RNU_PARPREV',
+          'r.RNU_INTREAL as RNU_INTREAL',
+          'r.RNU_PARREAL as RNU_PARREAL',
+          'r.RNU_MOTIVO as RNU_MOTIVO',
+          'r.RNU_PACOTE as RNU_PACOTE',
+          'r.RNU_GOVERNADOR as RNU_GOVERNADOR',
+          'r.RNU_VLINTEGRAL as RNU_VLINTEGRAL',
+          'r.RNU_VLPARCIAL as RNU_VLPARCIAL',
+          'r.RNU_VLBASE as RNU_VLBASE' 
+        ])
+        .where(searchParams);
 
-      if (params.page && params.limit) {
-        const page = params.page;
-        const limit = params.limit;
-        const skip = (page - 1) * limit;
+      const paginatedQuery = getPaginatedQuery(queryBuilder, startRow, endRow);
+      const parameters = Object.values(queryBuilder.getParameters());
+      const result = await this.renumerarioRepository.query(paginatedQuery, parameters);
 
-        reqnumerarios = await this.renumerarioRepository.find({
-          where: searchParams,
-          skip,
-          take: limit,
-        });
-      } else {
-        reqnumerarios = await this.renumerarioRepository.find({
-          where: searchParams,
-        });
-      }
-      return reqnumerarios.map((reqv) => new ReqnumerarioDto(reqv));
+      return result;
     } catch (error) {
-      throw new HttpException(
-        'Erro ao buscar as requisições',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      console.log(error);
+      throw new HttpException('Não foi possível buscar os docs', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  
-  async findOne(ITE_ID_CODIGO: number) {  
+  async findOne(ITE_ID_CODIGO: number) {
     try {
       const item = await this.renumerarioRepository.query(
         `SELECT * FROM FINANCEIRO.S009_REQNUMERARIO  WHERE ITE_ID_CODIGO = :ITE_ID_CODIGO`,
         [ITE_ID_CODIGO],
-      );    
-  
+      );
+
       if (!item || item.length === 0) {
         throw new HttpException(
           `Reqnumerario com código: ${ITE_ID_CODIGO} não encontrado`,
           HttpStatus.NOT_FOUND,
         );
-      }  
+      }
       return item[0];
     } catch (error) {
       console.log(error);
@@ -76,10 +91,10 @@ export class ReqnumerarioService {
   // retonar o ultimo registro
   async findLast(): Promise<number> {
     try {
-        const lastINumerario = await this.renumerarioRepository.query(
+      const lastINumerario = await this.renumerarioRepository.query(
         `SELECT MAX(RNU_ID_CODIGO) as lastId FROM S009_REQNUMERARIO`,
       );
-      const lastIdNum = lastINumerario[0]?.LASTID || 0;      
+      const lastIdNum = lastINumerario[0]?.LASTID || 0;
       return lastIdNum + 1;
     } catch (error) {
       throw new HttpException(
@@ -92,32 +107,22 @@ export class ReqnumerarioService {
   async create(reqnumerario: ReqnumerarioDto): Promise<ReqnumerarioDto> {
     try {
       reqnumerario.RNU_ID_CODIGO = await this.findLast();
-      const newReqnumerario = await this.renumerarioRepository.save(
-        reqnumerario,
-      );
+      const newReqnumerario = await this.renumerarioRepository.save(reqnumerario);
       return new ReqnumerarioDto(newReqnumerario);
     } catch (error) {
-      throw new HttpException(
-        'Erro ao criar o numerario',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Erro ao criar o numerario', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  
   async updateChegada(reqnumerario: updatChegadaDto): Promise<ReqnumerarioDto> {
     try {
-    
       const reqnumerarioEntity = await this.renumerarioRepository.query(
         `SELECT * FROM FINANCEIRO.S009_REQNUMERARIO  WHERE RNU_ID_CODIGO = :RNU_ID_CODIGO`,
         [reqnumerario.RNU_ID_CODIGO],
       );
-      
+
       if (!reqnumerarioEntity) {
-        throw new HttpException(
-          'Requisição não encontrada',
-          HttpStatus.NOT_FOUND,
-        );
+        throw new HttpException('Requisição não encontrada', HttpStatus.NOT_FOUND);
       }
 
       reqnumerarioEntity.RNU_INTREAL = reqnumerario.RNU_INTREAL;
@@ -127,11 +132,7 @@ export class ReqnumerarioService {
 
       return new ReqnumerarioDto(reqnumerarioEntity);
     } catch (error) {
-      throw new HttpException(
-        'Erro ao atualizar o numerario',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Erro ao atualizar o numerario', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
- 
 }
