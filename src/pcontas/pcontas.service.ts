@@ -10,13 +10,14 @@ import { ReqnumerarioService } from '../reqnumerario/reqnumerario.service';
 import { ndocumentoService } from '../ndocumento/ndocumento.service';
 import { AuthUserDto } from '../auth/use.auth.Dto';
 import { selecionaExtPrestContasNum } from 'src/util/selects/prestacao';
-import {  selecionaPrestPendenteView } from 'src/util/selects/saques';
+import { selecionaPrestPendenteView } from 'src/util/selects/saques';
+import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
 
 @Injectable()
 export class PcontasService {
   constructor(
     @InjectRepository(pcontasEntity, 'oracleConnection')
-    private pcontasRepository: Repository<pcontasEntity>,  
+    private pcontasRepository: Repository<pcontasEntity>,
     private reqnumerarioService: ReqnumerarioService,
     private ndocumentoService: ndocumentoService,
     @Inject(forwardRef(() => SaqueService))
@@ -28,29 +29,34 @@ export class PcontasService {
 
   async findAll(params: FindAllParams): Promise<pcontasDto[]> {
     try {
+      const pageNumber = params.page ?? 1;
+      const pageSize = params.limit ?? 500;
+      const startRow = (pageNumber - 1) * pageSize + 1;
+      const endRow = pageNumber * pageSize;
+
       const searchParams: FindOptionsWhere<pcontasDto> = {};
       if (params.PCO_ID_CODIGO) {
         searchParams['PCO_ID_CODIGO'] = Number(params.PCO_ID_CODIGO);
       }
 
-      if (params.page && params.limit) {
-        const page = params.page;
-        const limit = params.limit;
-        const skip = (page - 1) * limit;
+      const queryBuilder = this.pcontasRepository
+        .createQueryBuilder('r')
+        .select([
+          'r.PCO_ID_CODIGO as PCO_ID_CODIGO',
+          'r.PCO_TIPO as PCO_TIPO',
+          'r.PCO_TOTDOC as PCO_TOTDOC',
+        ])
+        .where(searchParams);
 
-        return await this.pcontasRepository.find({
-          where: searchParams,
-          skip,
-          take: limit,
-        });
-      }
+      const paginatedQuery = getPaginatedQuery(queryBuilder, startRow, endRow);
+      const parameters = Object.values(queryBuilder.getParameters());
+      const result = await this.pcontasRepository.query(paginatedQuery, parameters);
 
-      return await this.pcontasRepository.find({
-        where: searchParams,
-      });
+      return result;
     } catch (error) {
+      console.log(error);
       throw new HttpException(
-        'Não foi possível as prestações de conta',
+        'Não foi possível buscar os pcontas',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -67,15 +73,27 @@ export class PcontasService {
       );
     }
   }
-
+ 
   async findOne(PCO_ID_CODIGO: number): Promise<pcontasDto> {
     try {
-      return await this.pcontasRepository.findOneByOrFail({ PCO_ID_CODIGO });
+      const result = await this.pcontasRepository
+        .createQueryBuilder('r')
+        .where('r.PCO_ID_CODIGO = :codigo', { codigo: PCO_ID_CODIGO })
+        .maxExecutionTime(10000)
+        .cache(false)
+        .getOne();
+
+      if (!result) {
+        throw new HttpException('Não encontrou nenhum registro', HttpStatus.NOT_FOUND);
+      }
+      return result;
     } catch (error) {
-      throw new HttpException(
-        'Erro ao buscar a prestação de conta',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error('Erro ao buscar registro:', error);
+
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -94,23 +112,22 @@ export class PcontasService {
     params: createPcontasDto,
     users: AuthUserDto,
   ): Promise<{ PCO_ID_CODIGO: number }> {
-   
-    await this.saqueService.findOne(params.SQE_ID_CODIGO);   
-    
-    const newId = (await this.lastid()) + 1;   
+    await this.saqueService.findOne(params.SQE_ID_CODIGO);
+
+    const newId = (await this.lastid()) + 1;
 
     const pcontas = {
       PCO_ID_CODIGO: newId,
       PCO_TIPO: 'N',
       PCO_TOTDOC: 1,
-    };    
+    };
 
-    await this.pcontasRepository.insert(pcontas);   
+    await this.pcontasRepository.insert(pcontas);
 
     const rnuIdCodigo = await this.pcontasRepository.query(
       `SELECT RNU_ID_CODIGO FROM S009_REQNUMERARIO WHERE SQE_ID_CODIGO = :sqeIdCodigo`,
       [params.SQE_ID_CODIGO],
-    );   
+    );
 
     await this.reqnumerarioService.updateChegada({
       RNU_ID_CODIGO: rnuIdCodigo[0]?.RNU_ID_CODIGO,
@@ -122,7 +139,7 @@ export class PcontasService {
       PCO_ID_CODIGO: newId,
       RNU_ID_CODIGO: rnuIdCodigo[0]?.RNU_ID_CODIGO,
     });
-   
+
     await this.ndocumentoService.create({
       NDO_ID_CODIGO: await this.ndocumentoService.lastId(),
       PCO_ID_CODIGO: newId,
@@ -180,6 +197,4 @@ export class PcontasService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
-  
 }

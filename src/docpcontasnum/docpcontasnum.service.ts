@@ -15,6 +15,7 @@ export class docpcontasnumService {
     @InjectRepository(docpcontasnumEntity, 'oracleConnection')
     private docpcontasnumRepository: Repository<docpcontasnumEntity>,
   ) {}
+  
 
   async findAll(params: FindAllParams, user: AuthUserDto): Promise<any> {
     try {
