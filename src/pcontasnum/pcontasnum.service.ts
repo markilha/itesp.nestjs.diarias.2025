@@ -12,36 +12,6 @@ export class PcontasNumService {
     private pcontasnumRepository: Repository<pcontasnumEntity>,
   ) {}
 
-  // async findAll(params: FindAllParams): Promise<pcontasNumDto[]> {
-  //   try {
-  //     const searchParams: FindOptionsWhere<pcontasNumDto> = {};
-  //     if (params.PCO_ID_CODIGO) {
-  //       searchParams['PCO_ID_CODIGO'] = Number(params.PCO_ID_CODIGO);
-  //     }
-
-  //     if (params.page && params.limit) {
-  //       const page = params.page;
-  //       const limit = params.limit;
-  //       const skip = (page - 1) * limit;
-
-  //       return await this.pcontasnumRepository.find({
-  //         where: searchParams,
-  //         skip,
-  //         take: limit,
-  //       });
-  //     }
-
-  //     return await this.pcontasnumRepository.find({
-  //       where: searchParams,
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new HttpException(
-  //       'Não foi possível as prestações de conta numerario',
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
   async findAll(params: FindAllParams): Promise<pcontasNumDto[]> {
     try {
       const pageNumber = params.page ?? 1;
@@ -70,7 +40,6 @@ export class PcontasNumService {
     }
   }
 
- 
   async findOne(RNU_ID_CODIGO: number): Promise<pcontasNumDto> {
     try {
       const result = await this.pcontasnumRepository
