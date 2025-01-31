@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, In, Repository } from 'typeorm';
 import { FindAllParams, reqtransDto, updateStatusDto } from './reqtransDto';
 import { reqtransEntity } from '../database/db_oracle/entities/requisicaoTrans.entity';
-import { getPaginatedQuery } from 'src/util/paginacao/paginaQuery';
+import { getPaginatedQuery } from '../util/paginacao/paginaQuery';
 
 @Injectable()
 export class reqtransService {
@@ -90,8 +90,7 @@ export class reqtransService {
         );
       }  
       return item[0];
-    } catch (error) {
-      console.log(error)
+    } catch (error) {     
       throw new HttpException(        
         `Erro ao buscar o Requisicao com código: ${REQ_ID_CODIGO}`,
         HttpStatus.INTERNAL_SERVER_ERROR,

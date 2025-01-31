@@ -114,8 +114,7 @@ export class extornoService {
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
-      }
-      console.error('Erro ao buscar registro:', error);
+      }     
       throw new HttpException('Erro interno do servidor', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -139,8 +138,7 @@ export class extornoService {
       const result = this.extornoRepository.merge(newExtorno, ex);
 
       return await this.extornoRepository.save(result);
-    } catch (error) {
-      console.log(error);
+    } catch (error) {     
       throw new HttpException(`Erro ao Atualizar extorno`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

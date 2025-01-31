@@ -4,8 +4,8 @@ import { reqtransEntity } from '../../database/db_oracle/entities/requisicaoTran
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { HttpException } from '@nestjs/common';
-import { mockreqtrans, mockreqtransCancelada } from '../__mocks__/mocks';
-import { updateStatusDto } from '../reqtransDto';
+import { mockreqtrans } from '../__mocks__/mocks';
+
 
 describe('reqtransService', () => {
   let service: reqtransService;
@@ -91,8 +91,5 @@ describe('reqtransService', () => {
       await expect(service.findOne(100)).rejects.toThrow(HttpException);
     });
   });
-
- 
-
 
 });

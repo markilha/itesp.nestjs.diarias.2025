@@ -1,44 +1,46 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { SaqueService } from '../saque.service';
-import { getRepositoryToken } from '@nestjs/typeorm';
+
+import { documentosService as DocumentosService } from '../../documentos/documento.service';
+
+import { FindParamsSaque } from '../saque.dto';
+import { returnSaqueDto } from '../saque.dto';
+import { Repository } from 'typeorm';
 import { SaqueEntity } from '../../database/db_oracle/entities/saque.entity';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { MotivodiariaService } from '../../motivodiaria/motivodiaria.service';
 import { ReqnumerarioService } from '../../reqnumerario/reqnumerario.service';
 import { reembolsoService } from '../../reembolso/reembolso.service';
+import { extornoService } from '../../extorno/extorno.service';
 import { reqtransService } from '../../reqtrans/reqtrans.service';
 import { ItinirarioService } from '../../itinirario/itinirario.service';
 import { UfespService } from '../../ufesp/ufesp.service';
 import { DespesadiariaService } from '../../despesadiaria/despesadiaria.service';
 import { FuncsalarioService } from '../../funcsalario/funcsalario.service';
-import { extornoService } from '../../extorno/extorno.service';
 import { naotrabService } from '../../naotrab/naotrab.service';
 import { itensreqrecService } from '../../itensreqrec/itensreqrec.service';
 import { S001RequisicaoService } from '../../requisicao/s001_requisicao.service';
 import { destinoService } from '../../destino/destino.service';
-import { documentosService } from '../../documentos/documento.service';
 import { PcontasService } from '../../pcontas/pcontas.service';
-import { PpessoaService } from '../../ppessoa/ppessoa.service';
-import { Repository } from 'typeorm';
-import {  
-  mockDiariaChegada,
-  mockDiariaInicial,
-  mockMD,
-  mockReturnSaque,
-  mockSaque,
-  mocktotal,
-  userMock,
-} from '../__mocks__/saque.mock';
-import { calcularDiariaValores } from '../../util/calculo_dia_retorno';
-import { Destino } from '../../util/diariaDto';
-import { calcularValores } from '../../util/calculo_extorno';
 import { PcontasNumService } from '../../pcontasnum/pcontasnum.service';
 import { ndocumentoService } from '../../ndocumento/ndocumento.service';
+import { PpessoaService } from '../../ppessoa/ppessoa.service';
+import { DataUtils } from '../../util/DataUtils';
+import {
+  RetonaPrestacaoStatus,
+  RetornaSaquePendentes,
+} from '../../util/variaveis/statusSaquePrestacao';
 
-
+import { calcularDiariaValores } from '../../util/calculo_dia_retorno';
+import { Destino } from '../../util/diariaDto';
+import { mockDiariaChegada, mockDiariaInicial, mockReturnSaque } from '../__mocks__/saque.mock';
+import { calcularValores } from '../../util/calculo_extorno';
 
 describe('SaqueService', () => {
-  let service: SaqueService;
+  let saqueService: SaqueService;
   let saqueRepository: Repository<SaqueEntity>;
+  let documentosService: DocumentosService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -46,20 +48,31 @@ describe('SaqueService', () => {
         SaqueService,
         {
           provide: getRepositoryToken(SaqueEntity, 'oracleConnection'),
-          useValue: {         
-            findAll: jest.fn().mockResolvedValue(mocktotal),   
+          useValue: {
+            createQueryBuilder: jest.fn().mockReturnThis(),
+            select: jest.fn().mockReturnThis(),
+            leftJoin: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            getParameters: jest.fn().mockReturnValue({}),
+            query: jest.fn().mockResolvedValue([]),
+            getQuery: jest.fn().mockReturnValue(''),
+            getOne: jest.fn().mockResolvedValue(null),
+            getRawOne: jest.fn().mockResolvedValue(null),
+            save: jest.fn().mockResolvedValue({}),
             findOne: jest.fn().mockResolvedValue(mockReturnSaque),
-            query: jest.fn().mockResolvedValue([mockSaque]),
-            updateEfetivo: jest.fn().mockResolvedValue(mockReturnSaque),
-            save: jest.fn().mockResolvedValue(mockSaque),
-            findOneOrFail: jest.fn().mockResolvedValue(mockReturnSaque)
-          
+          },
+        },
+        {
+          provide: DocumentosService,
+          useValue: {
+            findBySQE_ID_CODIGO: jest.fn(),
           },
         },
         {
           provide: MotivodiariaService,
           useValue: {
-            findOne: jest.fn().mockResolvedValue(mockMD),
+            findOne: jest.fn(),
           },
         },
         {
@@ -125,21 +138,15 @@ describe('SaqueService', () => {
         },
         {
           provide: S001RequisicaoService,
-          useValue: {           
+          useValue: {
             findOne: jest.fn(),
-            create: jest.fn(),            
+            create: jest.fn(),
           },
         },
         {
           provide: destinoService,
           useValue: {
             findOne: jest.fn(),
-          },
-        },
-        {
-          provide: documentosService,
-          useValue: {
-            findAll: jest.fn(),
           },
         },
         {
@@ -165,23 +172,133 @@ describe('SaqueService', () => {
           useValue: {
             find: jest.fn(),
           },
-        },       
-         
+        },
       ],
     }).compile();
-
-    service = module.get<SaqueService>(SaqueService);
+    saqueService = module.get<SaqueService>(SaqueService);
     saqueRepository = module.get(getRepositoryToken(SaqueEntity, 'oracleConnection'));
+    documentosService = module.get<DocumentosService>(DocumentosService);
   });
 
-  it('Deve ser definido', () => {
-    expect(service).toBeDefined();
-    expect(saqueRepository).toBeDefined();
+  it('deve ser definido', () => {
+    expect(saqueService).toBeDefined();
   });
 
-  it('Buscar todos saques', async () => {
-    let saques = await service.findAll({  CHAPA: '000081' },userMock);     
-    expect(saques).toEqual(mocktotal);
+  describe('findAll', () => {
+    it('deve retornar saques com paginação e filtros', async () => {
+      const mockUser: any = {
+        chapa: '123',
+        permissao: 15,
+        codsecao: '456',
+      };
+
+      const mockParams: FindParamsSaque = {
+        orderBy: 'a.SQE_DTPEDIDO',
+        orderDirection: 'ASC',
+        page: 1,
+        limit: 10,
+      };
+      const mockResult = [
+        {
+          SQE_ID_CODIGO: 24746,
+          SQE_DTPEDIDO: '02/08/2009 21:00:00',
+          SQE_DTSAQUE: '02/08/2009 21:00:00',
+          SQE_DTPREST: '02/08/2009 21:00:00',
+          NOME: 'Jose',
+          REQ_ID_CODIGO: 87501,
+          TDE_DESCRICAO: 'DIARIAS',
+          SQE_VLSAQUE: 100,
+          SQE_VLPREST: 0,
+          VL_COMPLEMENTAR: 0,
+          VL_EXTORNO: 100,
+          REQ_DTREQ: '02/08/2009 21:00:00',
+          REQ_STATUS: 'PLANEJAMENTO AUTORIZADO',
+          CHAPA: '000363',
+          STS_DESCRICAO: 'REQ.AVALIADA CHEFE IMEDIATO',
+          SQE_EFETIVO: 'A',
+          PRA_ATIVO: 'N',
+          SQE_TIPOSAQUE: 'N',
+          STATUS_SAQUE: 'Pendente',
+          STATUS_PREST: null,
+          ID_DOC: null,
+          ORIGINAL_NAME: null,
+          CODSECAO: '1.2.02.07.04.17.00',
+        },
+      ];
+
+      const mockCount = [{ TOTAL_REGISTROS: 1 }];
+      jest.spyOn(saqueRepository, 'query').mockResolvedValueOnce(mockResult);
+      jest.spyOn(saqueRepository, 'query').mockResolvedValueOnce(mockCount);
+      jest.spyOn(documentosService, 'findBySQE_ID_CODIGO').mockResolvedValueOnce([]);
+
+      const STATUS_PREST = RetonaPrestacaoStatus(
+        mockResult[0].SQE_EFETIVO,
+        mockResult[0].SQE_TIPOSAQUE,
+        mockResult[0].PRA_ATIVO,
+        mockResult[0].SQE_DTPREST,
+        mockResult[0].SQE_VLPREST,
+      );
+
+      const STATUS_SAQUE = RetornaSaquePendentes(
+        mockResult[0].SQE_EFETIVO,
+        mockResult[0].SQE_TIPOSAQUE,
+        mockResult[0].PRA_ATIVO,
+      );
+
+      const result = await saqueService.findAll(mockParams, mockUser);
+
+      expect(result).toEqual({
+        data: [
+          new returnSaqueDto({
+            SQE_ID_CODIGO: 24746,
+            SQE_DTPEDIDO: DataUtils.converterParaData('02/08/2009 21:00:00'),
+            SQE_DTSAQUE: DataUtils.converterParaData('02/08/2009 21:00:00'),
+            SQE_DTPREST: DataUtils.converterParaData('02/08/2009 21:00:00'),
+            REQ_DTREQ: DataUtils.converterParaData('02/08/2009 21:00:00'),
+            NOME: 'Jose',
+            REQ_ID_CODIGO: 87501,
+            TDE_DESCRICAO: 'DIARIAS',
+            SQE_VLSAQUE: 100,
+            SQE_VLPREST: 0,
+            VL_COMPLEMENTAR: 0,
+            VL_EXTORNO: 100,
+            REQ_STATUS: 'PLANEJAMENTO AUTORIZADO',
+            CHAPA: '000363',
+            STS_DESCRICAO: 'REQ.AVALIADA CHEFE IMEDIATO',
+            SQE_EFETIVO: 'A',
+            PRA_ATIVO: 'N',
+            SQE_TIPOSAQUE: 'Diária',
+            STATUS_SAQUE: STATUS_SAQUE,
+            STATUS_PREST: STATUS_PREST,
+            ID_DOC: null,
+            ORIGINAL_NAME: null,
+            CODSECAO: '1.2.02.07.04.17.00',
+          }),
+        ],
+        total: 1,
+      });
+    });
+
+    it('deve lançar uma HttpException se ocorrer um erro', async () => {
+      const mockUser: any = {
+        chapa: '123',
+        permissao: 15,
+        codsecao: '456',
+      };
+
+      const mockParams: FindParamsSaque = {
+        orderBy: 'a.SQE_DTPEDIDO',
+        orderDirection: 'ASC',
+        page: 1,
+        limit: 10,
+      };
+
+      jest.spyOn(saqueRepository, 'query').mockRejectedValueOnce(new Error('Database error'));
+
+      await expect(saqueService.findAll(mockParams, mockUser)).rejects.toThrow(
+        new HttpException('Database error', HttpStatus.INTERNAL_SERVER_ERROR),
+      );
+    });
   });
 
   describe('Prestação de conta', () => {
@@ -231,32 +348,71 @@ describe('SaqueService', () => {
     });
   });
 
-  describe('findOneOrFail', () => {
-    it('deve retornar um extorno', async () => {
-      const result = await service.findOne(mockReturnSaque.sqeIdCodigo);
-      expect(result).toEqual(mockReturnSaque);
-      expect(saqueRepository.findOneOrFail).toHaveBeenCalledTimes(1);
+  describe('findOne', () => {
+    const mockSaqueData = {
+      sqeIdCodigo: 1,
+      iteIdCodigo: 100,
+      sqeDtSaque: new Date(),
+      sqeVlPrest: 500,
+    };
+
+    it('deve encontrar com sucesso um saque', async () => {
+      const createQueryBuilderMock = {
+        select: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getRawOne: jest.fn().mockResolvedValue(mockSaqueData),
+      };
+
+      jest
+        .spyOn(saqueRepository, 'createQueryBuilder')
+        .mockReturnValue(createQueryBuilderMock as any);
+
+      const result = await saqueService.findOne(1);
+
+      expect(result).toEqual(mockSaqueData);
+      expect(createQueryBuilderMock.select).toHaveBeenCalled();
+      expect(createQueryBuilderMock.where).toHaveBeenCalledWith(
+        'SaqueEntity.sqeIdCodigo = :sqeIdCodigo',
+        { sqeIdCodigo: 1 },
+      );
     });
-    it('deve retornar uma execao', () => {
-      jest.spyOn(saqueRepository, 'findOneOrFail').mockRejectedValueOnce(new Error());
-      expect(service.findOne(9999)).rejects.toThrow();
+
+    it('deve lançar uma exceção quando saque não for encontrado', async () => {
+      const createQueryBuilderMock = {
+        select: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getRawOne: jest.fn().mockResolvedValue(null),
+      };
+
+      jest
+        .spyOn(saqueRepository, 'createQueryBuilder')
+        .mockReturnValue(createQueryBuilderMock as any);
+
+      await expect(saqueService.findOne(1)).rejects.toThrow(
+        new HttpException('Saque não encontrado', HttpStatus.INTERNAL_SERVER_ERROR),
+      );
+    });
+
+    it('deve lidar com erros de repositório', async () => {
+      jest.spyOn(saqueRepository, 'createQueryBuilder').mockImplementation(() => {
+        throw new Error('Database connection error');
+      });
+
+      await expect(saqueService.findOne(1)).rejects.toThrow(
+        new HttpException('Saque não encontrado', HttpStatus.INTERNAL_SERVER_ERROR),
+      );
     });
   });
 
   describe('updateEfetivo', () => {
     it('deve o efetivo do saque', async () => {
-      const result = await service.updateEfetivo(mockReturnSaque.sqeIdCodigo, 'C');
+      saqueService.findOne = jest.fn().mockResolvedValue(mockReturnSaque);
+      const result = await saqueService.updateEfetivo(mockReturnSaque.sqeIdCodigo, 'C');
       const resutEsperado = { ...mockReturnSaque, sqeEfetivo: 'C' };
       expect(result).toEqual(resutEsperado);
-      expect(saqueRepository.findOneOrFail).toHaveBeenCalledTimes(1);
       expect(saqueRepository.save).toHaveBeenCalledTimes(1);
     });
-
-    it('deve retornar uma exceção ', async () => {
-      jest.spyOn(saqueRepository, 'findOneOrFail').mockRejectedValueOnce(new Error());
-      await expect(service.updateEfetivo(99999, 'c')).rejects.toThrow();
-    });
   });
-
-
 });

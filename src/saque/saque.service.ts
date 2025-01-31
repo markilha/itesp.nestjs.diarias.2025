@@ -1097,8 +1097,7 @@ export class SaqueService {
         throw new Error('Saque não encontrado');
       }
       return result;
-    } catch (error) {
-      console.error(error);
+    } catch (error) {     
       throw new HttpException('Saque não encontrado', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
