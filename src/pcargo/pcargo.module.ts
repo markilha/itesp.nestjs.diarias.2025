@@ -5,9 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PcargoEntity } from '../database/db_oracle/entities/pcargo.entity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([PcargoEntity], 'oracleConnection')],
+  imports: [TypeOrmModule.forFeature([PcargoEntity], 'oracleConnection')],
   providers: [PcargoService],
   controllers: [PcargoController],
-  exports: [PcargoService]
+  exports: [PcargoService],
 })
 export class PcargoModule {}

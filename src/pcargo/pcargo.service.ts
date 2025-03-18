@@ -21,7 +21,6 @@ export class PcargoService {
     }
   }
 
-
   async findAll(params: FindAllParams): Promise<PcargoDto[]> {
     try {
       const pageNumber = params.page ?? 1;
@@ -43,11 +42,7 @@ export class PcargoService {
 
       const queryBuilder = this.pcargoRepository
         .createQueryBuilder('r')
-        .select([
-          'r.codigo as "codigo"',
-          'r.nome as "nome"',
-          'r.inativo as "inativo"',                
-        ])
+        .select(['r.codigo as "codigo"', 'r.nome as "nome"', 'r.inativo as "inativo"'])
         .where(searchParams);
 
       const paginatedQuery = getPaginatedQuery(queryBuilder, startRow, endRow);
@@ -57,32 +52,35 @@ export class PcargoService {
       return result;
     } catch (error) {
       console.log(error);
-      throw new HttpException('Não foi possível buscar os cargos', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Não foi possível buscar os cargos',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
- 
- async findOne(codigo: string) {
-     try {
-       const result = await this.pcargoRepository
-         .createQueryBuilder('r')
-         .where('r.codigo = :codigo', { codigo: codigo })
-         .maxExecutionTime(10000)
-         .cache(false)
-         .getOne();
- 
-       if (!result) {
-         throw new HttpException('Não encontrou nenhum registro', HttpStatus.NOT_FOUND);
-       }
-       return result;
-     } catch (error) {
-       if (error instanceof HttpException) {
-         throw error;
-       }
-       console.error('Erro ao buscar registro:', error);
- 
-       throw new HttpException('Erro ao buscar registro', HttpStatus.INTERNAL_SERVER_ERROR);
-     }
-   }
+
+  async findOne(codigo: string) {
+    try {
+      const result = await this.pcargoRepository
+        .createQueryBuilder('r')
+        .where('r.codigo = :codigo', { codigo: codigo })
+        .maxExecutionTime(10000)
+        .cache(false)
+        .getOne();
+
+      if (!result) {
+        throw new HttpException('Não encontrou nenhum registro', HttpStatus.NOT_FOUND);
+      }
+      return result;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error('Erro ao buscar registro:', error);
+
+      throw new HttpException('Erro ao buscar registro', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
   //update
   async update(pcargoDto: PcargoDtoUpdate): Promise<PcargoDto> {
     const pcargo = await this.findOne(pcargoDto.codigo);

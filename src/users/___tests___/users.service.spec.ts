@@ -38,11 +38,8 @@ describe('UsersService', () => {
   });
 
   it('Busca por id', async () => {
-    await expect(service.findOne({ id_usuario: userEntityMock.id_usuario }))
-      .rejects
-      .toThrow();
+    await expect(service.findOne({ id_usuario: userEntityMock.id_usuario })).rejects.toThrow();
   });
-  
 
   it('busca por nome', async () => {
     const user = await service.findByUserName(userEntityMock.login);
@@ -53,15 +50,14 @@ describe('UsersService', () => {
     const users = await service.findAll({ nome: 'fulano de almeida', login: 'fulano' });
     expect(users).toEqual(userMockResult);
   });
-  
+
   it('Erro ao retornar usuario', async () => {
     jest.spyOn(useRepository, 'findOne').mockRejectedValue(null);
-    expect(service.findOne({id_usuario:userEntityMock.id_usuario})).rejects
-    .toThrow();
+    expect(service.findOne({ id_usuario: userEntityMock.id_usuario })).rejects.toThrow();
   });
-  
+
   it('Erro ao retornar usuario - requisição', async () => {
     jest.spyOn(useRepository, 'findOne').mockRejectedValueOnce(new Error());
-    expect(service.findOne({id_usuario:userEntityMock.id_usuario})).rejects.toThrow()
+    expect(service.findOne({ id_usuario: userEntityMock.id_usuario })).rejects.toThrow();
   });
 });

@@ -1,4 +1,4 @@
-import { Entity,  JoinColumn,  ManyToOne,  OneToOne,  PrimaryColumn } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from 'typeorm';
 import { RequisicaoEntity } from './requisicao.entity';
 import { PFuncEntity } from './pfunc.entity';
 
@@ -20,11 +20,7 @@ export class UsuReqEntity {
   @JoinColumn({ name: 'REQ_ID_CODIGO', referencedColumnName: 'reqIdCodigo' })
   requisicao?: RequisicaoEntity;
 
- 
-
   @OneToOne(() => PFuncEntity, (pfun) => pfun.usureq)
   @JoinColumn({ name: 'CHAPA', referencedColumnName: 'CHAPA' })
-  pfunc?: PFuncEntity; 
-
-
+  pfunc?: PFuncEntity;
 }

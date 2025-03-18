@@ -5,8 +5,8 @@ import { globalErrorFilter } from './error.filter';
 const GlobalErrorFilterProvider: Provider = {
   provide: APP_FILTER,
   useValue: {
-    catch: globalErrorFilter
-  }
+    catch: globalErrorFilter,
+  },
 };
 
 @Module({

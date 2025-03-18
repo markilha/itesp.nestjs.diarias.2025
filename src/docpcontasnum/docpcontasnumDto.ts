@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { docpcontasnumEntity } from '../database/db_oracle/entities/docpcontasnum.entity';
 
-
 export class FindAllParams {
   @ApiProperty({ required: false })
   SQE_ID_CODIGO?: number;

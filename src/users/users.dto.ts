@@ -9,7 +9,6 @@ export class UsersDto {
   chapa: string;
 }
 
-
 export class UserUpdateDto {
   readonly nome?: string;
   readonly login?: string;
@@ -68,7 +67,6 @@ export class PerfilAcesso {
 }
 
 export class FindAllParamsDto {
-
   @ApiProperty()
   id_usuario?: number;
   @ApiProperty()
@@ -79,11 +77,9 @@ export class FindAllParamsDto {
 
   @ApiProperty()
   login?: string;
-
 }
 
 export class darAcessoParamsDto {
-
   @ApiProperty()
   id_usuario: number;
   @ApiProperty()
@@ -91,8 +87,6 @@ export class darAcessoParamsDto {
 
   @ApiProperty()
   chapa: string;
-
-
 }
 
 export class userInfo {
@@ -101,13 +95,13 @@ export class userInfo {
   @ApiProperty()
   login: string;
   @ApiProperty()
-  chapa: string
+  chapa: string;
   @ApiProperty({
     type: [String],
     enum: Role,
     description: 'Roles do usuário',
   })
-  roles: string[]
+  roles: string[];
   @ApiProperty()
   permissao: number;
   @ApiProperty()
@@ -120,12 +114,10 @@ export class returnTotal {
     type: [UsersDto],
   })
   data: UsersDto[];
-    @ApiProperty({
+  @ApiProperty({
     description: 'Valor total calculado',
     type: Number,
     example: 0,
   })
   total: number;
-
 }
-

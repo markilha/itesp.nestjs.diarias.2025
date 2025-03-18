@@ -6,7 +6,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-
 const mockRegistro = {
   NAO_ID_CODIGO: 1,
   REQ_ID_CODIGO: 2,
@@ -54,7 +53,7 @@ describe('naotrabService', () => {
   });
 
   describe('findOne', () => {
-    const setupFindOneTest = (mockValue: naotrabEntity| null, error?: Error) => {
+    const setupFindOneTest = (mockValue: naotrabEntity | null, error?: Error) => {
       jest.spyOn(repository, 'createQueryBuilder').mockReturnValue({
         where: jest.fn().mockReturnThis(),
         getOne: jest.fn().mockImplementation(() => {
@@ -69,18 +68,16 @@ describe('naotrabService', () => {
       const result = await service.findOne(2);
       expect(result).toEqual([mockRegistro]);
       expect(repository.find).toHaveBeenCalledTimes(1);
-
     });
 
     it('deve lançar uma exceção se não encontrar o registro', async () => {
       // Mock do repositório para retornar um array vazio
       jest.spyOn(repository, 'find').mockResolvedValueOnce([]);
-    
+
       // Verifica se a exceção é lançada
       await expect(service.findOne(124421111)).rejects.toThrow(
-        new HttpException('Horas não trabalhadas não encontrada', HttpStatus.NOT_FOUND)
+        new HttpException('Horas não trabalhadas não encontrada', HttpStatus.NOT_FOUND),
       );
     });
-  
   });
 });

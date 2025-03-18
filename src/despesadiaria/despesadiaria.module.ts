@@ -4,7 +4,6 @@ import { DespesadiariaController } from './despesadiaria.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DespesaDiariaEntity } from '../database/db_oracle/entities/despesaDiaria.entity';
 
-
 @Module({
   imports: [TypeOrmModule.forFeature([DespesaDiariaEntity], 'oracleConnection')],
   providers: [DespesadiariaService],

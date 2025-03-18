@@ -27,8 +27,6 @@ export class DespesaDiariaEntity {
   @Column({ name: 'DES_DESCRICAO', type: 'varchar', length: 60, nullable: true })
   desDescricao: string;
 
-  @OneToOne(() => FuncSalarioEntity, (desp) => desp.despesaDiaria) 
+  @OneToOne(() => FuncSalarioEntity, (desp) => desp.despesaDiaria)
   funcsalario: FuncSalarioEntity;
-
-
 }

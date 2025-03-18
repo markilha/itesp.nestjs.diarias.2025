@@ -6,7 +6,7 @@ import { throwError } from 'rxjs';
 export class ErrorInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler) {
     return next.handle().pipe(
-      catchError((err) => {       
+      catchError((err) => {
         console.error('Erro capturado no interceptor:', err.message);
         return throwError(() => err);
       }),

@@ -5,8 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventosDiariasEntity } from 'src/database/db_oracle/entities/eventosDiaria.entity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([EventosDiariasEntity], 'oracleConnection')],
+  imports: [TypeOrmModule.forFeature([EventosDiariasEntity], 'oracleConnection')],
   providers: [EventosdiariasService],
-  controllers: [EventosdiariasController]
+  controllers: [EventosdiariasController],
 })
 export class EventosdiariasModule {}

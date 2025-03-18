@@ -5,9 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.entity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([ndocumentoEntity], 'oracleConnection')],
+  imports: [TypeOrmModule.forFeature([ndocumentoEntity], 'oracleConnection')],
   providers: [ndocumentoService],
   controllers: [ndocumentoController],
-  exports: [ndocumentoService]
+  exports: [ndocumentoService],
 })
 export class ndocumentoModule {}

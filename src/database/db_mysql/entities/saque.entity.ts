@@ -1,16 +1,8 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  OneToOne,
-  JoinColumn,
- 
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm';
 import { ReqNumerarioEntity } from './ReqNumerario.entity';
 import { StatusEntity } from './status.entity';
 
 @Entity('S009_SAQUE', { schema: 'dev_itesp_diarias' })
-
 export class SaqueEntity {
   @PrimaryGeneratedColumn({ name: 'SQE_ID_CODIGO', type: 'int' })
   sqeIdCodigo: number;
@@ -67,7 +59,7 @@ export class SaqueEntity {
   sqeLote?: number;
 
   @Column({ name: 'SQE_ANOLOTE', type: 'int', nullable: true })
-  sqeAnoLote?: number; 
+  sqeAnoLote?: number;
 
   @Column({ name: 'SQE_TERCEIRO', type: 'char', length: 1, nullable: true })
   sqeTerceiro?: string;
@@ -100,4 +92,3 @@ export class SaqueEntity {
   @JoinColumn({ name: 'STS_ID_CODIGO', referencedColumnName: 'stsIdCodigo' })
   status?: StatusEntity;
 }
-

@@ -35,6 +35,7 @@ import { documentosModule } from './documentos/documento.module';
 import { agruparecursoModule } from './agruparecurso/agruparecurso.module';
 import { itensreqModule } from './itensreq/itensreq.module';
 import { ndocumentoModule } from './ndocumento/ndocumento.module';
+import { autorizaModule } from './autoriza/autoriza.module';
 
 @Module({
   imports: [
@@ -54,7 +55,7 @@ import { ndocumentoModule } from './ndocumento/ndocumento.module';
     DiariaviagemModule,
     MotivodiariaModule,
     DespesadiariaModule,
-    ItinirarioModule,   
+    ItinirarioModule,
     PcontasModule,
     PcontasNumModule,
     extornoModule,
@@ -71,6 +72,7 @@ import { ndocumentoModule } from './ndocumento/ndocumento.module';
     agruparecursoModule,
     itensreqModule,
     ndocumentoModule,
+    autorizaModule,
   ],
   controllers: [docsController],
   providers: [docsService],

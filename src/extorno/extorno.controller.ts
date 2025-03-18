@@ -31,7 +31,7 @@ export class extornoController {
   @ApiResponse({
     status: 200,
     description: 'Retorna o extorno',
-    type: extornoDto   
+    type: extornoDto,
   })
   async findOne(@Query() params: FindAllParams): Promise<extornoDto> {
     return await this.extornoService.findOneOrFail(params.SQE_ID_CODIGO);
@@ -43,8 +43,8 @@ export class extornoController {
     status: 200,
     description: 'Atualizar o extorno',
     schema: {
-     example: {message: 'extorno atualizado com sucesso'},
-    },  
+      example: { message: 'extorno atualizado com sucesso' },
+    },
   })
   async atualizar(@Body() dados: upateExtornoDto) {
     return await this.extornoService.update(dados);
@@ -56,11 +56,11 @@ export class extornoController {
     status: 200,
     description: 'Extornar',
     schema: {
-     example: {message: 'Extorno realizado com sucesso'},
-    },  
+      example: { message: 'Extorno realizado com sucesso' },
+    },
   })
   @ApiResponse({ status: 500, description: 'Erro ao extornar viagem não realizada' })
-  async extornar(@CurrentUser() user: AuthUserDto,@Body() dados: extornoDto): Promise<any> {
-   return await this.extornoService.extornoViagemNaoRealizada(dados,user);
+  async extornar(@CurrentUser() user: AuthUserDto, @Body() dados: extornoDto): Promise<any> {
+    return await this.extornoService.extornoViagemNaoRealizada(dados, user);
   }
 }

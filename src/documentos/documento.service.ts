@@ -30,7 +30,6 @@ export class documentosService {
     return documentos;
   }
 
-
   async findOne(ID_DOC: number): Promise<docsEntity> {
     try {
       const documento = await this.documentosRepository.findOneOrFail({ where: { ID_DOC } });
@@ -39,7 +38,6 @@ export class documentosService {
       throw new HttpException('Documento não encontrado', HttpStatus.NOT_FOUND);
     }
   }
-
 
   //find by SQE_ID_CODIGO
   async findBySQE_ID_CODIGO(SQE_ID_CODIGO: number): Promise<docsEntity[]> {
@@ -73,8 +71,8 @@ export class documentosService {
   async deleteBySQE_ID_CODIGO(SQE_ID_CODIGO: number) {
     try {
       await this.findBySQE_ID_CODIGO(SQE_ID_CODIGO);
-      await this.documentosRepository.delete({ SQE_ID_CODIGO });    
-    } catch (error) {      
+      await this.documentosRepository.delete({ SQE_ID_CODIGO });
+    } catch (error) {
       throw new HttpException('Documento não encontrado', HttpStatus.NOT_FOUND);
     }
   }

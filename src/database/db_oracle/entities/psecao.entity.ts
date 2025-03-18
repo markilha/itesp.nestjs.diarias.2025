@@ -7,11 +7,10 @@ export class Psecao {
 
   @Column({ type: 'varchar2' })
   DESCRICAO: string;
-  
+
   @Column({ type: 'varchar2' })
   CIDADE: string;
 
   @Column({ type: 'varchar2' })
   CGC: string;
-
 }

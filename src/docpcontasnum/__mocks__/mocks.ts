@@ -33,7 +33,7 @@ export const mockDocpcontasnum = [
   },
 ];
 
-export const mockDocResponse ={
+export const mockDocResponse = {
   data: mockDocpcontasnum,
   total: 1,
-}
+};

@@ -18,7 +18,6 @@ export class PrazosService {
     private ppessoaService: PpessoaService,
   ) {}
 
- 
   async findAll(params: FindAllParams): Promise<returnData> {
     try {
       const pageNumber = params.page ?? 1;
@@ -69,30 +68,26 @@ export class PrazosService {
     }
   }
   async findOne(PRA_ID_CODIGO: number, request?: Request): Promise<PrazosEntity> {
-      try {
-        const result = await this.PrazosRepository
-          .createQueryBuilder('r')
-          .where('r.PRA_ID_CODIGO = :codigo', { codigo: PRA_ID_CODIGO })
-          .maxExecutionTime(10000)
-          .cache(false)
-          .getOne();
-  
-        if (!result) {
-          throw new HttpException('Não encontrou nenhum registro', HttpStatus.NOT_FOUND);
-        }
-        return result;
-      } catch (error) {
-        if (error instanceof HttpException) {
-          throw error;
-        }
-        console.error('Erro ao buscar registro:', error);     
-        const formattedError = formatError(error, request);      
-        throw new HttpException(
-          formattedError,
-          formattedError.statusCode
-        );
+    try {
+      const result = await this.PrazosRepository.createQueryBuilder('r')
+        .where('r.PRA_ID_CODIGO = :codigo', { codigo: PRA_ID_CODIGO })
+        .maxExecutionTime(10000)
+        .cache(false)
+        .getOne();
+
+      if (!result) {
+        throw new HttpException('Não encontrou nenhum registro', HttpStatus.NOT_FOUND);
       }
+      return result;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error('Erro ao buscar registro:', error);
+      const formattedError = formatError(error, request);
+      throw new HttpException(formattedError, formattedError.statusCode);
     }
+  }
 
   async findmes(params: findPrazosMesDto): Promise<PrazosDto[]> {
     try {

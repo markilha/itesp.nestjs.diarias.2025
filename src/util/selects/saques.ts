@@ -1,5 +1,4 @@
-
-export const selectSaque= `
+export const selectSaque = `
 SELECT A.SQE_ID_CODIGO, A.ITE_ID_CODIGO, A.RRE_ID_CODIGO, A.DIR_ID_CODIGO, A.FPA_ID_CODIGO,
        A.SQE_DTSAQUE, A.SQE_VLPREST, A.SQE_DTPREST, A.SQE_VLSAQUE, A.SQE_TIPOSAQUE,
        A.SQE_EFETIVO, A.SQE_DTPEDIDO, A.SQE_LOTE, A.SQE_ANOLOTE, A.STS_ID_CODIGO, A.SQE_TERCEIRO,
@@ -20,7 +19,7 @@ JOIN RM.PSECAO I ON H.CODSECAO = I.CODIGO
 LEFT JOIN Financeiro.S009_REEMBOLSO J ON A.SQE_ID_CODIGO = J.SQE_ID_CODIGO
 LEFT JOIN Financeiro.V009_PESSOA K ON A.PES_ID_CODIGO = K.PES_ID_CODIGO
 LEFT JOIN RM.PPESSOA L ON L.CODIGO = H.CODPESSOA
-`
+`;
 export const selecionaSaquePendente = `
 SELECT A.SQE_ID_CODIGO, A.ITE_ID_CODIGO, A.RRE_ID_CODIGO, A.DIR_ID_CODIGO,
        A.FPA_ID_CODIGO, A.SQE_DTSAQUE, A.SQE_VLPREST, A.SQE_DTPREST, A.SQE_VLSAQUE,
@@ -42,7 +41,7 @@ and A.Chapa =:NChapa and A.RRE_ID_CODIGO=:NREQ`;
 export const SelecionaPendenciaPrest = `
 And A.SQE_VLPREST=Null
 and A.RRE_ID_CODIGO=:CODREQ and B.CHAPA=:CODFUN
-`
+`;
 
 export const selecionaPrestPendente = `
 SELECT DISTINCT(a.sqe_id_codigo), A.*, B.CHAPA, D.STS_DESCRICAO, E.PRA_INICIO_RECURSO,
@@ -57,12 +56,12 @@ JOIN Financeiro.S009_TIPODESP G ON B.TDE_ID_CODIGO = G.TDE_ID_CODIGO
 WHERE A.SQE_DTPREST IS NULL
 AND SQE_EFETIVO IN ('P', 'S', 'E')
 AND E.PRA_ATIVO <> 'N'
-`
+`;
 export const selecionaPrestPendenteView = `
 Select * From Financeiro.V009_prestpendente a
-`
+`;
 
-export const SelecionaSaqueSetor= `
+export const SelecionaSaqueSetor = `
 Select A.*, b.descricao from Financeiro.V009_SAQUESETOR A, Financeiro.V001_Diretoria B
 Where A.DIR_ID_CODIGO = B.DIR_ID_CODIGO
-`
+`;

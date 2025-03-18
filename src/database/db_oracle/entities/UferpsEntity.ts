@@ -1,6 +1,5 @@
 import { Entity, PrimaryColumn, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-
 @Entity('S009_UFERPSVALOR', { schema: 'FINANCEIRO' })
 export class UferpsEntity {
   @PrimaryGeneratedColumn({ type: 'int', name: 'UFE_ID_CODIGO' })

@@ -10,34 +10,33 @@ export const selecionaReqNumerario = `
         A.SQE_ID_CODIGO = B.SQE_ID_CODIGO AND
         B.ITE_ID_CODIGO = C.ITE_ID_CODIGO AND
         A.REQ_ID_CODIGO = D.REQ_ID_CODIGO        
-`
+`;
 export class selecinaReqNumerario {
-     RNU_ID_CODIGO: number;     
-     SQE_ID_CODIGO: number;     
-     REQ_ID_CODIGO: number;     
-     ITE_ID_CODIGO: number;     
-     RRE_ID_CODIGO: number;     
-     DIR_ID_CODIGO: number;     
-     RNU_DTINICIO: Date;        
-     RNU_HORAINICIO: string;    
-     RNU_DTFIM: Date;           
-     RNU_HORAFIM: string;      
-     CHAPA: string;             
-     RNU_MOTIVO: string;        
-     RNU_PACOTE: string;       
-     RNU_INTPREV: number;      
-     RNU_PARPREV: number;       
-     RNU_INTREAL: number;       
-     RNU_PARREAL: number;       
-     REQ_STATUS: string;        
-     TRA_ID_CODIGO: number;     
-     RNU_GOVERNADOR: string;   
-     RNU_VLINTEGRAL: number;    
-     RNU_VLPARCIAL: number;     
-     RNU_VLBASE: number;       
-     REQ_DTSAIDA: Date;        
-     REQ_DTREQ: string;    
-     REQ_HRET : string;      
-     REQ_MOTIVO: string;     
-   }
-   
+  RNU_ID_CODIGO: number;
+  SQE_ID_CODIGO: number;
+  REQ_ID_CODIGO: number;
+  ITE_ID_CODIGO: number;
+  RRE_ID_CODIGO: number;
+  DIR_ID_CODIGO: number;
+  RNU_DTINICIO: Date;
+  RNU_HORAINICIO: string;
+  RNU_DTFIM: Date;
+  RNU_HORAFIM: string;
+  CHAPA: string;
+  RNU_MOTIVO: string;
+  RNU_PACOTE: string;
+  RNU_INTPREV: number;
+  RNU_PARPREV: number;
+  RNU_INTREAL: number;
+  RNU_PARREAL: number;
+  REQ_STATUS: string;
+  TRA_ID_CODIGO: number;
+  RNU_GOVERNADOR: string;
+  RNU_VLINTEGRAL: number;
+  RNU_VLPARCIAL: number;
+  RNU_VLBASE: number;
+  REQ_DTSAIDA: Date;
+  REQ_DTREQ: string;
+  REQ_HRET: string;
+  REQ_MOTIVO: string;
+}

@@ -1,14 +1,7 @@
 import { Injectable, HttpStatus, HttpException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../database/db_mysql/entities/user.entity';
-import { 
-  FindOptionsWhere,
-  ILike,
-  IsNull,
-
-  Not,
-  Repository,
-} from 'typeorm';
+import { FindOptionsWhere, ILike, IsNull, Not, Repository } from 'typeorm';
 import {
   FindAllParams,
   FindAllParamsDto,
@@ -154,32 +147,34 @@ export class UsersService {
     return userFound;
   }
 
-  async resetPassword(login: string) {   
-    const fountUser = await this.findByUserName(login);   
+  async resetPassword(login: string) {
+    const fountUser = await this.findByUserName(login);
     if (!fountUser) {
       throw new HttpException('Usuário não encontrado', HttpStatus.NOT_FOUND);
-    }   
+    }
     const senha = process.env.SENHA_PADRAO;
     fountUser.senha = bcryptHashSync(senha, 10);
-    await this.usersRepository.save(fountUser);   
+    await this.usersRepository.save(fountUser);
     return { message: 'Senha resetada com sucesso' };
   }
 
-  async darAcesso(params: userNivelDto) {   
-    try {      
-      const fountUser = await this.findByUserName(params.login);   
+  async darAcesso(params: userNivelDto) {
+    try {
+      const fountUser = await this.findByUserName(params.login);
       if (!fountUser) {
         throw new HttpException('Usuário não encontrado', HttpStatus.NOT_FOUND);
-      }   
+      }
 
       let perfilAcesso: PerfilAcesso[];
       perfilAcesso = await this.findPerfilAcesso(IDSISTEMA.id_sistema);
-  
-      const acesso = await this.findNivel(fountUser.id_usuario);     
 
-      if(acesso.length > 0){ 
-        const acessoSistema = acesso.find((item) => item.id_perfil_acesso === Number(params.id_perfil_acesso));       
-        if(acessoSistema){
+      const acesso = await this.findNivel(fountUser.id_usuario);
+
+      if (acesso.length > 0) {
+        const acessoSistema = acesso.find(
+          (item) => item.id_perfil_acesso === Number(params.id_perfil_acesso),
+        );
+        if (acessoSistema) {
           throw new HttpException('Usuário já tem acesso ao sistema', HttpStatus.BAD_REQUEST);
         }
         //se não tiver acesso ao sistema inserir o acesso
@@ -188,28 +183,24 @@ export class UsersService {
           INSERT INTO ace_usuario_perfil_acesso (id_perfil_acesso, id_sistema,cpf_cnpj,id_usuario)
           VALUES (?, ?,?, ?)
           `,
-          [params.id_perfil_acesso, params.id_sistema,'F', fountUser.id_usuario],
+          [params.id_perfil_acesso, params.id_sistema, 'F', fountUser.id_usuario],
         );
         return { message: 'Acesso concedido com sucesso' };
-      }else{
+      } else {
         //se não tiver acesso ao sistema inserir o acesso
         await this.usersRepository.query(
           `
           INSERT INTO ace_usuario_perfil_acesso (id_perfil_acesso, id_sistema,cpf_cnpj,id_usuario)
           VALUES (?, ?,?, ?)
           `,
-          [params.id_perfil_acesso, params.id_sistema,'F', fountUser.id_usuario],
+          [params.id_perfil_acesso, params.id_sistema, 'F', fountUser.id_usuario],
         );
         return { message: 'Acesso concedido com sucesso' };
       }
-
-     
     } catch (error) {
       console.log(error);
-      
+
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-      
     }
   }
-
 }

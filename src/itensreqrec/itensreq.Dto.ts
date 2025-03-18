@@ -1,9 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger";
-
-
+import { ApiProperty } from '@nestjs/swagger';
 
 export class paramsItemRecurso {
-@ApiProperty()
+  @ApiProperty()
   CHAPA: string;
   @ApiProperty({ required: false })
   RRE_ID_CODIGO?: number;

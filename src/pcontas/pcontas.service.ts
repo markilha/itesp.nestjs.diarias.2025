@@ -73,7 +73,7 @@ export class PcontasService {
       );
     }
   }
- 
+
   async findOne(PCO_ID_CODIGO: number): Promise<pcontasDto> {
     try {
       const result = await this.pcontasRepository

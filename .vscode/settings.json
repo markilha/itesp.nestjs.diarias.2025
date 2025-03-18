@@ -1,8 +1,6 @@
 {
-    "conventionalCommits.scopes": [
-        "[itesp.nest.diarias]"
-    ],
-    "code-runner.executorMap": {       
-        "typescript": "npx ts-node",        
-    }
+  "conventionalCommits.scopes": ["[itesp.nest.diarias]"],
+  "code-runner.executorMap": {
+    "typescript": "npx ts-node"
+  }
 }

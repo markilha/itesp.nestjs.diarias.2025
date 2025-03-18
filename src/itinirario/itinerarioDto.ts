@@ -36,6 +36,3 @@ export interface FindAllParams {
   page?: number;
   limit?: number;
 }
-
-
-  

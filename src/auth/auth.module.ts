@@ -8,7 +8,7 @@ import { PpessoaModule } from 'src/ppessoa/ppessoa.module';
 
 @Module({
   imports: [
-    UsersModule, 
+    UsersModule,
     PpessoaModule,
     JwtModule.registerAsync({
       global: true,

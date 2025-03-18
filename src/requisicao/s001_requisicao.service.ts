@@ -60,8 +60,6 @@ export class S001RequisicaoService {
     }
   }
 
-
-
   async find(params: FindAllParams, user: AuthUserDto): Promise<any> {
     try {
       const conditions: string[] = [`r.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')`];
@@ -317,8 +315,6 @@ export class S001RequisicaoService {
     }
   }
 
-  
-
   async findAllAprovadas(params: FindAllAutorizadasParams, user: AuthUserDto): Promise<any> {
     try {
       const pageNumber = params.page ?? 1;
@@ -418,10 +414,10 @@ export class S001RequisicaoService {
       const dataatual = params.dataAtual ? params.dataAtual : new Date();
       const inicioMes = format(addMonths(startOfMonth(dataatual), 1), 'dd/MM/yyyy 00:00:00');
       const fimMes = format(addMonths(endOfMonth(dataatual), 1), 'dd/MM/yyyy 00:00:00');
-      
+
       const filterConditions = [];
       const per = permissaoFindAll(user.permissao);
-     
+
       filterConditions.push(`
         TO_DATE(A.REQ_DTREQ, 'DD/MM/YYYY HH24:MI:SS') 
       BETWEEN 
@@ -458,9 +454,8 @@ export class S001RequisicaoService {
       AND 
         ${filterConditions.join(' AND ')}
         `;
-       
 
-      const requisicao = await this.requisicaoRepository.query(query);    
+      const requisicao = await this.requisicaoRepository.query(query);
 
       const retornoRequi = requisicao.map((requis) => {
         const newdate = DataUtils.converterStringParaData(requis?.REQ_DTREQ);
@@ -482,24 +477,22 @@ export class S001RequisicaoService {
     }
   }
 
- 
-   async findOne(sqeIdCodigo: number) {
-      try {
-        const result = await this.requisicaoRepository
-          .createQueryBuilder('r') 
-          .where('r.SQE_ID_CODIGO = :sqeIdCodigo', { sqeIdCodigo })
-          .andWhere('ROWNUM = 1')
-          .getRawOne();
-        if (!result) {
-          throw new Error('Saque não encontrado');
-        }
-        return result;
-      } catch (error) {
-        console.error(error);
-        throw new HttpException('Prestação não encontrada', HttpStatus.INTERNAL_SERVER_ERROR);
+  async findOne(sqeIdCodigo: number) {
+    try {
+      const result = await this.requisicaoRepository
+        .createQueryBuilder('r')
+        .where('r.SQE_ID_CODIGO = :sqeIdCodigo', { sqeIdCodigo })
+        .andWhere('ROWNUM = 1')
+        .getRawOne();
+      if (!result) {
+        throw new Error('Saque não encontrado');
       }
+      return result;
+    } catch (error) {
+      console.error(error);
+      throw new HttpException('Prestação não encontrada', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  
+  }
 
   // Busca requisições pendentes
 

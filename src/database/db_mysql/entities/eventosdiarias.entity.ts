@@ -1,7 +1,6 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity('v009_eventosdiarias2', { schema: 'dev_itesp_diarias' })
-
 export class EventosDiariasEntity {
   @PrimaryColumn({ name: 'CHAPA', type: 'varchar', length: 50 })
   chapa: string;

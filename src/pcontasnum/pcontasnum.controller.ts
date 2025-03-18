@@ -8,17 +8,17 @@ import { ApiExcludeEndpoint } from '@nestjs/swagger';
 @UseGuards(AuthGuard)
 @Controller('pcontasnum')
 export class PcontasNumController {
-    constructor(private readonly pcontasnumService: PcontasNumService) {}
-  
-    @Get()
-    @ApiExcludeEndpoint()
-    async findAll(@Query() params: FindAllParams): Promise<pcontasNumDto[]> {
-      return await this.pcontasnumService.findAll(params);
-    }
+  constructor(private readonly pcontasnumService: PcontasNumService) {}
 
-    @Get('findone')
-    @ApiExcludeEndpoint()
-    async findONe(@Query() params: FindAllParams): Promise<pcontasNumDto> {      
-      return await this.pcontasnumService.findOne(params.RNU_ID_CODIGO);
-    }
+  @Get()
+  @ApiExcludeEndpoint()
+  async findAll(@Query() params: FindAllParams): Promise<pcontasNumDto[]> {
+    return await this.pcontasnumService.findAll(params);
+  }
+
+  @Get('findone')
+  @ApiExcludeEndpoint()
+  async findONe(@Query() params: FindAllParams): Promise<pcontasNumDto> {
+    return await this.pcontasnumService.findOne(params.RNU_ID_CODIGO);
+  }
 }

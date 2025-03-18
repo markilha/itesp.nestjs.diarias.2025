@@ -1,9 +1,7 @@
 import { Entity, Column, PrimaryColumn, OneToOne } from 'typeorm';
 
-
 @Entity('s001_itinerario', { schema: 'dev_itesp_diarias' })
 export class ItinerarioEntity {
-  
   @PrimaryColumn({ name: 'ITI_ID_CODIGO', type: 'int' })
   ITI_ID_CODIGO: number;
 

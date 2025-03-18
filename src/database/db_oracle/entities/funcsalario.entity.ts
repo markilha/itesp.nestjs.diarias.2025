@@ -34,13 +34,10 @@ export class FuncSalarioEntity {
   @Column({ name: 'REG_DESCRICAO' })
   regDescricao: string;
 
-  
-  @OneToOne(() => RequisicaoEntity, (req) => req.funcSalario) 
+  @OneToOne(() => RequisicaoEntity, (req) => req.funcSalario)
   requisicao: RequisicaoEntity;
 
   @OneToOne(() => DespesaDiariaEntity, (func) => func.funcsalario)
   @JoinColumn({ name: 'CARGO', referencedColumnName: 'cargo' })
   despesaDiaria: DespesaDiariaEntity;
 }
-
-

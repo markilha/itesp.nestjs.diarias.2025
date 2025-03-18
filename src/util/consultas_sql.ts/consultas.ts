@@ -1,12 +1,12 @@
 export const sqls = {
-    selecionaDocPContasGeral: `
+  selecionaDocPContasGeral: `
       SELECT a.dir_id_codigo, A.SQE_ID_CODIGO, A.NDO_ID_CODIGO, A.PCO_ID_CODIGO, A.PES_ID_CODIGO,
              A.PES_PESSOA, A.NDO_ID_NUMERO, A.NDO_DATA, A.NDO_DTENTREGA, A.PES_NOME, A.CHAPA, A.NOME,
              A.CODIGO, A.DESCRICAO, A.VALORTOTAL, A.SQE_DTPREST, A.TDE_DESCRICAO, A.SQE_VLSAQUE,
              A.SQE_VLPREST, A.PCO_TIPO, A.PCO_TOTDOC, A.PRA_ID_CODIGO, A.SQE_EFETIVO, A.TDE_ID_CODIGO
       FROM Financeiro.V009_DocPrestGeral a
     `,
-    selecionaTransfRec: `
+  selecionaTransfRec: `
       SELECT A.CHAPADESTINO, A.NOMEDESTINO, A.SETORDESTINO,
              A.CODDIR, A.DIRETORIADESTINO,
              a.itf_valor, A.ITF_JUSTIFICA, A.ITF_DATA, A.RRE_ID_CODIGO, A.ITF_ID_CODIGO,
@@ -17,57 +17,57 @@ export const sqls = {
       JOIN Rm.Psecao C ON B.Codsecao = C.Codigo
       JOIN Financeiro.S009_ITENSTRANSF D ON a.itf_id_codigo = d.itf_id_codigo
     `,
-    selecionaBalancoFunc: `
+  selecionaBalancoFunc: `
       SELECT ITE_ID_CODIGO, rre_id_codigo, dir_id_codigo, tde_id_codigo, chapa, irr_valor_sol,
              irr_data_sol, irr_valor_conc, irr_data_conc, irr_valor_prest, irr_data_prest, irr_valor_aut,
              descricao, tde_descricao, nome, valorsaque, valorpres, vltransf, vlextorno,
              valortotrec, pra_id_codigo, diretoria, valorsaldo
       FROM Financeiro.V009_Balancofunc
     `,
-    selecionaBalancoDiretoria: `
+  selecionaBalancoDiretoria: `
       SELECT RRE_ID_CODIGO, DIR_ID_CODIGO, TDE_ID_CODIGO, VALORSOLICITADO, VALORAUTORIZADO,
              VALORCONCEDIDO, VALORPRESTCONTA, VALORSAQUES, VALORESTORNO, VALORTRANSFERIDO,
              VALORECEBIDO, DESCRICAO, TDE_DESCRICAO, PRA_ID_CODIGO, VALORSALDO
       FROM Financeiro.V009_Balancodiretoria
     `,
-    selecionaPrestPend3: `
+  selecionaPrestPend3: `
       SELECT * 
       FROM Financeiro.V009_PrestPendente3
     `,
-    selecionaBalancoSetor: `
+  selecionaBalancoSetor: `
       SELECT RRE_ID_CODIGO, DIR_ID_CODIGO, CODSECAO, DESCRICAO, TDE_ID_CODIGO, TDE_DESCRICAO,
              VALORSOLICITADO, VALORAUTORIZADO, valorconcedido, valorprestconta, valorsaques,
              VALORESTORNO, VALORTRANSFERIDO, VALORECEBIDO, DIRETORIA, PRA_ID_CODIGO, VALORSALDO
       FROM Financeiro.V009_Balancosetor
     `,
-    selecionaExtratoFunc2: `
+  selecionaExtratoFunc2: `
       SELECT A.ITE_ID_CODIGO, A.RRE_ID_CODIGO, A.DIR_ID_CODIGO, A.TDE_ID_CODIGO, A.CHAPA,
              A.IRR_VALOR_SOL, A.IRR_DATA_SOL, A.IRR_VALOR_CONC, A.IRR_DATA_CONC,
              A.IRR_VALOR_PREST, A.IRR_DATA_PREST, A.IRR_VALOR_AUT, A.DESCRICAO, A.TDE_DESCRICAO,
              A.NOME, A.VALORTOTREC, A.VALORSAQUE, A.VALORPRES, A.VLTRANSF, A.VLEXTORNO, A.PRA_ID_CODIGO
       FROM Financeiro.v009_ExtratoFunc2 A
     `,
-    selecionaSolPendNivel1: `
+  selecionaSolPendNivel1: `
       SELECT A.DIR_ID_CODIGO, C.CODIGO, C.DESCRICAO,
              D.RRE_ID_CODIGO, D.PRA_ID_CODIGO
       FROM Comum.S000_Subordina1 A
       JOIN Rm.Psecao C ON A.Codigo = C.codigo
       JOIN Financeiro.S009_Reqrecursos D ON A.dir_id_codigo = D.dir_id_codigo
     `,
-    selecionaSolPendNivel2: `
+  selecionaSolPendNivel2: `
       SELECT A.DIR_ID_CODIGO, A.SB1_ID_CODIGO, C.CODIGO, C.DESCRICAO,
              D.RRE_ID_CODIGO, D.PRA_ID_CODIGO
       FROM Comum.S000_Subordina2 A
       JOIN Rm.Psecao C ON A.Codigo = C.codigo
       JOIN Financeiro.S009_Reqrecursos D ON A.dir_id_codigo = D.dir_id_codigo
     `,
-    selecionaConta: `
+  selecionaConta: `
       SELECT A.*, B.AGE_DESCRICAO
       FROM Financeiro.S009_Conta A
       JOIN Comum.S000_Agencia B ON A.AGE_ID_NUMERO = B.AGE_ID_NUMERO
       WHERE A.reg_id_codigo = :reg
     `,
-    selecionaCaixa: `
+  selecionaCaixa: `
     SELECT 
       A.CAI_ID_CODIGO, A.CAI_TIPO, A.SQE_ID_CODIGO, A.ITE_ID_CODIGO, A.RRE_ID_CODIGO,
       A.DIR_ID_CODIGO, A.CAI_DATA, A.CAI_DOCUMENTO, A.CAI_DESCRICAO, A.CAI_VALOR,
@@ -241,11 +241,11 @@ export const sqls = {
          SQE_ANOLOTE, JUS_DESCRICAO, ndo_titulo, ndo_serie
   FROM Financeiro.v009_ExtPContasAdian A
 `,
-selecionaPContas: `
+  selecionaPContas: `
   SELECT A.PCO_ID_CODIGO, A.PCO_TIPO, A.PCO_TOTDOC
   FROM Financeiro.S009_PContas A
 `,
-selecionaDetalheDoc: `
+  selecionaDetalheDoc: `
   SELECT A.DTC_ID_ITEM, A.NDO_ID_CODIGO, A.PCO_ID_CODIGO, A.DES_ID_CODIGO, A.DTC_DESCRICAO,
          A.TDE_ID_CODIGO, A.DTC_CODDETALHE, A.DTC_VALOR, A.DTC_QTDADE, A.UN_SIGLA, A.DTC_VLTOTAL,
          A.DTC_VALORDOC, B.TDE_DESCRICAO, C.UN_DESCRICAO
@@ -253,7 +253,7 @@ selecionaDetalheDoc: `
   WHERE A.TDE_ID_CODIGO = B.TDE_ID_CODIGO AND
         A.UN_SIGLA = C.UN_SIGLA
 `,
-selecionaNumDocumento: `
+  selecionaNumDocumento: `
   SELECT A.NDO_ID_CODIGO, A.PCO_ID_CODIGO, A.PES_ID_CODIGO, A.PES_PESSOA, A.NDO_ID_NUMERO,
          A.NDO_DATA, A.NDO_DTENTREGA, A.NDO_OPERADOR, A.STS_ID_CODIGO, B.PES_NOME, 
          A.NDO_SERIE, A.NDO_TITULO
@@ -261,7 +261,7 @@ selecionaNumDocumento: `
   WHERE A.PES_ID_CODIGO = B.PES_ID_CODIGO AND
         A.PES_PESSOA = B.PES_PESSOA
 `,
-selecionaPContasNum: `
+  selecionaPContasNum: `
   SELECT A.PCO_ID_CODIGO, A.RNU_ID_CODIGO, B.RNU_ID_CODIGO, B.SQE_ID_CODIGO,
          B.REQ_ID_CODIGO, B.ITE_ID_CODIGO, B.RRE_ID_CODIGO, B.DIR_ID_CODIGO,
          B.RNU_DTINICIO, B.RNU_HORAINICIO, B.RNU_DTFIM, B.RNU_HORAFIM, D.PRA_ID_CODIGO
@@ -272,7 +272,7 @@ selecionaPContasNum: `
         A.RNU_ID_CODIGO = B.RNU_ID_CODIGO AND
         B.RRE_ID_CODIGO = D.RRE_ID_CODIGO
 `,
-selecionaReqNumerario: `
+  selecionaReqNumerario: `
   SELECT A.RNU_ID_CODIGO, A.SQE_ID_CODIGO, A.REQ_ID_CODIGO, A.ITE_ID_CODIGO, A.RRE_ID_CODIGO,
          A.DIR_ID_CODIGO, A.RNU_DTINICIO, A.RNU_HORAINICIO, A.RNU_DTFIM, A.RNU_HORAFIM, C.CHAPA,
          A.RNU_MOTIVO, A.RNU_PACOTE, A.RNU_INTPREV, A.RNU_PARPREV, A.RNU_INTREAL, A.RNU_PARREAL,
@@ -289,7 +289,7 @@ selecionaReqNumerario: `
         B.ITE_ID_CODIGO = C.ITE_ID_CODIGO AND
         A.REQ_ID_CODIGO = D.REQ_ID_CODIGO
 `,
-selecionaSaquePendente: `
+  selecionaSaquePendente: `
   SELECT A.SQE_ID_CODIGO, A.ITE_ID_CODIGO, A.RRE_ID_CODIGO, A.DIR_ID_CODIGO,
          A.FPA_ID_CODIGO, A.SQE_DTSAQUE, A.SQE_VLPREST, A.SQE_DTPREST, A.SQE_VLSAQUE,
          A.SQE_TIPOSAQUE, A.SQE_EFETIVO, A.SQE_DTPEDIDO, A.SQE_EMPENHO,
@@ -301,7 +301,7 @@ selecionaSaquePendente: `
   FROM Financeiro.V009_SaquePendente A, Financeiro.S009_TIPODESP B
   WHERE A.TDE_ID_CODIGO = B.TDE_ID_CODIGO
 `,
-selecionaExtratoGeral: `
+  selecionaExtratoGeral: `
 SELECT B.*, A.RRE_ID_CODIGO, A.AGS_VALOR_SOLIC, A.AGS_VALOR_CONC,
        A.AGS_VALOR_PREST, E.TDE_DESCRICAO, D.DESCRICAO
 FROM Financeiro.S009_AGRUPARECURSO A
@@ -310,7 +310,7 @@ JOIN COMUM.S000_DIRETORIA C ON A.DIR_ID_CODIGO = C.DIR_ID_CODIGO
 JOIN RM.PSECAO D ON C.CODIGO = D.CODIGO
 JOIN Financeiro.S009_TIPODESP E ON A.TDE_ID_CODIGO = E.TDE_ID_CODIGO;
 `,
-selecionaExtratoDiretoria: `
+  selecionaExtratoDiretoria: `
 SELECT B.*, E.DESCRICAO, C.TDE_DESCRICAO,
        D.AG1_VALOR_SOL, D.AG1_VALOR_PREST, D.AG1_VALOR_CONC, D.rre_id_codigo
 FROM COMUM.S000_SUBORDINA1 A
@@ -319,7 +319,7 @@ JOIN Financeiro.S009_TIPODESP C ON B.tde_id_codigo = C.tde_id_codigo
 JOIN Financeiro.S009_AGRUPANIVEL1 D ON b.dir_id_codigo = D.DIR_ID_CODIGO
 JOIN RM.PSECAO E ON A.codigo = D.ag1_secao AND A.CODIGO = E.CODIGO;
 `,
-selecionaExtratoGerencia: `
+  selecionaExtratoGerencia: `
 SELECT DISTINCT(B.AG2_SECAO), B.RRE_ID_CODIGO,
        C.DESCRICAO, D.TDE_DESCRICAO, A.VALORSAQUE, A.VALORPREST
 FROM Financeiro.V009_EXTRATOGERENCIA A
@@ -327,7 +327,7 @@ JOIN Financeiro.S009_AGRUPANIVEL2 B ON A.CODSECAO = B.AG2_SECAO
 JOIN RM.PSECAO C ON A.CODSECAO = C.CODIGO
 JOIN Financeiro.S009_TIPODESP D ON A.TDE_ID_CODIGO = D.TDE_ID_CODIGO;
 `,
-selecionaPrestPendente: `
+  selecionaPrestPendente: `
 SELECT DISTINCT(a.sqe_id_codigo), A.*, B.CHAPA, D.STS_DESCRICAO, E.PRA_INICIO_RECURSO,
        E.PRA_FIM_RECURSO, F.FPA_DESCRICAO, G.TDE_DESCRICAO, G.TDE_ID_CODIGO, B.ORI_ID_CODIGO
 FROM Financeiro.S009_Saque A
@@ -341,7 +341,7 @@ WHERE A.SQE_DTPREST IS NULL
   AND SQE_EFETIVO IN ('P', 'S', 'E')
   AND E.PRA_ATIVO <> 'N';
 `,
-selecionaExtPrestContasNum: `
+  selecionaExtPrestContasNum: `
 SELECT DTC_ID_ITEM, DTC_CODDETALHE, DTC_DESCRICAO, DTC_QTDADE, UN_SIGLA, UN_SIGLA,
        DTC_VALOR, DTC_VLTOTAL, NDO_DATA, NDO_ID_CODIGO, NDO_ID_NUMERO, NDO_DTENTREGA,
        DES_DESCRICAO, PES_NOME, PES_TIPO, NOMEPESSOA, DOCUMENTO, PES_ID_CODIGO, PCO_ID_CODIGO, PCO_TIPO,
@@ -351,7 +351,7 @@ SELECT DTC_ID_ITEM, DTC_CODDETALHE, DTC_DESCRICAO, DTC_QTDADE, UN_SIGLA, UN_SIGL
        sqe_lote, sqe_anolote, REQ_ID_CODIGO, TDE_DESCRICAO, CPF
 FROM Financeiro.V009_ExtPContasNum;
 `,
-selectSaque: `
+  selectSaque: `
 SELECT A.SQE_ID_CODIGO, A.ITE_ID_CODIGO, A.RRE_ID_CODIGO, A.DIR_ID_CODIGO, A.FPA_ID_CODIGO,
        A.SQE_DTSAQUE, A.SQE_VLPREST, A.SQE_DTPREST, A.SQE_VLSAQUE, A.SQE_TIPOSAQUE,
        A.SQE_EFETIVO, A.SQE_DTPEDIDO, A.SQE_LOTE, A.SQE_ANOLOTE, A.STS_ID_CODIGO, A.SQE_TERCEIRO,
@@ -373,15 +373,10 @@ LEFT JOIN Financeiro.S009_REEMBOLSO J ON A.SQE_ID_CODIGO = J.SQE_ID_CODIGO
 LEFT JOIN Financeiro.V009_PESSOA K ON A.PES_ID_CODIGO = K.PES_ID_CODIGO
 LEFT JOIN RM.PPESSOA L ON L.CODIGO = H.CODPESSOA;
 `,
-selecionaSaqueSetor: `
+  selecionaSaqueSetor: `
     SELECT A.*, B.DESCRICAO
     FROM Financeiro.V009_SAQUESETOR A
     JOIN Financeiro.V001_DIRETORIA B
       ON A.DIR_ID_CODIGO = B.DIR_ID_CODIGO;
-  `
-
-  };
-
-
- 
-  
+  `,
+};

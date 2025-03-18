@@ -79,8 +79,6 @@ export class RequisicaoEntity {
   @JoinColumn({ name: 'CHAPA', referencedColumnName: 'chapa' })
   funcSalario: FuncSalarioEntity;
 
-  @OneToOne(() => UsuReqEntity, (req) => req.requisicao)  
-  usureq?: UsuReqEntity; 
-
-
+  @OneToOne(() => UsuReqEntity, (req) => req.requisicao)
+  usureq?: UsuReqEntity;
 }

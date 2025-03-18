@@ -17,11 +17,10 @@ export class DiariaviagemController {
     @CurrentUser() user: AuthUserDto,
     @Query() params: FindAllParams,
   ): Promise<DiariaviagemDto[]> {
-    
-    if(!params.CHAPA){
+    if (!params.CHAPA) {
       params.CHAPA = user.chapa;
     }
-   
+
     return await this.diariaviagemService.findAll(params);
   }
 

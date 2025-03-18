@@ -46,7 +46,7 @@ export class reqtransController {
   })
   @ApiQuery({
     name: 'REQ_ID_CODIGO',
-    required: true, 
+    required: true,
     type: Number,
     description: 'ID da requisição a ser cancelada',
   })

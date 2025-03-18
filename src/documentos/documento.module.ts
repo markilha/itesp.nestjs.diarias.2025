@@ -5,11 +5,9 @@ import { docsEntity } from '../database/db_mysql/entities/docs.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([docsEntity], 'mysqlConnection'), 
-  ],
+  imports: [TypeOrmModule.forFeature([docsEntity], 'mysqlConnection')],
   controllers: [documentosController],
   providers: [documentosService],
-  exports: [documentosService], 
+  exports: [documentosService],
 })
 export class documentosModule {}

@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-
 export class SaqueMesDto {
   @ApiProperty()
   nome: string;
@@ -11,13 +10,13 @@ export class SaqueMesDto {
   @ApiProperty()
   funcao: string;
   @ApiProperty()
-  totSaqueEstCanc: number;  
+  totSaqueEstCanc: number;
   @ApiProperty()
-  totsaque: number; 
+  totsaque: number;
   @ApiProperty()
-  totalrealmes: number; 
+  totalrealmes: number;
   @ApiProperty()
-  mesdev: string; 
+  mesdev: string;
   @ApiProperty()
   salario: number;
   @ApiProperty()
@@ -56,9 +55,9 @@ export class SaqueMesDto {
 
 export class infoPagamentoDto {
   @ApiProperty()
-  totSaqueEstCanc: number; 
-  @ApiProperty() 
-  totalrealmes: number; 
+  totSaqueEstCanc: number;
+  @ApiProperty()
+  totalrealmes: number;
   @ApiProperty()
   salario: number;
   @ApiProperty()
@@ -72,7 +71,7 @@ export class infoPagamentoDto {
   @ApiProperty()
   contapagamento: number;
   @ApiProperty()
-  vldevolucao: number; 
+  vldevolucao: number;
   @ApiProperty()
   totalaguardando: number;
 
@@ -88,7 +87,6 @@ export class infoPagamentoDto {
     this.saldodisponivel = entity.saldodisponivel;
   }
 }
-
 
 export class returnDevolucaoDto {
   CHAPA: string;
@@ -140,11 +138,10 @@ export class FindPgParams {
   chapa?: string;
   @ApiProperty({ required: false })
   dataAtual?: string;
-
 }
 export class FindParamsExtrato {
   @ApiProperty({ required: false })
-  chapa?: string; 
+  chapa?: string;
   @ApiProperty({ required: false })
   dataInicio?: string;
   @ApiProperty({ required: false })
@@ -154,7 +151,6 @@ export class FindParamsExtrato {
   @ApiProperty({ required: false })
   limit?: number;
 }
-
 
 // export class returnaTotal {
 //   @ApiProperty({
@@ -171,14 +167,13 @@ export class FindParamsExtrato {
 //   total: number;
 // }
 
-
 export class ExtratoDto {
   @ApiProperty()
   ITE_ID_CODIGO: number;
   @ApiProperty()
   DT_CONCEDIDO: string;
   @ApiProperty()
-  SQE_MES: number;  
+  SQE_MES: number;
   @ApiProperty()
   VL_CONCEDIDO: number;
   @ApiProperty()
@@ -206,12 +201,10 @@ export class ExtratoDto {
 }
 
 export class ReturnExtrato {
-  @ApiProperty(
-    {  
-     type: [ExtratoDto],
-    },
-  )
+  @ApiProperty({
+    type: [ExtratoDto],
+  })
   data: ExtratoDto[];
   @ApiProperty()
-  total: number; 
+  total: number;
 }

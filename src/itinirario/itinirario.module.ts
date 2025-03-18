@@ -5,9 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ItinerarioEntity } from '../database/db_oracle/entities/itinerario.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ItinerarioEntity],'oracleConnection')],
+  imports: [TypeOrmModule.forFeature([ItinerarioEntity], 'oracleConnection')],
   providers: [ItinirarioService],
   controllers: [ItinirarioController],
-  exports: [ItinirarioService]
+  exports: [ItinirarioService],
 })
 export class ItinirarioModule {}

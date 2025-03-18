@@ -5,14 +5,15 @@ export function RetonaPrestacaoStatus(
   sqedtprest: string,
   sqevlprest: number,
 ) {
-
   //  praativo != 'N' &&
   const STATUS =
     ['P', 'S', 'E'].includes(sqeefetivo) &&
-    sqetiposaque === 'N' &&  
+    sqetiposaque === 'N' &&
     (sqedtprest === null || sqevlprest === 0 || sqedtprest === '')
       ? 'Pendente'
-      : (sqedtprest === null || sqevlprest === 0 || sqedtprest === '') ? null : 'Realizada';
+      : sqedtprest === null || sqevlprest === 0 || sqedtprest === ''
+        ? null
+        : 'Realizada';
 
   return STATUS;
 }
@@ -20,16 +21,10 @@ export function RetonaPrestacaoStatus(
 //SQE_TIPOSAQUE: 'N',  SQE_EFETIVO: 'P',  TIPO: 'Viagem-Reembolso',  EFETUADO: 'Sim - Pagamento Efetuado'
 //SQE_TIPOSAQUE: 'N',SQE_EFETIVO: 'E',TIPO: 'Viagem - Complemento', EFETUADO: 'Sim - Pagamento Efetuado',
 
-export function RetornaSaquePendentes(
-  sqeefetivo: string,
-  sqetiposaque: string,
-  praativo: string,
-) {
+export function RetornaSaquePendentes(sqeefetivo: string, sqetiposaque: string, praativo: string) {
   //&& praativo != 'N'
   const STATUS =
-    ['A', 'C', 'D', 'T'].includes(sqeefetivo) && sqetiposaque === 'N' 
-      ? 'Pendente'
-      : 'Realizada';
+    ['A', 'C', 'D', 'T'].includes(sqeefetivo) && sqetiposaque === 'N' ? 'Pendente' : 'Realizada';
 
   return STATUS;
 }

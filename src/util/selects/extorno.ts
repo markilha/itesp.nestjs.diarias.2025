@@ -38,8 +38,8 @@ export const selecionaAutoriza = `
 Select A.REQ_ID_CODIGO, A.AUT_NIVEL From Transporte.S001_Autoriza A
 where a.req_id_codigo=:req
 order by a.aut_nivel
-`
+`;
 
 export const insertAutoriza = `
 Insert Into Transporte.S001_AUTORIZA values (:par1, :par2, :par4,'R','N','ESTORNO DE SAQUE',:PAR3)
-`
+`;

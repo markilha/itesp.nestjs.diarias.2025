@@ -41,13 +41,9 @@ export class PrazosDto {
 }
 
 export class findPrazosMesDto {
-  @ApiProperty(
-    
-  )
+  @ApiProperty()
   chapa: string;
-  @ApiProperty({ required: false,
-    description: 'Se não informado, será considerado a data atual',
-  })
+  @ApiProperty({ required: false, description: 'Se não informado, será considerado a data atual' })
   data?: Date;
 }
 

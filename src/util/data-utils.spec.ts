@@ -8,9 +8,7 @@ describe('DiariaUtils', () => {
     });
 
     it('deve lançar um erro se o valor não puder ser arredondado', () => {
-      expect(() => DataUtils.arredondar(NaN)).toThrow(
-        'Valor inválido para arredondar',
-      );
+      expect(() => DataUtils.arredondar(NaN)).toThrow('Valor inválido para arredondar');
     });
   });
 
@@ -27,12 +25,7 @@ describe('DiariaUtils', () => {
 
     it('deve lançar um erro se houver um problema no cálculo das horas de deslocamento', () => {
       expect(() =>
-        DataUtils.calcularHorasDeslocamento(
-          'invalid',
-          '08:00',
-          '06/09/2024',
-          '17:00',
-        ),
+        DataUtils.calcularHorasDeslocamento('invalid', '08:00', '06/09/2024', '17:00'),
       ).toThrow('Data ou hora inválida');
     });
   });

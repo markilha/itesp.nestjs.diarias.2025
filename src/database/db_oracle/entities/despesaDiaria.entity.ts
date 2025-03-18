@@ -28,7 +28,6 @@ export class DespesaDiariaEntity {
   desDescricao: string;
 
   @OneToOne(() => FuncSalarioEntity, (desp) => desp.despesaDiaria)
-  @JoinColumn({ name: 'CARGO', referencedColumnName: 'cargo' }) 
+  @JoinColumn({ name: 'CARGO', referencedColumnName: 'cargo' })
   funcsalario: FuncSalarioEntity;
-
 }

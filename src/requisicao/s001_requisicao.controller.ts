@@ -36,8 +36,11 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async find(@CurrentUser() user: AuthUserDto,@Query() params: FindAllParams): Promise<ReturnRequisicaoDto[]> {   
-    return await this.requisicao.find(params,user);
+  async find(
+    @CurrentUser() user: AuthUserDto,
+    @Query() params: FindAllParams,
+  ): Promise<ReturnRequisicaoDto[]> {
+    return await this.requisicao.find(params, user);
   }
 
   @Get('aprovadas')
@@ -56,14 +59,17 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async findAllAprovadas(@CurrentUser() user: AuthUserDto,@Query() params: FindAllAutorizadasParams): Promise<RequisDto[]> {
-    if(!params.all){
-      if(!params.chapa){
+  async findAllAprovadas(
+    @CurrentUser() user: AuthUserDto,
+    @Query() params: FindAllAutorizadasParams,
+  ): Promise<RequisDto[]> {
+    if (!params.all) {
+      if (!params.chapa) {
         params.chapa = user.chapa;
-       }
+      }
     }
-    return await this.requisicao.findAllAprovadas(params,user);
-  }  
+    return await this.requisicao.findAllAprovadas(params, user);
+  }
 
   @Get('mesatual')
   @ApiOperation({ summary: 'Lista todas requisições que estão no status aprovada no mês atual' })
@@ -81,8 +87,11 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async findMes(@CurrentUser() user: AuthUserDto,@Query() params: findMesParams): Promise<RequisDto[]> {
-      return await this.requisicao.findMesAtual(params,user);
+  async findMes(
+    @CurrentUser() user: AuthUserDto,
+    @Query() params: findMesParams,
+  ): Promise<RequisDto[]> {
+    return await this.requisicao.findMesAtual(params, user);
   }
 
   @Get('pendentes')
@@ -90,7 +99,7 @@ export class S001RequisicaoController {
   @ApiResponse({
     status: 200,
     description: 'Requições encontradas',
-    type: requiTotal   
+    type: requiTotal,
   })
   @ApiResponse({
     status: 401,
@@ -100,7 +109,7 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async findPendentes(@CurrentUser() user: AuthUserDto): Promise<requiTotal> {  
+  async findPendentes(@CurrentUser() user: AuthUserDto): Promise<requiTotal> {
     return await this.requisicao.findPendentes(user);
   }
 }

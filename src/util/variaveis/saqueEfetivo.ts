@@ -1,5 +1,5 @@
 const combinacoes = [
-  { SQE_EFETIVO: 'A', TIPO: 'Viagem', EFETUADO: 'Não - Aguardar Pagamento' }, 
+  { SQE_EFETIVO: 'A', TIPO: 'Viagem', EFETUADO: 'Não - Aguardar Pagamento' },
   {
     SQE_EFETIVO: 'C',
     TIPO: 'Viagem-Complemento',
@@ -67,5 +67,3 @@ const combinacoes = [
     EFETUADO: 'Aguardando Transferência para Complemento-Reembolso',
   },
 ];
-
-

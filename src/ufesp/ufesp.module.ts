@@ -5,10 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UferpsEntity } from '../database/db_oracle/entities/UferpsEntity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([UferpsEntity], 'oracleConnection')],
+  imports: [TypeOrmModule.forFeature([UferpsEntity], 'oracleConnection')],
   providers: [UfespService],
   controllers: [UfespController],
-  exports: [UfespService]
-  
+  exports: [UfespService],
 })
 export class UfespModule {}

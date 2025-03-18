@@ -1,8 +1,8 @@
-import { Entity, Column,PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('documentos', { schema: 'dev_itesp_diarias' })
 export class docsEntity {
-  @PrimaryGeneratedColumn({name: 'ID_DOC', type: 'int' })
+  @PrimaryGeneratedColumn({ name: 'ID_DOC', type: 'int' })
   ID_DOC?: number;
 
   @Column({ name: 'SQE_ID_CODIGO', type: 'int' })

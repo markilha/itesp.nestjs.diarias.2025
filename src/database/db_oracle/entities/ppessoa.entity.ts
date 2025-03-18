@@ -96,7 +96,7 @@ export class PPessoaEntity {
 
   @Column({ type: 'varchar2', length: 15, name: 'TELEFONE2', nullable: true })
   telefone2: string;
-  
+
   @Column({ type: 'varchar2', length: 15, name: 'TELEFONE3', nullable: true })
   telefone3: string;
 
@@ -118,5 +118,4 @@ export class PPessoaEntity {
   @OneToOne(() => PFuncEntity, (pfunc) => pfunc.pessoa)
   @JoinColumn({ name: 'CODUSUARIO', referencedColumnName: 'CHAPA' })
   pfunc?: PFuncEntity;
- 
 }

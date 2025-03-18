@@ -25,7 +25,6 @@ const mockRegistro: docpcontasnumEntity = {
   CHAPA: '000081',
 };
 
-
 describe('docpcontasnumService', () => {
   let service: docpcontasnumService;
   let repository: Repository<docpcontasnumEntity>;

@@ -1,21 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsNotEmpty, IsNumber, IsOptional} from 'class-validator';
+import { IsIn, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 import { pcontasEntity } from 'src/database/db_oracle/entities/pcontas.entity';
 
 export class pcontasDto {
-  
-  @IsOptional() 
-  @IsNumber()  
+  @IsOptional()
+  @IsNumber()
   @ApiProperty()
   PCO_ID_CODIGO?: number;
 
-  @IsIn(['N', 'R']) 
+  @IsIn(['N', 'R'])
   @IsNotEmpty()
   @ApiProperty()
   PCO_TIPO: string;
 
   @IsNumber()
-  @IsOptional() 
+  @IsOptional()
   @ApiProperty()
   PCO_TOTDOC?: number;
 
@@ -26,15 +25,15 @@ export class pcontasDto {
   }
 }
 
-export class createPcontasDto { 
+export class createPcontasDto {
   @ApiProperty()
   SQE_ID_CODIGO: number;
-  @ApiProperty({ 
-    description: "'N' ou 'R'", 
-    enum: ['N', 'R']
+  @ApiProperty({
+    description: "'N' ou 'R'",
+    enum: ['N', 'R'],
   })
-  @IsIn(['N', 'R']) 
-  PCO_TIPO: string; 
+  @IsIn(['N', 'R'])
+  PCO_TIPO: string;
   @ApiProperty()
   PCO_TOTDOC?: number;
   @ApiProperty()
@@ -51,7 +50,7 @@ export class createPcontasDto {
 
 export class FindAllParams {
   @ApiProperty({ required: false })
-  PCO_ID_CODIGO?: number;  
+  PCO_ID_CODIGO?: number;
   @ApiProperty({ required: false })
   page?: number;
   @ApiProperty({ required: false })
@@ -60,25 +59,24 @@ export class FindAllParams {
 
 export class FindLancDocParams {
   @ApiProperty({ required: false })
-  PCO_ID_CODIGO: number;  
+  PCO_ID_CODIGO: number;
   @ApiProperty({ required: false })
-  SQE_ID_CODIGO: number;  
+  SQE_ID_CODIGO: number;
 }
 export class FindOneParams {
   @ApiProperty({ required: false })
-  PCO_ID_CODIGO: number;   
+  PCO_ID_CODIGO: number;
 }
 
 export const pcontasDtoMock = [
   new pcontasDto({
-		"PCO_ID_CODIGO": 1,
-		"PCO_TIPO": "N",
-		"PCO_TOTDOC": 0
-	}),
-  new pcontasDto({
-    "PCO_ID_CODIGO": 2,
-    "PCO_TIPO": "R",
-    "PCO_TOTDOC": 0
+    PCO_ID_CODIGO: 1,
+    PCO_TIPO: 'N',
+    PCO_TOTDOC: 0,
   }),
-]
-
+  new pcontasDto({
+    PCO_ID_CODIGO: 2,
+    PCO_TIPO: 'R',
+    PCO_TOTDOC: 0,
+  }),
+];

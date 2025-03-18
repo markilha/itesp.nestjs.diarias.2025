@@ -1,8 +1,8 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class extornoDto {
   @ApiProperty()
-  SQE_ID_CODIGO: number; 
+  SQE_ID_CODIGO: number;
   @ApiProperty()
   ITE_ID_CODIGO: number;
   @ApiProperty()
@@ -19,7 +19,7 @@ export class extornoDto {
   EXT_DATA?: string;
   @ApiProperty()
   EXT_JUSTIFICA?: string;
-  constructor(item?: Partial<extornoDto>){
+  constructor(item?: Partial<extornoDto>) {
     this.SQE_ID_CODIGO = item?.SQE_ID_CODIGO;
     this.ITE_ID_CODIGO = item?.ITE_ID_CODIGO;
     this.RRE_ID_CODIGO = item?.RRE_ID_CODIGO;
@@ -30,12 +30,11 @@ export class extornoDto {
     this.EXT_DATA = item?.EXT_DATA;
     this.EXT_JUSTIFICA = item?.EXT_JUSTIFICA;
   }
- 
 }
 
 export class upateExtornoDto {
   @ApiProperty()
-  SQE_ID_CODIGO: number;  
+  SQE_ID_CODIGO: number;
   @ApiProperty()
   PCO_ID_CODIGO: number;
   @ApiProperty()
@@ -45,15 +44,14 @@ export class upateExtornoDto {
   @ApiProperty()
   EXT_DATA?: string;
   @ApiProperty()
-  EXT_JUSTIFICA?: string;  
+  EXT_JUSTIFICA?: string;
 }
-
 
 export class FindAllParams {
   @ApiProperty()
   SQE_ID_CODIGO?: number;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   page?: number;
-  @ApiProperty({required: false})
-  limit?: number;  
+  @ApiProperty({ required: false })
+  limit?: number;
 }

@@ -39,8 +39,8 @@ export class ItinirarioService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  async findUltimo(reqIdCodigo: number): Promise<retornoItinerarioDto> {   
-    try {     
+  async findUltimo(reqIdCodigo: number): Promise<retornoItinerarioDto> {
+    try {
       const primeiroRegistro = await this.itinerarioRepository
         .createQueryBuilder('itinerario')
         .select([
@@ -51,14 +51,14 @@ export class ItinirarioService {
           'itinerario.ITI_HSAIDA',
         ])
         .where('itinerario.REQ_ID_CODIGO = :reqIdCodigo', { reqIdCodigo })
-        .andWhere('ROWNUM = 1') 
+        .andWhere('ROWNUM = 1')
         .orderBy('itinerario.ITI_DTSAIDA', 'ASC')
         .addOrderBy('itinerario.ITI_HSAIDA', 'ASC')
-        .getOne();      
+        .getOne();
 
       // Se não encontrar nenhum registro, lança erro
       if (!primeiroRegistro) {
-       return null;
+        return null;
       }
 
       // Consulta para buscar a última chegada (maior data e hora de chegada)
@@ -69,7 +69,7 @@ export class ItinirarioService {
         .andWhere('ROWNUM = 1') // Limitar para 1 linha no Oracle 11
         .orderBy('itinerario.ITI_DTCHEGADA', 'DESC')
         .addOrderBy('itinerario.ITI_HCHEGADA', 'DESC')
-        .getOne();       
+        .getOne();
 
       // Se não encontrar nenhum registro, lança erro
       if (!ultimoRegistro) {

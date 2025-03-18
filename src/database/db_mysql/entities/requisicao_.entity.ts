@@ -62,12 +62,10 @@ export class Requisicao_Entity {
   @Column({ name: 'REQ_GOVERNADOR', type: 'varchar', length: 50, nullable: true })
   reqGovernador: string;
 
-  @OneToOne(() => UsuReqEntity, (req) => req.requisicao)  
-  usureq?: UsuReqEntity; 
+  @OneToOne(() => UsuReqEntity, (req) => req.requisicao)
+  usureq?: UsuReqEntity;
 
   @OneToOne(() => TransMeioEntity, (req) => req.requisicao)
   @JoinColumn({ name: 'TRA_ID_CODIGO', referencedColumnName: 'traIdCodigo' })
-  transmeio?: TransMeioEntity; 
-
- 
+  transmeio?: TransMeioEntity;
 }

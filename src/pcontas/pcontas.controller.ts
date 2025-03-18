@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { PcontasService } from './pcontas.service';
-import { createPcontasDto, FindAllParams, FindLancDocParams, FindOneParams} from './pcontasDto';
+import { createPcontasDto, FindAllParams, FindLancDocParams, FindOneParams } from './pcontasDto';
 import { pcontasDto } from './pcontasDto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/current-user.decorator';
@@ -39,7 +39,7 @@ export class PcontasController {
     status: 200,
     description: 'Retorna o id da prestações de conta criada',
     schema: { example: { PCO_ID_CODIGO: 1 } },
-  })  
+  })
   @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
   async create(
     @CurrentUser() user: AuthUserDto,
@@ -75,11 +75,13 @@ export class PcontasController {
   }
   @Get('pendentes')
   @ApiOperation({ summary: 'Busca uma prestações de conta pendentes' })
-  @ApiResponse({ status: 200, description: 'Retorna uma prestações de conta pendentes', type: pcontasDto })
-  @ApiResponse({ status: 500, description: 'Erro interno do servidor' })  
-  async selecionaPendentes(): Promise<pcontasDto[]>{
+  @ApiResponse({
+    status: 200,
+    description: 'Retorna uma prestações de conta pendentes',
+    type: pcontasDto,
+  })
+  @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
+  async selecionaPendentes(): Promise<pcontasDto[]> {
     return await this.pcontasService.selecionaPrestPendente();
   }
-  
-  
 }

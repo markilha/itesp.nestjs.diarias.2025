@@ -42,7 +42,7 @@ export const verificaExistGrupoRec = `
 ${SelecionaAgrupaRec} 
 And A.DIR_ID_CODIGO=:CODDIR And A.RRE_ID_CODIGO=:CODREQ
 And A.TDE_ID_CODIGO=7
-`
+`;
 
 export const SelecionaRequisicao = `SELECT 
     A.RRE_ID_CODIGO, 
@@ -118,5 +118,3 @@ ${SelecionaItensRecurso}
 and A.Chapa =:NChapa and A.RRE_ID_CODIGO=:NREQ and A.TDE_ID_CODIGO=7
 Order By A.NOME  
 `;
-
-

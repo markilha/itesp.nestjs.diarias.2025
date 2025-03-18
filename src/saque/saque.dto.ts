@@ -1,4 +1,12 @@
-import { IsNotEmpty, IsOptional, IsNumber, IsString, IsDate, MaxLength, IsEnum } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+  IsString,
+  IsDate,
+  MaxLength,
+  IsEnum,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { SaqueEntity } from '../database/db_oracle/entities/saque.entity';
 
@@ -12,99 +20,99 @@ export interface FindAllParams {
 }
 
 export class FindParamsSaque {
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   REQ_ID_CODIGO?: number;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   SQE_ID_CODIGO?: number;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   ITE_ID_CODIGO?: number;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   CHAPA?: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   NOME?: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   STS_DESCRICAO?: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   REQ_STATUS?: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   STATUS_PREST?: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   STATUS_SAQUE?: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   SQE_EFETIVO?: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   usePrestDate?: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   startDate?: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   endDate?: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   page?: number;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   limit?: number;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   orderBy?: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   orderDirection?: 'ASC' | 'DESC';
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   full?: boolean;
 }
 
 export class ParamsPendente {
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   CHAPA: string;
-  @ApiProperty({required: false})
-  RRE_ID_CODIGO: string; 
+  @ApiProperty({ required: false })
+  RRE_ID_CODIGO: string;
 }
 export class ParamsCancela {
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   CHAPA: string;
-  @ApiProperty({required: false})
-  SQE_ID_CODIGO: number; 
+  @ApiProperty({ required: false })
+  SQE_ID_CODIGO: number;
 }
 
-export class SaqueDto {  
+export class SaqueDto {
   @ApiProperty()
-  sqeIdCodigo: number; 
+  sqeIdCodigo: number;
   @ApiProperty()
-  iteIdCodigo: number;  
+  iteIdCodigo: number;
   @ApiProperty()
-  rreIdCodigo: number; 
-  @ApiProperty() 
-  dirIdCodigo: number;  
-  @ApiProperty({required: false})
+  rreIdCodigo: number;
+  @ApiProperty()
+  dirIdCodigo: number;
+  @ApiProperty({ required: false })
   fpaIdCodigo: number;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   sqeDtSaque: string;
-  @ApiProperty({required: false})
-  sqeVlPrest: number;  
-  @ApiProperty({required: false})
-  sqeDtPrest: string; 
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
+  sqeVlPrest: number;
+  @ApiProperty({ required: false })
+  sqeDtPrest: string;
+  @ApiProperty({ required: false })
   sqeVlSaque: number;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   sqeTipoSaque: string;
-  @ApiProperty({required: false})
-  sqeEfetivo: string; 
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
+  sqeEfetivo: string;
+  @ApiProperty({ required: false })
   sqeDtPedido: string;
-  @ApiProperty({required: false})
-  sqeLote: number; 
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
+  sqeLote: number;
+  @ApiProperty({ required: false })
   sqeAnoLote: number;
-  @ApiProperty({required: false})
-  stsIdCodigo: number; 
-  @ApiProperty({required: false})
-  sqeTerceiro: string; 
-  @ApiProperty({required: false})
-  pesIdCodigo: number; 
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
+  stsIdCodigo: number;
+  @ApiProperty({ required: false })
+  sqeTerceiro: string;
+  @ApiProperty({ required: false })
+  pesIdCodigo: number;
+  @ApiProperty({ required: false })
   pesPessoa: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   sqeUsuario: string;
-  @ApiProperty({required: false})
-  sqeEmpenho: string;  
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
+  sqeEmpenho: string;
+  @ApiProperty({ required: false })
   sqeListaSiafem: string;
 
   constructor(params: SaqueEntity) {
@@ -171,20 +179,16 @@ export class returnSaqueDto {
   PRA_ATIVO: string;
   @ApiProperty()
   SQE_TIPOSAQUE: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   ID_DOC?: number;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   ORIGINAL_NAME?: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   STATUS_SAQUE?: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   STATUS_PREST?: string;
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   CODSECAO?: string;
-
-
-
- 
 
   constructor(params: any) {
     this.SQE_ID_CODIGO = params.SQE_ID_CODIGO;
@@ -207,11 +211,10 @@ export class returnSaqueDto {
     this.PRA_ATIVO = params.PRA_ATIVO;
     this.SQE_TIPOSAQUE = params.SQE_TIPOSAQUE;
     this.STATUS_SAQUE = params.STATUS_SAQUE;
-    this.STATUS_PREST = params.STATUS_PREST;  
+    this.STATUS_PREST = params.STATUS_PREST;
     this.ID_DOC = params.ID_DOC;
     this.ORIGINAL_NAME = params.ORIGINAL_NAME;
     this.CODSECAO = params.CODSECAO;
-   
   }
 }
 export class PrestacaoDto {
@@ -281,7 +284,7 @@ export class PrestacaoDto {
   @ApiProperty()
   INTREAL: number;
   @ApiProperty()
-  PARREAL: number; 
+  PARREAL: number;
   //DIARIAS-VALORES
   @ApiProperty()
   VLINTPREV: number;
@@ -318,9 +321,9 @@ export class PrestacaoDto {
   @ApiProperty()
   PRA_ATIVO: string;
   @ApiProperty()
-  UFESP: number; 
+  UFESP: number;
   @ApiProperty()
-  TRA_ID_CODIGO: number; 
+  TRA_ID_CODIGO: number;
   @ApiProperty()
   JUSTIFICATIVA: string;
   @ApiProperty()
@@ -368,22 +371,22 @@ export class PrestacaoDto {
     this.VLPARREAL = params.VLPARREAL;
     this.VLBASE = params.VLBASE;
     this.SQE_VLSAQUE = params.SQE_VLSAQUE;
-     //EXTORNOS DEVOLUÇÕES
+    //EXTORNOS DEVOLUÇÕES
     this.VLCOMPLEMENTARINTEGRAL = params.VLCOMPLEMENTARINTEGRAL;
     this.VLCOMPLEMENTARPARCIAL = params.VLCOMPLEMENTARPARCIAL;
     this.VLDEVOLUCAOINTEGRAL = params.VLDEVOLUCAOINTEGRAL;
-    this.VLDEVOLUCAOPARCIAL = params.VLDEVOLUCAOPARCIAL;   
+    this.VLDEVOLUCAOPARCIAL = params.VLDEVOLUCAOPARCIAL;
 
     this.REQ_STATUS = params.REQ_STATUS;
     this.VLPREST = params.VLPREST;
     this.VLDIARIA = params.VLDIARIA;
     this.PORCDIARIARETORNO = params.PORCDIARIARETORNO;
     this.PRA_ATIVO = params.PRA_ATIVO;
-    this.UFESP = params.UFESP;    
+    this.UFESP = params.UFESP;
     this.TRA_ID_CODIGO = params.TRA_ID_CODIGO;
     this.JUSTIFICATIVA = params.JUSTIFICATIVA;
-    this.TOTALDEVOLUCAO= params.TOTALDEVOLUCAO;
-    this.TOTALCOMPLEMENTAR= params.TOTALCOMPLEMENTAR;   
+    this.TOTALDEVOLUCAO = params.TOTALDEVOLUCAO;
+    this.TOTALCOMPLEMENTAR = params.TOTALCOMPLEMENTAR;
   }
 }
 
@@ -531,11 +534,9 @@ export class InsSaqueDto {
   PAR32: number; // RNU_VLBASE
 
   ID: {}; // Identificador
- 
 }
 
-
-export class SolitarDto { 
+export class SolitarDto {
   reqIdCodigo: number;
   chapa: string;
   reqPacote: number;
@@ -548,7 +549,6 @@ export class SolitarDto {
 export interface RetNumSaque {
   sqeIdCodigo: number;
 }
-
 
 export class returnaTotal {
   @ApiProperty({
@@ -565,13 +565,9 @@ export class returnaTotal {
   total: number;
 }
 
-
-
-
-
 export enum TipoOperacao {
   REEMBOLSO = 'REEMBOLSO',
-  COMPLEMENTO = 'COMPLEMENTO'
+  COMPLEMENTO = 'COMPLEMENTO',
 }
 
 export class SolicitaSaqueDto {
@@ -784,7 +780,6 @@ export class SolicitaSaqueDto {
   }
 }
 
-
 export class buscarSaqueDto {
   SQE_DTPEDIDO?: string;
   SQE_ID_CODIGO?: number;
@@ -802,9 +797,9 @@ export class buscarSaqueDto {
   RNU_ID_CODIGO?: number;
   REQ_STATUS?: string;
   REQ_DTSAIDA?: Date;
-  REQ_HSAIDA?: string;   
+  REQ_HSAIDA?: string;
   REQ_DTRET?: Date;
-  REQ_HRET?: string;    
+  REQ_HRET?: string;
   REQ_PACOTE?: number;
   REQ_INTEGRAL?: number;
   REQ_PARCIAL?: number;
@@ -817,7 +812,6 @@ export class buscarSaqueDto {
   NME_MUNIC?: string;
   REG_DESCRICAO?: string;
 }
-
 
 export interface DiariaCalculadaDto {
   VL_DIARIA_INTEGRAL: number;
@@ -844,13 +838,9 @@ export class updateEfetivoDto {
   sqeEfetivo: string;
 }
 
-export class ParamsAltera { 
-  @ApiProperty({required: false})
-  SQE_ID_CODIGO: number; 
-  @ApiProperty({required: false})
+export class ParamsAltera {
+  @ApiProperty({ required: false })
+  SQE_ID_CODIGO: number;
+  @ApiProperty({ required: false })
   SQE_VLPREST: number;
 }
-
-
-
-

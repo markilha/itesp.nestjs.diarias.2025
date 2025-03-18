@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('S009_ITENSREQREC',{schema:'FINANCEIRO'}) // Substitua pelo nome correto da tabela
+@Entity('S009_ITENSREQREC', { schema: 'FINANCEIRO' }) // Substitua pelo nome correto da tabela
 export class itensreqEntity {
   @PrimaryGeneratedColumn({ name: 'ITE_ID_CODIGO' })
   ITE_ID_CODIGO: number;

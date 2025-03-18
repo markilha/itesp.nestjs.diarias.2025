@@ -23,9 +23,6 @@ import { PcontasModule } from 'src/pcontas/pcontas.module';
 import { PcontasNumModule } from 'src/pcontasnum/pcontasnum.module';
 import { ndocumentoModule } from 'src/ndocumento/ndocumento.module';
 
-
-
-
 @Module({
   imports: [
     TypeOrmModule.forFeature([SaqueEntity], 'oracleConnection'),
@@ -35,20 +32,19 @@ import { ndocumentoModule } from 'src/ndocumento/ndocumento.module';
     UfespModule,
     DespesadiariaModule,
     MotivodiariaModule,
-    ReqnumerarioModule ,
+    ReqnumerarioModule,
     reembolsoModule,
     reqtransModule,
-    FuncsalarioModule,    
+    FuncsalarioModule,
     itensreqrecModule,
     S001RequisicaoModule,
     destinoModule,
-    naotrabModule,    
+    naotrabModule,
     forwardRef(() => extornoModule),
     documentosModule,
     forwardRef(() => PcontasModule),
     PcontasNumModule,
-    ndocumentoModule
-    
+    ndocumentoModule,
   ],
   providers: [SaqueService],
   controllers: [SaqueController],

@@ -60,12 +60,11 @@ export class docsService {
 
     let existe = [];
 
-    try {      
+    try {
       existe = await this.documentosService.findBySQE_ID_CODIGO(SQE_ID_CODIGO);
     } catch (error) {
-      console.log('Documento não encontrado');      
+      console.log('Documento não encontrado');
     }
-
 
     if (existe.length > 0) {
       throw new HttpException('Comprovante já enviado para este saque', HttpStatus.CONFLICT);

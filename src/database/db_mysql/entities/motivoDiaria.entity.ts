@@ -2,7 +2,6 @@ import { Entity, PrimaryColumn, Column } from 'typeorm';
 
 @Entity('s009_motivodiaria')
 export class MotivodiariaEntity {
-  
   @PrimaryColumn({ name: 'MDI_ID_CODIGO', type: 'int' })
   MDI_ID_CODIGO: number;
 

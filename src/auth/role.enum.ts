@@ -1,7 +1,5 @@
-
-export enum Role {  
+export enum Role {
   SEM_ACESSO = 'SEM ACESSO AO SISTEMA',
   SUPERVISOR = 'SUPERVISOR',
-  USUARIO = 'USUARIO'
-  }
-  
+  USUARIO = 'USUARIO',
+}

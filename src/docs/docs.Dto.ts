@@ -1,16 +1,14 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
-
-export type FileDto ={
-    fieldname: string;
-    originalname: string;   
-    mimetype: string;
-    buffer: Buffer;
-    size: number;
-   
-}
+export type FileDto = {
+  fieldname: string;
+  originalname: string;
+  mimetype: string;
+  buffer: Buffer;
+  size: number;
+};
 
 export class FindAllParams {
-    @ApiProperty()
-    ID_DOC: number;
-  }
+  @ApiProperty()
+  ID_DOC: number;
+}

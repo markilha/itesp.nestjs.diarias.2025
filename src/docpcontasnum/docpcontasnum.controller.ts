@@ -20,11 +20,14 @@ export class docpcontasnumController {
   @ApiResponse({ status: 200, description: 'Listagem de docpcontasnum', type: returnData })
   @ApiResponse({ status: 500, description: 'Não foi possível buscar docpcontasnum' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
-  async findAll(@CurrentUser() user: AuthUserDto,@Query() params: FindAllParams): Promise<returnData> {
+  async findAll(
+    @CurrentUser() user: AuthUserDto,
+    @Query() params: FindAllParams,
+  ): Promise<returnData> {
     if (!params.CHAPA) {
       params.CHAPA = user.chapa;
     }
-    return await this.docpcontasnumService.findAll(params,user);
+    return await this.docpcontasnumService.findAll(params, user);
   }
 
   @Get('findone')

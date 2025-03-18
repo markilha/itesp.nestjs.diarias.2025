@@ -1,13 +1,12 @@
-
 export const selects = {
-    extratoMes: `Select a.CHAPA , a.NOME , a.DESCRICAO , a.FUNCAO , a.MESSAQUE , a.TOTSAQUE ,
+  extratoMes: `Select a.CHAPA , a.NOME , a.DESCRICAO , a.FUNCAO , a.MESSAQUE , a.TOTSAQUE ,
         a.TOTSAQUEESTCANC , a.MESDEV , a.VLDEVOLUCAO ,  a.SALARIO ,(TOTSAQUE + TotSaqueestcanc) As TotalRealSaque,
         ((TOTSAQUE + TotSaqueestcanc) - VlDevolucao)As totalsaldo, (a.salario/2)as metadesalario,
         b.CODBANCOPAGTO, b.CODAGENCIAPAGTO, b.CONTAPAGAMENTO
         From financeiro.v009_saquesalariogeral a
         INNER JOIN 	RM.PFUNC b ON 	a.CHAPA = b.CHAPA 
 `,
-    selectExtradoDiario: `
+  selectExtradoDiario: `
     SELECT 
     c.mesdev, 
     d.chapa, 
@@ -34,12 +33,12 @@ FROM
 WHERE 
     A.TDE_ID_CODIGO = 7   
     `,
-    funcSalario: `
+  funcSalario: `
      Select Chapa, CodSecao, NOME, Funcao, codfuncao, cargo, salario,
         setor, REG_ID_CODIGO, REG_DESCRICAO
         From Financeiro.V009_Funcsalario
     `,
-    pfunc: `
+  pfunc: `
     SELECT 
     A.CHAPA, A.CODCOLIGADA, A.CODSECAO, A.CODFUNCAO, A.NOME, A.CODPESSOA, A.CODBANCOPAGTO, A.CODAGENCIAPAGTO, A.CONTAPAGAMENTO,
     D.CPF, A.CODSITUACAO, B.CODIGO AS CODSECAO_CODIGO, B.DESCRICAO AS SECAO_DESCRICAO, C.CODIGO AS CODFUNCAO_CODIGO,
@@ -51,11 +50,4 @@ WHERE
     INNER JOIN RM.PPESSOA D ON A.CODPESSOA = D.CODIGO
     INNER JOIN FINANCEIRO.V009_SETORREGIONAL E ON E.CODIGO = A.CODSECAO
     `,
-
-  
-    
-    
-
-
-
-}
+};

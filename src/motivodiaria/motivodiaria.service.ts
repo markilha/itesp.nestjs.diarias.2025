@@ -49,7 +49,7 @@ export class MotivodiariaService {
         WHERE b.CHAPA = :chapa AND c.REQ_ID_CODIGO = :reqidcodigo
       `,
         [chapa, reqidcodigo],
-      );  
+      );
 
       if (consulta.length === 0) {
         throw new HttpException(
@@ -62,7 +62,7 @@ export class MotivodiariaService {
       }
 
       return new motivoDiariaDto(consulta[0]);
-    } catch (error) {      
+    } catch (error) {
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,

@@ -93,6 +93,4 @@ export class reqtransEntity {
   @OneToOne(() => regionalEntity)
   @JoinColumn({ name: 'REG_ID_CODIGO', referencedColumnName: 'REG_ID_CODIGO' })
   regional?: regionalEntity;
-
-  
 }

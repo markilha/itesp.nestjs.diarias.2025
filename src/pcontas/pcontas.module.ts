@@ -16,7 +16,7 @@ import { ndocumentoModule } from 'src/ndocumento/ndocumento.module';
     reembolsoModule,
     extornoModule,
     ndocumentoModule,
-    forwardRef(() => SaqueModule),    
+    forwardRef(() => SaqueModule),
     ReqnumerarioModule,
   ],
   providers: [PcontasService],

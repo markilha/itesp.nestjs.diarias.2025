@@ -1,6 +1,5 @@
-export function getPaginatedQuery(queryBuilder, startRow:number, endRow:number) {
-  
-    return `
+export function getPaginatedQuery(queryBuilder, startRow: number, endRow: number) {
+  return `
        WITH base_query AS (${queryBuilder.getQuery()}),
       count_query AS (SELECT COUNT(*) as total_count FROM base_query),
       paginated_data AS (SELECT a.*, ROWNUM rnum 
@@ -12,5 +11,4 @@ export function getPaginatedQuery(queryBuilder, startRow:number, endRow:number) 
       CROSS JOIN count_query cq
       WHERE pd.rnum >= ${startRow}
     `;
-  }
-  
+}

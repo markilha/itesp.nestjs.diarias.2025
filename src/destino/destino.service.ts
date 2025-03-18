@@ -3,15 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { destinoEntity } from '../database/db_oracle/entities/destino.entity';
 import { Repository } from 'typeorm';
 
-
 @Injectable()
 export class destinoService {
   constructor(
     @InjectRepository(destinoEntity, 'oracleConnection')
     private destinoRepository: Repository<destinoEntity>,
-  ) {}  
+  ) {}
 
-   async findOne(REQ_ID_CODIGO: number) {
+  async findOne(REQ_ID_CODIGO: number) {
     try {
       const item = await this.destinoRepository.query(
         `SELECT 
@@ -25,21 +24,20 @@ export class destinoService {
          left join TRANSPORTE.S001_MUNIC_DETRAN m on d.MUN_ID_CODIGO = m.MUN_ID_CODIGO
          WHERE d.REQ_ID_CODIGO = :REQ_ID_CODIGO`,
         [REQ_ID_CODIGO],
-      ); 
+      );
       if (!item || item.length === 0) {
         throw new HttpException(
           `Destino com código: ${REQ_ID_CODIGO} não encontrado`,
           HttpStatus.NOT_FOUND,
         );
-      }  
+      }
       return item[0];
     } catch (error) {
-      console.log(error)
-      throw new HttpException(        
+      console.log(error);
+      throw new HttpException(
         `Erro ao buscar o Destiono com o código: ${REQ_ID_CODIGO}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
- 
 }

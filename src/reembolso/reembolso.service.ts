@@ -118,18 +118,16 @@ export class reembolsoService {
     }
   }
 
-  
   async findone(SQE_ID_CODIGO: number): Promise<reembolsoDto> {
     try {
       const result = await this.reembolsoRepository
-      .createQueryBuilder('r')
-      .where('r.SQE_ID_CODIGO = :codigo', { codigo: SQE_ID_CODIGO })
-      .maxExecutionTime(10000)
-      .cache(false)
-      .getOne();
+        .createQueryBuilder('r')
+        .where('r.SQE_ID_CODIGO = :codigo', { codigo: SQE_ID_CODIGO })
+        .maxExecutionTime(10000)
+        .cache(false)
+        .getOne();
 
       return result;
-
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

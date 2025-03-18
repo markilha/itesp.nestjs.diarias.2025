@@ -6,10 +6,9 @@ import { PrazosEntity } from '../database/db_oracle/entities/prazos.entity';
 import { PpessoaModule } from 'src/ppessoa/ppessoa.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([PrazosEntity], 'oracleConnection'),
-  PpessoaModule],
+  imports: [TypeOrmModule.forFeature([PrazosEntity], 'oracleConnection'), PpessoaModule],
   providers: [PrazosService],
   controllers: [PrazosController],
-  exports: [PrazosService]
+  exports: [PrazosService],
 })
 export class PrazosModule {}

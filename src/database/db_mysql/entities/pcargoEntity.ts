@@ -1,6 +1,5 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm';
 
-
 @Entity('pcargo', { schema: 'dev_itesp_diarias' })
 export class PcargoEntity {
   @PrimaryColumn({ type: 'varchar', name: 'CODIGO' })
@@ -11,5 +10,4 @@ export class PcargoEntity {
 
   @Column({ name: 'UFESP', type: 'int', nullable: true })
   ufesp?: number;
-
 }

@@ -5,11 +5,9 @@ import { UserEntity } from '../database/db_mysql/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([UserEntity], 'mysqlConnection'), 
-  ],
+  imports: [TypeOrmModule.forFeature([UserEntity], 'mysqlConnection')],
   controllers: [UsersController],
   providers: [UsersService],
-  exports: [UsersService], 
+  exports: [UsersService],
 })
 export class UsersModule {}

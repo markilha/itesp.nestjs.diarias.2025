@@ -5,9 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { pcontasnumEntity } from '../database/db_oracle/entities/pcontasnum';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([pcontasnumEntity], 'oracleConnection')],
+  imports: [TypeOrmModule.forFeature([pcontasnumEntity], 'oracleConnection')],
   providers: [PcontasNumService],
   controllers: [PcontasNumController],
-  exports: [PcontasNumService,TypeOrmModule]
+  exports: [PcontasNumService, TypeOrmModule],
 })
 export class PcontasNumModule {}

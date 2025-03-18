@@ -9,7 +9,6 @@ export class PFuncEntity {
 
   @PrimaryColumn({ name: 'CHAPA', type: 'varchar', length: 16 })
   CHAPA: string;
- 
 
   @Column({ type: 'varchar', length: 120, name: 'CODSECAO', nullable: true })
   CODSECAO: string;
@@ -20,12 +19,12 @@ export class PFuncEntity {
   @Column({ type: 'varchar', length: 120, name: 'CODFUNCAO', nullable: true })
   CODFUNCAO: string;
 
-  @Column({ type: 'int',  name: 'JORNADA', nullable: true })
+  @Column({ type: 'int', name: 'JORNADA', nullable: true })
   JORNADA: number;
 
   @Column({ type: 'double precision', name: 'SALARIO', nullable: true })
   SALARIO: number;
-  
+
   @Column({ type: 'date', name: 'DATAADMISSAO', nullable: true })
   DATAADMISSAO: Date;
 
@@ -35,6 +34,6 @@ export class PFuncEntity {
   @Column({ type: 'varchar', length: 120, name: 'GRUPOSALARIAL', nullable: true })
   GRUPOSALARIAL: string;
 
-  @OneToOne(() => PPessoaEntity, (ppessoa) => ppessoa.pfunc)  
-  pessoa?: PPessoaEntity;  
+  @OneToOne(() => PPessoaEntity, (ppessoa) => ppessoa.pfunc)
+  pessoa?: PPessoaEntity;
 }

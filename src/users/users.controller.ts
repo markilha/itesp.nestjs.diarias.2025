@@ -1,6 +1,6 @@
 import { Controller, Get, UseGuards, Param, Query, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { FindAllParamsDto,  returnTotal,  userInfo, userNivelDto, UsersDto } from './users.dto';
+import { FindAllParamsDto, returnTotal, userInfo, userNivelDto, UsersDto } from './users.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { FindAllParams } from './users.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -54,14 +54,12 @@ export class UsersController {
   }
 
   @Get('user-info')
-   @ApiOperation({ summary: 'Retonar o usuário logado' })
-   @ApiResponse({
+  @ApiOperation({ summary: 'Retonar o usuário logado' })
+  @ApiResponse({
     status: 200,
     description: 'Lista o usuário logado!',
-    type: userInfo  
-  
+    type: userInfo,
   })
-  
   getInfo(@CurrentUser() user: AuthUserDto): userInfo {
     return {
       id_usuario: user.sub,

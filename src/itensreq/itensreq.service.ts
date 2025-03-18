@@ -1,8 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { itensreqEntity } from '../database/db_oracle/entities/itensreq.entity';
-
 
 @Injectable()
 export class itensreqService {
@@ -17,11 +16,10 @@ export class itensreqService {
         `SELECT MAX(TDE_ID_CODIGO) as lastId FROM S009_ITENSREQREC`,
       );
       return lastIdResult[0]?.LASTID + 1 || 0;
-    } catch (error) {      
+    } catch (error) {
       throw new HttpException('Erro ao buscar último ID', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
 
   //create
   async create(itensreqDto: itensreqEntity): Promise<itensreqEntity> {
@@ -33,5 +31,4 @@ export class itensreqService {
       throw new HttpException('Não foi possível criar item', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
- 
 }

@@ -29,11 +29,9 @@ export class extornoEntity {
   @Column({ name: 'EXT_JUSTIFICA', type: 'varchar2', length: 1000, nullable: true })
   EXT_JUSTIFICA: string;
 
-  constructor( item?: Partial<extornoEntity>) {
+  constructor(item?: Partial<extornoEntity>) {
     if (item) {
       Object.assign(this, item);
     }
   }
-   
- 
 }

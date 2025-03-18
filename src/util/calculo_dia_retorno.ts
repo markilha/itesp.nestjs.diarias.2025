@@ -222,7 +222,7 @@ export function calcularDiariaValores(
 export function calcQuantDiariaIntegralParcialPorcen(dateTimeParams: any, naotrab: number) {
   try {
     if (!dateTimeParams.dataSaida) {
-      return { diariaIntegral: 0, diariaParcial: 0, diaraPorc: 0};
+      return { diariaIntegral: 0, diariaParcial: 0, diaraPorc: 0 };
     }
     const diariaIntegral = calcularDiariaIntegral(
       dateTimeParams.dataSaida,

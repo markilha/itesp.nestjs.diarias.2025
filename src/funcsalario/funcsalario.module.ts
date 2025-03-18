@@ -6,9 +6,9 @@ import { FuncSalarioEntity } from '../database/db_oracle/entities/funcsalario.en
 import { SaquesMesModule } from '../saques-mes/saques-mes.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([FuncSalarioEntity], 'oracleConnection'), SaquesMesModule],
+  imports: [TypeOrmModule.forFeature([FuncSalarioEntity], 'oracleConnection'), SaquesMesModule],
   providers: [FuncsalarioService],
   controllers: [FuncsalarioController],
-  exports: [FuncsalarioService]
+  exports: [FuncsalarioService],
 })
 export class FuncsalarioModule {}

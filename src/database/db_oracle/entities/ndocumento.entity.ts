@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('S009_NDOCUMENTO',{schema:'FINANCEIRO'}) 
+@Entity('S009_NDOCUMENTO', { schema: 'FINANCEIRO' })
 export class ndocumentoEntity {
   @PrimaryGeneratedColumn({ name: 'NDO_ID_CODIGO', type: 'number' }) // Chave primária
   NDO_ID_CODIGO: number;
@@ -35,4 +35,3 @@ export class ndocumentoEntity {
   @Column({ name: 'NDO_TITULO', type: 'varchar2', length: 30, nullable: true })
   NDO_TITULO?: string;
 }
-

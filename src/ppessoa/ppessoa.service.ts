@@ -4,14 +4,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PPessoaEntity } from '../database/db_oracle/entities/ppessoa.entity';
 import { Repository } from 'typeorm';
 import { FindAllParams } from './ppessoa.dto';
-import { FuncionarioDto, supervisorDto } from './returnRmDto';
+import { FuncionarioDto } from './returnRmDto';
 import {
   SelecionaChefe,
   SelecionaDiretoriaGeral,
   SelecionaSubordina1,
   SelecionaSubordina2,
 } from '../util/selects/diretoria';
-import { selecionaPefilFunc } from '../util/selects/pfunc';
+import { selecionaFuncs, selecionaPefilFunc } from '../util/selects/pfunc';
 import { permissaoCargo } from '../util/enums/cargo';
 
 @Injectable()
@@ -20,7 +20,6 @@ export class PpessoaService {
     @InjectRepository(PPessoaEntity, 'oracleConnection')
     private rmRepository: Repository<PPessoaEntity>,
   ) {}
-  
 
   async find(params: FindAllParams): Promise<FuncionarioDto> {
     try {
@@ -71,6 +70,30 @@ export class PpessoaService {
     }
   }
 
+  async findFuncs(params: FindAllParams): Promise<FuncionarioDto> {
+    try {
+      let where = '';
+      const queryParams: any = {};
+
+      if (params.chapa) {
+        where += ' and A.CHAPA = :CHAPA';
+        queryParams.CHAPA = params.chapa;
+      }
+      if (params.DIR_ID_CODIGO) {
+        where += ' and E.DIR_ID_CODIGO = :DIR_ID_CODIGO';
+        queryParams.DIR_ID_CODIGO = params.DIR_ID_CODIGO;
+      }
+      if (params.REG_ID_CODIGO) {
+        where += ' and E.REG_ID_CODIGO = :REG_ID_CODIGO';
+        queryParams.REG_ID_CODIGO = params.REG_ID_CODIGO;
+      }
+      const consulta = await this.rmRepository.query(`${selecionaFuncs} ${where}`, queryParams);
+      return consulta;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   //findOne pelo codusuaril
   async findOne(chapa: string): Promise<PPessoaEntity> {
     const rm = await this.rmRepository.findOneOrFail({
@@ -88,7 +111,7 @@ export class PpessoaService {
     if (chefe.length > 0) {
       const codigo = chefe[0].CODIGO;
       switch (codigo) {
-        case '01':          
+        case '01':
           return permissaoCargo.DIRETOR_EXECUTIVO; // Diretor Executivo
         case '02':
           return permissaoCargo.DIRETOR_ADJUNTO; // Diretor Adjunto
@@ -110,8 +133,7 @@ export class PpessoaService {
       const where = `AND c.codigo NOT IN (1,2,5,7,3,4,9) AND B.CHAPA=:NCHAPA`;
       const chefeNaoCodigo = await this.rmRepository.query(`${SelecionaChefe} ${where}`, [chapa]);
 
-      if (chefeNaoCodigo.length > 0) {     
-
+      if (chefeNaoCodigo.length > 0) {
         // Verifica se é responsável Técnico
         const where = `and A.CODIGO=:SETOR`;
         const subordina2 = await this.rmRepository.query(`${SelecionaSubordina2} ${where}`, [

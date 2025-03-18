@@ -6,10 +6,9 @@ import { docpcontasnumEntity } from '../database/db_oracle/entities/docpcontasnu
 import { PpessoaModule } from 'src/ppessoa/ppessoa.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([docpcontasnumEntity], 'oracleConnection'),
-  PpessoaModule],
+  imports: [TypeOrmModule.forFeature([docpcontasnumEntity], 'oracleConnection'), PpessoaModule],
   providers: [docpcontasnumService],
   controllers: [docpcontasnumController],
-  exports: [docpcontasnumService]
+  exports: [docpcontasnumService],
 })
 export class docpcontasnumModule {}

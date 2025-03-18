@@ -4,13 +4,13 @@ import { RequisicaoEntity } from './requisicao.entity';
 import { DespesaDiariaEntity } from './despesaDiaria.entity';
 @Entity('v009_funcsalario', { schema: 'dev_itesp_diarias' })
 export class FuncSalarioEntity {
-  @PrimaryColumn({ name: 'chapa', type: 'varchar', length: 50 }) 
+  @PrimaryColumn({ name: 'chapa', type: 'varchar', length: 50 })
   chapa: string;
 
-  @Column({ name: 'codsecao', type: 'varchar', length: 50 }) 
+  @Column({ name: 'codsecao', type: 'varchar', length: 50 })
   codsecao: string;
 
-  @Column({ name: 'nome', type: 'varchar', length: 255 }) 
+  @Column({ name: 'nome', type: 'varchar', length: 255 })
   nome: string;
 
   @Column({ name: 'funcao', type: 'varchar', length: 255 })
@@ -22,7 +22,7 @@ export class FuncSalarioEntity {
   @Column({ name: 'cargo', type: 'varchar', length: 50 })
   cargo: string;
 
-  @Column({ name: 'salario', type: 'decimal', precision: 10, scale: 2 }) 
+  @Column({ name: 'salario', type: 'decimal', precision: 10, scale: 2 })
   salario: number;
 
   @Column({ name: 'setor', type: 'varchar', length: 255 })
@@ -34,14 +34,13 @@ export class FuncSalarioEntity {
   @Column({ name: 'reg_descricao', type: 'varchar', length: 255 })
   regDescricao: string;
 
-  @OneToOne(() => UsuReqEntity, (usu) => usu.funcsalario)  
-  usureq?: UsuReqEntity;  
+  @OneToOne(() => UsuReqEntity, (usu) => usu.funcsalario)
+  usureq?: UsuReqEntity;
 
-  @OneToOne(() => RequisicaoEntity, (req) => req.funcSalario) 
+  @OneToOne(() => RequisicaoEntity, (req) => req.funcSalario)
   requisicao: RequisicaoEntity;
 
   @OneToOne(() => DespesaDiariaEntity, (func) => func.funcsalario)
   @JoinColumn({ name: 'cargo', referencedColumnName: 'cargo' })
   despesaDiaria: DespesaDiariaEntity;
 }
-

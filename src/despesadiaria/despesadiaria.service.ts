@@ -33,7 +33,6 @@ export class DespesadiariaService {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  
 
   async findOne(cargo: string): Promise<CargoDto> {
     try {

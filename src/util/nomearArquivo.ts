@@ -1,6 +1,6 @@
 import { extname } from 'path';
 
-export const generateUniqueFileName = (originalName: string,SQE_ID_CODIGO: number): string => {
+export const generateUniqueFileName = (originalName: string, SQE_ID_CODIGO: number): string => {
   // Extrai a extensão do arquivo
   const fileExtension = extname(originalName);
 
@@ -23,7 +23,3 @@ export const generateUniqueFileName = (originalName: string,SQE_ID_CODIGO: numbe
   // Gera o nome único do arquivo
   return `${SQE_ID_CODIGO}_${timestamp}${fileExtension}`;
 };
-
-
-
-

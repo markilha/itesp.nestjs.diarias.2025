@@ -3,7 +3,7 @@ import { IsNotEmpty } from 'class-validator';
 
 export class PcargoDto {
   @IsNotEmpty()
-  @ApiProperty() 
+  @ApiProperty()
   codigo: string;
   @ApiProperty()
   nome: string;

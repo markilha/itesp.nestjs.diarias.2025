@@ -110,12 +110,11 @@ export class SaqueService {
   ) {}
 
   private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
-    const saque = await this.findOne(sqeIdCodigo); 
+    const saque = await this.findOne(sqeIdCodigo);
     const itensreq = await this.itensreqrecService.findOne(saque.iteIdCodigo);
     const reqnumerario = await this.reqnumerarioService.findOne(saque.iteIdCodigo);
     const reqtrans = await this.reqtransService.findOne(reqnumerario.REQ_ID_CODIGO);
     const destino = await this.destinoService.findOne(reqnumerario.REQ_ID_CODIGO);
-   
 
     const saquedto: buscarSaqueDto = {
       SQE_ID_CODIGO: saque.sqeIdCodigo,
@@ -151,7 +150,7 @@ export class SaqueService {
   }
 
   private async buscarItinerario(reqIdCodigo: number) {
-    try {      
+    try {
       return await this.itinerarioService.findUltimo(reqIdCodigo);
     } catch (error) {
       console.error('Erro ao buscar itinerário:', error);
@@ -446,15 +445,13 @@ export class SaqueService {
     }
   }
 
-
-
   //buscar prestação de conta
 
   async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto> {
     let destino: Destino | null = null;
     try {
       const consulta = await this.buscarConsulta(params.SQE_ID_CODIGO);
-      
+
       if (!consulta) {
         throw new HttpException(
           `Saque com codigo: ${params.SQE_ID_CODIGO} não encontrado`,
@@ -462,12 +459,14 @@ export class SaqueService {
         );
       }
 
-      const { itinerario, UFESP, UFESPcargoValor } = await this.buscarDadosNecessarios(consulta); 
-   
+      const { itinerario, UFESP, UFESPcargoValor } = await this.buscarDadosNecessarios(consulta);
+
       if (!itinerario && consulta.TRA_ID_CODIGO === 1) {
-        throw new HttpException('Meio de transporte veiculo sem itinerário!!!', HttpStatus.NOT_FOUND);
-      }   
-      
+        throw new HttpException(
+          'Meio de transporte veiculo sem itinerário!!!',
+          HttpStatus.NOT_FOUND,
+        );
+      }
 
       try {
         destino = verificarDestino(consulta.MUN_ID_CODIGO) as Destino;
@@ -482,8 +481,6 @@ export class SaqueService {
         consulta.SQE_DTPREST,
         consulta.SQE_VLPREST,
       );
-
-
 
       const { calcDiaraInial, calcDiaraRetorn, diariaIntegral, diariaParcial, diaraPorc } =
         await this.calcularDiarias(
@@ -592,12 +589,10 @@ export class SaqueService {
     if (user.chapa != params.chapa && !user.roles.includes(Role.SUPERVISOR)) {
       throw new HttpException('Usuário não autorizado', HttpStatus.UNAUTHORIZED);
     }
-    
 
     if (user.chapa != params.chapa && user.roles.includes(Role.SUPERVISOR)) {
       terceiro = 'S';
     }
-   
 
     try {
       if (!params.reqIdCodigo) {
@@ -610,11 +605,11 @@ export class SaqueService {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
-      const funcionario = await this.funcsalarioService.findByCodigo(params.chapa);     
+      const funcionario = await this.funcsalarioService.findByCodigo(params.chapa);
 
       const prazo = await this.saqueRepository.query(selecionaUltimoPrazo, [
         funcionario.REG_ID_CODIGO,
-      ]);      
+      ]);
 
       const where = `and A.Chapa =:NChapa and A.RRE_ID_CODIGO=:NREQ and A.TDE_ID_CODIGO=:TIPODESP AND A.IRR_RECURSO='S'`;
       const ItensReqRec = await this.saqueRepository.query(`${SelecionaItensRecurso} ${where}`, [
@@ -699,7 +694,6 @@ export class SaqueService {
       }
 
       const requisicao = await this.reqtransService.findOne(params.reqIdCodigo);
-     
 
       const ID = { type: oraccledb.NUMBER, dir: oraccledb.BIND_OUT };
 
@@ -908,13 +902,10 @@ export class SaqueService {
         RRE_SAQUE: rresaque,
       });
 
-    
       //   /*REQUISIÇÃO DE TRANSPORTE*/
       if (parametros.PAR10 === 'N' && parametros.PAR3 === '7' && parametros.PAR2 === 'S') {
         await this.reqtransService.updateStatus(requisicao.REQ_ID_CODIGO, parametros.PAR29);
       }
-
-     
 
       return { sqeIdCodigo: resultSaque.sqeIdCodigo };
     } catch (error) {
@@ -1097,7 +1088,7 @@ export class SaqueService {
         throw new Error('Saque não encontrado');
       }
       return result;
-    } catch (error) {     
+    } catch (error) {
       throw new HttpException('Saque não encontrado', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

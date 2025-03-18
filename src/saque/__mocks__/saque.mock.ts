@@ -148,7 +148,7 @@ export const mockDiariaChegada = {
   PARPERC: 20,
 };
 
-export const userMock= {
+export const userMock = {
   sub: 26878,
   login: 'AISOUZA',
   chapa: '000081',

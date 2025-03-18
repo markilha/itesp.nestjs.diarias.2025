@@ -1,8 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('S009_PCONTAS',{schema: 'FINANCEIRO'}) 
+@Entity('S009_PCONTAS', { schema: 'FINANCEIRO' })
 export class pcontasEntity {
-  
   @PrimaryGeneratedColumn({ name: 'PCO_ID_CODIGO', type: 'number' })
   PCO_ID_CODIGO: number;
 

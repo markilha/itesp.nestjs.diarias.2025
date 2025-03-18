@@ -8,7 +8,6 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
 import { paramsItemRecurso } from './itensreq.Dto';
 
-
 @ApiTags('itensreqrec')
 @UseGuards(AuthGuard)
 @Controller('itensreqrec')
@@ -33,8 +32,11 @@ export class itensreqrecController {
   @ApiResponse({ status: 200, description: 'Retorna os itens recurso do funcionario' })
   @ApiResponse({ status: 404, description: 'Item não encontrado' })
   @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
-  async selecionaSaquePendente(@CurrentUser() user: AuthUserDto, @Query() params: paramsItemRecurso): Promise<any> {
-    if (!params.CHAPA){
+  async selecionaSaquePendente(
+    @CurrentUser() user: AuthUserDto,
+    @Query() params: paramsItemRecurso,
+  ): Promise<any> {
+    if (!params.CHAPA) {
       params.CHAPA = user.chapa;
     }
     return await this.itensreqrecService.selecionaItensRecurso(params, user);

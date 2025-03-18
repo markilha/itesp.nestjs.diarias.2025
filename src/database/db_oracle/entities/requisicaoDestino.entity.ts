@@ -4,7 +4,6 @@ import { MunicipiosDetranEntity } from './municipiosDetran.entity';
 
 @Entity('S001_DESTINO', { schema: 'TRANSPORTE' }) // Substitua 'TRANSPORTE' pelo nome correto do schema se necessário
 export class RequisicaoDestinoEntity {
-
   @PrimaryColumn({ name: 'DES_ID_CODIGO', type: 'number' })
   desIdCodigo: number;
 
@@ -20,7 +19,7 @@ export class RequisicaoDestinoEntity {
   @Column({ name: 'DES_OBSERVA', type: 'varchar2', length: 1000, nullable: true })
   desObserva: string;
 
-  @OneToOne(() => RequisicaoEntity, (requi) => requi.destino)  
+  @OneToOne(() => RequisicaoEntity, (requi) => requi.destino)
   requisicao: RequisicaoEntity;
 
   @OneToOne(() => MunicipiosDetranEntity, (muni) => muni.destino)

@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
 
-@Entity('V009_ITENSREQREC', { schema: 'FINANCEIRO' }) 
+@Entity('V009_ITENSREQREC', { schema: 'FINANCEIRO' })
 export class itensreqrecEntity {
   @PrimaryColumn({ name: 'ITE_ID_CODIGO', type: 'number' })
   ITE_ID_CODIGO: number;

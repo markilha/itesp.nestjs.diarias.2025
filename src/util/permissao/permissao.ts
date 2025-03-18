@@ -2,13 +2,9 @@ import { permissaoCargo } from '../enums/cargo';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-
 export const permissaoFind = [
   {
-    roles: [      
-      permissaoCargo.TESOURARIA_INTERIOR,
-      permissaoCargo.FINANCEIRO_TESOURARIA,
-    ],
+    roles: [permissaoCargo.TESOURARIA_INTERIOR, permissaoCargo.FINANCEIRO_TESOURARIA],
     secao: 15,
   },
   {
@@ -20,11 +16,11 @@ export const permissaoFind = [
     secao: 3,
   },
 ];
-export const permissaoFindAll = (permissao: number) => {  
-  const permissaoFindAllSaqueSecao = permissaoFind.find((p) => p.roles.includes(permissao));  
+export const permissaoFindAll = (permissao: number) => {
+  const permissaoFindAllSaqueSecao = permissaoFind.find((p) => p.roles.includes(permissao));
   if (!permissaoFindAllSaqueSecao) {
     return null;
-  }  
+  }
   return permissaoFindAllSaqueSecao.secao;
 };
 

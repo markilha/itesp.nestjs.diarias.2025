@@ -42,7 +42,7 @@ export class FindAllParams {
   limit: number;
 }
 
-export class upadteJustificativaDto { 
+export class upadteJustificativaDto {
   @ApiProperty()
   SQE_ID_CODIGO: number;
   @ApiProperty()
@@ -61,5 +61,5 @@ export class updateDto {
   @ApiProperty()
   RRE_JUSTIFICATIVA: string;
   @ApiProperty()
-  RRE_SAQUE: number;  
+  RRE_SAQUE: number;
 }

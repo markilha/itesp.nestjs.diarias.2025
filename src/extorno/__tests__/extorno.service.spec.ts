@@ -25,7 +25,6 @@ const mockRegistro: extornoEntity = {
 describe('ExtornoService', () => {
   let service: extornoService;
   let extornoRepository: Repository<extornoEntity>;
-  
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -48,7 +47,6 @@ describe('ExtornoService', () => {
             create: jest.fn().mockReturnValue(mockRegistro),
             save: jest.fn().mockReturnValue(mockRegistro),
             merge: jest.fn().mockReturnValue(mockRegistro),
-
           },
         },
         SaqueService,
@@ -111,7 +109,6 @@ describe('ExtornoService', () => {
       expect(result).toEqual(mockRegistro);
       expect(extornoRepository.createQueryBuilder().getOne).toHaveBeenCalled();
     });
-   
   });
 
   describe('findOne', () => {
@@ -129,13 +126,12 @@ describe('ExtornoService', () => {
 
     it('deve retornar um registro quando encontrar no banco', async () => {
       setupFindOneTest(mockRegistro);
-      const result = await service.findOne(1,2);
+      const result = await service.findOne(1, 2);
       expect(result).toEqual(mockRegistro);
       expect(extornoRepository.createQueryBuilder().getOne).toHaveBeenCalled();
     });
-   
   });
- 
+
   describe('create', () => {
     it('deve retornar um extorno', async () => {
       const result = await service.create(mockRegistro);
@@ -145,33 +141,38 @@ describe('ExtornoService', () => {
     });
 
     it('deve lançar uma HttpException salvar', async () => {
-         jest.spyOn(extornoRepository, 'save').mockRejectedValue(new Error(`${ErrorMessages.INTERNAL_ERROR}: create extorno`));         
-         await expect(service.create(null)).rejects.toThrow(
-           new HttpException(`Erro ao criar extorno`, HttpStatus.INTERNAL_SERVER_ERROR),
-         );
-       });
+      jest
+        .spyOn(extornoRepository, 'save')
+        .mockRejectedValue(new Error(`${ErrorMessages.INTERNAL_ERROR}: create extorno`));
+      await expect(service.create(null)).rejects.toThrow(
+        new HttpException(`Erro ao criar extorno`, HttpStatus.INTERNAL_SERVER_ERROR),
+      );
+    });
   });
 
   describe('update', () => {
     it('deve retornar um extorno', async () => {
       // Mock da resposta do método findOne
-      jest.spyOn(service, 'findOne').mockResolvedValue(mockRegistro);  
+      jest.spyOn(service, 'findOne').mockResolvedValue(mockRegistro);
       // Mock da resposta do método save
-      jest.spyOn(extornoRepository, 'save').mockResolvedValue(mockRegistro);  
+      jest.spyOn(extornoRepository, 'save').mockResolvedValue(mockRegistro);
       // Chamando o método update
       const result = await service.update(mockRegistro);
-  
+
       // Validando os resultados
       expect(result).toEqual(mockRegistro);
       expect(service.findOne).toHaveBeenCalledTimes(1);
       expect(extornoRepository.merge).toHaveBeenCalledTimes(1);
       expect(extornoRepository.save).toHaveBeenCalledTimes(1);
     });
-  
-    it('deve retornar uma exceção ao falhar ao salvar', async () => {     
-      jest.spyOn(extornoRepository, 'save').mockRejectedValueOnce(new Error('Erro ao Atualizar extorno')); 
-      await expect(service.update(mockEntityExtorno[0])).rejects.toThrow('Erro ao Atualizar extorno');
+
+    it('deve retornar uma exceção ao falhar ao salvar', async () => {
+      jest
+        .spyOn(extornoRepository, 'save')
+        .mockRejectedValueOnce(new Error('Erro ao Atualizar extorno'));
+      await expect(service.update(mockEntityExtorno[0])).rejects.toThrow(
+        'Erro ao Atualizar extorno',
+      );
     });
   });
-  
 });

@@ -2,7 +2,7 @@ import { PFuncEntity } from 'src/database/db_mysql/entities/pfunc.entity';
 
 export class returnFuncDto {
   NOME: string;
-  DTNASCIMENTO: Date;  
+  DTNASCIMENTO: Date;
   CHAPA: string;
   CODSECAO: string;
   CODFUNCAO: string;
@@ -15,7 +15,7 @@ export class returnFuncDto {
   constructor(func: Partial<PFuncEntity>) {
     this.NOME = func.NOME;
     this.DTNASCIMENTO = func.DTNASCIMENTO;
-    this.CHAPA = func.CHAPA;   
+    this.CHAPA = func.CHAPA;
     this.CODSECAO = func.CODSECAO;
     this.CODFUNCAO = func.CODFUNCAO;
     this.JORNADA = func.JORNADA;
@@ -26,9 +26,9 @@ export class returnFuncDto {
   }
 }
 
-export interface FuncParams{
-    NOME: string;
-    CHAPA: string;
-    page: number;
-    limit: number;
+export interface FuncParams {
+  NOME: string;
+  CHAPA: string;
+  page: number;
+  limit: number;
 }

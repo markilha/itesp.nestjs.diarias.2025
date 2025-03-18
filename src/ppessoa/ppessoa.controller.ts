@@ -12,16 +12,23 @@ import { AuthUserDto } from 'src/auth/use.auth.Dto';
 @Controller('ppessoa')
 export class PpessoaController {
   constructor(private readonly rmService: PpessoaService) {}
-
   @Get()
   @ApiOperation({ summary: 'Busca info de funcionário' })
   @ApiResponse({ status: 200, description: 'Retorna info de funcionário', type: FuncionarioDto })
   @ApiResponse({ status: 404, description: 'Funcionário não encontrado!!!' })
   @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
-  async findAll(@CurrentUser() user: AuthUserDto,@Query() params: FindAllParams): Promise<FuncionarioDto> {
-    if(!params.chapa){
+  async findAll(
+    @CurrentUser() user: AuthUserDto,
+    @Query() params: FindAllParams,
+  ): Promise<FuncionarioDto> {
+    if (!params.chapa) {
       params.chapa = user.chapa;
-    }  
+    }
     return await this.rmService.find(params);
+  }
+
+  @Get('funcs')
+  async findPrestacao(@Query() params: FindAllParams): Promise<any> {
+    return await this.rmService.findFuncs(params);
   }
 }

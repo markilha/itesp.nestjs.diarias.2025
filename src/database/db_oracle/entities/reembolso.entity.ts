@@ -28,5 +28,4 @@ export class reembolsoEntity {
   constructor(item?: Partial<reembolsoEntity>) {
     Object.assign(this, item);
   }
-
 }

@@ -1,10 +1,8 @@
 import { Entity, PrimaryColumn, Column, OneToOne } from 'typeorm';
 import { RequisicaoDestinoEntity } from './requisicaoDestino.entity';
 
-
 @Entity('s001_munic_detran', { schema: 'dev_itesp_diarias' }) // Substitua 'TRANSPORTE' pelo nome correto do schema se necessário
 export class MunicipiosDetranEntity {
-
   @PrimaryColumn({ name: 'MUN_ID_CODIGO', type: 'int' })
   munIdCodigo: number;
 
@@ -22,6 +20,4 @@ export class MunicipiosDetranEntity {
 
   @OneToOne(() => RequisicaoDestinoEntity, (muni) => muni.municipio)
   destino: RequisicaoDestinoEntity;
-
-
 }

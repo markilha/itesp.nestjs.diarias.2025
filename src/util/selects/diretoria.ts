@@ -3,8 +3,7 @@ Select  a.DIR_ID_CODIGO, a.codigo, a.DESCRICAO,  a.CHAPACHEFE
 from Financeiro.V009_DiretoriaGeral A
 `;
 
-export const SelecionaSubordina1 =
- `SELECT 
+export const SelecionaSubordina1 = `SELECT 
     A.CODCOLIGADA, 
     A.CODIGO, 
     A.DESCRICAO, 
@@ -77,11 +76,11 @@ FROM
     FINANCEIRO.V009_Setorregional A
 WHERE 
     A.CODIGO = :setor
-`    
+`;
 export const SelecionaSecao = `
 Select * from RM.PSecao
 where (Length (CODIGO) = 18) order by descricao
-`
+`;
 
 export const SelecionaChefe = `
 SELECT  
@@ -101,4 +100,4 @@ WHERE
     A.CHAPASUBST = B.CHAPA 
     AND B.CODFUNCAO = C.CODIGO 
     AND A.DATAFIM > SYSDATE
-`
+`;

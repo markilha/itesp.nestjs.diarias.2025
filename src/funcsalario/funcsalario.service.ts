@@ -1,22 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { FuncSalarioEntity } from '../database/db_oracle/entities/funcsalario.entity';
 import { FindAllParams } from './funcsalarioDto';
-import { SaquesMesService } from '../saques-mes/saques-mes.service';
-
-
 
 @Injectable()
 export class FuncsalarioService {
   constructor(
     @InjectRepository(FuncSalarioEntity, 'oracleConnection')
-    private funcSalarioRepository: Repository<FuncSalarioEntity>   
+    private funcSalarioRepository: Repository<FuncSalarioEntity>,
   ) {}
 
   async findAll(params: FindAllParams): Promise<FuncSalarioEntity[]> {
     const searchParams: FindOptionsWhere<FuncSalarioEntity> = {};
-  
+
     if (params.nome) {
       searchParams['nome'] = ILike(`%${params.nome}%`);
     }
@@ -43,11 +40,13 @@ export class FuncsalarioService {
   }
 
   async findByCodigo(chapa: string): Promise<any> {
-   
-    const pfuncao = await this.funcSalarioRepository.query(`
+    const pfuncao = await this.funcSalarioRepository.query(
+      `
     Select * From FINANCEIRO.V009_FUNCSALARIO Where Chapa = :chapa
-      `,[chapa]);    
-       
+      `,
+      [chapa],
+    );
+
     if (pfuncao?.length === 0) {
       const outros = await this.findOutros(chapa);
       if (outros.length > 0) {
@@ -73,6 +72,4 @@ export class FuncsalarioService {
     );
     return funcs;
   }
-
- 
 }

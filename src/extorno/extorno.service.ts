@@ -20,7 +20,6 @@ import { verificaAutorizacao } from '../util/permissao/permissao';
 import { getPaginatedQuery } from '../util/paginacao/paginaQuery';
 import { ErrorMessages } from '../components/error/error.constants';
 
-
 @Injectable()
 export class extornoService {
   constructor(
@@ -72,7 +71,7 @@ export class extornoService {
     try {
       const result = await this.extornoRepository
         .createQueryBuilder('r')
-        .where('r.SQE_ID_CODIGO = :codigo', { codigo: SQE_ID_CODIGO })      
+        .where('r.SQE_ID_CODIGO = :codigo', { codigo: SQE_ID_CODIGO })
         .getOne();
 
       if (!result) {
@@ -114,7 +113,7 @@ export class extornoService {
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
-      }     
+      }
       throw new HttpException('Erro interno do servidor', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -138,7 +137,7 @@ export class extornoService {
       const result = this.extornoRepository.merge(newExtorno, ex);
 
       return await this.extornoRepository.save(result);
-    } catch (error) {     
+    } catch (error) {
       throw new HttpException(`Erro ao Atualizar extorno`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

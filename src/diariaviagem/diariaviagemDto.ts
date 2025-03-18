@@ -59,7 +59,7 @@ export class DiariaviagemDto {
     this.REQ_HSAIDA = item.REQ_HSAIDA;
     this.REQ_DTRET = item.REQ_DTRET;
     this.REQ_HRET = item.REQ_HRET;
-    this.REQ_KM = item.REQ_KM;  
+    this.REQ_KM = item.REQ_KM;
     this.REQ_INTEGRAL = item.REQ_INTEGRAL;
     this.REQ_PARCIAL = item.REQ_PARCIAL;
     this.REQ_ESPECIAL = item.REQ_ESPECIAL;
@@ -68,10 +68,6 @@ export class DiariaviagemDto {
     this.REQ_GOVERNADOR = item.REQ_GOVERNADOR;
   }
 }
-
-
-
-
 
 export class FindAllParams {
   CHAPA?: string;

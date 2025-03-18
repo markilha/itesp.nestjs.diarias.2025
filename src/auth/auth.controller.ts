@@ -13,8 +13,8 @@ export class AuthController {
   }
 
   @Get('forgot-password')
-  async forgotPassword(@Query('email') email: string) { 
-   // await this.authService.sendPasswordResetEmail(email, resetToken);
-    return  await this.authService.createPasswordResetToken(email);
+  async forgotPassword(@Query('email') email: string) {
+    // await this.authService.sendPasswordResetEmail(email, resetToken);
+    return await this.authService.createPasswordResetToken(email);
   }
 }

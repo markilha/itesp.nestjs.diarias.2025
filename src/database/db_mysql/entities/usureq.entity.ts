@@ -1,4 +1,4 @@
-import { Entity,  JoinColumn,  OneToOne,  PrimaryColumn } from 'typeorm';
+import { Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 
 import { Requisicao_Entity } from './requisicao_.entity';
 import { FuncSalarioEntity } from './funcsalario.entity';
@@ -9,7 +9,6 @@ export class UsuReqEntity {
   @PrimaryColumn({ name: 'REQ_ID_CODIGO', type: 'int' })
   REQ_ID_CODIGO: number;
 
-
   @PrimaryColumn({ name: 'CHAPA', type: 'varchar', length: 16 })
   CHAPA: string;
 
@@ -18,15 +17,13 @@ export class UsuReqEntity {
 
   @OneToOne(() => Requisicao_Entity, (req) => req.usureq)
   @JoinColumn({ name: 'REQ_ID_CODIGO', referencedColumnName: 'reqIdCodigo' })
-  requisicao?: Requisicao_Entity; 
+  requisicao?: Requisicao_Entity;
 
   @OneToOne(() => FuncSalarioEntity, (req) => req.requisicao)
   @JoinColumn({ name: 'CHAPA', referencedColumnName: 'chapa' })
-  funcsalario?: FuncSalarioEntity; 
+  funcsalario?: FuncSalarioEntity;
 
   @OneToOne(() => RequisicaoDestinoEntity, (req) => req.requisicao)
   @JoinColumn({ name: 'REQ_ID_CODIGO', referencedColumnName: 'reqIdCodigo' })
-  destino?: RequisicaoDestinoEntity; 
-
-
+  destino?: RequisicaoDestinoEntity;
 }

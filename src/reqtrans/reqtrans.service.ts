@@ -24,7 +24,7 @@ export class reqtransService {
       if (params.REQ_ID_CODIGO) {
         searchParams.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
       }
- const queryBuilder = this.reqtransRepository
+      const queryBuilder = this.reqtransRepository
         .createQueryBuilder('r')
         .select([
           'r.REQ_ID_CODIGO as REQ_ID_CODIGO',
@@ -45,16 +45,13 @@ export class reqtransService {
           'r.REQ_PARCIAL  as REQ_PARCIAL',
           'r.REQ_ESPECIAL as REQ_ESPECIAL',
           'r.REQ_PACOTE as REQ_PACOTE',
-          'r.REQ_GOVERNADOR as REQ_GOVERNADOR',       
-         
+          'r.REQ_GOVERNADOR as REQ_GOVERNADOR',
         ])
         .where(searchParams);
       const paginatedQuery = getPaginatedQuery(queryBuilder, startRow, endRow);
       const parameters = Object.values(queryBuilder.getParameters());
       const result = await this.reqtransRepository.query(paginatedQuery, parameters);
       return result;
-
-      
     } catch (error) {
       throw new HttpException('Erro ao buscar as requisições', HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -64,14 +61,13 @@ export class reqtransService {
     try {
       const newreqtrans = await this.reqtransRepository.save(reqtrans);
       return new reqtransDto(newreqtrans);
-    } catch (error) {     
+    } catch (error) {
       throw new HttpException('Erro ao criar o requisicao', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   async findOne(REQ_ID_CODIGO: number) {
     try {
-           
       const item = await this.reqtransRepository.query(
         `SELECT 
         r.*,
@@ -82,16 +78,16 @@ export class reqtransService {
         LEFT JOIN TRANSPORTE.S001_TRANSMEIO t ON t.TRA_ID_CODIGO = r.TRA_ID_CODIGO                   
         WHERE r.REQ_ID_CODIGO = :REQ_ID_CODIGO`,
         [REQ_ID_CODIGO],
-      );  
+      );
       if (!item || item.length === 0) {
         throw new HttpException(
           `Requisicao com código: ${REQ_ID_CODIGO} não encontrada`,
           HttpStatus.NOT_FOUND,
         );
-      }  
+      }
       return item[0];
-    } catch (error) {     
-      throw new HttpException(        
+    } catch (error) {
+      throw new HttpException(
         `Erro ao buscar o Requisicao com código: ${REQ_ID_CODIGO}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -115,7 +111,7 @@ export class reqtransService {
 
   async updateStatus(reqIdCodigo: number, status: string): Promise<boolean> {
     try {
-      await this.findOne(reqIdCodigo);   
+      await this.findOne(reqIdCodigo);
 
       await this.reqtransRepository.query(
         `UPDATE TRANSPORTE.S001_REQUISICAO SET
@@ -152,5 +148,4 @@ export class reqtransService {
     result.REQ_STATUS = params.REQ_STATUS;
     return this.reqtransRepository.save(result);
   }
-
 }

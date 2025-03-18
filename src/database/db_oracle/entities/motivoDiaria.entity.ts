@@ -1,8 +1,7 @@
 import { Entity, PrimaryColumn, Column } from 'typeorm';
 
-@Entity('S009_MOTIVODIARIA',{schema: 'FINANCEIRO'})
+@Entity('S009_MOTIVODIARIA', { schema: 'FINANCEIRO' })
 export class MotivodiariaEntity {
-
   @PrimaryColumn({ name: 'MDI_ID_CODIGO', type: 'number', precision: 10, scale: 0 })
   MDI_ID_CODIGO: number;
 

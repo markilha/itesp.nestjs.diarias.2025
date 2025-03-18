@@ -36,7 +36,7 @@ export class PcargoController {
 
   @Post('create')
   async create(@Body() pcargoDto: PcargoDtoCreate): Promise<PcargoDto> {
-    return await this.pcargoService.create(pcargoDto);    
+    return await this.pcargoService.create(pcargoDto);
   }
 
   @Get('codigo')
@@ -55,7 +55,7 @@ export class PcargoController {
   }
   //delete
   @Delete(':id')
-  async delete(@Param('id') id: string){   
+  async delete(@Param('id') id: string) {
     return await this.pcargoService.delete(id);
   }
 }

@@ -1,14 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { UfespService } from './ufesp.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { FindAllParams, UfespDto } from './ufespDto';
@@ -31,14 +21,10 @@ export class UfespController {
   }
   @ApiExcludeEndpoint()
   @Put(':id')
-  async update(
-    @Param('id') id: number,
-    @Body() updateUferpsvalorDto: UfespDto,
-  ): Promise<UfespDto> {
+  async update(@Param('id') id: number, @Body() updateUferpsvalorDto: UfespDto): Promise<UfespDto> {
     return this.ufespService.update(updateUferpsvalorDto);
   }
   @ApiExcludeEndpoint()
-
   @Delete(':id')
   async remove(@Param('id') id: number): Promise<void> {
     return this.ufespService.remove(id);

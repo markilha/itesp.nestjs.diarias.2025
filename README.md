@@ -1,5 +1,7 @@
 # Documentação da API
+
 # API - Listagem das requisições
+
 ## Descrição
 
 Essa API permite buscar requisições de usuários filtrando pelos parâmetros de `reqIdCodigo` e `chapa`, além de possibilitar paginação e ordenação dos resultados.

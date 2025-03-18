@@ -4,4 +4,3 @@ export function preencherZeros(valor: string | number | null | undefined, casas:
   }
   return valor.toString().padStart(casas, '0');
 }
-

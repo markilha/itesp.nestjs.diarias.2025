@@ -2,7 +2,6 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity('S001_ITINERARIO', { schema: 'TRANSPORTE' })
 export class ItinerarioEntity {
-
   @PrimaryColumn({ name: 'ITI_ID_CODIGO', type: 'number', precision: 10, scale: 0 })
   ITI_ID_CODIGO: number;
 

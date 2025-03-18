@@ -15,9 +15,9 @@ export const ufespData: UfespDto = {
 };
 
 export const updateData: UfespDto = {
-    ufeIdCodigo: 20,
-    tdeIdCodigo: 7,
-    ufeValor: 35.36,
-    ufeDtInicio: new Date('2024-01-01'),
-    ufeDtFinal: new Date('2024-12-31'),
-  };
+  ufeIdCodigo: 20,
+  tdeIdCodigo: 7,
+  ufeValor: 35.36,
+  ufeDtInicio: new Date('2024-01-01'),
+  ufeDtFinal: new Date('2024-12-31'),
+};

@@ -33,7 +33,7 @@ export class documentosController {
   @Delete()
   @ApiOperation({ summary: 'Deleta um documento' })
   @ApiResponse({ status: 200, description: 'Documento deletado com sucesso' })
-  async delete(@Query('SQE_ID_CODIGO') SQE_ID_CODIGO: number){   
+  async delete(@Query('SQE_ID_CODIGO') SQE_ID_CODIGO: number) {
     await this.documentosService.deleteBySQE_ID_CODIGO(SQE_ID_CODIGO);
     return { message: 'Documento deletado com sucesso' };
   }

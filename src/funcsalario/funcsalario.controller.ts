@@ -12,15 +12,14 @@ import { AuthUserDto } from 'src/auth/use.auth.Dto';
 @UseGuards(AuthGuard)
 export class FuncsalarioController {
   constructor(private readonly funcSalarioService: FuncsalarioService) {}
-  
-  @Get() 
-  async findAll(@Query() params: FindAllParams): Promise<FuncSalarioDto[]> { 
+
+  @Get()
+  async findAll(@Query() params: FindAllParams): Promise<FuncSalarioDto[]> {
     return await this.funcSalarioService.findAll(params);
   }
 
   @Get(':chapa')
-  async findByCodigo(@Param('chapa') chapa: string): Promise<FuncSalarioDto>  {    
+  async findByCodigo(@Param('chapa') chapa: string): Promise<FuncSalarioDto> {
     return await this.funcSalarioService.findByCodigo(chapa);
-  } 
-
+  }
 }

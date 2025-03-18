@@ -1,19 +1,16 @@
 import { isValid, parse } from 'date-fns';
 
-
 export class DataUtils {
-
-  
-static formatarDataParaOracle(data: string): string {
-  const [dia, mes, ano] = data.split('/');
-  return `${dia}/${mes}/${ano} 00:00:00`; // Inclua horário padrão
-}
+  static formatarDataParaOracle(data: string): string {
+    const [dia, mes, ano] = data.split('/');
+    return `${dia}/${mes}/${ano} 00:00:00`; // Inclua horário padrão
+  }
   // static converterStringParaData(dataString: string): Date {
   //   if (!dataString || dataString.trim() === '') {
   //     return;
   //   }
-  //   try {      
-      
+  //   try {
+
   //     // Tentar primeiro com o formato completo com hora
   //     let dataConvertida = parse(dataString, 'dd/MM/yyyy HH:mm:ss', new Date());
 
@@ -24,7 +21,7 @@ static formatarDataParaOracle(data: string): string {
 
   //     if (!isValid(dataConvertida)) {
   //       dataConvertida = parse(dataString, 'dd/MM/yyyy', new Date());
-  //     }  
+  //     }
 
   //     if (!isValid(dataConvertida)) {
   //       dataConvertida = parse(dataString, 'yyyy-MM-dd', new Date());
@@ -36,7 +33,7 @@ static formatarDataParaOracle(data: string): string {
   //     }
 
   //     return dataConvertida;
-  //   } catch (error) {      
+  //   } catch (error) {
   //     throw new Error(`${error.message} : ${dataString}`);
   //   }
   // }
@@ -47,13 +44,13 @@ static formatarDataParaOracle(data: string): string {
     }
 
     const formatos = [
-      'd/M/yyyy HH:mm:ss',      // Suporta formatos como 7/4/2003 16:34:37
-      'dd/MM/yy HH:mm:ss',      // Suporta formatos como 31/10/03 15:50:30
-      'dd/MM/yyyy HH:mm:ss',    // Formato completo
-      'd/M/yyyy',               // Para datas como 7/4/2003
-      'dd/MM/yy',               // Para datas como 31/10/03
-      'dd/MM/yyyy',             // Formato completo sem hora
-      'yyyy-MM-dd',             // Formato de data com ano primeiro
+      'd/M/yyyy HH:mm:ss', // Suporta formatos como 7/4/2003 16:34:37
+      'dd/MM/yy HH:mm:ss', // Suporta formatos como 31/10/03 15:50:30
+      'dd/MM/yyyy HH:mm:ss', // Formato completo
+      'd/M/yyyy', // Para datas como 7/4/2003
+      'dd/MM/yy', // Para datas como 31/10/03
+      'dd/MM/yyyy', // Formato completo sem hora
+      'yyyy-MM-dd', // Formato de data com ano primeiro
     ];
 
     for (const formato of formatos) {
@@ -67,10 +64,9 @@ static formatarDataParaOracle(data: string): string {
     return null;
   }
   static normalizarData(data: Date): Date {
-   // return new Date(data.getFullYear(), data.getMonth(), data.getDate());
-   return new Date(Date.UTC(data.getFullYear(), data.getMonth(), data.getDate()));
+    // return new Date(data.getFullYear(), data.getMonth(), data.getDate());
+    return new Date(Date.UTC(data.getFullYear(), data.getMonth(), data.getDate()));
   }
-
 
   static converterFormatoDataHora(dataString: string, horaString: string) {
     let dataFormada = null;
@@ -85,7 +81,7 @@ static formatarDataParaOracle(data: string): string {
       result = `${dataFormada} ${horaString}`;
     } else {
       result = `${dataString.includes(' ') ? dataString.split(' ')[0] : dataString} ${formatarHora(horaString)}`;
-    } 
+    }
     return result;
   }
 
@@ -216,7 +212,7 @@ static formatarDataParaOracle(data: string): string {
 
     return `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
   }
-  static formatDateAtual(){
+  static formatDateAtual() {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -225,9 +221,9 @@ static formatarDataParaOracle(data: string): string {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
     const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
-    
+
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
-  };
+  }
 
   static criarDataFormatada(): Date {
     const now = new Date();
@@ -250,5 +246,3 @@ function isValidDateString(dateStr) {
   if (!formatoData) return false;
   return true;
 }
-
-

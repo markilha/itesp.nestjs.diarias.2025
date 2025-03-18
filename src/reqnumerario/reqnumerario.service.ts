@@ -12,7 +12,7 @@ export class ReqnumerarioService {
     @InjectRepository(ReqNumerarioEntity, 'oracleConnection')
     private readonly renumerarioRepository: Repository<ReqNumerarioEntity>,
   ) {}
-  
+
   async findAll(params: FindAllParams): Promise<ReqnumerarioDto[]> {
     try {
       const pageNumber = params.page ?? 1;
@@ -50,7 +50,7 @@ export class ReqnumerarioService {
           'r.RNU_GOVERNADOR as RNU_GOVERNADOR',
           'r.RNU_VLINTEGRAL as RNU_VLINTEGRAL',
           'r.RNU_VLPARCIAL as RNU_VLPARCIAL',
-          'r.RNU_VLBASE as RNU_VLBASE' 
+          'r.RNU_VLBASE as RNU_VLBASE',
         ])
         .where(searchParams);
 

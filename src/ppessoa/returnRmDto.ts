@@ -99,7 +99,6 @@ export class FuncionarioDto {
   @ApiProperty()
   PERMISSAO: number;
 
-
   constructor(item?: any) {
     this.NOME = item?.NOME;
     this.CPF = item?.CPF;

@@ -3,7 +3,6 @@ import { RequisicaoDestinoEntity } from './requisicaoDestino.entity';
 
 @Entity('S001_MUNIC_DETRAN', { schema: 'TRANSPORTE' }) // Substitua 'TRANSPORTE' pelo nome correto do schema se necessário
 export class MunicipiosDetranEntity {
-
   @PrimaryColumn({ name: 'MUN_ID_CODIGO', type: 'number' })
   munIdCodigo: number;
 

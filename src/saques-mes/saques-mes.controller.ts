@@ -3,7 +3,7 @@ import { SaquesMesService } from './saques-mes.service';
 import {
   ExtratoDto,
   FindAllParams,
-  FindParamsExtrato, 
+  FindParamsExtrato,
   FindPgParams,
   infoPagamentoDto,
   ReturnExtrato,
@@ -71,7 +71,7 @@ export class SaquesMesController {
   @ApiResponse({ status: 200, description: 'Listagem de extrato', type: ReturnExtrato })
   async findExtrato(
     @CurrentUser() user: AuthUserDto,
-    @Query() params:FindParamsExtrato,
+    @Query() params: FindParamsExtrato,
   ): Promise<ReturnExtrato> {
     if (!params.chapa) {
       params.chapa = user.chapa;

@@ -18,7 +18,6 @@ import { PpessoaModule } from 'src/ppessoa/ppessoa.module';
     ItinirarioModule,
     naotrabModule,
     PpessoaModule,
-   
   ],
   controllers: [S001RequisicaoController],
   providers: [S001RequisicaoService],

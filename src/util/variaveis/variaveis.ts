@@ -1,3 +1,3 @@
 export const IDSISTEMA = {
-  id_sistema: 11  
+  id_sistema: 11,
 };

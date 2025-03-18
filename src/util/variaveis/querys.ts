@@ -1,4 +1,4 @@
-import { permissaoCargo } from "../enums/cargo";
+import { permissaoCargo } from '../enums/cargo';
 
 export const queryPrestacao = `
 SELECT
@@ -48,7 +48,7 @@ export function querySaque(
   filterConditions: string[] = [],
   orderByField: string,
   orderDirection: string,
-  paginacao: boolean
+  paginacao: boolean,
 ) {
   const whereClause = filterConditions.length > 0 ? `WHERE ${filterConditions.join(' AND ')}` : '';
   const baseQuery = `
@@ -110,28 +110,26 @@ export function querySaque(
 //       a.SQE_DTSAQUE as SQE_DTSAQUE,
 //       a.SQE_VLSAQUE as SQE_VLSAQUE,
 //       a.SQE_DTPREST ,
-//       a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,     
+//       a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,
 //       b.CHAPA as CHAPA,
-//       b.NOME as NOME,   
-//       b.CODSECAO as CODSECAO,  
+//       b.NOME as NOME,
+//       b.CODSECAO as CODSECAO,
 //       b.TDE_DESCRICAO as TDE_DESCRICAO,
 //       b.STS_DESCRICAO as STS_DESCRICAO,
 //       b.PRA_ATIVO as PRA_ATIVO,
 //       c.REQ_ID_CODIGO as REQ_ID_CODIGO,
-//       d.REQ_STATUS as REQ_STATUS    
+//       d.REQ_STATUS as REQ_STATUS
 //     FROM FINANCEIRO.s009_saque a
-//       INNER JOIN FINANCEIRO.V009_ITENSREQREC b ON a.ITE_ID_CODIGO = b.ITE_ID_CODIGO 
+//       INNER JOIN FINANCEIRO.V009_ITENSREQREC b ON a.ITE_ID_CODIGO = b.ITE_ID_CODIGO
 //       INNER JOIN FINANCEIRO.s009_reqnumerario c ON a.SQE_ID_CODIGO = c.SQE_ID_CODIGO
-//       INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO      
-//      ${whereClause}      
+//       INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO
+//      ${whereClause}
 //      AND d.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')
 //     ORDER BY ${orderByField} ${orderDirection}
 //     ${pag}
-    
+
 //     `;
 // }
-
-
 
 export function querySaqueCount(filterConditions: string[] = []) {
   const whereClause = filterConditions.length > 0 ? `WHERE ${filterConditions.join(' AND ')}` : '';
@@ -144,4 +142,3 @@ export function querySaqueCount(filterConditions: string[] = []) {
     ${whereClause}
     `;
 }
-

@@ -1,10 +1,7 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm';
 
-
-
 @Entity('PCARGO', { schema: 'RM' })
 export class PcargoEntity {
-  
   @PrimaryColumn({ type: 'number', name: 'CODCOLIGADA', precision: 5, scale: 0 })
   codColigada: number;
 
@@ -46,5 +43,4 @@ export class PcargoEntity {
 
   @Column({ type: 'varchar2', name: 'SIGLA', length: 30, nullable: true })
   sigla: string;
-
 }
