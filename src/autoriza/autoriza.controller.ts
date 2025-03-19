@@ -12,7 +12,7 @@ export class autorizaController {
   constructor(private readonly autorizaService: autorizaService) {}
 
   @Get()
-  async findAll(@Query() params: FindAllParams): Promise<any[]> {
+  async findAll(@Query() params: FindAllParams): Promise<{ data: any[]; total: number }> {
     return await this.autorizaService.findAll(params);
   }
 }

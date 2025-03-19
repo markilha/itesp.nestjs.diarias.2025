@@ -12,4 +12,6 @@ export class FindAllParams {
   DIR_ID_CODIGO?: number;
   @ApiProperty()
   REG_ID_CODIGO?: number;
+  @ApiProperty()
+  NOME?: string;
 }

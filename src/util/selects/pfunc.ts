@@ -50,10 +50,10 @@ export const selecionaPefilFunc = `
 
 export const selecionaFuncs = `
  SELECT DISTINCT
+  UPPER(C.NOME) as NOME,
         A.CHAPA as CHAPA,
         A.CODSECAO as CODSECAO,
-        D.CODIGO as CODIGO,
-        UPPER(C.NOME) as NOME,
+        D.CODIGO as CODIGO,       
         C.CPF as CPF,
         C.DTNASCIMENTO as DTNASCIMENTO,
         C.RUA as RUA,

@@ -87,6 +87,12 @@ export class PpessoaService {
         where += ' and E.REG_ID_CODIGO = :REG_ID_CODIGO';
         queryParams.REG_ID_CODIGO = params.REG_ID_CODIGO;
       }
+
+      if (params.NOME) {
+        where += ' and UPPER(C.NOME) LIKE UPPER(:NOME)';
+        queryParams.NOME = `%${params.NOME}%`;
+      }
+
       const consulta = await this.rmRepository.query(`${selecionaFuncs} ${where}`, queryParams);
       return consulta;
     } catch (error) {

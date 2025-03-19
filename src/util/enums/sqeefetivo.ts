@@ -1,4 +1,4 @@
-enum enunsqeefetivo {
+export enum enunsqeefetivo {
   A = 'Não - Aguardar Pagamento',
   C = 'Não - Aguardar Pagamento',
   R = 'Não - Aguardando documentos/relatório para efetuar Pagamento',
