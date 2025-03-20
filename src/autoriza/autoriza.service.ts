@@ -85,9 +85,138 @@ export class autorizaService {
       const consulta = await dataQueryBuilder.getMany();
 
       return {
-        data: consulta,
         total: totalCount,
         totalFiltrado: filteredCount,
+        data: consulta,
+      };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async findRecursos(
+    params: FindAllParams,
+  ): Promise<{ data: any[]; total: number; totalFiltrado: number }> {
+    try {
+      const page = params.page || 1;
+      const limit = params.limit || 1000;
+      const offset = (page - 1) * limit;
+
+      const chapa = params.CHAPA;
+      const sqeidcodigo = params.SQE_ID_CODIGO;
+      const dirIdCodigo = params.DIR_ID_CODIGO;
+      const status = params.STATUS;
+      const stsIdCodigo = params.STS_ID_CODIGO;
+      const sqeefetivo = params.SQE_EFETIVO;
+
+      // Query para obter o total SEM filtros
+      const totalQuery = `
+        SELECT COUNT(*) AS total FROM FINANCEIRO.S009_ITENSREQREC
+      `;
+      const totalResult = await this.autorizaRepository.manager.query(totalQuery);
+      const total = totalResult[0]?.TOTAL || 0;
+
+      // Query principal com filtros
+      let query = `
+        SELECT * FROM (
+          SELECT 
+            B.SQE_ID_CODIGO AS "SQE_ID_CODIGO",
+            B.SQE_EFETIVO,
+             B.SQE_DTSAQUE,
+             B.SQE_TIPOSAQUE,
+             B.SQE_DTPEDIDO,
+            D.REQ_ID_CODIGO AS "REQ_ID_CODIGO",
+            C.NOME AS "NOME",
+            C.CODSECAO AS "CODSECAO",
+            E.CPF AS "CPF",
+            B.SQE_VLSAQUE AS "SQE_VLSAQUE",
+            B.SQE_VLPREST AS "SQE_VLPREST",          
+            A.IRR_VLDEVOLUCAO AS "IRR_VLDEVOLUCAO",
+            A.IRR_COMPLEMENTO AS "IRR_COMPLEMENTO",          
+            A.IRR_DATA_SOL AS "IRR_DATA_SOL",
+            A.STS_ID_CODIGO AS "STS_ID_CODIGO",   
+            F.STS_DESCRICAO AS "STS_DESCRICAO",         
+            CASE 
+              WHEN A.IRR_RECURSO = 'S' THEN 'Aprovada'
+              WHEN A.IRR_RECURSO = 'N' THEN 'Negada'
+              WHEN A.IRR_RECURSO = 'F' THEN 'Finalizada'
+              ELSE 'Pendente'
+            END AS "STATUS",
+            ROW_NUMBER() OVER (ORDER BY B.SQE_ID_CODIGO DESC) AS ROW_NUM
+          FROM FINANCEIRO.S009_ITENSREQREC A  
+          JOIN FINANCEIRO.S009_SAQUE B ON A.ITE_ID_CODIGO = B.ITE_ID_CODIGO
+          JOIN RM.PFUNC C ON A.CHAPA = C.CHAPA
+          JOIN FINANCEIRO.S009_REQNUMERARIO D ON B.SQE_ID_CODIGO = D.SQE_ID_CODIGO
+          JOIN RM.PPESSOA E ON A.CHAPA = E.CODUSUARIO
+          JOIN FINANCEIRO.S009_STATUS F ON A.STS_ID_CODIGO = F.STS_ID_CODIGO          
+      `;
+
+      const queryParams: any = {};
+      const conditions: string[] = [];
+
+      if (chapa) {
+        conditions.push(`A.CHAPA = :chapa`);
+        queryParams['chapa'] = chapa;
+      }
+      if (sqeidcodigo) {
+        conditions.push(`B.SQE_ID_CODIGO  = :sqeidcodigo`);
+        queryParams['sqeidcodigo'] = sqeidcodigo;
+      }
+
+      if (dirIdCodigo) {
+        conditions.push(`A.DIR_ID_CODIGO = :dirIdCodigo`);
+        queryParams['dirIdCodigo'] = dirIdCodigo;
+      }
+      if (stsIdCodigo) {
+        conditions.push(`A.STS_ID_CODIGO = :stsIdCodigo`);
+        queryParams['stsIdCodigo'] = stsIdCodigo;
+      }
+
+      if (sqeefetivo) {
+        const stsIds = sqeefetivo.split(',').map((id) => `'${id.trim()}'`); // Adiciona aspas simples em cada valor
+        conditions.push(`B.SQE_EFETIVO IN (${stsIds.join(', ')})`); // Junta os valores corretamente
+      }
+
+      if (status) {
+        let statusResult = '';
+        switch (status.trim()) {
+          case 'Aprovada':
+            statusResult = 'S';
+            break;
+          case 'Negada':
+            statusResult = 'N';
+            break;
+          case 'Finalizada':
+            statusResult = 'F';
+            break;
+          default:
+            statusResult = 'P';
+            break;
+        }
+        conditions.push(`A.IRR_RECURSO = :status`);
+        queryParams['status'] = statusResult;
+      }
+
+      if (conditions.length > 0) {
+        query += ` WHERE ` + conditions.join(' AND ');
+      }
+
+      query += `
+        ) WHERE ROW_NUM BETWEEN :minRow AND :maxRow
+        ORDER BY SQE_ID_CODIGO DESC
+      `;
+
+      queryParams['minRow'] = offset + 1;
+      queryParams['maxRow'] = offset + limit;
+
+      // Executa a query principal
+      const result = await this.autorizaRepository.manager.query(query, queryParams);
+      const totalFiltrado = result.length;
+
+      return {
+        total, // Total sem filtros
+        totalFiltrado, // Total com os filtros aplicados
+        data: result,
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

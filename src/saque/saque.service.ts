@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import {
   FindParamsSaque,
-  RetNumSaque,
   SaqueDto,
   PrestacaoDto,
   SolitarDto,
@@ -261,10 +260,12 @@ export class SaqueService {
     try {
       const [itinerario, UFESP, UFESPcargoValor] = await Promise.all([
         this.buscarItinerario(consulta.REQ_ID_CODIGO).catch((error) => {
+          console.log(error);
           throw new HttpException('Erro ao buscar itinerário: ', HttpStatus.INTERNAL_SERVER_ERROR);
         }),
 
         this.buscarUfesp(consulta.REQ_DTSAIDA).catch((error) => {
+          console.log(error);
           throw new HttpException(
             'Requisição anterior a 10/08/2009, ufesp não encontrada: ',
             HttpStatus.INTERNAL_SERVER_ERROR,
@@ -353,7 +354,9 @@ export class SaqueService {
           let docs: docsEntity[] | null = null;
           try {
             docs = await this.documentosService.findBySQE_ID_CODIGO(item.SQE_ID_CODIGO);
-          } catch (error) {}
+          } catch (error) {
+            console.log(error);
+          }
 
           // Obter status
           const STATUS_PREST = RetonaPrestacaoStatus(
@@ -471,6 +474,7 @@ export class SaqueService {
       try {
         destino = verificarDestino(consulta.MUN_ID_CODIGO) as Destino;
       } catch (error) {
+        console.log(error);
         throw new HttpException('Destino não encontrado', HttpStatus.NOT_FOUND);
       }
 
@@ -482,7 +486,7 @@ export class SaqueService {
         consulta.SQE_VLPREST,
       );
 
-      const { calcDiaraInial, calcDiaraRetorn, diariaIntegral, diariaParcial, diaraPorc } =
+      const { calcDiaraInial, calcDiaraRetorn, diariaIntegral, diaraPorc } =
         await this.calcularDiarias(
           consulta,
           itinerario,
@@ -500,13 +504,17 @@ export class SaqueService {
       try {
         const extorno = await this.extornoService.findOneOrFail(params.SQE_ID_CODIGO);
         justificativa = extorno?.EXT_JUSTIFICA || justificativa;
-      } catch (error) {}
+      } catch (error) {
+        console.log(error);
+      }
 
       // Tenta encontrar o reembolso sem quebrar se não encontrar
       try {
         const reembolso = await this.reembolsoService.findone(params.SQE_ID_CODIGO);
         justificativa = reembolso?.RRE_JUSTIFICATIVA || justificativa;
-      } catch (error) {}
+      } catch (error) {
+        console.log(error);
+      }
 
       return new PrestacaoDto({
         NOME: consulta.NOME,
@@ -697,7 +705,7 @@ export class SaqueService {
 
       const ID = { type: oraccledb.NUMBER, dir: oraccledb.BIND_OUT };
 
-      let parametros: InsSaqueDto = new InsSaqueDto();
+      const parametros: InsSaqueDto = new InsSaqueDto();
 
       if (Rg_Reembolsar === 0) {
         parametros.PAR1 = 'S'; // SQE_TIPOSAQUE
@@ -881,6 +889,7 @@ export class SaqueService {
           });
           await this.reqnumerarioService.create(numerario);
         } catch (error) {
+          console.log(error);
           throw new HttpException(
             `Erro ao inserir REQNUMERARIO. Numero do Saque: ${resultSaque.sqeIdCodigo}`,
             HttpStatus.INTERNAL_SERVER_ERROR,
@@ -1089,6 +1098,7 @@ export class SaqueService {
       }
       return result;
     } catch (error) {
+      console.log(error);
       throw new HttpException('Saque não encontrado', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -1190,6 +1200,7 @@ export class SaqueService {
             [PR1, PR2, PR3, PR4, PR5, PR6],
           );
         } catch (error) {
+          console.log(error);
           grava = 1;
         }
       }

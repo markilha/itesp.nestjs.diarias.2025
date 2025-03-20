@@ -36,6 +36,7 @@ import { agruparecursoModule } from './agruparecurso/agruparecurso.module';
 import { itensreqModule } from './itensreq/itensreq.module';
 import { ndocumentoModule } from './ndocumento/ndocumento.module';
 import { autorizaModule } from './autoriza/autoriza.module';
+import { auditaPlanejaModule } from './auditaPlaneja/auditaPlaneja.module';
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { autorizaModule } from './autoriza/autoriza.module';
     itensreqModule,
     ndocumentoModule,
     autorizaModule,
+    auditaPlanejaModule,
   ],
   controllers: [docsController],
   providers: [docsService],

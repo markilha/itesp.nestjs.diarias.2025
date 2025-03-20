@@ -15,4 +15,9 @@ export class autorizaController {
   async findAll(@Query() params: FindAllParams): Promise<{ data: any[]; total: number }> {
     return await this.autorizaService.findAll(params);
   }
+
+  @Get('findrecursos')
+  async findre(@Query() params: FindAllParams): Promise<{ data: any[]; total: number }> {
+    return await this.autorizaService.findRecursos(params);
+  }
 }
