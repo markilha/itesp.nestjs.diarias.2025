@@ -4,6 +4,10 @@ import { Repository } from 'typeorm';
 import { autorizaEntity } from '../database/db_oracle/entities/autoriza.entity';
 import { FindAllParams } from './autorizaDto';
 
+import { EnumAutorizacao } from 'src/util/enums/autorizacao';
+import { AuthUserDto } from 'src/auth/use.auth.Dto';
+import { permissaoCargo } from 'src/util/enums/cargo';
+
 @Injectable()
 export class autorizaService {
   constructor(
@@ -95,9 +99,18 @@ export class autorizaService {
   }
 
   async findRecursos(
+    user: AuthUserDto,
     params: FindAllParams,
   ): Promise<{ data: any[]; total: number; totalFiltrado: number }> {
     try {
+      //userLogado
+      const codigosecao = user.codsecao;
+      const chapalogado = user.chapa;
+      //const permissao = user.permissao;
+
+      //const chapalogado = '000825';
+      const permissao = Number('12');
+
       const page = params.page || 1;
       const limit = params.limit || 1000;
       const offset = (page - 1) * limit;
@@ -121,10 +134,8 @@ export class autorizaService {
         SELECT * FROM (
           SELECT 
             B.SQE_ID_CODIGO AS "SQE_ID_CODIGO",
-            B.SQE_EFETIVO,
-             B.SQE_DTSAQUE,
-             B.SQE_TIPOSAQUE,
-             B.SQE_DTPEDIDO,
+            B.SQE_EFETIVO AS "SQE_EFETIVO",
+            B.SQE_DTPEDIDO,
             D.REQ_ID_CODIGO AS "REQ_ID_CODIGO",
             C.NOME AS "NOME",
             C.CODSECAO AS "CODSECAO",
@@ -135,11 +146,13 @@ export class autorizaService {
             A.IRR_COMPLEMENTO AS "IRR_COMPLEMENTO",          
             A.IRR_DATA_SOL AS "IRR_DATA_SOL",
             A.STS_ID_CODIGO AS "STS_ID_CODIGO",   
-            F.STS_DESCRICAO AS "STS_DESCRICAO",         
+            F.STS_DESCRICAO AS "STS_DESCRICAO", 
+            H.DESCRICAO AS DIRETORIA,
+            G.DESCRICAO AS SETOR,           
             CASE 
-              WHEN A.IRR_RECURSO = 'S' THEN 'Aprovada'
-              WHEN A.IRR_RECURSO = 'N' THEN 'Negada'
-              WHEN A.IRR_RECURSO = 'F' THEN 'Finalizada'
+              WHEN A.IRR_RECURSO = '${EnumAutorizacao.APROVADA}' THEN 'Aprovada'
+              WHEN A.IRR_RECURSO = '${EnumAutorizacao.NEGADA}' THEN 'Negada'
+              WHEN A.IRR_RECURSO = '${EnumAutorizacao.FINALIZADA}' THEN 'Finalizada'
               ELSE 'Pendente'
             END AS "STATUS",
             ROW_NUMBER() OVER (ORDER BY B.SQE_ID_CODIGO DESC) AS ROW_NUM
@@ -148,10 +161,15 @@ export class autorizaService {
           JOIN RM.PFUNC C ON A.CHAPA = C.CHAPA
           JOIN FINANCEIRO.S009_REQNUMERARIO D ON B.SQE_ID_CODIGO = D.SQE_ID_CODIGO
           JOIN RM.PPESSOA E ON A.CHAPA = E.CODUSUARIO
-          JOIN FINANCEIRO.S009_STATUS F ON A.STS_ID_CODIGO = F.STS_ID_CODIGO          
+          JOIN FINANCEIRO.S009_STATUS F ON A.STS_ID_CODIGO = F.STS_ID_CODIGO    
+          JOIN RM.PSECAO G ON C.CODSECAO = G.CODIGO   
+          JOIN FINANCEIRO.V009_DiretoriaGeral H ON A.DIR_ID_CODIGO = H.DIR_ID_CODIGO
       `;
-
       const queryParams: any = {};
+
+      //FILTRAR POR SETOR
+
+      //DIRETORIA EXECUTIVA  OU DE - Financeiro
       const conditions: string[] = [];
 
       if (chapa) {
@@ -197,10 +215,74 @@ export class autorizaService {
         queryParams['status'] = statusResult;
       }
 
+      ///////////////////////////////////////////SETOR/////////////////////////////////////////////////////////
+      //DIRETORIA EXECUTIVA  OU DE - Financeiro
+      if (
+        permissao === permissaoCargo.DIRETOR_EXECUTIVO ||
+        permissao === permissaoCargo.CHEFE_GABINETE
+      ) {
+        conditions.push(`C.CODSECAO LIKE '1.1.%' OR C.CODSECAO LIKE '1.6.%'`); //prettier-ignore
+      }
+
+      //RESPONSÁVEL TÉCNICO DE CAMPO
+      if (chapalogado) {
+        conditions.push(
+          `C.CODSECAO IN (SELECT e.codsecao FROM rm.psubstchefe e WHERE e.chapasubst = :chapa AND e.datafim >= SYSDATE)`,
+        );
+        queryParams['chapa'] = chapalogado;
+      }
+
+      //"leonardo": "1.3.01.06.04.00.00",
+      //Diretor Adjunto / Assistente
+      if (
+        [
+          '1.2.00.00.00.00.00',
+          '1.3.00.00.00.00.00',
+          '1.4.00.00.00.00.00',
+          '1.5.00.00.00.00.00',
+          '1.2.01.05.01.00.00',
+        ].includes(codigosecao)
+      ) {
+        conditions.push(`C.CODSECAO LIKE '${codigosecao.substring(0, 5)}%'`);
+
+        // Qr_PSecao.SQL.Add('AND NOT A.CODIGO =:DIR AND A.CODIGO LIKE :SETOR');
+        // Qr_PSecao.ParamByName('DIR').AsString:=cb_setordir.text;
+        // Qr_PSecao.ParamByName('SETOR').AsString:=copy(cb_setordir.text,1,5)+'%';
+      }
+
+      //GERENTE
+      if (
+        [
+          '1.2.01.06.01.00.00',
+          '1.3.01.06.04.00.00',
+          '1.4.01.06.07.00.00',
+          '1.4.01.06.08.00.00',
+          '1.5.01.06.09.00.00',
+          '1.4.01.06.06.00.00',
+          '1.5.01.06.10.00.00',
+          '1.2.01.06.03.00.00',
+          '1.1.01.06.03.00.00',
+          '1.1.01.06.00.00.00',
+          '1.3.01.06.05.00.00',
+          '1.2.01.06.02.00.00',
+        ].includes(codigosecao)
+      ) {
+        conditions.push(`C.CODSECAO=:SETOR`); //prettier-ignore
+        queryParams['SETOR'] = codigosecao;
+      }
+
+      //RESPONSAVEL TÉCNICO DA SEDE
+      if (['inserir codigos sede'].includes(codigosecao)) {
+        conditions.push(`C.CODSECAO=:SETOR`); //prettier-ignore
+        queryParams['SETOR'] = codigosecao;
+      }
+
+      //JUNTAR CONDIÇÕES
       if (conditions.length > 0) {
         query += ` WHERE ` + conditions.join(' AND ');
       }
 
+      //FECHAR QUERY
       query += `
         ) WHERE ROW_NUM BETWEEN :minRow AND :maxRow
         ORDER BY SQE_ID_CODIGO DESC
