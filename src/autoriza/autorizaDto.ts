@@ -14,10 +14,21 @@ export class FindAllParams {
   @ApiProperty({ required: false })
   STS_ID_CODIGO?: string;
   @ApiProperty({ required: false })
+  REQ_ID_CODIGO?: string;
+  @ApiProperty({ required: false })
   SQE_EFETIVO?: string;
+  @ApiProperty({ required: false })
+  CODSECAO?: string;
   @ApiProperty({ required: false })
   STATUS?: string;
   page?: number;
   @ApiProperty({ required: false })
   limit?: number;
+}
+
+export class CarreagaSetorDto {
+  @ApiProperty({ required: false })
+  CODIGO?: string;
+  @ApiProperty({ required: false })
+  SETOR?: string;
 }

@@ -2,7 +2,7 @@ import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { autorizaService } from './autoriza.service'; // Importa o serviço
 
 import { AuthGuard } from '../auth/auth.guard';
-import { FindAllParams } from './autorizaDto';
+import { CarreagaSetorDto, FindAllParams } from './autorizaDto';
 import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
@@ -24,5 +24,9 @@ export class autorizaController {
     @Query() params: FindAllParams,
   ): Promise<{ data: any[]; total: number }> {
     return await this.autorizaService.findRecursos(user, params);
+  }
+  @Get('carregasetor')
+  async carregaSetor(@CurrentUser() user: AuthUserDto): Promise<{ data: CarreagaSetorDto[] }> {
+    return await this.autorizaService.carregarSetores(user);
   }
 }

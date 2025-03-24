@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { autorizaEntity } from '../database/db_oracle/entities/autoriza.entity';
-import { FindAllParams } from './autorizaDto';
+import { CarreagaSetorDto, FindAllParams } from './autorizaDto';
 
 import { EnumAutorizacao } from 'src/util/enums/autorizacao';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
@@ -104,13 +104,6 @@ export class autorizaService {
   ): Promise<{ data: any[]; total: number; totalFiltrado: number }> {
     try {
       //userLogado
-      const codigosecao = user.codsecao;
-      const chapalogado = user.chapa;
-      //const permissao = user.permissao;
-
-      //const chapalogado = '000825';
-      const permissao = Number('12');
-
       const page = params.page || 1;
       const limit = params.limit || 1000;
       const offset = (page - 1) * limit;
@@ -121,6 +114,8 @@ export class autorizaService {
       const status = params.STATUS;
       const stsIdCodigo = params.STS_ID_CODIGO;
       const sqeefetivo = params.SQE_EFETIVO;
+      const codigosecao = params.CODSECAO;
+      const requisicao = params.REQ_ID_CODIGO;
 
       // Query para obter o total SEM filtros
       const totalQuery = `
@@ -166,10 +161,6 @@ export class autorizaService {
           JOIN FINANCEIRO.V009_DiretoriaGeral H ON A.DIR_ID_CODIGO = H.DIR_ID_CODIGO
       `;
       const queryParams: any = {};
-
-      //FILTRAR POR SETOR
-
-      //DIRETORIA EXECUTIVA  OU DE - Financeiro
       const conditions: string[] = [];
 
       if (chapa) {
@@ -188,6 +179,10 @@ export class autorizaService {
       if (stsIdCodigo) {
         conditions.push(`A.STS_ID_CODIGO = :stsIdCodigo`);
         queryParams['stsIdCodigo'] = stsIdCodigo;
+      }
+      if (requisicao) {
+        conditions.push(`D.REQ_ID_CODIGO = :requisicao`);
+        queryParams['requisicao'] = requisicao;
       }
 
       if (sqeefetivo) {
@@ -215,66 +210,10 @@ export class autorizaService {
         queryParams['status'] = statusResult;
       }
 
-      ///////////////////////////////////////////SETOR/////////////////////////////////////////////////////////
-      //DIRETORIA EXECUTIVA  OU DE - Financeiro
-      if (
-        permissao === permissaoCargo.DIRETOR_EXECUTIVO ||
-        permissao === permissaoCargo.CHEFE_GABINETE
-      ) {
-        conditions.push(`C.CODSECAO LIKE '1.1.%' OR C.CODSECAO LIKE '1.6.%'`); //prettier-ignore
-      }
-
-      //RESPONSÁVEL TÉCNICO DE CAMPO
-      if (chapalogado) {
-        conditions.push(
-          `C.CODSECAO IN (SELECT e.codsecao FROM rm.psubstchefe e WHERE e.chapasubst = :chapa AND e.datafim >= SYSDATE)`,
-        );
-        queryParams['chapa'] = chapalogado;
-      }
-
-      //"leonardo": "1.3.01.06.04.00.00",
-      //Diretor Adjunto / Assistente
-      if (
-        [
-          '1.2.00.00.00.00.00',
-          '1.3.00.00.00.00.00',
-          '1.4.00.00.00.00.00',
-          '1.5.00.00.00.00.00',
-          '1.2.01.05.01.00.00',
-        ].includes(codigosecao)
-      ) {
-        conditions.push(`C.CODSECAO LIKE '${codigosecao.substring(0, 5)}%'`);
-
-        // Qr_PSecao.SQL.Add('AND NOT A.CODIGO =:DIR AND A.CODIGO LIKE :SETOR');
-        // Qr_PSecao.ParamByName('DIR').AsString:=cb_setordir.text;
-        // Qr_PSecao.ParamByName('SETOR').AsString:=copy(cb_setordir.text,1,5)+'%';
-      }
-
-      //GERENTE
-      if (
-        [
-          '1.2.01.06.01.00.00',
-          '1.3.01.06.04.00.00',
-          '1.4.01.06.07.00.00',
-          '1.4.01.06.08.00.00',
-          '1.5.01.06.09.00.00',
-          '1.4.01.06.06.00.00',
-          '1.5.01.06.10.00.00',
-          '1.2.01.06.03.00.00',
-          '1.1.01.06.03.00.00',
-          '1.1.01.06.00.00.00',
-          '1.3.01.06.05.00.00',
-          '1.2.01.06.02.00.00',
-        ].includes(codigosecao)
-      ) {
-        conditions.push(`C.CODSECAO=:SETOR`); //prettier-ignore
-        queryParams['SETOR'] = codigosecao;
-      }
-
-      //RESPONSAVEL TÉCNICO DA SEDE
-      if (['inserir codigos sede'].includes(codigosecao)) {
-        conditions.push(`C.CODSECAO=:SETOR`); //prettier-ignore
-        queryParams['SETOR'] = codigosecao;
+      if (codigosecao) {
+        conditions.push(`C.CODSECAO LIKE  :CODSE
+        `);
+        queryParams['CODSE'] = codigosecao + '%';
       }
 
       //JUNTAR CONDIÇÕES
@@ -300,6 +239,91 @@ export class autorizaService {
         totalFiltrado, // Total com os filtros aplicados
         data: result,
       };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async carregarSetores(user: AuthUserDto): Promise<{ data: CarreagaSetorDto[] }> {
+    try {
+      const permissao = user.permissao;
+      const codigosecao = user.codsecao;
+      const chapalogado = user.chapa;
+
+      // Query principal com filtros
+      let query = `SELECT a.* FROM RM.PSecao a WHERE LENGTH(a.CODIGO) = 18`;
+      const queryParams: any = {};
+
+      //DIRETORIA EXECUTIVA  OU DE - Financeiro
+      const conditions: string[] = [];
+
+      ///////////////////////////////////////////SETOR/////////////////////////////////////////////////////////
+      //DIRETORIA EXECUTIVA  OU DE - Financeiro
+      if (
+        permissao === permissaoCargo.DIRETOR_EXECUTIVO ||
+        permissao === permissaoCargo.CHEFE_GABINETE ||
+        (permissao === permissaoCargo.FINANCEIRO_TESOURARIA &&
+          ['1.1.01.00.00.00.00', '1.0.00.00.00.00.00'].includes(codigosecao))
+      ) {
+        conditions.push(`a.CODIGO LIKE '1.1.%' OR a.CODIGO LIKE '1.6.%'`);
+      } else if (
+        (permissao === permissaoCargo.FINANCEIRO_TESOURARIA &&
+          ['1.2.01.05.01.00.00', '1.2.00.00.00.00.00'].includes(codigosecao)) ||
+        permissao === permissaoCargo.DIRETOR_ADJUNTO ||
+        permissao === permissaoCargo.ASSISTENTE ||
+        ['1.2.01.05.01.00.00', '1.2.00.00.00.00.00'].includes(codigosecao)
+      ) {
+        conditions.push(`a.CODIGO LIKE '${codigosecao.substring(0, 5)}%'`);
+      } else if (
+        //GERENTE
+        permissao === permissaoCargo.GERENTE ||
+        //RESPONSAVEL TÉCNICO DA SEDE O TRANSPORTE
+        permissao === permissaoCargo.RESP_TEC_TRANSPORTE ||
+        permissao === permissaoCargo.RESP_TECNICO ||
+        permissao === permissaoCargo.ASSESSORIA_OUVIDORIA
+      ) {
+        conditions.push(`a.CODIGO LIKE :SETOR`);
+        queryParams['SETOR'] = codigosecao;
+      } else if (permissao === permissaoCargo.GTCAMPO) {
+        //RESPONSÁVEL TÉCNICO DE CAMPO
+        conditions.push(
+          `a.CODIGO IN (SELECT e.codsecao FROM rm.psubstchefe e WHERE e.chapasubst = :chapa AND e.datafim >= SYSDATE)`,
+        );
+        queryParams['chapa'] = chapalogado;
+      }
+
+      //JUNTAR CONDIÇÕES
+      if (conditions.length > 0) {
+        query += ` AND ` + conditions.join(' AND '); // Garante que `AND` seja colocado corretamente
+      }
+
+      // Adiciona ORDER BY corretamente
+      query += ` ORDER BY a.DESCRICAO`;
+
+      // Executa a query principal
+      const result = await this.autorizaRepository.manager.query(query, queryParams);
+
+      const carregarCombo = result.map((row) => ({
+        CODIGO: row.CODIGO ?? row.codigo,
+        SETOR: row.DESCRICAO ?? row.descricao,
+      }));
+
+      if (
+        permissao === permissaoCargo.GERENTE ||
+        permissao === permissaoCargo.RESP_TECNICO ||
+        permissao === permissaoCargo.RESP_TEC_TRANSPORTE ||
+        permissao === permissaoCargo.ASSESSORIA_OUVIDORIA ||
+        permissao === permissaoCargo.GTCAMPO
+      ) {
+        const carregarComboSingle = {
+          CODIGO: result[0]?.CODIGO ?? result[0]?.codigo,
+          SETOR: result[0]?.DESCRICAO ?? result[0]?.descricao,
+        };
+
+        return [carregarComboSingle] as any;
+      }
+
+      return carregarCombo;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
