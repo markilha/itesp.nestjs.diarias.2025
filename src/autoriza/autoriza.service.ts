@@ -2,11 +2,15 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { autorizaEntity } from '../database/db_oracle/entities/autoriza.entity';
-import { CarreagaSetorDto, FindAllParams } from './autorizaDto';
+import { AutorizarRecursoDto, CarreagaSetorDto, FindAllParams } from './autorizaDto';
 
 import { EnumAutorizacao } from 'src/util/enums/autorizacao';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
 import { permissaoCargo } from 'src/util/enums/cargo';
+import { sqls } from 'src/util/crudOracle/consultas';
+import { updates } from 'src/util/crudOracle/updates';
+import { inserts } from 'src/util/crudOracle/inserts';
+import { procedures } from 'src/util/crudOracle/procedures';
 
 @Injectable()
 export class autorizaService {
@@ -273,7 +277,9 @@ export class autorizaService {
         permissao === permissaoCargo.ASSISTENTE ||
         ['1.2.01.05.01.00.00', '1.2.00.00.00.00.00'].includes(codigosecao)
       ) {
-        conditions.push(`a.CODIGO LIKE '${codigosecao.substring(0, 5)}%'`);
+        conditions.push(
+          `a.CODIGO != '1.0.00.00.00.00.00' and a.CODIGO LIKE '${codigosecao.substring(0, 5)}%'`,
+        );
       } else if (
         //GERENTE
         permissao === permissaoCargo.GERENTE ||
@@ -294,7 +300,7 @@ export class autorizaService {
 
       //JUNTAR CONDIÇÕES
       if (conditions.length > 0) {
-        query += ` AND ` + conditions.join(' AND '); // Garante que `AND` seja colocado corretamente
+        query += ` AND ` + conditions.join(' AND ');
       }
 
       // Adiciona ORDER BY corretamente
@@ -312,20 +318,89 @@ export class autorizaService {
         permissao === permissaoCargo.GERENTE ||
         permissao === permissaoCargo.RESP_TECNICO ||
         permissao === permissaoCargo.RESP_TEC_TRANSPORTE ||
-        permissao === permissaoCargo.ASSESSORIA_OUVIDORIA ||
-        permissao === permissaoCargo.GTCAMPO
+        permissao === permissaoCargo.ASSESSORIA_OUVIDORIA
       ) {
-        const carregarComboSingle = {
-          CODIGO: result[0]?.CODIGO ?? result[0]?.codigo,
-          SETOR: result[0]?.DESCRICAO ?? result[0]?.descricao,
-        };
-
-        return [carregarComboSingle] as any;
+        return carregarCombo[0];
+      } else if (permissao === permissaoCargo.GTCAMPO && carregarCombo.length > 1) {
+        return carregarCombo;
+      } else if (permissao === permissaoCargo.GTCAMPO) {
+        return carregarCombo[0];
       }
 
       return carregarCombo;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async autorizarRecurso(params: AutorizarRecursoDto, user: AuthUserDto) {
+    console.log(user);
+    try {
+      await this.autorizaRepository.manager.transaction(async (transactionalEntityManager) => {
+        // Atualizar o status do item para autorizado
+        await transactionalEntityManager.query(updates.updateAutorizaItem, [
+          params.VALOR,
+          params.ITE_ID_CODIGO,
+        ]);
+        await transactionalEntityManager.query(procedures.INS_S009_AUDITAPLANEJA, [
+          params.ITE_ID_CODIGO,
+          params.RRE_ID_CODIGO,
+          params.DIR_ID_CODIGO,
+          user.chapa,
+          'S',
+        ]);
+        // Buscar diárias não analisadas
+        const Auxiliar2 = await transactionalEntityManager.query(sqls.selecionaDiariasAnalizadas, [
+          params.ITE_ID_CODIGO,
+        ]);
+
+        if (Auxiliar2?.length > 0) {
+          for (const aux2 of Auxiliar2) {
+            await transactionalEntityManager.query(updates.updateUsuReq, [
+              aux2.CHAPA,
+              'O',
+              aux2.REQ_ID_CODIGO,
+            ]);
+            // Verificar usureq transporte
+            const Qr_UsuReq = await transactionalEntityManager.query(sqls.selecionaUsureq, [
+              aux2.REQ_ID_CODIGO,
+            ]);
+            if (Qr_UsuReq?.length === 0) {
+              const DmExt = await transactionalEntityManager.query(sqls.SelecionaAutoriza, [
+                aux2.REQ_ID_CODIGO,
+              ]);
+              const autoriza = Number(DmExt[0].AUT_NIVEL) + 1;
+
+              await transactionalEntityManager.query(inserts.insertAutorizaTransporte, [
+                aux2.REQ_ID_CODIGO,
+                user.login,
+                autoriza,
+              ]);
+            }
+            // upadate status da requisição de tranporte
+            await transactionalEntityManager.query(updates.updateStatusRequisicao, [
+              aux2.REQ_ID_CODIGO,
+              'ANALISANDO',
+            ]);
+            // NÃO HOUVE APROVAÇÃO NO ITEM
+            if (
+              aux2.mdi_chefe === '' ||
+              aux2.mdi_diretor === '' ||
+              aux2.mdi_chefe === 'N' ||
+              aux2.mdi_diretor === 'N'
+            ) {
+              await transactionalEntityManager.query(sqls.SelMotivoDiaria, [aux2.MDI_ID_CODIGO]);
+            }
+          }
+        }
+      });
+
+      return { message: 'Recurso autorizado com sucesso' };
+    } catch (error) {
+      throw new HttpException(
+        `Erro ao autorizar recurso para o item ${params.ITE_ID_CODIGO}: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

@@ -32,3 +32,13 @@ export class CarreagaSetorDto {
   @ApiProperty({ required: false })
   SETOR?: string;
 }
+
+export class AutorizarRecursoDto {
+  ITE_ID_CODIGO?: number;
+  @ApiProperty({ required: false })
+  RRE_ID_CODIGO?: number;
+  @ApiProperty({ required: false })
+  DIR_ID_CODIGO?: number;
+  @ApiProperty({ required: false })
+  VALOR?: number;
+}

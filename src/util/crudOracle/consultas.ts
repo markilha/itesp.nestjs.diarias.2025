@@ -416,4 +416,33 @@ WHERE B.TDE_ID_CODIGO = 7;
    FROM FINANCEIRO.V009_PLANEJAPENDENTE A, FINANCEIRO.V009_SETORREGIONAL B
    WHERE A.CODIGO = B.CODIGO
   `,
+
+  SelMotivoDiaria: `
+  Select A.MDI_ID_CODIGO, A.ITE_ID_CODIGO, A.RRE_ID_CODIGO, A.DIR_ID_CODIGO,
+  A.REQ_ID_CODIGO, A.MDI_TIPO, A.MDI_VALOR, A.MDI_CHEFE, A.MDI_GERENTE,
+  A.MDI_DIRETOR, A.MDI_DIREXECUTIVO, A.MDI_DTAUTORIZA, A.MDI_JUSTIFICATIVA
+  from  Financeiro.S009_MotivoDiaria A
+  Where A.MDI_ID_CODIGO=:MOT`,
+  SelecionaAutoriza: `
+  Select *  From Transporte.S001_Autoriza A
+  where a.req_id_codigo=:reqidcodigo
+  order by a.aut_nivel
+  `,
+  selecionaDiariasAnalizadas: `
+  Select c.chapa, a.mdi_id_codigo, a.req_id_codigo, a.mdi_chefe, a.mdi_diretor, b.req_pacote
+  From Financeiro.S009_Motivodiaria a, Transporte.S001_Requisicao b, Financeiro.S009_Itensreqrec c
+  where a.req_id_codigo = b.req_id_codigo and a.ite_id_codigo = c.ite_id_codigo and a.ite_id_codigo = :iteidcodigo`,
+  selecionaUsureq: `
+  Select * from TRANSPORTE.S001_USUREQ
+  Where  usu_mov <> 'N' and req_id_codigo=:req`,
+
+  selectSetorDiretoria1: `
+  Select a.* from RM.PSecao a
+  where (Length (CODIGO) = 18)
+  AND A.CODIGO LIKE '1.1.%'
+  OR A.CODIGO LIKE '1.6.%'`,
+  selecionaSetorDiretorAdjuntoAssistente: `
+  Select a.* from RM.PSecao a
+  where (Length (CODIGO) = 18)
+  AND NOT A.CODIGO = '1.0.00.00.00.00.00' AND A.CODIGO LIKE substr(:setor,1,5)%`,
 };
