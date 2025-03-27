@@ -1,7 +1,7 @@
 export const updates = {
   updateAutorizaItem: `
     UPDATE Financeiro.S009_ITENSREQREC
-    SET sts_id_codigo = '6', irr_valor_conc = :valorSolicitado, irr_recurso = 'S'
+    SET sts_id_codigo = '6', irr_valor_conc = :valorSolicitado, irr_recurso = :irrrecurso
     WHERE ite_id_codigo = :itemId`,
   updateUsuReq: `
     UPDATE TRANSPORTE.S001_USUREQ SET                  

@@ -334,20 +334,21 @@ export class autorizaService {
   }
 
   async autorizarRecurso(params: AutorizarRecursoDto, user: AuthUserDto) {
-    console.log(user);
     try {
       await this.autorizaRepository.manager.transaction(async (transactionalEntityManager) => {
         // Atualizar o status do item para autorizado
         await transactionalEntityManager.query(updates.updateAutorizaItem, [
-          params.VALOR,
+          params.NEGADA ? 0 : params.VALOR,
+          params.NEGADA ? 'N' : 'S',
           params.ITE_ID_CODIGO,
         ]);
+
         await transactionalEntityManager.query(procedures.INS_S009_AUDITAPLANEJA, [
           params.ITE_ID_CODIGO,
           params.RRE_ID_CODIGO,
           params.DIR_ID_CODIGO,
-          user.chapa,
-          'S',
+          user.login,
+          params.NEGADA ? 'N' : 'S',
         ]);
         // Buscar diárias não analisadas
         const Auxiliar2 = await transactionalEntityManager.query(sqls.selecionaDiariasAnalizadas, [
@@ -358,7 +359,7 @@ export class autorizaService {
           for (const aux2 of Auxiliar2) {
             await transactionalEntityManager.query(updates.updateUsuReq, [
               aux2.CHAPA,
-              'O',
+              params.NEGADA ? 'N' : 'O',
               aux2.REQ_ID_CODIGO,
             ]);
             // Verificar usureq transporte
@@ -374,13 +375,15 @@ export class autorizaService {
               await transactionalEntityManager.query(inserts.insertAutorizaTransporte, [
                 aux2.REQ_ID_CODIGO,
                 user.login,
+                params.NEGADA ? 'N' : 'S',
+                params.NEGADA ? 'NEGADO - DIRETOR' : 'AUTORIZADA - FINANCEIRO',
                 autoriza,
               ]);
             }
             // upadate status da requisição de tranporte
             await transactionalEntityManager.query(updates.updateStatusRequisicao, [
               aux2.REQ_ID_CODIGO,
-              'ANALISANDO',
+              params.NEGADA ? 'PLANEJAMENTO NAO AUTORIZADO' : 'ANALISANDO',
             ]);
             // NÃO HOUVE APROVAÇÃO NO ITEM
             if (
@@ -389,11 +392,45 @@ export class autorizaService {
               aux2.mdi_chefe === 'N' ||
               aux2.mdi_diretor === 'N'
             ) {
-              await transactionalEntityManager.query(sqls.SelMotivoDiaria, [aux2.MDI_ID_CODIGO]);
+              const motivo = await transactionalEntityManager.query(sqls.SelMotivoDiaria, [
+                aux2.MDI_ID_CODIGO,
+              ]);
+
+              const quemAutorizouNegou = params.NEGADA ? 'N' : 'S';
+
+              if (
+                permissaoCargo.FINANCEIRO_TESOURARIA ||
+                permissaoCargo.DIRETOR_ADJUNTO ||
+                permissaoCargo.DIRETOR_EXECUTIVO
+              ) {
+                const query = `
+                UPDATE FINANCEIRO.S009_MOTIVODIARIA
+                SET  MDI_DIRETOR = :PAR1
+                WHERE MDI_ID_CODIGO = :PAR2;
+                `;
+                await transactionalEntityManager.query(query, [
+                  quemAutorizouNegou,
+                  motivo.MDI_ID_CODIGO,
+                ]);
+              } else {
+                const query = `
+                UPDATE FINANCEIRO.S009_MOTIVODIARIA
+                SET  MDI_CHEFE = :PAR1
+                WHERE MDI_ID_CODIGO = :PAR2;
+                `;
+                await transactionalEntityManager.query(query, [
+                  quemAutorizouNegou,
+                  motivo.MDI_ID_CODIGO,
+                ]);
+              }
             }
           }
         }
       });
+
+      if (params.NEGADA) {
+        return { message: 'Recurso negado com sucesso' };
+      }
 
       return { message: 'Recurso autorizado com sucesso' };
     } catch (error) {

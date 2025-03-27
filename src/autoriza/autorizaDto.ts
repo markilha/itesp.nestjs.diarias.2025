@@ -41,4 +41,6 @@ export class AutorizarRecursoDto {
   DIR_ID_CODIGO?: number;
   @ApiProperty({ required: false })
   VALOR?: number;
+  @ApiProperty({ required: false })
+  NEGADA?: boolean;
 }
