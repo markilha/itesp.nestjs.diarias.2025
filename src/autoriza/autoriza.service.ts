@@ -6,7 +6,7 @@ import { AutorizarRecursoDto, CarreagaSetorDto, FindAllParams } from './autoriza
 
 import { EnumAutorizacao } from 'src/util/enums/autorizacao';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
-import { permissaoCargo } from 'src/util/enums/cargo';
+import { enumCodSecao, permissaoCargo } from 'src/util/enums/cargo';
 import { sqls } from 'src/util/crudOracle/consultas';
 import { updates } from 'src/util/crudOracle/updates';
 import { inserts } from 'src/util/crudOracle/inserts';
@@ -254,6 +254,10 @@ export class autorizaService {
       const codigosecao = user.codsecao;
       const chapalogado = user.chapa;
 
+      //MOCK DIRETORIA
+      // const codigosecao = enumCodSecao.DIRETOR_EXECUTIVO;
+      // const permissao = permissaoCargo.DIRETOR_EXECUTIVO as number;
+
       // Query principal com filtros
       let query = `SELECT a.* FROM RM.PSecao a WHERE LENGTH(a.CODIGO) = 18`;
       const queryParams: any = {};
@@ -267,23 +271,27 @@ export class autorizaService {
         permissao === permissaoCargo.DIRETOR_EXECUTIVO ||
         permissao === permissaoCargo.CHEFE_GABINETE ||
         (permissao === permissaoCargo.FINANCEIRO_TESOURARIA &&
-          ['1.1.01.00.00.00.00', '1.0.00.00.00.00.00'].includes(codigosecao))
+          [enumCodSecao.GABINETE_DIRETORIA_EXECUTIVA, enumCodSecao.DIRETOR_EXECUTIVO].includes(
+            codigosecao as enumCodSecao,
+          ))
       ) {
         conditions.push(`a.CODIGO LIKE '1.1.%' OR a.CODIGO LIKE '1.6.%'`);
       } else if (
         (permissao === permissaoCargo.FINANCEIRO_TESOURARIA &&
-          ['1.2.01.05.01.00.00', '1.2.00.00.00.00.00'].includes(codigosecao)) ||
+          ['1.2.01.05.01.00.00', enumCodSecao.DIRETORIA_ADJUNTA_FINANCAS_RECURSOS_HUMANOS].includes(
+            codigosecao,
+          )) ||
         permissao === permissaoCargo.DIRETOR_ADJUNTO ||
         permissao === permissaoCargo.ASSISTENTE ||
-        ['1.2.01.05.01.00.00', '1.2.00.00.00.00.00'].includes(codigosecao)
+        ['1.2.01.05.01.00.00', enumCodSecao.DIRETORIA_ADJUNTA_FINANCAS_RECURSOS_HUMANOS].includes(
+          codigosecao,
+        )
       ) {
         conditions.push(
-          `a.CODIGO != '1.0.00.00.00.00.00' and a.CODIGO LIKE '${codigosecao.substring(0, 5)}%'`,
+          `a.CODIGO != '${enumCodSecao.DIRETOR_EXECUTIVO}' and a.CODIGO LIKE '${codigosecao.substring(0, 5)}%'`,
         );
       } else if (
-        //GERENTE
         permissao === permissaoCargo.GERENTE ||
-        //RESPONSAVEL TÉCNICO DA SEDE O TRANSPORTE
         permissao === permissaoCargo.RESP_TEC_TRANSPORTE ||
         permissao === permissaoCargo.RESP_TECNICO ||
         permissao === permissaoCargo.ASSESSORIA_OUVIDORIA
@@ -291,7 +299,6 @@ export class autorizaService {
         conditions.push(`a.CODIGO LIKE :SETOR`);
         queryParams['SETOR'] = codigosecao;
       } else if (permissao === permissaoCargo.GTCAMPO) {
-        //RESPONSÁVEL TÉCNICO DE CAMPO
         conditions.push(
           `a.CODIGO IN (SELECT e.codsecao FROM rm.psubstchefe e WHERE e.chapasubst = :chapa AND e.datafim >= SYSDATE)`,
         );
@@ -302,7 +309,6 @@ export class autorizaService {
       if (conditions.length > 0) {
         query += ` AND ` + conditions.join(' AND ');
       }
-
       // Adiciona ORDER BY corretamente
       query += ` ORDER BY a.DESCRICAO`;
 
@@ -333,7 +339,7 @@ export class autorizaService {
     }
   }
 
-  async autorizarRecurso(params: AutorizarRecursoDto, user: AuthUserDto) {
+  async autorizarNega(params: AutorizarRecursoDto, user: AuthUserDto) {
     try {
       await this.autorizaRepository.manager.transaction(async (transactionalEntityManager) => {
         // Atualizar o status do item para autorizado

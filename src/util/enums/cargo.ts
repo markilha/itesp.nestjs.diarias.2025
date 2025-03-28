@@ -69,3 +69,9 @@ export enum permissaoCargo {
   ESTAGIARIO = 18, // Estagiário
   PERIODO_NAO_SELECIONADO = 100, // Não existe período selecionado
 }
+
+export enum enumCodSecao {
+  DIRETOR_EXECUTIVO = '1.0.00.00.00.00.00',
+  GABINETE_DIRETORIA_EXECUTIVA = '1.1.01.00.00.00.00',
+  DIRETORIA_ADJUNTA_FINANCAS_RECURSOS_HUMANOS = '1.2.00.00.00.00.00', // Diretor Adjunto
+}
