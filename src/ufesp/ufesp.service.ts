@@ -1,110 +1,102 @@
 /* istanbul ignore file */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UferpsEntity } from '../database/db_oracle/entities/UferpsEntity';
-import { FindOptionsWhere, Repository } from 'typeorm';
-import { FindAllParams, UfespDto } from './ufespDto';
+import { UfespEntity } from '../database/db_oracle/entities/UfespEntity';
+import { Repository } from 'typeorm';
 import { getPaginatedQuery } from '../util/paginacao/paginaQuery';
+import { CreateUfespDto } from './dto/create-ufesp.dto';
+import { UpdateUfespDto } from './dto/update-ufesp.dto';
+import { UfespParamsDto } from './dto/ufesp-params.dto';
+import { UfespDto } from './dto/ufesp.dto';
 
 @Injectable()
 export class UfespService {
   constructor(
-    @InjectRepository(UferpsEntity, 'oracleConnection')
-    private uferpsRepository: Repository<UferpsEntity>,
+    @InjectRepository(UfespEntity, 'oracleConnection')
+    private ufespRepository: Repository<UfespEntity>,
   ) {}
 
-  async create(createUferpsvalorDto: UfespDto): Promise<UfespDto> {
-    try {
-      const uferpsvalor = this.uferpsRepository.create(createUferpsvalorDto);
-      return this.uferpsRepository.save(uferpsvalor);
-    } catch (error) {
-      console.log(error);
-      throw new HttpException('Erro ao criar a ufesp', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+  async findAll(params: UfespParamsDto): Promise<[number, UfespEntity[]]> {
+    const page = params.page ?? 1;
+    const limit = params.limit ?? 500;
+
+    const startRow = (page - 1) * limit + 1;
+    const endRow = page * limit;
+
+    const query = this.ufespRepository
+      .createQueryBuilder('r')
+      .select([
+        'r.UFE_ID_CODIGO as "ufeIdCodigo"',
+        'r.TDE_ID_CODIGO as "tdeIdCodigo"',
+        'r.UFE_VALOR as "ufeValor"',
+        'r.UFE_DTINICIO as "ufeDtInicio"',
+        'r.UFE_DTFINAL as "ufeDtFinal"',
+      ])
+      .orderBy('r.UFE_DTINICIO', 'ASC');
+
+    const paginatedQuery = getPaginatedQuery(query, startRow, endRow);
+    const entities: Array<UfespEntity & { TOTAL_COUNT: number }> =
+      await this.ufespRepository.query(paginatedQuery);
+
+    return [entities[0].TOTAL_COUNT, entities.map((entity) => new UfespEntity(entity))];
   }
 
-  async update(updateValue: UfespDto): Promise<UfespDto> {
-    const result = await this.findOne(updateValue.ufeIdCodigo);
-    this.uferpsRepository.merge(result, updateValue);
-    return this.uferpsRepository.save(result);
+  async findOne(id: number): Promise<UfespEntity> {
+    const entity = await this.ufespRepository.findOneBy({
+      ufeIdCodigo: id,
+    });
+
+    if (!entity) throw new NotFoundException('Ufersp nao encontrada');
+
+    return entity;
   }
 
-  //findOne
-  async findOne(id: number): Promise<UfespDto> {
-    try {
-      return await this.uferpsRepository.findOneOrFail({
-        where: { ufeIdCodigo: id },
-      });
-    } catch (error) {
-      throw new HttpException('Ufesp não encontrada', HttpStatus.NOT_FOUND);
-    }
+  async create(payload: CreateUfespDto): Promise<UfespEntity> {
+    const entity = new UfespEntity(payload);
+    return this.ufespRepository.save(entity);
+  }
+
+  async update(id: number, payload: UpdateUfespDto): Promise<UfespEntity> {
+    const current = await this.findOne(id);
+
+    if (!current) throw new NotFoundException('Ufersp nao encontrada');
+
+    const entity = new UfespEntity({
+      ...current,
+      ...payload,
+    });
+
+    return this.ufespRepository.save(entity);
   }
 
   async remove(id: number): Promise<void> {
-    try {
-      await this.uferpsRepository.delete(id);
-    } catch (error) {
-      console.log(error);
-      throw new HttpException('Erro ao remover a ufesp', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    await this.ufespRepository.delete(id);
   }
 
-  async findAll(params: FindAllParams): Promise<UfespDto[]> {
-    try {
-      const pageNumber = params.page ?? 1;
-      const pageSize = params.limit ?? 500;
-      const startRow = (pageNumber - 1) * pageSize + 1;
-      const endRow = pageNumber * pageSize;
-      const searchParams: FindOptionsWhere<UferpsEntity> = {};
-
-      if (params.ufeIdCodigo) {
-        searchParams['ufeIdCodigo'] = params.ufeIdCodigo;
-      }
-      const queryBuilder = this.uferpsRepository
-        .createQueryBuilder('r')
-        .select([
-          'r.UFE_ID_CODIGO as "ufeIdCodigo"',
-          'r.TDE_ID_CODIGO as "tdeIdCodigo"',
-          'r.UFE_VALOR as "ufeValor"',
-          'r.UFE_DTINICIO as "ufeDtInicio"',
-          'r.UFE_DTFINAL as "ufeDtFinal"',
-        ])
-        .where(searchParams);
-
-      const paginatedQuery = getPaginatedQuery(queryBuilder, startRow, endRow);
-      const parameters = Object.values(queryBuilder.getParameters());
-      const result = await this.uferpsRepository.query(paginatedQuery, parameters);
-
-      return result;
-    } catch (error) {
-      console.log(error);
-      throw new HttpException('Não foi possível buscar os docs', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  // Novo método para encontrar o valor mais atual
-  async findMostRecentValue(): Promise<UfespDto | undefined> {
-    return this.uferpsRepository
+  async getLast(): Promise<UfespEntity | undefined> {
+    const entity = await this.ufespRepository
       .createQueryBuilder('u')
       .orderBy('u.ufeDtFinal', 'DESC')
       .addOrderBy('u.ufeDtInicio', 'DESC')
       .getOne();
-  }
 
-  // Inserir uma data e retornar o valor da UFESP naquela data
+    if (!entity) throw new NotFoundException('Ufersp nao encontrada');
+
+    return entity;
+  }
 
   async findValueByDate(dateString: string | Date): Promise<UfespDto | null> {
     try {
       const date = dateString instanceof Date ? dateString : new Date(dateString);
 
-      let result = await this.uferpsRepository
+      let result = await this.ufespRepository
         .createQueryBuilder('u')
         .where(':date BETWEEN u.ufeDtInicio AND u.ufeDtFinal', { date }) // Utiliza BETWEEN para simplificar
         .getOne();
 
       // Se não encontrar, busca o valor anterior à data
       if (!result) {
-        result = await this.uferpsRepository
+        result = await this.ufespRepository
           .createQueryBuilder('u')
           .where('u.ufeDtFinal < :date', { date }) // Reutiliza o mesmo valor
           .orderBy('u.ufeDtFinal', 'DESC')

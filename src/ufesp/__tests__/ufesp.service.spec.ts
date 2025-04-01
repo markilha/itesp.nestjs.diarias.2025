@@ -5,7 +5,6 @@ import { UferpsEntity } from '../../database/db_mysql/entities/UferpsEntity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { mocksUfesp, ufespData, updateData } from '../__mocks__/mocks';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { UfespDto } from '../ufespDto';
 
 describe('UfespService', () => {
   let service: UfespService;
@@ -80,7 +79,7 @@ describe('UfespService', () => {
 
       jest.spyOn(ufespRepository, 'createQueryBuilder').mockReturnValue(queryBuilderMock as any);
 
-      const result = await service.findMostRecentValue();
+      const result = await service.getLast();
       expect(result).toEqual(ufespData);
       expect(queryBuilderMock.orderBy).toHaveBeenCalledWith('u.ufeDtFinal', 'DESC');
       expect(queryBuilderMock.addOrderBy).toHaveBeenCalledWith('u.ufeDtInicio', 'DESC');

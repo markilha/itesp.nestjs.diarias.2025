@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { UfespService } from './ufesp.service';
 import { UfespController } from './ufesp.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UferpsEntity } from '../database/db_oracle/entities/UferpsEntity';
+import { UfespEntity } from '../database/db_oracle/entities/UfespEntity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UferpsEntity], 'oracleConnection')],
+  imports: [TypeOrmModule.forFeature([UfespEntity], 'oracleConnection')],
   providers: [UfespService],
   controllers: [UfespController],
   exports: [UfespService],
