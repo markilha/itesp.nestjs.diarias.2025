@@ -20,6 +20,8 @@ export class FindAllParams {
   @ApiProperty({ required: false })
   CODSECAO?: string;
   @ApiProperty({ required: false })
+  @ApiProperty({ required: false })
+  SOLICITANTE?: string;
   STATUS?: string;
   page?: number;
   @ApiProperty({ required: false })
