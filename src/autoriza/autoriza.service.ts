@@ -6,17 +6,19 @@ import { AutorizarRecursoDto, CarreagaSetorDto, FindAllParams } from './autoriza
 
 import { EnumAutorizacao } from 'src/util/enums/autorizacao';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
-import { permissaoCargo } from 'src/util/enums/cargo';
+import { enumCodSecao, permissaoCargo } from 'src/util/enums/cargo';
 import { sqls } from 'src/util/crudOracle/consultas';
 import { updates } from 'src/util/crudOracle/updates';
 import { inserts } from 'src/util/crudOracle/inserts';
 import { procedures } from 'src/util/crudOracle/procedures';
+import { PpessoaService } from 'src/ppessoa/ppessoa.service';
 
 @Injectable()
 export class autorizaService {
   constructor(
     @InjectRepository(autorizaEntity, 'oracleConnection')
     private autorizaRepository: Repository<autorizaEntity>,
+    private ppessoaService: PpessoaService,
   ) {}
 
   async findAll(
@@ -31,6 +33,7 @@ export class autorizaService {
       const rreIdCodigo = params.RRE_ID_CODIGO;
       const dirIdCodigo = params.DIR_ID_CODIGO;
       const stsIdCodigo = params.STS_ID_CODIGO;
+      const solicitante = params.SOLICITANTE;
 
       // Query para contar o total de registros (sem filtros)
       const countQueryBuilder = this.autorizaRepository
@@ -58,6 +61,18 @@ export class autorizaService {
         .orderBy('autoriza.AUT_ID_CODIGO');
 
       // Aplicando filtros nas queries de dados e total filtrado
+
+      if (solicitante) {
+        filteredCountQueryBuilder.andWhere(
+          'UPPER(autoriza.AUT_SOLICITA) LIKE UPPER(:solicitante)',
+          {
+            solicitante: `%${solicitante}%`,
+          },
+        );
+        dataQueryBuilder.andWhere('UPPER(autoriza.AUT_SOLICITA) LIKE UPPER(:solicitante)', {
+          solicitante: `%${solicitante}%`,
+        });
+      }
       if (sqeIdCodigo) {
         filteredCountQueryBuilder.andWhere('autoriza.SQE_ID_CODIGO = :sqeIdCodigo', {
           sqeIdCodigo,
@@ -107,11 +122,12 @@ export class autorizaService {
     params: FindAllParams,
   ): Promise<{ data: any[]; total: number; totalFiltrado: number }> {
     try {
-      //userLogado
+      //Dados usuarios logado
+      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: user.chapa });
+
       const page = params.page || 1;
       const limit = params.limit || 1000;
       const offset = (page - 1) * limit;
-
       const chapa = params.CHAPA;
       const sqeidcodigo = params.SQE_ID_CODIGO;
       const dirIdCodigo = params.DIR_ID_CODIGO;
@@ -218,6 +234,12 @@ export class autorizaService {
         conditions.push(`C.CODSECAO LIKE  :CODSE
         `);
         queryParams['CODSE'] = codigosecao + '%';
+      } else {
+        const pesquisa = await this.filtrarSetorLike(PERMISSAO, CODSECAO);
+        if (pesquisa) {
+          conditions.push(pesquisa);
+          queryParams['chapalogado'] = user.chapa;
+        }
       }
 
       //JUNTAR CONDIÇÕES
@@ -254,6 +276,10 @@ export class autorizaService {
       const codigosecao = user.codsecao;
       const chapalogado = user.chapa;
 
+      //MOCK DIRETORIA
+      // const codigosecao = enumCodSecao.DIRETOR_EXECUTIVO;
+      // const permissao = permissaoCargo.DIRETOR_EXECUTIVO as number;
+
       // Query principal com filtros
       let query = `SELECT a.* FROM RM.PSecao a WHERE LENGTH(a.CODIGO) = 18`;
       const queryParams: any = {};
@@ -267,23 +293,27 @@ export class autorizaService {
         permissao === permissaoCargo.DIRETOR_EXECUTIVO ||
         permissao === permissaoCargo.CHEFE_GABINETE ||
         (permissao === permissaoCargo.FINANCEIRO_TESOURARIA &&
-          ['1.1.01.00.00.00.00', '1.0.00.00.00.00.00'].includes(codigosecao))
+          [enumCodSecao.GABINETE_DIRETORIA_EXECUTIVA, enumCodSecao.DIRETOR_EXECUTIVO].includes(
+            codigosecao as enumCodSecao,
+          ))
       ) {
         conditions.push(`a.CODIGO LIKE '1.1.%' OR a.CODIGO LIKE '1.6.%'`);
       } else if (
         (permissao === permissaoCargo.FINANCEIRO_TESOURARIA &&
-          ['1.2.01.05.01.00.00', '1.2.00.00.00.00.00'].includes(codigosecao)) ||
+          ['1.2.01.05.01.00.00', enumCodSecao.DIRETORIA_ADJUNTA_FINANCAS_RECURSOS_HUMANOS].includes(
+            codigosecao,
+          )) ||
         permissao === permissaoCargo.DIRETOR_ADJUNTO ||
         permissao === permissaoCargo.ASSISTENTE ||
-        ['1.2.01.05.01.00.00', '1.2.00.00.00.00.00'].includes(codigosecao)
+        ['1.2.01.05.01.00.00', enumCodSecao.DIRETORIA_ADJUNTA_FINANCAS_RECURSOS_HUMANOS].includes(
+          codigosecao,
+        )
       ) {
         conditions.push(
-          `a.CODIGO != '1.0.00.00.00.00.00' and a.CODIGO LIKE '${codigosecao.substring(0, 5)}%'`,
+          `a.CODIGO != '${enumCodSecao.DIRETOR_EXECUTIVO}' and a.CODIGO LIKE '${codigosecao.substring(0, 5)}%'`,
         );
       } else if (
-        //GERENTE
         permissao === permissaoCargo.GERENTE ||
-        //RESPONSAVEL TÉCNICO DA SEDE O TRANSPORTE
         permissao === permissaoCargo.RESP_TEC_TRANSPORTE ||
         permissao === permissaoCargo.RESP_TECNICO ||
         permissao === permissaoCargo.ASSESSORIA_OUVIDORIA
@@ -291,7 +321,6 @@ export class autorizaService {
         conditions.push(`a.CODIGO LIKE :SETOR`);
         queryParams['SETOR'] = codigosecao;
       } else if (permissao === permissaoCargo.GTCAMPO) {
-        //RESPONSÁVEL TÉCNICO DE CAMPO
         conditions.push(
           `a.CODIGO IN (SELECT e.codsecao FROM rm.psubstchefe e WHERE e.chapasubst = :chapa AND e.datafim >= SYSDATE)`,
         );
@@ -302,7 +331,6 @@ export class autorizaService {
       if (conditions.length > 0) {
         query += ` AND ` + conditions.join(' AND ');
       }
-
       // Adiciona ORDER BY corretamente
       query += ` ORDER BY a.DESCRICAO`;
 
@@ -333,7 +361,7 @@ export class autorizaService {
     }
   }
 
-  async autorizarRecurso(params: AutorizarRecursoDto, user: AuthUserDto) {
+  async autorizarNega(params: AutorizarRecursoDto, user: AuthUserDto) {
     try {
       await this.autorizaRepository.manager.transaction(async (transactionalEntityManager) => {
         // Atualizar o status do item para autorizado
@@ -438,6 +466,46 @@ export class autorizaService {
         `Erro ao autorizar recurso para o item ${params.ITE_ID_CODIGO}: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  async filtrarSetorLike(permissao: number, codigosecao: string) {
+    try {
+      //DIRETORIA EXECUTIVA  OU DE - Financeiro
+      if (
+        permissao === permissaoCargo.DIRETOR_EXECUTIVO ||
+        permissao === permissaoCargo.CHEFE_GABINETE ||
+        (permissao === permissaoCargo.FINANCEIRO_TESOURARIA &&
+          [enumCodSecao.GABINETE_DIRETORIA_EXECUTIVA, enumCodSecao.DIRETOR_EXECUTIVO].includes(
+            codigosecao as enumCodSecao,
+          ))
+      ) {
+        return `C.CODSECAO LIKE '1.1.%' OR  C.CODSECAO LIKE '1.6.%'`;
+      } else if (
+        (permissao === permissaoCargo.FINANCEIRO_TESOURARIA &&
+          ['1.2.01.05.01.00.00', enumCodSecao.DIRETORIA_ADJUNTA_FINANCAS_RECURSOS_HUMANOS].includes(
+            codigosecao,
+          )) ||
+        permissao === permissaoCargo.DIRETOR_ADJUNTO ||
+        permissao === permissaoCargo.ASSISTENTE ||
+        ['1.2.01.05.01.00.00', enumCodSecao.DIRETORIA_ADJUNTA_FINANCAS_RECURSOS_HUMANOS].includes(
+          codigosecao,
+        )
+      ) {
+        return `C.CODSECAO != '${enumCodSecao.DIRETOR_EXECUTIVO}' and  C.CODSECAO LIKE '${codigosecao.substring(0, 5)}%'`;
+      } else if (
+        permissao === permissaoCargo.GERENTE ||
+        permissao === permissaoCargo.RESP_TEC_TRANSPORTE ||
+        permissao === permissaoCargo.RESP_TECNICO ||
+        permissao === permissaoCargo.ASSESSORIA_OUVIDORIA
+      ) {
+        return `C.CODSECAO LIKE :SETOR`;
+      } else if (permissao === permissaoCargo.GTCAMPO) {
+        return `C.CODSECAO IN (SELECT e.codsecao FROM rm.psubstchefe e WHERE e.chapasubst = :chapalogado AND e.datafim >= SYSDATE)`;
+      }
+      return null;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

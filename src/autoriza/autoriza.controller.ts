@@ -29,8 +29,8 @@ export class autorizaController {
   async carregaSetor(@CurrentUser() user: AuthUserDto): Promise<{ data: CarreagaSetorDto[] }> {
     return await this.autorizaService.carregarSetores(user);
   }
-  @Get('autorizarecurso')
+  @Get('autorizanega')
   async autorizaRecurso(@Query() params: FindAllParams, @CurrentUser() user: AuthUserDto) {
-    return await this.autorizaService.autorizarRecurso(params, user);
+    return await this.autorizaService.autorizarNega(params, user);
   }
 }
