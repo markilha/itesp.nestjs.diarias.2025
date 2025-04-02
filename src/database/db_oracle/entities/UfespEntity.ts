@@ -1,7 +1,14 @@
-import { Entity, PrimaryColumn, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('S009_UFERPSVALOR', { schema: 'FINANCEIRO' })
-export class UferpsEntity {
+export class UfespEntity {
+
+  constructor(
+    partial: Partial<UfespEntity> | UfespEntity,
+  ) {
+    Object.assign(this, { ...partial });
+  }
+
   @PrimaryGeneratedColumn({ type: 'int', name: 'UFE_ID_CODIGO' })
   ufeIdCodigo: number;
 

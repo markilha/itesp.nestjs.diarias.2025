@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Entity, Column, PrimaryColumn, OneToOne, JoinColumn } from 'typeorm';
 import { MunicipiosIbgIEntity } from './municipiosIBGE';
 import { TransMeioEntity } from './transmeio.entity';
-import { regionalEntity } from './regional.entity';
+import { RegionalEntity } from './regionalEntity';
 
 @Entity('S001_REQUISICAO', { schema: 'TRANSPORTE' })
 export class reqtransEntity {
@@ -90,7 +90,7 @@ export class reqtransEntity {
   @JoinColumn({ name: 'TRA_ID_CODIGO', referencedColumnName: 'traIdCodigo' })
   transmeio?: TransMeioEntity;
 
-  @OneToOne(() => regionalEntity)
+  @OneToOne(() => RegionalEntity)
   @JoinColumn({ name: 'REG_ID_CODIGO', referencedColumnName: 'REG_ID_CODIGO' })
-  regional?: regionalEntity;
+  regional?: RegionalEntity;
 }

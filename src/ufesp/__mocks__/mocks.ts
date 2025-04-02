@@ -1,4 +1,4 @@
-import { UfespDto } from '../ufespDto';
+import { UfespDto } from '../dto/ufesp.dto';
 
 export const mocksUfesp = {
   ufeIdCodigo: 20,
