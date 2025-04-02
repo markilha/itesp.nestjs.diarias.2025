@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { S001RequisicaoService } from './s001_requisicao.service';
 import {
   FindAllAutorizadasParams,

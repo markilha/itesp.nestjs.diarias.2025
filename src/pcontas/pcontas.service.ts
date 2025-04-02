@@ -67,6 +67,7 @@ export class PcontasService {
       const prestPendente = await this.pcontasRepository.query(selecionaPrestPendenteView);
       return prestPendente;
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         'Erro ao buscar as prestações de conta pendentes',
         HttpStatus.INTERNAL_SERVER_ERROR,
