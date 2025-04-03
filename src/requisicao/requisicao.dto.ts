@@ -195,18 +195,6 @@ export class FindAllAutorizadasParams {
   all?: boolean;
 }
 
-export class findMesParams {
-  @ApiProperty()
-  chapa: string;
-  @ApiProperty({
-    description: 'Data a ser considerada; caso não informada, será usada a data atual do sistema',
-    required: false,
-  })
-  dataAtual?: Date;
-  @ApiProperty({ required: false })
-  REQ_STATUS?: string;
-}
-
 export class RequisDto {
   @ApiProperty()
   chapa: string;
@@ -265,4 +253,28 @@ export class requiTotal {
   data: requiPendente[];
   @ApiProperty()
   total: number;
+}
+
+export class findPendentesParams {
+  @ApiProperty({ required: false, type: '000111' })
+  chapa?: string;
+  @ApiProperty({ required: false, type: 'aaaa-mm-dd' })
+  dataInicio?: string;
+  @ApiProperty({ required: false, type: 'aaaa-mm-dd' })
+  dataFinal?: string;
+  @ApiProperty({ required: false, type: "'S', 'N'" })
+  prazoAtivo?: 'S' | 'N';
+}
+
+export class findMesParams {
+  @ApiProperty({ required: false, type: '000111' })
+  chapa?: string;
+  @ApiProperty({
+    type: 'aaaa-mm-dd',
+    description: 'Data a ser considerada; caso não informada, será usada a data atual do sistema',
+    required: false,
+  })
+  dataAtual?: Date;
+  @ApiProperty({ required: false })
+  REQ_STATUS?: string;
 }

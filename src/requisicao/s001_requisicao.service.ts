@@ -6,6 +6,7 @@ import {
   FindAllAutorizadasParams,
   FindAllParams,
   findMesParams,
+  findPendentesParams,
   requiPendente,
   RequisDto,
   requiTotal,
@@ -307,6 +308,23 @@ export class S001RequisicaoService {
     }
   }
 
+  async findOne(sqeIdCodigo: number) {
+    try {
+      const result = await this.requisicaoRepository
+        .createQueryBuilder('r')
+        .where('r.SQE_ID_CODIGO = :sqeIdCodigo', { sqeIdCodigo })
+        .andWhere('ROWNUM = 1')
+        .getRawOne();
+      if (!result) {
+        throw new Error('Saque não encontrado');
+      }
+      return result;
+    } catch (error) {
+      console.error(error);
+      throw new HttpException('Prestação não encontrada', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   async findAllAprovadas(params: FindAllAutorizadasParams, user: AuthUserDto): Promise<any> {
     try {
       const pageNumber = params.page ?? 1;
@@ -401,80 +419,6 @@ export class S001RequisicaoService {
   }
 
   // Busca requisições aprovadas no mes atual
-  // async findMesAtual(params: findMesParams, user: AuthUserDto): Promise<RequisDto[]> {
-  //   try {
-  //     const chapa = params.chapa ? params.chapa : user.chapa;
-  //     console.log('chapa', chapa);
-  //     const dataatual = params.dataAtual ? params.dataAtual : new Date();
-  //     const inicioMes = format(addMonths(startOfMonth(dataatual), 1), 'dd/MM/yyyy 00:00:00');
-  //     const fimMes = format(addMonths(endOfMonth(dataatual), 1), 'dd/MM/yyyy 00:00:00');
-  //     const filterConditions = [];
-  //     const filterValues = [];
-
-  //     filterConditions.push(`
-  //       TO_DATE(A.REQ_DTREQ, 'DD/MM/YYYY HH24:MI:SS')
-  //     BETWEEN
-  //       TO_DATE('${inicioMes}', 'DD/MM/YYYY HH24:MI:SS')
-  //     AND
-  //       TO_DATE('${fimMes}', 'DD/MM/YYYY HH24:MI:SS')
-  //       `);
-
-  //     //FILTRO POR SETOR
-  //     const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: chapa });
-  //     const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'C.CODSECAO');
-  //     if (pesquisa) {
-  //       filterConditions.push(pesquisa);
-  //       filterValues.push(user.chapa);
-  //     } else {
-  //       filterConditions.push('b.CHAPA = :chapa');
-  //       filterValues.push(chapa);
-  //     }
-  //     const query = `
-  //     SELECT
-  //       A.REQ_ID_CODIGO as REQ_ID_CODIGO,
-  //       A.REQ_STATUS as REQ_STATUS,
-  //       A.REQ_DTREQ as REQ_DTREQ,
-  //       B.CHAPA as CHAPA,
-  //       C.CODSECAO as CODSECAO
-  //     from
-  //       Transporte.S001_Requisicao A,
-  //       Transporte.S001_Usureq B,
-  //       Rm.Pfunc C
-  //     Where
-  //       A.REQ_ID_CODIGO = B.REQ_ID_CODIGO
-  //       and
-  //       B.CHAPA = C.CHAPA
-  //     AND
-  //       a.REQ_STATUS IN ('AUTORIZADA PELO DIRETOR', 'AUTORIZADA PELO DIRETOR EXECUTIVO')
-  //     AND
-  //       ${filterConditions.join(' AND ')}
-  //       `;
-  //     console.log('query', query);
-
-  //     const requisicao = await this.requisicaoRepository.query(query, filterValues);
-
-  //     const retornoRequi = requisicao.map((requis) => {
-  //       const newdate = DataUtils.converterStringParaData(requis?.REQ_DTREQ);
-
-  //       const periodo = calcularPeriodo(newdate);
-  //       return new RequisDto({
-  //         chapa: requis?.CHAPA,
-  //         reqIdCodigo: requis?.REQ_ID_CODIGO,
-  //         reqStatus: requis?.REQ_STATUS,
-  //         reqDtReq: requis?.REQ_DTREQ,
-  //         periodoAprovacao: periodo,
-  //       });
-  //     });
-
-  //     return retornoRequi;
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new HttpException(
-  //       `Erro buscar requisições aprovadas: ${error}`,
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
 
   async findMesAtual(params: findMesParams, user: AuthUserDto): Promise<RequisDto[]> {
     try {
@@ -581,68 +525,78 @@ export class S001RequisicaoService {
     }
   }
 
-  async findOne(sqeIdCodigo: number) {
-    try {
-      const result = await this.requisicaoRepository
-        .createQueryBuilder('r')
-        .where('r.SQE_ID_CODIGO = :sqeIdCodigo', { sqeIdCodigo })
-        .andWhere('ROWNUM = 1')
-        .getRawOne();
-      if (!result) {
-        throw new Error('Saque não encontrado');
-      }
-      return result;
-    } catch (error) {
-      console.error(error);
-      throw new HttpException('Prestação não encontrada', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
   // Busca requisições pendentes
-  async findPendentes(user: AuthUserDto): Promise<requiTotal> {
+  async findPendentes(user: AuthUserDto, params: findPendentesParams): Promise<requiTotal> {
     try {
       const filterConditions = [];
-      const filterValues = [];
-      //Dados usuarios logado
+      const filterValues: Record<string, any> = {};
+
+      // Dados do usuário logado
       const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: user.chapa });
       const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'b.CODSECAO');
 
-      // const per = permissaoFindAll(user.permissao);
-      if (pesquisa) {
-        filterConditions.push(pesquisa);
-        filterValues.push(user.chapa);
-      } else {
+      // Se não tem permissão de chefia, retorna apenas os dados do usuário logado
+      if (params.chapa) {
         filterConditions.push('b.CHAPA = :chapa');
-        filterValues.push(user.chapa);
+        filterValues.chapa = params.chapa;
+      } else {
+        if (pesquisa) {
+          filterConditions.push(pesquisa);
+          filterValues.chapa = user.chapa;
+        } else {
+          filterConditions.push('b.CHAPA = :chapa');
+          filterValues.chapa = user.chapa;
+        }
+      }
+
+      // Filtro por data de início
+      if (params.dataInicio) {
+        filterConditions.push("d.REQ_DTSAIDA >= TO_DATE(:dataInicio, 'YYYY-MM-DD')");
+        filterValues.dataInicio = params.dataInicio;
+      }
+
+      // Filtro por data final
+      if (params.dataFinal) {
+        filterConditions.push("d.REQ_DTSAIDA <= TO_DATE(:dataFinal, 'YYYY-MM-DD')");
+        filterValues.dataFinal = params.dataFinal;
+      }
+
+      if (params.prazoAtivo) {
+        filterConditions.push('b.PRA_ATIVO = :prazoAtivo');
+        filterValues.prazoAtivo = params.prazoAtivo;
+      } else {
+        filterConditions.push("b.PRA_ATIVO = 'N'");
       }
 
       const stringQuery = ` 
-     SELECT    
-      a.SQE_ID_CODIGO as SQE_ID_CODIGO, 
-      d.REQ_ID_CODIGO as REQ_ID_CODIGO,
-      d.REQ_DTSAIDA ,   
-      d.REQ_DTRET,    
-      a.SQE_EFETIVO as SQE_EFETIVO,
-      a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,
-      a.SQE_DTSAQUE as SQE_DTSAQUE,
-      a.SQE_VLSAQUE as SQE_VLSAQUE,
-      a.SQE_DTPREST ,     
-      b.CHAPA as CHAPA,     
-      b.PRA_ATIVO as PRA_ATIVO,
-      b.CODSECAO   
-    FROM FINANCEIRO.s009_saque a
-    INNER JOIN FINANCEIRO.V009_ITENSREQREC b ON a.ITE_ID_CODIGO = b.ITE_ID_CODIGO 
-    INNER JOIN FINANCEIRO.s009_reqnumerario c ON a.SQE_ID_CODIGO = c.SQE_ID_CODIGO
-    INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO 
-    WHERE a.SQE_TIPOSAQUE = 'N' 
-    AND b.PRA_ATIVO = 'N'     
-    AND a.SQE_EFETIVO IN ('S', 'C', 'R', 'E')
-    AND (a.SQE_DTPREST IS NULL OR a.SQE_VLPREST = 0)
-    AND d.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')
-    AND ${filterConditions.join(' AND ')}
-    ORDER BY d.REQ_DTSAIDA DESC  
-  `;
-      const consulta = await this.requisicaoRepository.query(stringQuery, filterValues);
+        SELECT    
+          a.SQE_ID_CODIGO as SQE_ID_CODIGO, 
+          d.REQ_ID_CODIGO as SQE_ID_CODIGO,
+          d.REQ_DTSAIDA ,   
+          d.REQ_DTRET,    
+          a.SQE_EFETIVO as SQE_EFETIVO,
+          a.SQE_TIPOSAQUE as SQE_TIPOSAQUE,
+          a.SQE_DTSAQUE as SQE_DTSAQUE,
+          a.SQE_VLSAQUE as SQE_VLSAQUE,
+          a.SQE_DTPREST ,     
+          b.CHAPA as CHAPA,     
+          b.PRA_ATIVO as PRA_ATIVO,
+          b.CODSECAO   
+        FROM FINANCEIRO.s009_saque a
+        INNER JOIN FINANCEIRO.V009_ITENSREQREC b ON a.ITE_ID_CODIGO = b.ITE_ID_CODIGO 
+        INNER JOIN FINANCEIRO.s009_reqnumerario c ON a.SQE_ID_CODIGO = c.SQE_ID_CODIGO
+        INNER JOIN TRANSPORTE.s001_requisicao d ON c.REQ_ID_CODIGO = d.REQ_ID_CODIGO 
+        WHERE a.SQE_TIPOSAQUE = 'N'        
+        AND a.SQE_EFETIVO IN ('S', 'C', 'R', 'E')
+        AND (a.SQE_DTPREST IS NULL OR a.SQE_VLPREST = 0)
+        AND d.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')
+        AND ${filterConditions.join(' AND ')}
+        ORDER BY d.REQ_DTSAIDA DESC  
+      `;
+      const consulta = await this.requisicaoRepository.query(
+        stringQuery,
+        Object.values(filterValues),
+      );
 
       const retorno = consulta.map((req) => {
         const periodo = calcularPeriodo(req.REQ_DTRET);
