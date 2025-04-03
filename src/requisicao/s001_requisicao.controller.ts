@@ -64,11 +64,6 @@ export class S001RequisicaoController {
     @CurrentUser() user: AuthUserDto,
     @Query() params: FindAllAutorizadasParams,
   ): Promise<RequisDto[]> {
-    if (!params.all) {
-      if (!params.chapa) {
-        params.chapa = user.chapa;
-      }
-    }
     return await this.requisicao.findAllAprovadas(params, user);
   }
 

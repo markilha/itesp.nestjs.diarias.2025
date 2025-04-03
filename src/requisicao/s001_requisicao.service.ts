@@ -336,11 +336,18 @@ export class S001RequisicaoService {
       // Filtro de data
       searchParams['reqDtSaida'] = MoreThanOrEqual(new Date('2009-08-10'));
 
-      // Filtro de status
-      searchParams['reqStatus'] = In([
-        'AUTORIZADA PELO DIRETOR',
-        'AUTORIZADA PELO DIRETOR EXECUTIVO',
-      ]);
+      // Filtro de STATUS
+      if (params.reqstatus) {
+        let reqStatusArray: string[] = [];
+        reqStatusArray = params.reqstatus.split(',').map((status) => status.trim());
+        searchParams['reqStatus'] = In(reqStatusArray);
+      } else {
+        // Filtro de status
+        searchParams['reqStatus'] = In([
+          'AUTORIZADA PELO DIRETOR',
+          'AUTORIZADA PELO DIRETOR EXECUTIVO',
+        ]);
+      }
 
       // Ordenação
       const orderColumn = params.orderBy || 'reqIdCodigo';
@@ -368,8 +375,8 @@ export class S001RequisicaoService {
         .where(searchParams);
 
       if (params.nome) {
-        queryBuilder.andWhere('LOWER(fs.nome) LIKE :nome', {
-          nome: `%${params.nome.toLowerCase()}%`,
+        queryBuilder.andWhere('LOWER(fs.nome) LIKE LOWER(:nome)', {
+          nome: `%${params.nome}%`,
         });
       }
 
@@ -377,12 +384,15 @@ export class S001RequisicaoService {
       const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: user.chapa });
       const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'fs.codsecao');
 
-      if (pesquisa) {
-        queryBuilder.andWhere(pesquisa, { chapa: user.chapa });
-      } else if (params.chapa) {
-        queryBuilder.andWhere('r.chapa = :chapa', { chapa: user.chapa });
+      if (params.chapa) {
+        queryBuilder.andWhere('r.chapa = :chapa', { chapa: params.chapa });
+      } else {
+        if (pesquisa) {
+          queryBuilder.andWhere(pesquisa, { chapa: user.chapa });
+        } else {
+          queryBuilder.andWhere('r.chapa = :chapa', { chapa: user.chapa });
+        }
       }
-
       // Ordenação
       queryBuilder.orderBy(`r.${orderColumn}`, orderDirection);
 

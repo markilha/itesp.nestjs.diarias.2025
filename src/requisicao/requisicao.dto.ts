@@ -184,6 +184,8 @@ export class FindAllAutorizadasParams {
   @ApiProperty({ required: false })
   reqIdCodigo?: number;
   @ApiProperty({ required: false })
+  reqstatus?: string;
+  @ApiProperty({ required: false })
   page?: number;
   @ApiProperty({ required: false })
   limit?: number;
@@ -191,8 +193,6 @@ export class FindAllAutorizadasParams {
   orderBy?: string;
   @ApiProperty({ required: false })
   orderDirection?: 'ASC' | 'DESC';
-  @ApiProperty({ required: false })
-  all?: boolean;
 }
 
 export class RequisDto {
