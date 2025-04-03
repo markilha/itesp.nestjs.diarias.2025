@@ -34,6 +34,7 @@ export class autorizaService {
       const dirIdCodigo = params.DIR_ID_CODIGO;
       const stsIdCodigo = params.STS_ID_CODIGO;
       const solicitante = params.SOLICITANTE;
+      const regionalId = params.regionalId;
 
       // Query para contar o total de registros (sem filtros)
       const countQueryBuilder = this.autorizaRepository
@@ -96,6 +97,24 @@ export class autorizaService {
         dataQueryBuilder.andWhere('autoriza.DIR_ID_CODIGO = :dirIdCodigo', { dirIdCodigo });
       }
 
+      if (regionalId) {
+        filteredCountQueryBuilder
+          .leftJoin(
+            'COMUM.S000_SUBORDINA1',
+            'S000_SUBORDINA1',
+            'S000_SUBORDINA1.DIR_ID_CODIGO = autoriza.DIR_ID_CODIGO',
+          )
+          .andWhere('S000_SUBORDINA1.REG_ID_CODIGO = :regionalId', { regionalId })
+
+        dataQueryBuilder
+          .leftJoin(
+            'COMUM.S000_SUBORDINA1',
+            'S000_SUBORDINA1',
+            'S000_SUBORDINA1.DIR_ID_CODIGO = autoriza.DIR_ID_CODIGO',
+          )
+          .andWhere('S000_SUBORDINA1.REG_ID_CODIGO = :regionalId', { regionalId })
+      }
+
       if (stsIdCodigo) {
         const stsIds = stsIdCodigo.split(',').map((id) => parseInt(id.trim(), 10));
         filteredCountQueryBuilder.andWhere('autoriza.STS_ID_CODIGO IN (:...stsIds)', { stsIds });
@@ -136,6 +155,7 @@ export class autorizaService {
       const sqeefetivo = params.SQE_EFETIVO;
       const codigosecao = params.CODSECAO;
       const requisicao = params.REQ_ID_CODIGO;
+      const regionalId = params.regionalId;
 
       // Query para obter o total SEM filtros
       const totalQuery = `
@@ -179,6 +199,7 @@ export class autorizaService {
           JOIN FINANCEIRO.S009_STATUS F ON A.STS_ID_CODIGO = F.STS_ID_CODIGO    
           JOIN RM.PSECAO G ON C.CODSECAO = G.CODIGO   
           JOIN FINANCEIRO.V009_DiretoriaGeral H ON A.DIR_ID_CODIGO = H.DIR_ID_CODIGO
+          JOIN COMUM.S000_SUBORDINA1 I ON I.DIR_ID_CODIGO = A.DIR_ID_CODIGO
       `;
       const queryParams: any = {};
       const conditions: string[] = [];
@@ -187,6 +208,12 @@ export class autorizaService {
         conditions.push(`A.CHAPA = :chapa`);
         queryParams['chapa'] = chapa;
       }
+
+      if (regionalId) {
+        conditions.push(`I.REG_ID_CODIGO = :regionalId`);
+        queryParams['regionalId'] = regionalId;
+      }
+
       if (sqeidcodigo) {
         conditions.push(`B.SQE_ID_CODIGO  = :sqeidcodigo`);
         queryParams['sqeidcodigo'] = sqeidcodigo;

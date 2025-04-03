@@ -2,6 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class FindAllParams {
   @ApiProperty({ required: false })
+  regionalId?: number;
+
+  @ApiProperty({ required: false })
   CHAPA?: string;
   @ApiProperty({ required: false })
   SQE_ID_CODIGO?: number;
