@@ -1,10 +1,12 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
 import { RegionaisService } from './regionais.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PaginatedRegionaisDto } from './dtos/paginated-regionais.dto';
 import { RegionaisDto } from './dtos/regionais.dto';
 import { RegionaisParamsDto } from './dtos/regionais-params.dto';
+import { AuthGuard } from '../auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @ApiTags('Regionais')
 @Controller('regionais')
 export class RegionaisController {
@@ -14,7 +16,16 @@ export class RegionaisController {
   @ApiResponse({ type: () => PaginatedRegionaisDto })
   @Get()
   async findAll(@Query() params: RegionaisParamsDto): Promise<PaginatedRegionaisDto> {
-    return await this.service.findAll(params);
+    return this.service.findAll(params).then(
+      (result) =>
+        new PaginatedRegionaisDto({
+          data: result[1].map((entity) => new RegionaisDto(entity)),
+          total: result[0],
+          page: +params.page,
+          pageCount: Math.ceil(result[0] / params.limit),
+          count: result[1].length,
+        }),
+    );
   }
 
   @ApiOperation({ summary: 'Buscar regional pelo id' })

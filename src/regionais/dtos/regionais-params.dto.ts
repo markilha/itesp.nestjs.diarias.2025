@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegionaisParamsDto {
-  @ApiProperty({ required: false, example: '1', description: 'Página atual (começa em 0)' })
+  @ApiProperty({ required: false, example: '1', description: 'Página atual' })
   page: number;
 
   @ApiProperty({ required: false, example: '100', description: 'Total de itens por pagina' })

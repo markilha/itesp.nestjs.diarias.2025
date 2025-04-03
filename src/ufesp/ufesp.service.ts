@@ -1,5 +1,12 @@
 /* istanbul ignore file */
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UfespEntity } from '../database/db_oracle/entities/UfespEntity';
 import { Repository } from 'typeorm';
@@ -11,6 +18,7 @@ import { UfespDto } from './dto/ufesp.dto';
 
 @Injectable()
 export class UfespService {
+
   constructor(
     @InjectRepository(UfespEntity, 'oracleConnection')
     private ufespRepository: Repository<UfespEntity>,
@@ -46,25 +54,49 @@ export class UfespService {
       ufeIdCodigo: id,
     });
 
-    if (!entity) throw new NotFoundException('Ufersp nao encontrada');
+    if (!entity) throw new NotFoundException('UFESP nao encontrada');
 
     return entity;
   }
 
   async create(payload: CreateUfespDto): Promise<UfespEntity> {
     const entity = new UfespEntity(payload);
+
+    if (entity.ufeDtFinal < entity.ufeDtInicio)
+      throw new BadRequestException('A data final não pode ser menor que a data de inicio');
+
+    const existing = await this.ufespRepository
+      .createQueryBuilder('ufe')
+      .where(':date BETWEEN ufe.ufeDtInicio AND ufe.ufeDtFinal', { date: entity.ufeDtInicio })
+      .orWhere(':date BETWEEN ufe.ufeDtInicio AND ufe.ufeDtFinal', { date: entity.ufeDtFinal })
+      .getOne();
+
+    if (existing) throw new ConflictException('Ja existe um UFESP com a data de inicio ou final');
+
     return this.ufespRepository.save(entity);
   }
 
   async update(id: number, payload: UpdateUfespDto): Promise<UfespEntity> {
     const current = await this.findOne(id);
 
-    if (!current) throw new NotFoundException('Ufersp nao encontrada');
+    if (!current) throw new NotFoundException('UFESP nao encontrada');
 
     const entity = new UfespEntity({
       ...current,
       ...payload,
     });
+
+    if (entity.ufeDtFinal < entity.ufeDtInicio)
+      throw new BadRequestException('A data final não pode ser menor que a data de inicio');
+
+    const existing = await this.ufespRepository
+      .createQueryBuilder('ufe')
+      .where(':date BETWEEN ufe.ufeDtInicio AND ufe.ufeDtFinal', { date: entity.ufeDtInicio })
+      .orWhere(':date BETWEEN ufe.ufeDtInicio AND ufe.ufeDtFinal', { date: entity.ufeDtFinal })
+      .andWhere('ufe.UFE_ID_CODIGO != :id', { id })
+      .getOne();
+
+    if (existing) throw new ConflictException('Ja existe um UFESP com a data de inicio ou final');
 
     return this.ufespRepository.save(entity);
   }
