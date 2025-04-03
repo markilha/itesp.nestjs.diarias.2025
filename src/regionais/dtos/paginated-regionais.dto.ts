@@ -3,6 +3,10 @@ import { RegionaisDto } from './regionais.dto';
 
 export class PaginatedRegionaisDto {
 
+  constructor(partial: Partial<PaginatedRegionaisDto>) {
+    Object.assign(this, partial);
+  }
+
   @ApiProperty({
     example: 1,
     description: 'Página atual',
@@ -10,22 +14,22 @@ export class PaginatedRegionaisDto {
   page: number;
 
   @ApiProperty({
-    example: 10,
+    example: 100,
     description: 'Total de itens possíveis',
   })
-  count: number;
-
-  @ApiProperty({
-    example: 100,
-    description: 'Quantidade de itens na pagina',
-  })
-  dataCount: number;
+  total: number;
 
   @ApiProperty({
     example: 10,
     description: 'Total de paginas possíveis',
   })
   pageCount: number;
+
+  @ApiProperty({
+    example: 10,
+    description: 'Quantidade de itens na pagina',
+  })
+  count: number;
 
   @ApiProperty({
     description: 'Lista de regionais',

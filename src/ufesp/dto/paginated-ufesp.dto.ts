@@ -2,6 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { UfespDto } from './ufesp.dto';
 
 export class PaginatedUfespDto {
+
+  constructor(partial: Partial<PaginatedUfespDto>) {
+    Object.assign(this, partial);
+  }
+
   @ApiProperty({
     example: 1,
     description: 'Página atual',
@@ -32,8 +37,4 @@ export class PaginatedUfespDto {
     type: () => UfespDto,
   })
   data: UfespDto[];
-
-  constructor(partial: Partial<PaginatedUfespDto>) {
-    Object.assign(this, partial);
-  }
 }
