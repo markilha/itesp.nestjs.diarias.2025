@@ -26,6 +26,7 @@ export class FindAllParams {
   @ApiProperty({ required: false })
   SOLICITANTE?: string;
   STATUS?: string;
+  @ApiProperty({ required: false })
   page?: number;
   @ApiProperty({ required: false })
   limit?: number;

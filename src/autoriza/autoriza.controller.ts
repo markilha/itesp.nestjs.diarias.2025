@@ -9,7 +9,7 @@ import { AuthUserDto } from 'src/auth/use.auth.Dto';
 
 @ApiTags('autoriza')
 @Controller('autoriza')
-//@UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 export class autorizaController {
   constructor(private readonly autorizaService: autorizaService) {}
 

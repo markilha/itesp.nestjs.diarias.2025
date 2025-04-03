@@ -99,20 +99,18 @@ export class autorizaService {
 
       if (regionalId) {
         filteredCountQueryBuilder
-          .leftJoin(
-            'COMUM.S000_SUBORDINA1',
-            'S000_SUBORDINA1',
-            'S000_SUBORDINA1.DIR_ID_CODIGO = autoriza.DIR_ID_CODIGO',
-          )
-          .andWhere('S000_SUBORDINA1.REG_ID_CODIGO = :regionalId', { regionalId })
+          .addFrom('FINANCEIRO.S009_ITENSREQREC', 'A')
+          .addFrom('FINANCEIRO.V009_FUNCSALARIO', 'B')
+          .andWhere('A.ITE_ID_CODIGO = autoriza.ITE_ID_CODIGO')
+          .andWhere('B.CHAPA = A.CHAPA')
+          .andWhere('B.REG_ID_CODIGO = :regionalId', { regionalId });
 
         dataQueryBuilder
-          .leftJoin(
-            'COMUM.S000_SUBORDINA1',
-            'S000_SUBORDINA1',
-            'S000_SUBORDINA1.DIR_ID_CODIGO = autoriza.DIR_ID_CODIGO',
-          )
-          .andWhere('S000_SUBORDINA1.REG_ID_CODIGO = :regionalId', { regionalId })
+          .addFrom('FINANCEIRO.S009_ITENSREQREC', 'A')
+          .addFrom('FINANCEIRO.V009_FUNCSALARIO', 'B')
+          .andWhere('A.ITE_ID_CODIGO = autoriza.ITE_ID_CODIGO')
+          .andWhere('B.CHAPA = A.CHAPA')
+          .andWhere('B.REG_ID_CODIGO = :regionalId', { regionalId });
       }
 
       if (stsIdCodigo) {
@@ -199,7 +197,7 @@ export class autorizaService {
           JOIN FINANCEIRO.S009_STATUS F ON A.STS_ID_CODIGO = F.STS_ID_CODIGO    
           JOIN RM.PSECAO G ON C.CODSECAO = G.CODIGO   
           JOIN FINANCEIRO.V009_DiretoriaGeral H ON A.DIR_ID_CODIGO = H.DIR_ID_CODIGO
-          JOIN COMUM.S000_SUBORDINA1 I ON I.DIR_ID_CODIGO = A.DIR_ID_CODIGO
+          JOIN FINANCEIRO.V009_FUNCSALARIO I ON A.CHAPA = I.CHAPA
       `;
       const queryParams: any = {};
       const conditions: string[] = [];
