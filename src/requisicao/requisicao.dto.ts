@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { RequisicaoEntity } from 'src/database/db_oracle/entities/requisicao.entity';
 
 export class RequisicaoDto {
   reqIdCodigo?: number;
@@ -204,6 +203,8 @@ export class findMesParams {
     required: false,
   })
   dataAtual?: Date;
+  @ApiProperty({ required: false })
+  REQ_STATUS?: string;
 }
 
 export class RequisDto {

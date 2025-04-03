@@ -12,6 +12,7 @@ import { updates } from 'src/util/crudOracle/updates';
 import { inserts } from 'src/util/crudOracle/inserts';
 import { procedures } from 'src/util/crudOracle/procedures';
 import { PpessoaService } from 'src/ppessoa/ppessoa.service';
+import { filtrarSetorLike } from 'src/util/permissao/porSecao';
 
 @Injectable()
 export class autorizaService {
@@ -260,7 +261,7 @@ export class autorizaService {
         `);
         queryParams['CODSE'] = codigosecao + '%';
       } else {
-        const pesquisa = await this.filtrarSetorLike(PERMISSAO, CODSECAO);
+        const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'C.CODSECAO');
         if (pesquisa) {
           conditions.push(pesquisa);
           queryParams['chapalogado'] = user.chapa;
@@ -297,8 +298,10 @@ export class autorizaService {
 
   async carregarSetores(user: AuthUserDto): Promise<{ data: CarreagaSetorDto[] }> {
     try {
-      const permissao = user.permissao;
-      const codigosecao = user.codsecao;
+      const { PERMISSAO: permissao, CODSECAO: codigosecao } = await this.ppessoaService.find({
+        chapa: user.chapa,
+      });
+
       const chapalogado = user.chapa;
 
       //MOCK DIRETORIA
@@ -494,43 +497,43 @@ export class autorizaService {
     }
   }
 
-  async filtrarSetorLike(permissao: number, codigosecao: string) {
-    try {
-      //DIRETORIA EXECUTIVA  OU DE - Financeiro
-      if (
-        permissao === permissaoCargo.DIRETOR_EXECUTIVO ||
-        permissao === permissaoCargo.CHEFE_GABINETE ||
-        (permissao === permissaoCargo.FINANCEIRO_TESOURARIA &&
-          [enumCodSecao.GABINETE_DIRETORIA_EXECUTIVA, enumCodSecao.DIRETOR_EXECUTIVO].includes(
-            codigosecao as enumCodSecao,
-          ))
-      ) {
-        return `C.CODSECAO LIKE '1.1.%' OR  C.CODSECAO LIKE '1.6.%'`;
-      } else if (
-        (permissao === permissaoCargo.FINANCEIRO_TESOURARIA &&
-          ['1.2.01.05.01.00.00', enumCodSecao.DIRETORIA_ADJUNTA_FINANCAS_RECURSOS_HUMANOS].includes(
-            codigosecao,
-          )) ||
-        permissao === permissaoCargo.DIRETOR_ADJUNTO ||
-        permissao === permissaoCargo.ASSISTENTE ||
-        ['1.2.01.05.01.00.00', enumCodSecao.DIRETORIA_ADJUNTA_FINANCAS_RECURSOS_HUMANOS].includes(
-          codigosecao,
-        )
-      ) {
-        return `C.CODSECAO != '${enumCodSecao.DIRETOR_EXECUTIVO}' and  C.CODSECAO LIKE '${codigosecao.substring(0, 5)}%'`;
-      } else if (
-        permissao === permissaoCargo.GERENTE ||
-        permissao === permissaoCargo.RESP_TEC_TRANSPORTE ||
-        permissao === permissaoCargo.RESP_TECNICO ||
-        permissao === permissaoCargo.ASSESSORIA_OUVIDORIA
-      ) {
-        return `C.CODSECAO LIKE :SETOR`;
-      } else if (permissao === permissaoCargo.GTCAMPO) {
-        return `C.CODSECAO IN (SELECT e.codsecao FROM rm.psubstchefe e WHERE e.chapasubst = :chapalogado AND e.datafim >= SYSDATE)`;
-      }
-      return null;
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
+  // async filtrarSetorLike(permissao: number, codigosecao: string) {
+  //   try {
+  //     //DIRETORIA EXECUTIVA  OU DE - Financeiro
+  //     if (
+  //       permissao === permissaoCargo.DIRETOR_EXECUTIVO ||
+  //       permissao === permissaoCargo.CHEFE_GABINETE ||
+  //       (permissao === permissaoCargo.FINANCEIRO_TESOURARIA &&
+  //         [enumCodSecao.GABINETE_DIRETORIA_EXECUTIVA, enumCodSecao.DIRETOR_EXECUTIVO].includes(
+  //           codigosecao as enumCodSecao,
+  //         ))
+  //     ) {
+  //       return `C.CODSECAO LIKE '1.1.%' OR  C.CODSECAO LIKE '1.6.%'`;
+  //     } else if (
+  //       (permissao === permissaoCargo.FINANCEIRO_TESOURARIA &&
+  //         ['1.2.01.05.01.00.00', enumCodSecao.DIRETORIA_ADJUNTA_FINANCAS_RECURSOS_HUMANOS].includes(
+  //           codigosecao,
+  //         )) ||
+  //       permissao === permissaoCargo.DIRETOR_ADJUNTO ||
+  //       permissao === permissaoCargo.ASSISTENTE ||
+  //       ['1.2.01.05.01.00.00', enumCodSecao.DIRETORIA_ADJUNTA_FINANCAS_RECURSOS_HUMANOS].includes(
+  //         codigosecao,
+  //       )
+  //     ) {
+  //       return `C.CODSECAO != '${enumCodSecao.DIRETOR_EXECUTIVO}' and  C.CODSECAO LIKE '${codigosecao.substring(0, 5)}%'`;
+  //     } else if (
+  //       permissao === permissaoCargo.GERENTE ||
+  //       permissao === permissaoCargo.RESP_TEC_TRANSPORTE ||
+  //       permissao === permissaoCargo.RESP_TECNICO ||
+  //       permissao === permissaoCargo.ASSESSORIA_OUVIDORIA
+  //     ) {
+  //       return `C.CODSECAO LIKE :SETOR`;
+  //     } else if (permissao === permissaoCargo.GTCAMPO) {
+  //       return `C.CODSECAO IN (SELECT e.codsecao FROM rm.psubstchefe e WHERE e.chapasubst = :chapalogado AND e.datafim >= SYSDATE)`;
+  //     }
+  //     return null;
+  //   } catch (error) {
+  //     throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
 }
