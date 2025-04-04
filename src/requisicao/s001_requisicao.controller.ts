@@ -4,6 +4,7 @@ import {
   FindAllAutorizadasParams,
   FindAllParams,
   findMesParams,
+  findPendentesParams,
   RequisDto,
   requiTotal,
   ReturnRequisicaoDto,
@@ -63,11 +64,6 @@ export class S001RequisicaoController {
     @CurrentUser() user: AuthUserDto,
     @Query() params: FindAllAutorizadasParams,
   ): Promise<RequisDto[]> {
-    if (!params.all) {
-      if (!params.chapa) {
-        params.chapa = user.chapa;
-      }
-    }
     return await this.requisicao.findAllAprovadas(params, user);
   }
 
@@ -109,7 +105,10 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async findPendentes(@CurrentUser() user: AuthUserDto): Promise<requiTotal> {
-    return await this.requisicao.findPendentes(user);
+  async findPendentes(
+    @Query() params: findPendentesParams,
+    @CurrentUser() user: AuthUserDto,
+  ): Promise<requiTotal> {
+    return await this.requisicao.findPendentes(user, params);
   }
 }
