@@ -37,7 +37,7 @@ import { itensreqModule } from './itensreq/itensreq.module';
 import { ndocumentoModule } from './ndocumento/ndocumento.module';
 import { autorizaModule } from './autoriza/autoriza.module';
 import { auditaPlanejaModule } from './auditaPlaneja/auditaPlaneja.module';
-
+import { FuncionariosModule } from './funcionarios/funcionarios.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -75,6 +75,7 @@ import { auditaPlanejaModule } from './auditaPlaneja/auditaPlaneja.module';
     ndocumentoModule,
     autorizaModule,
     auditaPlanejaModule,
+    FuncionariosModule,
   ],
   controllers: [docsController],
   providers: [docsService],
