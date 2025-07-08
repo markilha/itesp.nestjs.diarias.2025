@@ -37,6 +37,8 @@ export interface FindAllFuncionariosDto {
   nome?: string;
   regIdCodigo?: string;
   regDescricao?: string;
+  codsecao?: number;
+  setor?: string;
   page?: number;
   limit?: number;
 }

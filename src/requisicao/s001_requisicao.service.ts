@@ -7,6 +7,7 @@ import {
   FindAllParams,
   findMesParams,
   findPendentesParams,
+  ListSaqueParams,
   requiPendente,
   RequisDto,
   requiTotal,
@@ -35,6 +36,7 @@ import { AuthUserDto } from '../auth/use.auth.Dto';
 import { PpessoaService } from '../ppessoa/ppessoa.service';
 import { filtrarSetorLike } from 'src/util/permissao/porSecao';
 import { gerarFiltroStatus } from 'src/util/gerarFiltro';
+import { filter } from 'rxjs';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -46,7 +48,7 @@ export class S001RequisicaoService {
     private itinirarioService: ItinirarioService,
     private naotrabservice: naotrabService,
     private ppessoaService: PpessoaService,
-  ) {}
+  ) { }
 
   private async buscarItinerario(reqIdCodigo: number) {
     try {
@@ -381,7 +383,7 @@ export class S001RequisicaoService {
       }
 
       //FILTRO POR SETOR
-      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: user.chapa });
+      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: user?.chapa ?? params?.chapa });
       const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'fs.codsecao');
 
       if (params.chapa) {
@@ -393,6 +395,7 @@ export class S001RequisicaoService {
           queryBuilder.andWhere('r.chapa = :chapa', { chapa: user.chapa });
         }
       }
+
       // Ordenação
       queryBuilder.orderBy(`r.${orderColumn}`, orderDirection);
 
@@ -602,7 +605,7 @@ export class S001RequisicaoService {
         AND d.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')
         AND ${filterConditions.join(' AND ')}
         ORDER BY d.REQ_DTSAIDA DESC  
-      `;
+        `;
       const consulta = await this.requisicaoRepository.query(
         stringQuery,
         Object.values(filterValues),
@@ -623,6 +626,74 @@ export class S001RequisicaoService {
       return {
         data: retorno,
         total: retorno.length || 0,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async findListaSaque(user: AuthUserDto, params: ListSaqueParams): Promise<any> {
+    try {
+      const filterConditions = [];
+      const filterValues: Record<string, any> = {};
+
+      if (params.REQ_ID_CODIGO) {
+        filterConditions.push(`su.REQ_ID_CODIGO = :REQ_ID_CODIGO`);
+        filterValues.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
+      }
+
+      // Filtro por data de início
+      if (params.dataInicio) {
+        filterConditions.push(`r.REQ_DTSAIDA >= TO_DATE(:dataInicio, 'YYYY-MM-DD')`);
+        filterValues.dataInicio = params.dataInicio;
+      }
+      // Filtro por data final
+      if (params.dataFinal) {
+        filterConditions.push(`r.REQ_DTSAIDA <= TO_DATE(:dataFinal, 'YYYY-MM-DD')`);
+        filterValues.dataFinal = params.dataFinal;
+      }
+
+      const offset = (params.page - 1) * (params.limit ?? 1);
+      const limit = offset + (params.limit ?? 1);
+
+      filterValues.selection = offset + limit;
+      filterValues.offset = offset;
+
+      const filters = filterConditions.length > 0 ? `${filterConditions.join(' AND ')}` : '';
+
+      const stringQuery = `
+      SELECT 
+        CODUSUARIO, 
+        NOME, 
+        CPF, 
+        SALARIO, 
+        REQ_ID_CODIGO
+        FROM (
+          SELECT pagination.*, ROWNUM AS rn
+          FROM (
+            SELECT 
+              p.CODUSUARIO, 
+              p.NOME, 
+              p.CPF, 
+              pf.SALARIO, 
+              su.REQ_ID_CODIGO
+            FROM RM.PPESSOA p
+            INNER JOIN RM.PFUNC pf ON pf.CHAPA = p.CODUSUARIO
+            INNER JOIN TRANSPORTE.S001_USUREQ su ON p.CODUSUARIO = su.CHAPA
+            INNER JOIN TRANSPORTE.S001_REQUISICAO r ON r.REQ_ID_CODIGO = su.REQ_ID_CODIGO
+            WHERE ${filters}
+            ORDER BY pf.SALARIO DESC
+          ) pagination
+          WHERE ROWNUM <= (:selection)
+        )
+        WHERE rn > :offset
+      `;
+
+      const consulta = await this.requisicaoRepository.query(stringQuery, Object.values(filterValues));
+      return {
+        data: consulta,
+        total: consulta.length ?? 0,
       };
     } catch (error) {
       console.log(error);

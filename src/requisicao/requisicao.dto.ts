@@ -266,6 +266,37 @@ export class findPendentesParams {
   prazoAtivo?: 'S' | 'N';
 }
 
+export class ListSaqueParams {
+  @ApiProperty({
+    example: 113010,
+    description: 'Número da requisição',
+    type: Number,
+    required: true,
+    nullable: true,
+  })
+  REQ_ID_CODIGO: number;
+  @ApiProperty({
+    example: '2011-02-21',
+    description: 'Data de início',
+    type: String,
+    required: false,
+    nullable: false,
+  })
+  dataInicio?: string;
+  @ApiProperty({
+    example: '2011-02-21',
+    description: 'Data final',
+    type: String,
+    required: false,
+    nullable: false,
+  })
+  dataFinal?: string;
+  @ApiProperty({})
+  page?: number;
+  @ApiProperty({})
+  limit?: number;
+}
+
 export class findMesParams {
   @ApiProperty({ required: false, type: '000111' })
   chapa?: string;

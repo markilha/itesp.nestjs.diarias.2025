@@ -28,4 +28,16 @@ export class FuncionarioEntity {
   @OneToOne(() => DespesaDiariaEntity, (func) => func.funcsalario)
   @JoinColumn({ name: 'CARGO', referencedColumnName: 'cargo' })
   despesaDiaria: DespesaDiariaEntity;
+
+  @Column({ name: 'CODSECAO' })
+  codsecao: string;
+
+  @Column({ name: 'SETOR' })
+  setor: string;
+
+  @Column({ name: 'REG_ID_CODIGO' })
+  regIdCodigo: string;
+
+  @Column({ name: 'REG_DESCRICAO' })
+  regDescricao: string;
 }
