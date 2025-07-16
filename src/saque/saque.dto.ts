@@ -47,6 +47,8 @@ export class FindParamsSaque {
   @ApiProperty({ required: false })
   endDate?: string;
   @ApiProperty({ required: false })
+  agreement?: string;
+  @ApiProperty({ required: false })
   page?: number;
   @ApiProperty({ required: false })
   limit?: number;
@@ -172,6 +174,8 @@ export class returnSaqueDto {
   @ApiProperty()
   CHAPA: string;
   @ApiProperty()
+  STS_SAQUE_CONVENIADO: number;
+  @ApiProperty()
   STS_DESCRICAO: string;
   @ApiProperty()
   SQE_EFETIVO: string;
@@ -206,6 +210,7 @@ export class returnSaqueDto {
     this.REQ_DTREQ = params.REQ_DTREQ;
     this.REQ_STATUS = params.REQ_STATUS;
     this.CHAPA = params.CHAPA;
+    this.STS_SAQUE_CONVENIADO = params.STS_SAQUE_CONVENIADO;
     this.STS_DESCRICAO = params.STS_DESCRICAO;
     this.SQE_EFETIVO = params.SQE_EFETIVO;
     this.PRA_ATIVO = params.PRA_ATIVO;

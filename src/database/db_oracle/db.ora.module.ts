@@ -9,7 +9,7 @@ import * as oracledb from 'oracledb';
       name: 'oracleConnection',
       useFactory: async (configService: ConfigService) => {
         // Configuração para usar o Thick Mode
-        oracledb.initOracleClient({ libDir: 'C:\\oracle\\instantclient_21_15' });
+        oracledb.initOracleClient({ libDir: 'C:\\oracle\\instantclient_23_8' });
 
         return {
           type: 'oracle',

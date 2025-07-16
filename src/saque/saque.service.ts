@@ -73,17 +73,17 @@ import { permissaoCargo } from '../util/enums/cargo';
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
     ? {
-        dataSaida: itinerario.ITI_DTSAIDA,
-        horaSaida: itinerario.ITI_HSAIDA,
-        dataChegada: itinerario.ITI_DTCHEGADA,
-        horaChegada: itinerario.ITI_HCHEGADA,
-      }
+      dataSaida: itinerario.ITI_DTSAIDA,
+      horaSaida: itinerario.ITI_HSAIDA,
+      dataChegada: itinerario.ITI_DTCHEGADA,
+      horaChegada: itinerario.ITI_HCHEGADA,
+    }
     : {
-        dataSaida: consulta.REQ_DTSAIDA,
-        horaSaida: consulta.REQ_HSAIDA,
-        dataChegada: consulta.REQ_DTRET,
-        horaChegada: consulta.REQ_HRET,
-      };
+      dataSaida: consulta.REQ_DTSAIDA,
+      horaSaida: consulta.REQ_HSAIDA,
+      dataChegada: consulta.REQ_DTRET,
+      horaChegada: consulta.REQ_HRET,
+    };
 }
 
 @Injectable()
@@ -106,7 +106,7 @@ export class SaqueService {
     private pcontasService: PcontasService,
     private pcontasnumService: PcontasNumService,
     private ndocumentoService: ndocumentoService,
-  ) {}
+  ) { }
 
   private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
     const saque = await this.findOne(sqeIdCodigo);
@@ -281,9 +281,9 @@ export class SaqueService {
       throw error instanceof HttpException
         ? error
         : new HttpException(
-            'Erro ao buscar dados necessários para prestação',
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
+          'Erro ao buscar dados necessários para prestação',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
     }
   }
 
@@ -352,12 +352,13 @@ export class SaqueService {
 
           // Busca documentos
           let docs: docsEntity[] | null = null;
-          try {
-            docs = await this.documentosService.findBySQE_ID_CODIGO(item.SQE_ID_CODIGO);
-          } catch (error) {
-            console.log(error);
+          if (Number(params?.agreement) === 0) {
+            try {
+              docs = await this.documentosService.findBySQE_ID_CODIGO(item.SQE_ID_CODIGO);
+            } catch (error) {
+              console.log(error);
+            }
           }
-
           // Obter status
           const STATUS_PREST = RetonaPrestacaoStatus(
             item.SQE_EFETIVO,
@@ -393,6 +394,7 @@ export class SaqueService {
             REQ_DTREQ: DataUtils.converterParaData(item.REQ_DTREQ),
             REQ_STATUS: item.REQ_STATUS,
             CHAPA: item.CHAPA,
+            STS_SAQUE_CONVENIADO: item.STS_SAQUE_CONVENIADO,
             VL_COMPLEMENTAR: VL_EXTORNO,
             VL_EXTORNO: VL_DEVOLUCAO,
             SQE_EFETIVO: item.SQE_EFETIVO,
@@ -432,10 +434,14 @@ export class SaqueService {
         );
       }
 
+      if (params.agreement) {
+          consulta = consulta.filter((item: any) => item.STS_SAQUE_CONVENIADO == params.agreement)
+      }
+
       if (params.NOME) {
         const nomeBusca = params.NOME.toUpperCase();
         consulta = consulta.filter(
-          (item: any) => item.NOME && item.NOME.toUpperCase().includes(nomeBusca),
+          (item: any) => item.NOME?.toUpperCase().includes(nomeBusca),
         );
       }
 
@@ -1178,6 +1184,7 @@ export class SaqueService {
         try {
           await this.itensreqrecService.update(itens);
         } catch (error) {
+          console.error(error);
           grava = 1;
         }
       }

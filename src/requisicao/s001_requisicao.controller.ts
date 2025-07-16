@@ -5,6 +5,7 @@ import {
   FindAllParams,
   findMesParams,
   findPendentesParams,
+  ListSaqueParams,
   RequisDto,
   requiTotal,
   ReturnRequisicaoDto,
@@ -16,11 +17,11 @@ import { requisicaoAutorizadaSwagger, requisicaoSwagger } from 'src/swagger/requ
 import { CurrentUser } from '../auth/current-user.decorator';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
 
-@UseGuards(AuthGuard)
+// @UseGuards(AuthGuard)
 @ApiTags('usureq')
 @Controller('usureq')
 export class S001RequisicaoController {
-  constructor(private readonly requisicao: S001RequisicaoService) {}
+  constructor(private readonly requisicao: S001RequisicaoService) { }
   @Get()
   @ApiOperation({ summary: 'Lista todas requisições de viagem pela chapa do funcionário' })
   @ApiResponse({
@@ -110,5 +111,26 @@ export class S001RequisicaoController {
     @CurrentUser() user: AuthUserDto,
   ): Promise<requiTotal> {
     return await this.requisicao.findPendentes(user, params);
+  }
+
+  @Get('listaSaque')
+  @ApiOperation({ summary: 'Lista todas requisições de saque' })
+  @ApiResponse({
+    status: 200,
+    description: 'Requições encontradas',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'token inválido',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Erro ao buscar requisições',
+  })
+  async findListaSaque(
+    @Query() params: ListSaqueParams,
+    @CurrentUser() user: AuthUserDto,
+  ): Promise<any> {
+    return await this.requisicao.findListaSaque(user, params);
   }
 }
