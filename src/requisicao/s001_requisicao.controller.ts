@@ -1,6 +1,7 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { S001RequisicaoService } from './s001_requisicao.service';
 import {
+  ConsultaDetalheParams,
   FindAllAutorizadasParams,
   FindAllParams,
   findMesParams,
@@ -127,10 +128,20 @@ export class S001RequisicaoController {
     status: 500,
     description: 'Erro ao buscar requisições',
   })
-  async findListaSaque(
+  async findListaRequisicao(
     @Query() params: ListSaqueParams,
     @CurrentUser() user: AuthUserDto,
   ): Promise<any> {
-    return await this.requisicao.findListaSaque(user, params);
+    return await this.requisicao.findListaRequisicao(user, params);
+  }
+
+  @Get('consultaDetalheReq')
+  @ApiOperation({ summary: 'Lista informações' })
+  @ApiResponse({
+    status: 200,
+    description: 'Requições encontradas',
+  })
+  async consultaDetalheRequisicao(@Query() params: ConsultaDetalheParams, @CurrentUser() user: AuthUserDto): Promise<any> {
+    return await this.requisicao.findDetalheRequisicao(params, user)
   }
 }
