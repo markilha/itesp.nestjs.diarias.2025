@@ -17,11 +17,11 @@ import { requisicaoAutorizadaSwagger, requisicaoSwagger } from 'src/swagger/requ
 import { CurrentUser } from '../auth/current-user.decorator';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
 
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 @ApiTags('usureq')
 @Controller('usureq')
 export class S001RequisicaoController {
-  constructor(private readonly requisicao: S001RequisicaoService) { }
+  constructor(private readonly requisicao: S001RequisicaoService) {}
   @Get()
   @ApiOperation({ summary: 'Lista todas requisições de viagem pela chapa do funcionário' })
   @ApiResponse({
