@@ -30,11 +30,11 @@ export class AuthService {
     }
 
     const acesso = await this.usersService.findNivel(fountUser.id_usuario);
-    let perfilAcesso: PerfilAcesso[];
+    const perfilAcesso: PerfilAcesso[] = await this.usersService.findPerfilAcesso(
+      IDSISTEMA.id_sistema,
+    );
 
-    perfilAcesso = await this.usersService.findPerfilAcesso(IDSISTEMA.id_sistema);
-
-    let roles = [];
+    const roles = [];
 
     if (acesso.length > 0) {
       acesso
@@ -72,6 +72,7 @@ export class AuthService {
       const payload = {
         sub: email,
       };
+      console.log('payload: ', payload);
 
       const token = 'token teste 123';
       return {
@@ -79,6 +80,7 @@ export class AuthService {
         expiresIn: '1h',
       };
     } catch (error) {
+      console.error('Erro ao gerar token de redefinição de senha:', error);
       throw new BadRequestException('Erro ao gerar token  de redefinição de senha');
     }
   }
