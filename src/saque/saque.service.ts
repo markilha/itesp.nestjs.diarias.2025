@@ -69,21 +69,23 @@ import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.enti
 import { verificaAutorizacao } from '../util/permissao/permissao';
 import { permissaoFindAll } from '../util/permissao/permissao';
 import { permissaoCargo } from '../util/enums/cargo';
+import { filtrarSetorLike } from 'src/util/permissao/porSecao';
+import { PpessoaService } from 'src/ppessoa/ppessoa.service';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
     ? {
-      dataSaida: itinerario.ITI_DTSAIDA,
-      horaSaida: itinerario.ITI_HSAIDA,
-      dataChegada: itinerario.ITI_DTCHEGADA,
-      horaChegada: itinerario.ITI_HCHEGADA,
-    }
+        dataSaida: itinerario.ITI_DTSAIDA,
+        horaSaida: itinerario.ITI_HSAIDA,
+        dataChegada: itinerario.ITI_DTCHEGADA,
+        horaChegada: itinerario.ITI_HCHEGADA,
+      }
     : {
-      dataSaida: consulta.REQ_DTSAIDA,
-      horaSaida: consulta.REQ_HSAIDA,
-      dataChegada: consulta.REQ_DTRET,
-      horaChegada: consulta.REQ_HRET,
-    };
+        dataSaida: consulta.REQ_DTSAIDA,
+        horaSaida: consulta.REQ_HSAIDA,
+        dataChegada: consulta.REQ_DTRET,
+        horaChegada: consulta.REQ_HRET,
+      };
 }
 
 @Injectable()
@@ -106,7 +108,8 @@ export class SaqueService {
     private pcontasService: PcontasService,
     private pcontasnumService: PcontasNumService,
     private ndocumentoService: ndocumentoService,
-  ) { }
+    private ppessoaService: PpessoaService,
+  ) {}
 
   private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
     const saque = await this.findOne(sqeIdCodigo);
@@ -281,9 +284,9 @@ export class SaqueService {
       throw error instanceof HttpException
         ? error
         : new HttpException(
-          'Erro ao buscar dados necessários para prestação',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+            'Erro ao buscar dados necessários para prestação',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
     }
   }
 
@@ -291,7 +294,7 @@ export class SaqueService {
 
   async findAll(params: FindParamsSaque, user: AuthUserDto): Promise<any> {
     try {
-      const chapa = user.chapa;
+      const chapa = params.CHAPA ? params.CHAPA : user.chapa;
       const orderByField = params.orderBy || 'a.SQE_DTPEDIDO';
       const orderDirection = params.orderDirection || 'ASC';
       const page = params.page || 1;
@@ -301,15 +304,26 @@ export class SaqueService {
       const filterConditions: string[] = [];
       const filterValues: any[] = [];
 
-      const per = permissaoFindAll(user.permissao);
-      if (per) {
-        filterConditions.push(
-          `SUBSTR(b.CODSECAO, 0, ${per}) = '${user.codsecao.substring(0, per)}'`,
-        );
+      // FILTRO POR SETOR
+      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: chapa });
+      const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'b.CODSECAO');
+      if (pesquisa) {
+        filterConditions.push(pesquisa);
+        filterValues.push(user.chapa);
       } else {
         filterConditions.push('b.CHAPA = :chapa');
         filterValues.push(chapa);
       }
+
+      // const per = permissaoFindAll(user.permissao);
+      // if (per) {
+      //   filterConditions.push(
+      //     `SUBSTR(b.CODSECAO, 0, ${per}) = '${user.codsecao.substring(0, per)}'`,
+      //   );
+      // } else {
+      //   filterConditions.push('b.CHAPA = :chapa');
+      //   filterValues.push(chapa);
+      // }
 
       // Verifica e adiciona cada filtro dinamicamente
       if (params.SQE_ID_CODIGO) {
@@ -435,19 +449,17 @@ export class SaqueService {
       }
 
       if (params.agreement) {
-          consulta = consulta.filter((item: any) => item.STS_SAQUE_CONVENIADO == params.agreement)
+        consulta = consulta.filter((item: any) => item.STS_SAQUE_CONVENIADO == params.agreement);
       }
 
       if (params.NOME) {
         const nomeBusca = params.NOME.toUpperCase();
-        consulta = consulta.filter(
-          (item: any) => item.NOME?.toUpperCase().includes(nomeBusca),
-        );
+        consulta = consulta.filter((item: any) => item.NOME?.toUpperCase().includes(nomeBusca));
       }
 
       return {
-        data: consulta,
         total: totalCount,
+        data: consulta,
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

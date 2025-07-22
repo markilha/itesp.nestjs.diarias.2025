@@ -1,5 +1,3 @@
-import { permissaoCargo } from '../enums/cargo';
-
 export const queryPrestacao = `
 SELECT
   a.SQE_DTPEDIDO as SQE_DTPEDIDO,

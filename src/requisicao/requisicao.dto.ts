@@ -111,6 +111,8 @@ export class ReturnRequisicaoDto {
   diariaIntegralChegada: number;
   @ApiProperty({ required: false })
   diairaParcialChegada: number;
+  @ApiProperty({ required: false })
+  codsecao: string;
 
   constructor(params: any) {
     this.reqIdCodigo = params.reqIdCodigo;
@@ -149,6 +151,7 @@ export class ReturnRequisicaoDto {
     this.ITI_HCHEGADA = params.ITI_HCHEGADA;
     this.diariaIntegralChegada = params.diariaIntegralChegada;
     this.diairaParcialChegada = params.diariaParcialChegada;
+    this.codsecao = params.codsecao;
   }
 }
 

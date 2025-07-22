@@ -5,6 +5,7 @@ export function filtrarSetorLike(
   permissao: number,
   codigosecao: string,
   campo: string,
+  chapa?: string,
 ): string | null {
   try {
     //DIRETORIA EXECUTIVA  OU DE - Financeiro
@@ -37,9 +38,13 @@ export function filtrarSetorLike(
     ) {
       return `${campo} LIKE :SETOR`;
     } else if (permissao === permissaoCargo.GTCAMPO) {
+      if (chapa) {
+        return `${campo} IN (SELECT e.codsecao FROM rm.psubstchefe e WHERE e.chapasubst = ${chapa} AND e.datafim >= SYSDATE)`;
+      }
       return `${campo} IN (SELECT e.codsecao FROM rm.psubstchefe e WHERE e.chapasubst = :chapalogado AND e.datafim >= SYSDATE)`;
     }
     return null;
+    // return `${campo} LIKE '${codigosecao}%'`;
   } catch (error) {
     throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
   }

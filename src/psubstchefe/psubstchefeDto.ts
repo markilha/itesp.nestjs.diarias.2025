@@ -50,4 +50,6 @@ export class upateExtornoDto {
 export class FindAllParams {
   @ApiProperty()
   CODSECAO: string;
+  @ApiProperty()
+  CHAPASUBST: string;
 }

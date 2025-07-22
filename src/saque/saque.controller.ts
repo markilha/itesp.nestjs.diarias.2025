@@ -30,12 +30,12 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
 import { SaqueEntity } from 'src/database/db_oracle/entities/saque.entity';
 
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 @ApiTags('saque')
 @Controller('saque')
 @UseInterceptors(AllExceptionsFilter)
 export class SaqueController {
-  constructor(private readonly saqueService: SaqueService) { }
+  constructor(private readonly saqueService: SaqueService) {}
   //SAQUE GERAL
   @Get()
   @ApiOperation({ summary: 'Busca todos os saques' })
@@ -163,5 +163,4 @@ export class SaqueController {
   async alteravalorprestacao(@Body() params: ParamsAltera): Promise<SaqueEntity> {
     return await this.saqueService.AlteraValorPrestacao(params);
   }
-
 }
