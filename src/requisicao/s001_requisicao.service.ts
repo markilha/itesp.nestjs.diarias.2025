@@ -61,19 +61,31 @@ export class S001RequisicaoService {
   //TODO: FIND PRESTAÇÃO DE CONTA
   async find(params: FindAllParams, user: AuthUserDto): Promise<any> {
     try {
+      let filtro = true;
       const conditions: string[] = [`r.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')`];
-      // Adiciona condição para chapa
-      const chapa = params.chapa ? params.chapa : user.chapa;
+
+      //filtrar por chapa
+      if (params.chapa) {
+        conditions.push(`r.CHAPA = '${params.chapa}'`);
+        filtro = false;
+      }
 
       // Adiciona outras condições de busca
       if (params.reqIdCodigo) {
         conditions.push(`r.REQ_ID_CODIGO = ${params.reqIdCodigo}`);
+        filtro = false;
       }
+
+      // filtra por municipio
       if (params.codMunicipio) {
         conditions.push(`r.COD_MUNICIPIO = ${params.codMunicipio}`);
+        filtro = false;
       }
+
+      // filtar por status
       if (params.reqStatus) {
         conditions.push(`r.REQ_STATUS = '${params.reqStatus}'`);
+        filtro = false;
       }
 
       // Define ordenação - garantindo que sempre tenha o prefixo da tabela
@@ -85,13 +97,15 @@ export class S001RequisicaoService {
       const orderDirection = params.orderDirection === 'DESC' ? 'DESC' : 'ASC';
 
       // FILTRO POR SETOR
-      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: chapa });
-      const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'fs.CODSECAO', chapa);
+      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: user.chapa });
 
-      if (pesquisa) {
-        conditions.push(pesquisa);
-      } else {
-        conditions.push(`r.CHAPA = '${chapa}'`);
+      if (filtro) {
+        const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'fs.CODSECAO', user.chapa);
+        if (pesquisa) {
+          conditions.push(pesquisa);
+        } else {
+          conditions.push(`r.CHAPA = '${user.chapa}'`);
+        }
       }
 
       const query = `
@@ -122,17 +136,20 @@ export class S001RequisicaoService {
             r.CHAPA AS "chapa", 
             r.REQ_PACOTE AS "reqPacote",
             r.REQ_GOVERNADOR AS "reqGovernador",
-            fs.salario AS "salario",
+            fs.NOME AS "nome",
+            fs.salario AS "salario",            
             d.MUN_ID_CODIGO AS "munIdCodigo",
             d.DES_LOCAL AS "desLocal",   
             m.MUN_CIDADE AS "munCidade",
             dd.DTD_VALOR_MAX AS "dtdValorMax",
-            fs.CODSECAO AS "codsecao"
+            fs.CODSECAO AS "codsecao",
+            pp.cpf  AS "cpf"
           FROM FINANCEIRO.V009_REQUISICAO r
           LEFT JOIN TRANSPORTE.S001_DESTINO d ON r.REQ_ID_CODIGO = d.REQ_ID_CODIGO    
           LEFT JOIN TRANSPORTE.S001_MUNIC_DETRAN m ON d.MUN_ID_CODIGO = m.MUN_ID_CODIGO
           LEFT JOIN FINANCEIRO.V009_funcsalario fs ON r.CHAPA = fs.CHAPA
           LEFT JOIN FINANCEIRO.V009_DESPESADIARIA dd ON fs.CARGO = dd.CARGO
+          LEFT JOIN RM.PPESSOA pp ON fs.CHAPA = pp.CODUSUARIO 
           WHERE ${conditions.join(' AND ')}
           ORDER BY ${orderBy} ${orderDirection}
         ) t
@@ -151,8 +168,10 @@ export class S001RequisicaoService {
 
       // Executa a query
       const requisicoes = await this.requisicaoRepository.manager.query(query, parameters);
+      console.log(requisicoes);
+
       const results = await Promise.all(
-        requisicoes.map((requisicao) => this.processRequisicao(requisicao)),
+        requisicoes.map((requisicao: any) => this.processRequisicao(requisicao)),
       );
 
       //Consulta para contar o total de registros
@@ -178,6 +197,7 @@ export class S001RequisicaoService {
     }
   }
 
+  // TODO: CALCULO DA DIARIA DA REQUISIÇÃO
   private async processRequisicao(requisicao: any): Promise<ReturnRequisicaoDto> {
     try {
       let UFESP = 0;
@@ -278,6 +298,12 @@ export class S001RequisicaoService {
       return new ReturnRequisicaoDto({
         reqIdCodigo: requisicao.reqIdCodigo,
         chapa: requisicao.chapa,
+        nome: requisicao.nome,
+        cpf: requisicao.cpf,
+        salario: requisicao.salario,
+        salario50Porcento: salario50PorcentoNumber,
+        saldoDisponivel: saldoRestante,
+        saqueMes: saqueMes,
         oriMunicipio: requisicao.nmeMunic,
         reqDtReq: requisicao.reqDtReq,
         reqDtSaida: requisicao.reqDtSaida,
@@ -298,10 +324,7 @@ export class S001RequisicaoService {
         diariaIntegral: diarias?.VL_DIARIA_INTEGRAL || 0,
         diariaParcial: diarias?.VL_DIARIA_PARCIAL || 0,
         diariaBase: diarias?.VL_DIARIA_BASE || 0,
-        saqueMes: saqueMes,
         valorSolicitado: diarias?.VL_DIARIA_TOTAL || 0,
-        salario50Porcento: salario50PorcentoNumber,
-        saldoDisponivel: saldoRestante,
         regDescricao: requisicao.regDescricao,
         traDescricao: requisicao.traDescricao,
         diariaParcPorc: diarias?.PARPERC || 0,

@@ -79,3 +79,17 @@ export class AutorizarRecursoDto {
   @ApiProperty({ required: false })
   NEGADA?: boolean;
 }
+
+export class AutorizarPendenteParams {
+  @ApiProperty({ required: false })
+  prazo: number;
+
+  @ApiProperty({ required: false })
+  tipo: number;
+
+  @ApiProperty({ required: false })
+  page?: number;
+
+  @ApiProperty({ required: false })
+  limit?: number;
+}

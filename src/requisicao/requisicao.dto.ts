@@ -82,6 +82,8 @@ export class ReturnRequisicaoDto {
   @ApiProperty({ required: false })
   salario50Porcento: number;
   @ApiProperty({ required: false })
+  salario: number;
+  @ApiProperty({ required: false })
   saldoDisponivel: number;
   @ApiProperty({ required: false })
   meioTransporte: string;
@@ -113,10 +115,15 @@ export class ReturnRequisicaoDto {
   diairaParcialChegada: number;
   @ApiProperty({ required: false })
   codsecao: string;
+  @ApiProperty({ required: false })
+  nome: string;
+  @ApiProperty({ required: false })
+  cpf: string;
 
   constructor(params: any) {
     this.reqIdCodigo = params.reqIdCodigo;
     this.chapa = params.chapa;
+    this.cpf = params.cpf;
     this.oriMunicipio = params.nmeMunic;
     this.reqDtReq = params.reqDtReq;
     this.reqDtSaida = params.reqDtSaida;
@@ -137,9 +144,9 @@ export class ReturnRequisicaoDto {
     this.diariaIntegral = params.diariaIntegral;
     this.diariaParcial = params.diariaParcial;
     this.diariaBase = params.diariaBase;
-    this.saqueMes = params.saqueMes;
     this.valorSolicitado = params.valorSolicitado;
-    this.salario50Porcento = params.salario50Porcento;
+    this.salario = params.salario;
+    this.saqueMes = params.saqueMes;
     this.saldoDisponivel = params.saldoDisponivel;
     this.regDescricao = params.regDescricao;
     this.traDescricao = params.traDescricao;

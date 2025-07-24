@@ -3,13 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { autorizaEntity } from '../database/db_oracle/entities/autoriza.entity';
 import {
+  AutorizarPendenteParams,
   AutorizarRecursoDto,
   CarreagaSetorDto,
   filtroAutoriacao,
   FindAllParams,
 } from './autorizaDto';
 
-import { EnumAutorizacao } from 'src/util/enums/autorizacao';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
 import { enumCodSecao, permissaoCargo } from 'src/util/enums/cargo';
 import { sqls } from 'src/util/crudOracle/consultas';
@@ -19,6 +19,8 @@ import { procedures } from 'src/util/crudOracle/procedures';
 import { PpessoaService } from 'src/ppessoa/ppessoa.service';
 import { filtrarSetorLike } from 'src/util/permissao/porSecao';
 import { parseToNumber } from 'src/util/converter_float';
+import { autorizaSelect } from 'src/util/selects/autoriza';
+import { enumStsIdCodigo } from 'src/util/enums/sts_id_codigo';
 
 @Injectable()
 export class autorizaService {
@@ -162,41 +164,8 @@ export class autorizaService {
       const totalResult = await this.autorizaRepository.manager.query(totalQuery);
       const total = totalResult[0]?.TOTAL || 0;
 
-      // Query principal com filtros
-      let query = `
-        SELECT * FROM (
-          SELECT 
-            B.SQE_ID_CODIGO AS "SQE_ID_CODIGO",
-            B.ITE_ID_CODIGO AS "ITE_ID_CODIGO",
-            D.REQ_ID_CODIGO AS "REQ_ID_CODIGO",
-            E.CODUSUARIO AS "CHAPA",
-            C.NOME AS "NOME",
-            E.CPF AS "CPF",
-            C.CODSECAO AS "CODSECAO", 
-            B.SQE_DTPEDIDO,                    
-            B.SQE_VLSAQUE AS "SQE_VLSAQUE",
-            B.SQE_VLPREST AS "SQE_VLPREST",
-            H.DESCRICAO AS DIRETORIA,
-            G.DESCRICAO AS SETOR,  
-            J.REG_DESCRICAO AS "REGIONAL",       
-            CASE 
-              WHEN A.IRR_RECURSO = '${EnumAutorizacao.APROVADA}' THEN 'Aprovada'
-              WHEN A.IRR_RECURSO = '${EnumAutorizacao.NEGADA}' THEN 'Negada'
-              WHEN A.IRR_RECURSO = '${EnumAutorizacao.FINALIZADA}' THEN 'Finalizada'
-              ELSE 'Pendente'
-            END AS "STATUS",
-            ROW_NUMBER() OVER (ORDER BY B.SQE_ID_CODIGO DESC) AS ROW_NUM
-          FROM FINANCEIRO.S009_ITENSREQREC A  
-          JOIN FINANCEIRO.S009_SAQUE B ON A.ITE_ID_CODIGO = B.ITE_ID_CODIGO
-          JOIN RM.PFUNC C ON A.CHAPA = C.CHAPA
-          JOIN FINANCEIRO.S009_REQNUMERARIO D ON B.SQE_ID_CODIGO = D.SQE_ID_CODIGO
-          JOIN RM.PPESSOA E ON A.CHAPA = E.CODUSUARIO
-          JOIN FINANCEIRO.S009_STATUS F ON A.STS_ID_CODIGO = F.STS_ID_CODIGO    
-          JOIN RM.PSECAO G ON C.CODSECAO = G.CODIGO   
-          JOIN FINANCEIRO.V009_DiretoriaGeral H ON A.DIR_ID_CODIGO = H.DIR_ID_CODIGO
-          JOIN FINANCEIRO.V009_FUNCSALARIO I ON A.CHAPA = I.CHAPA
-           JOIN COMUM.S000_REGIONAL J  ON I.REG_ID_CODIGO  = J.REG_ID_CODIGO         
-      `;
+      // Query principal
+      let query = autorizaSelect;
       const queryParams: any = {};
       const conditions: string[] = [];
 
@@ -253,7 +222,8 @@ export class autorizaService {
             statusResult = 'F';
             break;
           case 'Pendente':
-            statusResult = 'P';
+            statusResult = 'A';
+            conditions.push(`A.STS_ID_CODIGO = ${enumStsIdCodigo.AGUARD_APROV_CHEFE_IMEDIATO}`);
             break;
           default:
             statusResult = 'P';
@@ -269,7 +239,9 @@ export class autorizaService {
         const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'C.CODSECAO');
         if (pesquisa) {
           conditions.push(pesquisa);
-          queryParams['chapalogado'] = chapa;
+          if (PERMISSAO === permissaoCargo.GTCAMPO) {
+            queryParams['chapalogado'] = chapa;
+          }
         } else {
           conditions.push(`A.CHAPA = :chapa`);
           queryParams['chapa'] = chapa;
@@ -316,6 +288,67 @@ export class autorizaService {
         totalFiltrado,
         data,
       };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  //TODO: Seleciona aprova pendente
+  async selAprovaPendente(user: AuthUserDto, params: AutorizarPendenteParams): Promise<any> {
+    try {
+      const queryParams: any = {};
+      const conditions: string[] = [];
+      // const { CODSECAO } = await this.ppessoaService.find({ chapa: user.chapa });
+
+      let sql = `
+      SELECT 
+        a.pra_id_codigo,
+        a.dir_id_codigo,
+        a.codsecao,
+        a.descricao
+        FROM financeiro.v009_itensreqrec a
+        WHERE a.sts_id_codigo = 5
+        AND a.irr_recurso = 'A'
+    `;
+
+      if (params.prazo) {
+        conditions.push(`a.pra_id_codigo = :prazo`);
+        queryParams['prazo'] = params.prazo;
+      }
+
+      // JUNTAR CONDIÇÕES
+      if (conditions.length > 0) {
+        sql += ' AND ' + conditions.join(' AND ');
+      }
+
+      //   if (tipo === 1) {
+      //   sql += `
+      //     AND a.codsecao <> :gerencia
+      //     AND a.codsecao LIKE :setor
+      //   `;
+      //   binds.gerencia = desc;
+      //   binds.setor = desc.substring(0, 12) + '%';
+      // } else if (tipo === 2) {
+      //   sql += `
+      //     AND a.codsecao <> :diretoria
+      //     AND a.dir_id_codigo = :dir
+      //   `;
+      //   binds.diretoria = dmExtCodDiretoria;
+      //   binds.dir = desc;
+      // }
+
+      //agrupa por diretorias
+      sql += `
+      GROUP BY 
+        a.pra_id_codigo,
+        a.dir_id_codigo,
+        a.codsecao,
+        a.descricao
+    `;
+
+      const result = await this.autorizaRepository.manager.query(sql, queryParams);
+
+      return result;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -416,11 +449,24 @@ export class autorizaService {
   }
 
   async autorizarNega(params: AutorizarRecursoDto, user: AuthUserDto) {
+    // let updateUsuReq = `
+    //   UPDATE TRANSPORTE.S001_USUREQ SET
+    //   CHAPA = :par2,
+    //   USU_MOV = :par3
+    //   WHERE REQ_ID_CODIGO = :par1
+    //   AND CHAPA = :par2`
+
+    // let updateStatusRequisicao = `
+    //   Update Transporte.S001_REQUISICAO Set
+    //   REQ_STATUS=:par2
+    //   where REQ_id_codigo=:par1
+    //   `
+
     try {
       await this.autorizaRepository.manager.transaction(async (transactionalEntityManager) => {
         // Atualizar o status do item para autorizado
         await transactionalEntityManager.query(updates.updateAutorizaItem, [
-          params.NEGADA ? 0 : params.VALOR,
+          parseToNumber(params.VALOR),
           params.NEGADA ? 'N' : 'S',
           params.ITE_ID_CODIGO,
         ]);
@@ -432,6 +478,7 @@ export class autorizaService {
           user.login,
           params.NEGADA ? 'N' : 'S',
         ]);
+
         // Buscar diárias não analisadas
         const Auxiliar2 = await transactionalEntityManager.query(sqls.selecionaDiariasAnalizadas, [
           params.ITE_ID_CODIGO,
@@ -444,14 +491,18 @@ export class autorizaService {
               params.NEGADA ? 'N' : 'O',
               aux2.REQ_ID_CODIGO,
             ]);
+
             // Verificar usureq transporte
             const Qr_UsuReq = await transactionalEntityManager.query(sqls.selecionaUsureq, [
               aux2.REQ_ID_CODIGO,
             ]);
+
+            // Se não houver usureq, insere um novo
             if (Qr_UsuReq?.length === 0) {
               const DmExt = await transactionalEntityManager.query(sqls.SelecionaAutoriza, [
                 aux2.REQ_ID_CODIGO,
               ]);
+
               const autoriza = Number(DmExt[0].AUT_NIVEL) + 1;
 
               await transactionalEntityManager.query(inserts.insertAutorizaTransporte, [
@@ -467,6 +518,7 @@ export class autorizaService {
               aux2.REQ_ID_CODIGO,
               params.NEGADA ? 'PLANEJAMENTO NAO AUTORIZADO' : 'ANALISANDO',
             ]);
+
             // NÃO HOUVE APROVAÇÃO NO ITEM
             if (
               aux2.mdi_chefe === '' ||
@@ -522,106 +574,4 @@ export class autorizaService {
       );
     }
   }
-
-  //TODO: CARREGAR SAQUE
-  // async findSaque(user: AuthUserDto, params: FindAllParams): Promise<any> {
-  //   try {
-  //     const page = params.page || 1;
-  //     const limit = params.limit || 1000;
-  //     const offset = (page - 1) * limit;
-  //     const queryParams: any[] = [];
-
-  //     // Lista de filtros dinâmicos
-  //     const whereConditions: string[] = [];
-
-  //     if (params.SQE_ID_CODIGO) {
-  //       whereConditions.push(`ss.SQE_ID_CODIGO = :SQE_ID_CODIGO`);
-  //       queryParams.push(params.SQE_ID_CODIGO);
-  //     }
-
-  //     if (params.CHAPA) {
-  //       whereConditions.push(`si.CHAPA = :CHAPA`);
-  //       queryParams.push(params.CHAPA);
-  //     }
-
-  //     // Monta o WHERE se houver filtros
-  //     const whereClause =
-  //       whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
-
-  //     const query = `
-  //     SELECT * FROM (
-  //       SELECT
-  //         a.*, ROWNUM rnum FROM (
-  //           SELECT
-  //             ss.SQE_ID_CODIGO,
-  //             ss.ITE_ID_CODIGO,
-  //             ss.SQE_DTPEDIDO,
-  //             sr.REQ_ID_CODIGO,
-  //             si.CHAPA,
-  //             p.NOME,
-  //             p.CPF,
-  //             pf.CODSECAO,
-  //             ss.SQE_VLSAQUE,
-  //             ss.SQE_VLPREST,
-  //             ps.DESCRICAO as DIRETORIA
-  //             FROM FINANCEIRO.S009_SAQUE ss
-  //             JOIN S009_REQNUMERARIO sr  ON ss.SQE_ID_CODIGO = sr.SQE_ID_CODIGO
-  //             JOIN S009_ITENSREQREC si   ON ss.ITE_ID_CODIGO  = si.ITE_ID_CODIGO
-  //             JOIN RM.PPESSOA p  ON si.CHAPA = p.CODUSUARIO
-  //             JOIN COMUM.S000_DIRETORIA1 sd   ON ss.DIR_ID_CODIGO = sd.DIR_ID_CODIGO
-  //             JOIN RM.PSECAO ps   ON sd.CODIGO  = ps.CODIGO
-  //             JOIN RM.PFUNC pf    ON p.CODUSUARIO    = pf.CHAPA
-  //           ${whereClause}
-  //           ORDER BY ss.SQE_ID_CODIGO
-  //         ) a
-  //       WHERE ROWNUM <= ${offset + limit}
-  //     )
-  //     WHERE rnum > ${offset}
-  //   `;
-
-  //     const result = await this.autorizaRepository.manager.query(query, queryParams);
-
-  //     if (!result || result.length === 0) {
-  //       return { data: [], total: 0 };
-  //     }
-
-  //     const response = result.map((item: any) => ({
-  //       ...item,
-  //       VL_DEVOLUCAO: parseFloat(
-  //         (parseToNumber(item.SQE_VLSAQUE) - parseToNumber(item.SQE_VLPREST)).toFixed(2),
-  //       ),
-  //     }));
-
-  //     // Segunda query para pegar o total de registros sem filtro
-  //     const totalQuery = `SELECT COUNT(*) as total FROM FINANCEIRO.S009_SAQUE`;
-  //     const totalResult = await this.autorizaRepository.manager.query(totalQuery);
-  //     const total = totalResult?.[0]?.TOTAL || 0;
-
-  //     // Total filtrado (com os mesmos filtros da busca)
-  //     const totalFiltradoQuery = `
-  //     SELECT COUNT(*) as TOTAL
-  //     FROM FINANCEIRO.S009_SAQUE ss
-  //     JOIN S009_REQNUMERARIO sr  ON ss.SQE_ID_CODIGO = sr.SQE_ID_CODIGO
-  //     JOIN S009_ITENSREQREC si   ON ss.ITE_ID_CODIGO  = si.ITE_ID_CODIGO
-  //     JOIN RM.PPESSOA p  ON si.CHAPA = p.CODUSUARIO
-  //     JOIN COMUM.S000_DIRETORIA1 sd   ON ss.DIR_ID_CODIGO = sd.DIR_ID_CODIGO
-  //     JOIN RM.PSECAO ps   ON sd.CODIGO  = ps.CODIGO
-  //     JOIN RM.PFUNC pf    ON p.CODUSUARIO    = pf.CHAPA
-  //     ${whereClause}
-  //   `;
-  //     const totalFiltradoResult = await this.autorizaRepository.manager.query(
-  //       totalFiltradoQuery,
-  //       queryParams,
-  //     );
-  //     const totalFiltrado = totalFiltradoResult?.[0]?.TOTAL || 0;
-
-  //     return {
-  //       total,
-  //       totalFiltrado,
-  //       data: response,
-  //     };
-  //   } catch (error) {
-  //     throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-  //   }
-  // }
 }
