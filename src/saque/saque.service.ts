@@ -67,10 +67,10 @@ import { PcontasNumService } from '../pcontasnum/pcontasnum.service';
 import { ndocumentoService } from '../ndocumento/ndocumento.service';
 import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.entity';
 import { verificaAutorizacao } from '../util/permissao/permissao';
-import { permissaoFindAll } from '../util/permissao/permissao';
 import { permissaoCargo } from '../util/enums/cargo';
-import { filtrarSetorLike } from 'src/util/permissao/porSecao';
-import { PpessoaService } from 'src/ppessoa/ppessoa.service';
+import { filtrarSetorLike } from '../util/permissao/porSecao';
+import { PpessoaService } from '../ppessoa/ppessoa.service';
+import { SaqueTipoN } from '../util/enums/sqeefetivo';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -290,8 +290,7 @@ export class SaqueService {
     }
   }
 
-  //BUSCAR TODOS OS SAQUES
-
+  //TODO: Buscar todos os saques
   async findAll(params: FindParamsSaque, user: AuthUserDto): Promise<any> {
     try {
       const chapa = params.CHAPA ? params.CHAPA : user.chapa;
@@ -466,8 +465,7 @@ export class SaqueService {
     }
   }
 
-  //buscar prestação de conta
-
+  //TODO: buscar prestação de conta
   async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto> {
     let destino: Destino | null = null;
     try {
@@ -589,8 +587,6 @@ export class SaqueService {
     }
   }
 
-  //Buscar ultimo id
-
   async lastId(): Promise<number> {
     try {
       const lastIdResult = await this.saqueRepository.query(
@@ -603,6 +599,7 @@ export class SaqueService {
     }
   }
 
+  //TODO: Solicitar saque
   async solicitarSaque(params: SolitarDto, user: AuthUserDto): Promise<any> {
     let Rg_Reembolsar = 1;
     let Rg_TipoSaque = 1;
@@ -941,6 +938,7 @@ export class SaqueService {
     }
   }
 
+  //TODO: Gravar Saque Reembolso
   async GravaSaqueReembolso(params: any, user: AuthUserDto): Promise<any> {
     try {
       let parametros: InsSaqueDto = new InsSaqueDto();
@@ -1134,7 +1132,7 @@ export class SaqueService {
     return await this.saqueRepository.save(saque);
   }
 
-  // RETORNA SAQUE PENDENTES
+  //TODO: RETORNA SAQUE PENDENTES
   async selecionaSaquePendentes(params: ParamsPendente, user: AuthUserDto): Promise<any> {
     try {
       let where = '';
@@ -1162,19 +1160,26 @@ export class SaqueService {
     }
   }
 
+  //TODO: Cancelar Saque
   async cancelarSaque(params: ParamsCancela, user: AuthUserDto): Promise<any> {
     try {
       let grava = 0;
       let gsaque = 0;
       const saque = await this.findOne(params.SQE_ID_CODIGO);
 
+      //Verifica se sua permissão é de Tesouraria - o unico que pode cancelar um saque feito pelo financeiro
       if (
         !(
           user.permissao === permissaoCargo.TESOURARIA_INTERIOR ||
           user.permissao === permissaoCargo.TESOURARIA_SEDE
         )
       ) {
-        if (saque.sqeEfetivo === 'S' || saque.sqeEfetivo === 'E' || saque.sqeEfetivo === 'P') {
+        //S,E,P
+        if (
+          saque.sqeEfetivo === SaqueTipoN['35-sim-Viagem'] ||
+          saque.sqeEfetivo === SaqueTipoN['34-sim-Viagem-Reembolso'] ||
+          saque.sqeEfetivo === SaqueTipoN['34-sim-Viagem-Reembolso']
+        ) {
           throw new HttpException(
             'O Saque efetuado pelo Financeiro, não permitido exclusão!',
             HttpStatus.BAD_REQUEST,
@@ -1182,14 +1187,22 @@ export class SaqueService {
         }
       }
 
+      //busca o item de recurso da tabela ITENSREQREC
       const itens = await this.itensreqrecService.findOne(saque.iteIdCodigo);
 
+      // Verifcia se o usuario tem permissão para cancelar o saque
       verificaAutorizacao(itens.CHAPA, user);
+
+      // Busca a requisição de numerário
       const req = await this.reqnumerarioService.findOne(saque.sqeIdCodigo);
 
+      // Cria um mensagem padronizada para o cancelamento
       const msg = `Saque:${saque.sqeIdCodigo}-Cancelado:${user.chapa}-${DataUtils.formatarDataAtualString()}-Req.Viagem:${req.REQ_ID_CODIGO}`;
+
+      // Atualiza os dados da tabela ITENSREQREC
       await this.itensreqrecService.update(itens);
-      if (saque.sqeEfetivo === 'D') {
+
+      if (saque.sqeEfetivo === SaqueTipoN['32-não-Viagem-c/Lanc-Documentos']) {
         gsaque = 1;
         const updateValor = itens.IRR_VALOR_PREST - saque.sqeVlPrest;
         itens.IRR_VALOR_PREST = updateValor;

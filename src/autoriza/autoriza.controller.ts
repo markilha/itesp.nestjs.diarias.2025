@@ -18,7 +18,7 @@ export class autorizaController {
     return await this.autorizaService.findAll(params);
   }
 
-  @Get('findrecursos')
+  @Get('saques')
   async findre(
     @CurrentUser() user: AuthUserDto,
     @Query() params: FindAllParams,
@@ -33,4 +33,11 @@ export class autorizaController {
   async autorizaRecurso(@Query() params: FindAllParams, @CurrentUser() user: AuthUserDto) {
     return await this.autorizaService.autorizarNega(params, user);
   }
+  // @Get('saques')
+  // async findSaque(
+  //   @CurrentUser() user: AuthUserDto,
+  //   @Query() params: FindAllParams,
+  // ): Promise<{ data: any[]; total: number }> {
+  //   return await this.autorizaService.findSaque(user, params);
+  // }
 }

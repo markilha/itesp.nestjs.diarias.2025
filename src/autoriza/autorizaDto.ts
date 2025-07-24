@@ -32,6 +32,35 @@ export class FindAllParams {
   limit?: number;
 }
 
+export class filtroAutoriacao {
+  @ApiProperty({ required: false })
+  chapa?: string;
+
+  @ApiProperty({ required: false })
+  saque?: number;
+
+  @ApiProperty({ required: false })
+  requisicao?: number;
+
+  @ApiProperty({ required: false })
+  tipo?: string;
+
+  @ApiProperty({ required: false })
+  regional?: number;
+
+  @ApiProperty({ required: false })
+  setor?: string;
+
+  @ApiProperty({ required: false })
+  status?: string;
+
+  @ApiProperty({ required: false })
+  page?: number;
+
+  @ApiProperty({ required: false })
+  limit?: number;
+}
+
 export class CarreagaSetorDto {
   @ApiProperty({ required: false })
   CODIGO?: string;

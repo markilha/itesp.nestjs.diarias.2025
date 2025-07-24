@@ -19,11 +19,8 @@ export class RegionaisController {
     return this.service.findAll(params).then(
       (result) =>
         new PaginatedRegionaisDto({
-          data: result[1].map((entity) => new RegionaisDto(entity)),
           total: result[0],
-          page: +params.page,
-          pageCount: Math.ceil(result[0] / params.limit),
-          count: result[1].length,
+          data: result[1].map((entity) => new RegionaisDto(entity)),
         }),
     );
   }

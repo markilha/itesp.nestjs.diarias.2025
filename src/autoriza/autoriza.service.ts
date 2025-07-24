@@ -2,7 +2,12 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { autorizaEntity } from '../database/db_oracle/entities/autoriza.entity';
-import { AutorizarRecursoDto, CarreagaSetorDto, FindAllParams } from './autorizaDto';
+import {
+  AutorizarRecursoDto,
+  CarreagaSetorDto,
+  filtroAutoriacao,
+  FindAllParams,
+} from './autorizaDto';
 
 import { EnumAutorizacao } from 'src/util/enums/autorizacao';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
@@ -13,6 +18,7 @@ import { inserts } from 'src/util/crudOracle/inserts';
 import { procedures } from 'src/util/crudOracle/procedures';
 import { PpessoaService } from 'src/ppessoa/ppessoa.service';
 import { filtrarSetorLike } from 'src/util/permissao/porSecao';
+import { parseToNumber } from 'src/util/converter_float';
 
 @Injectable()
 export class autorizaService {
@@ -135,26 +141,19 @@ export class autorizaService {
     }
   }
 
+  //TODO: FILTRAR RECURSOS
   async findRecursos(
     user: AuthUserDto,
-    params: FindAllParams,
+    params: filtroAutoriacao,
   ): Promise<{ data: any[]; total: number; totalFiltrado: number }> {
     try {
       //Dados usuarios logado
-      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: user.chapa });
-
+      let filtro = true;
+      const chapa = params.chapa || user.chapa;
+      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: chapa });
       const page = params.page || 1;
       const limit = params.limit || 1000;
       const offset = (page - 1) * limit;
-      const chapa = params.CHAPA;
-      const sqeidcodigo = params.SQE_ID_CODIGO;
-      const dirIdCodigo = params.DIR_ID_CODIGO;
-      const status = params.STATUS;
-      const stsIdCodigo = params.STS_ID_CODIGO;
-      const sqeefetivo = params.SQE_EFETIVO;
-      const codigosecao = params.CODSECAO;
-      const requisicao = params.REQ_ID_CODIGO;
-      const regionalId = params.regionalId;
 
       // Query para obter o total SEM filtros
       const totalQuery = `
@@ -168,21 +167,18 @@ export class autorizaService {
         SELECT * FROM (
           SELECT 
             B.SQE_ID_CODIGO AS "SQE_ID_CODIGO",
-            B.SQE_EFETIVO AS "SQE_EFETIVO",
-            B.SQE_DTPEDIDO,
+            B.ITE_ID_CODIGO AS "ITE_ID_CODIGO",
             D.REQ_ID_CODIGO AS "REQ_ID_CODIGO",
+            E.CODUSUARIO AS "CHAPA",
             C.NOME AS "NOME",
-            C.CODSECAO AS "CODSECAO",
             E.CPF AS "CPF",
+            C.CODSECAO AS "CODSECAO", 
+            B.SQE_DTPEDIDO,                    
             B.SQE_VLSAQUE AS "SQE_VLSAQUE",
-            B.SQE_VLPREST AS "SQE_VLPREST",          
-            A.IRR_VLDEVOLUCAO AS "IRR_VLDEVOLUCAO",
-            A.IRR_COMPLEMENTO AS "IRR_COMPLEMENTO",          
-            A.IRR_DATA_SOL AS "IRR_DATA_SOL",
-            A.STS_ID_CODIGO AS "STS_ID_CODIGO",   
-            F.STS_DESCRICAO AS "STS_DESCRICAO", 
+            B.SQE_VLPREST AS "SQE_VLPREST",
             H.DESCRICAO AS DIRETORIA,
-            G.DESCRICAO AS SETOR,           
+            G.DESCRICAO AS SETOR,  
+            J.REG_DESCRICAO AS "REGIONAL",       
             CASE 
               WHEN A.IRR_RECURSO = '${EnumAutorizacao.APROVADA}' THEN 'Aprovada'
               WHEN A.IRR_RECURSO = '${EnumAutorizacao.NEGADA}' THEN 'Negada'
@@ -199,46 +195,54 @@ export class autorizaService {
           JOIN RM.PSECAO G ON C.CODSECAO = G.CODIGO   
           JOIN FINANCEIRO.V009_DiretoriaGeral H ON A.DIR_ID_CODIGO = H.DIR_ID_CODIGO
           JOIN FINANCEIRO.V009_FUNCSALARIO I ON A.CHAPA = I.CHAPA
+           JOIN COMUM.S000_REGIONAL J  ON I.REG_ID_CODIGO  = J.REG_ID_CODIGO         
       `;
       const queryParams: any = {};
       const conditions: string[] = [];
 
-      if (chapa) {
+      // Filtro por chapa
+      if (params.chapa) {
         conditions.push(`A.CHAPA = :chapa`);
-        queryParams['chapa'] = chapa;
+        queryParams['chapa'] = params.chapa;
+        filtro = false;
       }
 
-      if (regionalId) {
-        conditions.push(`I.REG_ID_CODIGO = :regionalId`);
-        queryParams['regionalId'] = regionalId;
-      }
-
-      if (sqeidcodigo) {
+      // filtro por código do saque
+      if (params.saque) {
         conditions.push(`B.SQE_ID_CODIGO  = :sqeidcodigo`);
-        queryParams['sqeidcodigo'] = sqeidcodigo;
+        queryParams['sqeidcodigo'] = params.saque;
+        filtro = false;
       }
-
-      if (dirIdCodigo) {
-        conditions.push(`A.DIR_ID_CODIGO = :dirIdCodigo`);
-        queryParams['dirIdCodigo'] = dirIdCodigo;
-      }
-      if (stsIdCodigo) {
-        conditions.push(`A.STS_ID_CODIGO = :stsIdCodigo`);
-        queryParams['stsIdCodigo'] = stsIdCodigo;
-      }
-      if (requisicao) {
+      // friltro por requisição
+      if (params.requisicao) {
         conditions.push(`D.REQ_ID_CODIGO = :requisicao`);
-        queryParams['requisicao'] = requisicao;
+        queryParams['requisicao'] = params.requisicao;
+        filtro = false;
       }
 
-      if (sqeefetivo) {
-        const stsIds = sqeefetivo.split(',').map((id) => `'${id.trim()}'`); // Adiciona aspas simples em cada valor
-        conditions.push(`B.SQE_EFETIVO IN (${stsIds.join(', ')})`); // Junta os valores corretamente
+      // filtro por regional
+      if (params.regional) {
+        conditions.push('UPPER( J.REG_DESCRICAO) LIKE UPPER(:regional)');
+        queryParams['regional'] = `%${params.regional}%`;
+        filtro = false;
       }
 
-      if (status) {
+      // filtro por setor
+      if (params.setor) {
+        conditions.push('UPPER( G.DESCRICAO) LIKE UPPER(:setor)');
+        queryParams['setor'] = `%${params.setor}%`;
+        filtro = false;
+      }
+
+      // if (sqeefetivo) {
+      //   const stsIds = sqeefetivo.split(',').map((id) => `'${id.trim()}'`); // Adiciona aspas simples em cada valor
+      //   conditions.push(`B.SQE_EFETIVO IN (${stsIds.join(', ')})`); // Junta os valores corretamente
+      //   filtro = false;
+      // }
+
+      if (params.status) {
         let statusResult = '';
-        switch (status.trim()) {
+        switch (params.status.trim()) {
           case 'Aprovada':
             statusResult = 'S';
             break;
@@ -248,23 +252,27 @@ export class autorizaService {
           case 'Finalizada':
             statusResult = 'F';
             break;
+          case 'Pendente':
+            statusResult = 'P';
+            break;
           default:
             statusResult = 'P';
             break;
         }
         conditions.push(`A.IRR_RECURSO = :status`);
         queryParams['status'] = statusResult;
+        filtro = false;
       }
 
-      if (codigosecao) {
-        conditions.push(`C.CODSECAO LIKE  :CODSE
-        `);
-        queryParams['CODSE'] = codigosecao + '%';
-      } else {
+      // filtra conforme a permissão do usuario
+      if (filtro) {
         const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'C.CODSECAO');
         if (pesquisa) {
           conditions.push(pesquisa);
-          queryParams['chapalogado'] = user.chapa;
+          queryParams['chapalogado'] = chapa;
+        } else {
+          conditions.push(`A.CHAPA = :chapa`);
+          queryParams['chapa'] = chapa;
         }
       }
 
@@ -284,18 +292,36 @@ export class autorizaService {
 
       // Executa a query principal
       const result = await this.autorizaRepository.manager.query(query, queryParams);
+
+      if (!result || result.length === 0) {
+        return {
+          total: 0,
+          totalFiltrado: 0,
+          data: [],
+        };
+      }
+
+      const data = result.map((item: any) => ({
+        ...item,
+        TIPO: 'Viagem',
+        VL_DEVOLUCAO: parseFloat(
+          (parseToNumber(item.SQE_VLSAQUE) - parseToNumber(item.SQE_VLPREST)).toFixed(2),
+        ),
+      }));
+
       const totalFiltrado = result.length;
 
       return {
-        total, // Total sem filtros
-        totalFiltrado, // Total com os filtros aplicados
-        data: result,
+        total,
+        totalFiltrado,
+        data,
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
+  //TODO: CARREGA SETORES
   async carregarSetores(user: AuthUserDto): Promise<{ data: CarreagaSetorDto[] }> {
     try {
       const { PERMISSAO: permissao, CODSECAO: codigosecao } = await this.ppessoaService.find({
@@ -497,41 +523,103 @@ export class autorizaService {
     }
   }
 
-  // async filtrarSetorLike(permissao: number, codigosecao: string) {
+  //TODO: CARREGAR SAQUE
+  // async findSaque(user: AuthUserDto, params: FindAllParams): Promise<any> {
   //   try {
-  //     //DIRETORIA EXECUTIVA  OU DE - Financeiro
-  //     if (
-  //       permissao === permissaoCargo.DIRETOR_EXECUTIVO ||
-  //       permissao === permissaoCargo.CHEFE_GABINETE ||
-  //       (permissao === permissaoCargo.FINANCEIRO_TESOURARIA &&
-  //         [enumCodSecao.GABINETE_DIRETORIA_EXECUTIVA, enumCodSecao.DIRETOR_EXECUTIVO].includes(
-  //           codigosecao as enumCodSecao,
-  //         ))
-  //     ) {
-  //       return `C.CODSECAO LIKE '1.1.%' OR  C.CODSECAO LIKE '1.6.%'`;
-  //     } else if (
-  //       (permissao === permissaoCargo.FINANCEIRO_TESOURARIA &&
-  //         ['1.2.01.05.01.00.00', enumCodSecao.DIRETORIA_ADJUNTA_FINANCAS_RECURSOS_HUMANOS].includes(
-  //           codigosecao,
-  //         )) ||
-  //       permissao === permissaoCargo.DIRETOR_ADJUNTO ||
-  //       permissao === permissaoCargo.ASSISTENTE ||
-  //       ['1.2.01.05.01.00.00', enumCodSecao.DIRETORIA_ADJUNTA_FINANCAS_RECURSOS_HUMANOS].includes(
-  //         codigosecao,
-  //       )
-  //     ) {
-  //       return `C.CODSECAO != '${enumCodSecao.DIRETOR_EXECUTIVO}' and  C.CODSECAO LIKE '${codigosecao.substring(0, 5)}%'`;
-  //     } else if (
-  //       permissao === permissaoCargo.GERENTE ||
-  //       permissao === permissaoCargo.RESP_TEC_TRANSPORTE ||
-  //       permissao === permissaoCargo.RESP_TECNICO ||
-  //       permissao === permissaoCargo.ASSESSORIA_OUVIDORIA
-  //     ) {
-  //       return `C.CODSECAO LIKE :SETOR`;
-  //     } else if (permissao === permissaoCargo.GTCAMPO) {
-  //       return `C.CODSECAO IN (SELECT e.codsecao FROM rm.psubstchefe e WHERE e.chapasubst = :chapalogado AND e.datafim >= SYSDATE)`;
+  //     const page = params.page || 1;
+  //     const limit = params.limit || 1000;
+  //     const offset = (page - 1) * limit;
+  //     const queryParams: any[] = [];
+
+  //     // Lista de filtros dinâmicos
+  //     const whereConditions: string[] = [];
+
+  //     if (params.SQE_ID_CODIGO) {
+  //       whereConditions.push(`ss.SQE_ID_CODIGO = :SQE_ID_CODIGO`);
+  //       queryParams.push(params.SQE_ID_CODIGO);
   //     }
-  //     return null;
+
+  //     if (params.CHAPA) {
+  //       whereConditions.push(`si.CHAPA = :CHAPA`);
+  //       queryParams.push(params.CHAPA);
+  //     }
+
+  //     // Monta o WHERE se houver filtros
+  //     const whereClause =
+  //       whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+  //     const query = `
+  //     SELECT * FROM (
+  //       SELECT
+  //         a.*, ROWNUM rnum FROM (
+  //           SELECT
+  //             ss.SQE_ID_CODIGO,
+  //             ss.ITE_ID_CODIGO,
+  //             ss.SQE_DTPEDIDO,
+  //             sr.REQ_ID_CODIGO,
+  //             si.CHAPA,
+  //             p.NOME,
+  //             p.CPF,
+  //             pf.CODSECAO,
+  //             ss.SQE_VLSAQUE,
+  //             ss.SQE_VLPREST,
+  //             ps.DESCRICAO as DIRETORIA
+  //             FROM FINANCEIRO.S009_SAQUE ss
+  //             JOIN S009_REQNUMERARIO sr  ON ss.SQE_ID_CODIGO = sr.SQE_ID_CODIGO
+  //             JOIN S009_ITENSREQREC si   ON ss.ITE_ID_CODIGO  = si.ITE_ID_CODIGO
+  //             JOIN RM.PPESSOA p  ON si.CHAPA = p.CODUSUARIO
+  //             JOIN COMUM.S000_DIRETORIA1 sd   ON ss.DIR_ID_CODIGO = sd.DIR_ID_CODIGO
+  //             JOIN RM.PSECAO ps   ON sd.CODIGO  = ps.CODIGO
+  //             JOIN RM.PFUNC pf    ON p.CODUSUARIO    = pf.CHAPA
+  //           ${whereClause}
+  //           ORDER BY ss.SQE_ID_CODIGO
+  //         ) a
+  //       WHERE ROWNUM <= ${offset + limit}
+  //     )
+  //     WHERE rnum > ${offset}
+  //   `;
+
+  //     const result = await this.autorizaRepository.manager.query(query, queryParams);
+
+  //     if (!result || result.length === 0) {
+  //       return { data: [], total: 0 };
+  //     }
+
+  //     const response = result.map((item: any) => ({
+  //       ...item,
+  //       VL_DEVOLUCAO: parseFloat(
+  //         (parseToNumber(item.SQE_VLSAQUE) - parseToNumber(item.SQE_VLPREST)).toFixed(2),
+  //       ),
+  //     }));
+
+  //     // Segunda query para pegar o total de registros sem filtro
+  //     const totalQuery = `SELECT COUNT(*) as total FROM FINANCEIRO.S009_SAQUE`;
+  //     const totalResult = await this.autorizaRepository.manager.query(totalQuery);
+  //     const total = totalResult?.[0]?.TOTAL || 0;
+
+  //     // Total filtrado (com os mesmos filtros da busca)
+  //     const totalFiltradoQuery = `
+  //     SELECT COUNT(*) as TOTAL
+  //     FROM FINANCEIRO.S009_SAQUE ss
+  //     JOIN S009_REQNUMERARIO sr  ON ss.SQE_ID_CODIGO = sr.SQE_ID_CODIGO
+  //     JOIN S009_ITENSREQREC si   ON ss.ITE_ID_CODIGO  = si.ITE_ID_CODIGO
+  //     JOIN RM.PPESSOA p  ON si.CHAPA = p.CODUSUARIO
+  //     JOIN COMUM.S000_DIRETORIA1 sd   ON ss.DIR_ID_CODIGO = sd.DIR_ID_CODIGO
+  //     JOIN RM.PSECAO ps   ON sd.CODIGO  = ps.CODIGO
+  //     JOIN RM.PFUNC pf    ON p.CODUSUARIO    = pf.CHAPA
+  //     ${whereClause}
+  //   `;
+  //     const totalFiltradoResult = await this.autorizaRepository.manager.query(
+  //       totalFiltradoQuery,
+  //       queryParams,
+  //     );
+  //     const totalFiltrado = totalFiltradoResult?.[0]?.TOTAL || 0;
+
+  //     return {
+  //       total,
+  //       totalFiltrado,
+  //       data: response,
+  //     };
   //   } catch (error) {
   //     throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
   //   }
