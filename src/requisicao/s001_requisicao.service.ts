@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { FindOptionsWhere, In, MoreThanOrEqual, Repository } from 'typeorm';
 import {
+  ConsultaDetalheParams,
   FindAllAutorizadasParams,
   FindAllParams,
   findMesParams,
@@ -633,7 +634,7 @@ export class S001RequisicaoService {
     }
   }
 
-  async findListaSaque(user: AuthUserDto, params: ListSaqueParams): Promise<any> {
+  async findListaRequisicao(user: AuthUserDto, params: ListSaqueParams): Promise<any> {
     try {
       const filterConditions = [];
       const filterValues: Record<string, any> = {};
@@ -695,6 +696,54 @@ export class S001RequisicaoService {
         data: consulta,
         total: consulta.length ?? 0,
       };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async findDetalheRequisicao(params: ConsultaDetalheParams, user: AuthUserDto): Promise<any> {
+    // user = {
+    //   "sub": 27396,
+    //   "login": "dmk3",
+    //   "chapa": "000081",
+    //   "roles": [
+    //     "SUPERVISOR"
+    //   ],
+    //   "permissao": 8,
+    //   "codsecao": "1.3.02.07.04.17.00"
+    // }
+    try {
+      if (!user?.chapa) throw new HttpException("Usuário desconhecido.", HttpStatus.FORBIDDEN);
+      if (!params?.REQ_ID_CODIGO) throw new HttpException("Requisição não encontrada.", HttpStatus.FORBIDDEN)
+
+      let filterConditions = [];
+      const filterValues: Record<string, any> = {};
+
+      if (params.REQ_ID_CODIGO) {
+        filterConditions.push(`r.REQ_ID_CODIGO = :REQ_ID_CODIGO`);
+        filterValues.REQ_ID_CODIGO = params.REQ_ID_CODIGO;
+      }
+
+      const filters = filterConditions.length > 0 ? `${filterConditions.join(' AND ')}` : '';
+      const stringQuery = `
+            SELECT
+              irr.CHAPA,
+              irr.
+            FROM RM.PPESSOA p
+            INNER JOIN RM.PFUNC pf ON pf.CHAPA = p.CODUSUARIO
+            INNER JOIN TRANSPORTE.S001_USUREQ su ON p.CODUSUARIO = su.CHAPA
+            INNER JOIN TRANSPORTE.S001_REQUISICAO r ON r.REQ_ID_CODIGO = su.REQ_ID_CODIGO
+            INNER JOIN TRANSPORTE.S001_ITINERARIO i on r.REQ_ID_CODIGO = i.REQ_ID_CODIGO
+            INNER JOIN FINANCEIRO.S009_REQNUMERARIO rn on r.REQ_ID_CODIGO = rn.REQ_ID_CODIGO
+            INNER JOIN FINANCEIRO.S009_ITENSREQREC irr on rn.ITE_ID_CODIGO = irr.ITE_ID_CODIGO
+            WHERE ${filters}
+      `;
+      const consulta = await this.requisicaoRepository.query(stringQuery, Object.values(filterValues));
+      return {
+        data: consulta,
+        total: consulta.length ?? 0,
+      }
     } catch (error) {
       console.log(error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

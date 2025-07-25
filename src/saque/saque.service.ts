@@ -435,7 +435,7 @@ export class SaqueService {
       }
 
       if (params.agreement) {
-          consulta = consulta.filter((item: any) => item.STS_SAQUE_CONVENIADO == params.agreement)
+        consulta = consulta.filter((item: any) => item.STS_SAQUE_CONVENIADO == params.agreement)
       }
 
       if (params.NOME) {
