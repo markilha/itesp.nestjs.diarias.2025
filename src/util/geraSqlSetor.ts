@@ -14,17 +14,12 @@ export function gerarSQLSetor({ statusTag, codSecao, cb_setordir, chapa }) {
   ) {
     sql += ` AND (a.CODIGO LIKE '1.1.%' OR a.CODIGO LIKE '1.6.%')`;
 
-    // Se statusTag for 0 e estiver em outras seções específicas, filtra por setores do mesmo "raiz"
+    // Se statusTag for 0 com seções específicas OU statusTag for 1 ou 2, aplica filtro por raiz
   } else if (
-    statusTag === 0 &&
-    (codSecao === '1.2.01.05.01.00.00' || codSecao === '1.2.00.00.00.00.00')
+    [1, 2].includes(statusTag) ||
+    (statusTag === 0 && (codSecao === '1.2.01.05.01.00.00' || codSecao === '1.2.00.00.00.00.00'))
   ) {
     const setorRaiz = cb_setordir?.substring(0, 5); // Pega o prefixo do código do setor
-    sql += ` AND a.CODIGO <> '${cb_setordir}' AND a.CODIGO LIKE '${setorRaiz}%'`;
-
-    // Se statusTag for 1 ou 2, aplica o mesmo filtro acima baseado no cb_setordir
-  } else if ([1, 2].includes(statusTag)) {
-    const setorRaiz = cb_setordir?.substring(0, 5);
     sql += ` AND a.CODIGO <> '${cb_setordir}' AND a.CODIGO LIKE '${setorRaiz}%'`;
 
     // Se statusTag for 3, filtra exatamente pelo código da seção
