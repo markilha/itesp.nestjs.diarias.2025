@@ -149,128 +149,33 @@ export class autorizaService {
     params: filtroAutoriacao,
   ): Promise<{ data: any[]; total: number; totalFiltrado: number }> {
     try {
-      //Dados usuarios logado
-      let filtro = true;
       const chapa = params.chapa || user.chapa;
-      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: chapa });
+      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa });
+
       const page = params.page || 1;
       const limit = params.limit || 1000;
       const offset = (page - 1) * limit;
 
-      // Query para obter o total SEM filtros
-      const totalQuery = `
-        SELECT COUNT(*) AS total FROM FINANCEIRO.S009_ITENSREQREC
-      `;
-      const totalResult = await this.autorizaRepository.manager.query(totalQuery);
-      const total = totalResult[0]?.TOTAL || 0;
+      const total = await this.obterTotal();
 
-      // Query principal
-      let query = autorizaSelect;
       const queryParams: any = {};
-      const conditions: string[] = [];
+      const conditions = this.montarFiltros(params, queryParams);
+      let query = autorizaSelect;
 
-      // Filtro por chapa
-      if (params.chapa) {
-        conditions.push(`A.CHAPA = :chapa`);
-        queryParams['chapa'] = params.chapa;
-        filtro = false;
-      }
+      this.aplicarFiltroPermissao(conditions, queryParams, PERMISSAO, CODSECAO, chapa);
 
-      // filtro por código do saque
-      if (params.saque) {
-        conditions.push(`B.SQE_ID_CODIGO  = :sqeidcodigo`);
-        queryParams['sqeidcodigo'] = params.saque;
-        filtro = false;
-      }
-      // friltro por requisição
-      if (params.requisicao) {
-        conditions.push(`D.REQ_ID_CODIGO = :requisicao`);
-        queryParams['requisicao'] = params.requisicao;
-        filtro = false;
-      }
-
-      // filtro por regional
-      if (params.regional) {
-        conditions.push('UPPER( J.REG_DESCRICAO) LIKE UPPER(:regional)');
-        queryParams['regional'] = `%${params.regional}%`;
-        filtro = false;
-      }
-
-      // filtro por setor
-      if (params.setor) {
-        conditions.push('UPPER( G.DESCRICAO) LIKE UPPER(:setor)');
-        queryParams['setor'] = `%${params.setor}%`;
-        filtro = false;
-      }
-
-      // if (sqeefetivo) {
-      //   const stsIds = sqeefetivo.split(',').map((id) => `'${id.trim()}'`); // Adiciona aspas simples em cada valor
-      //   conditions.push(`B.SQE_EFETIVO IN (${stsIds.join(', ')})`); // Junta os valores corretamente
-      //   filtro = false;
-      // }
-
-      if (params.status) {
-        let statusResult = '';
-        switch (params.status.trim()) {
-          case 'Aprovada':
-            statusResult = 'S';
-            break;
-          case 'Negada':
-            statusResult = 'N';
-            break;
-          case 'Finalizada':
-            statusResult = 'F';
-            break;
-          case 'Pendente':
-            statusResult = 'A';
-            conditions.push(`A.STS_ID_CODIGO = ${enumStsIdCodigo.AGUARD_APROV_CHEFE_IMEDIATO}`);
-            break;
-          default:
-            statusResult = 'P';
-            break;
-        }
-        conditions.push(`A.IRR_RECURSO = :status`);
-        queryParams['status'] = statusResult;
-        filtro = false;
-      }
-
-      // filtra conforme a permissão do usuario
-      if (filtro) {
-        const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'C.CODSECAO');
-        if (pesquisa) {
-          conditions.push(pesquisa);
-          if (PERMISSAO === permissaoCargo.GTCAMPO) {
-            queryParams['chapalogado'] = chapa;
-          }
-        } else {
-          conditions.push(`A.CHAPA = :chapa`);
-          queryParams['chapa'] = chapa;
-        }
-      }
-
-      //JUNTAR CONDIÇÕES
       if (conditions.length > 0) {
         query += ` WHERE ` + conditions.join(' AND ');
       }
 
-      //FECHAR QUERY
-      query += `
-        ) WHERE ROW_NUM BETWEEN :minRow AND :maxRow
-        ORDER BY SQE_ID_CODIGO DESC
-      `;
-
+      query += `) WHERE ROW_NUM BETWEEN :minRow AND :maxRow ORDER BY SQE_ID_CODIGO DESC`;
       queryParams['minRow'] = offset + 1;
       queryParams['maxRow'] = offset + limit;
 
-      // Executa a query principal
       const result = await this.autorizaRepository.manager.query(query, queryParams);
 
       if (!result || result.length === 0) {
-        return {
-          total: 0,
-          totalFiltrado: 0,
-          data: [],
-        };
+        return { total: 0, totalFiltrado: 0, data: [] };
       }
 
       const data = result.map((item: any) => ({
@@ -281,15 +186,79 @@ export class autorizaService {
         ),
       }));
 
-      const totalFiltrado = result.length;
-
-      return {
-        total,
-        totalFiltrado,
-        data,
-      };
+      return { total, totalFiltrado: result.length, data };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  private async obterTotal(): Promise<number> {
+    const totalQuery = `SELECT COUNT(*) AS total FROM FINANCEIRO.S009_ITENSREQREC`;
+    const totalResult = await this.autorizaRepository.manager.query(totalQuery);
+    return totalResult[0]?.TOTAL || 0;
+  }
+
+  private aplicarFiltroPermissao(
+    conditions: string[],
+    queryParams: any,
+    PERMISSAO: number,
+    CODSECAO: string,
+    chapa: string,
+  ): void {
+    if (conditions.length === 0) {
+      const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'C.CODSECAO');
+      if (pesquisa) {
+        conditions.push(pesquisa);
+        if (PERMISSAO === permissaoCargo.GTCAMPO) {
+          queryParams['chapalogado'] = chapa;
+        }
+      } else {
+        conditions.push(`A.CHAPA = :chapa`);
+        queryParams['chapa'] = chapa;
+      }
+    }
+  }
+
+  private montarFiltros(params: filtroAutoriacao, queryParams: any): string[] {
+    const conditions: string[] = [];
+
+    const addCond = (cond: string, paramKey: string, value: any) => {
+      conditions.push(cond);
+      queryParams[paramKey] = value;
+    };
+
+    if (params.chapa) addCond(`A.CHAPA = :chapa`, 'chapa', params.chapa);
+    if (params.saque) addCond(`B.SQE_ID_CODIGO  = :sqeidcodigo`, 'sqeidcodigo', params.saque);
+    if (params.requisicao)
+      addCond(`D.REQ_ID_CODIGO = :requisicao`, 'requisicao', params.requisicao);
+    if (params.regional)
+      addCond(`UPPER(J.REG_DESCRICAO) LIKE UPPER(:regional)`, 'regional', `%${params.regional}%`);
+    if (params.setor)
+      addCond(`UPPER(G.DESCRICAO) LIKE UPPER(:setor)`, 'setor', `%${params.setor}%`);
+
+    if (params.status) {
+      const status = this.mapearStatus(params.status.trim());
+      if (params.status.trim() === 'Pendente') {
+        conditions.push(`A.STS_ID_CODIGO = ${enumStsIdCodigo.AGUARD_APROV_CHEFE_IMEDIATO}`);
+      }
+      addCond(`A.IRR_RECURSO = :status`, 'status', status);
+    }
+
+    return conditions;
+  }
+
+  private mapearStatus(status: string): string {
+    switch (status) {
+      case 'Aprovada':
+        return 'S';
+      case 'Negada':
+        return 'N';
+      case 'Finalizada':
+        return 'F';
+      case 'Pendente':
+        return 'A';
+      default:
+        return 'P';
     }
   }
 
