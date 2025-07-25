@@ -548,6 +548,7 @@ export class SolitarDto {
   diariaIntegral: number;
   diariaParcial: number;
   diariaBase: number;
+  conveniado?: number;
 }
 
 export interface RetNumSaque {

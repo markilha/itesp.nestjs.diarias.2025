@@ -609,19 +609,23 @@ export class SaqueService {
       if (!params.reqIdCodigo) {
         throw new HttpException('Requisição não informada', HttpStatus.INTERNAL_SERVER_ERROR);
       }
+
       const valorSaque = params.diariaIntegral + params.diariaParcial;
+
       if (valorSaque <= 0) {
         throw new HttpException(
           'Valor do Saque não pode ser Zero',
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
+
       const funcionario = await this.funcsalarioService.findByCodigo(params.chapa);
 
       const prazo = await this.saqueRepository.query(selecionaUltimoPrazo, [
         funcionario.REG_ID_CODIGO,
       ]);
 
+      // Verifica se pedido de recurso já existe
       const where = `and A.Chapa =:NChapa and A.RRE_ID_CODIGO=:NREQ and A.TDE_ID_CODIGO=:TIPODESP AND A.IRR_RECURSO='S'`;
       const ItensReqRec = await this.saqueRepository.query(`${SelecionaItensRecurso} ${where}`, [
         params.chapa,
@@ -665,7 +669,9 @@ export class SaqueService {
           [PAR1, PAR2, PAR3, PAR4, PAR5, PAR6, PAR7, PAR8, PAR9, PAR10, PAR11, PAR12, PAR13, PAR14, PAR15, PAR16, PAR17, PAR18, PAR19, PAR20, PAR21, PAR22, IDITE], //prettier-ignore
         );
 
-        itemRecurso = await this.itensreqrecService.findOne(req[0]);
+        const codigo = req[0] - 1;
+
+        itemRecurso = await this.itensreqrecService.findOne(codigo);
 
         const where = `
         And A.DIR_ID_CODIGO=:CODDIR
@@ -917,6 +923,14 @@ export class SaqueService {
       //   /*REQUISIÇÃO DE TRANSPORTE*/
       if (parametros.PAR10 === 'N' && parametros.PAR3 === '7' && parametros.PAR2 === 'S') {
         await this.reqtransService.updateStatus(requisicao.REQ_ID_CODIGO, parametros.PAR29);
+      }
+
+      if (params.conveniado === 1) {
+        // Atualiza o status do saque para conveniado
+        await this.saqueRepository.query(
+          `UPDATE S009_SAQUE SET STS_SAQUE_CONVENIADO = 1 WHERE SQE_ID_CODIGO = :sqeIdCodigo`,
+          [resultSaque.sqeIdCodigo],
+        );
       }
 
       return { sqeIdCodigo: resultSaque.sqeIdCodigo };
