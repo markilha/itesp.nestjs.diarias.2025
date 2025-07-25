@@ -169,7 +169,6 @@ export class S001RequisicaoService {
 
       // Executa a query
       const requisicoes = await this.requisicaoRepository.manager.query(query, parameters);
-      console.log(requisicoes);
 
       const results = await Promise.all(
         requisicoes.map((requisicao: any) => this.processRequisicao(requisicao)),
@@ -547,7 +546,6 @@ export class S001RequisicaoService {
       AND
         ${filterConditions.join(' AND ')}
     `;
-      // console.log('query', query);
 
       const requisicao = await this.requisicaoRepository.query(query, filterValues);
 
