@@ -44,7 +44,6 @@ export function filtrarSetorLike(
       return `${campo} IN (SELECT e.codsecao FROM rm.psubstchefe e WHERE e.chapasubst = :chapalogado AND e.datafim >= SYSDATE)`;
     }
     return null;
-    // return `${campo} LIKE '${codigosecao}%'`;
   } catch (error) {
     throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
   }

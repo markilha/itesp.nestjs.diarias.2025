@@ -32,7 +32,7 @@ export class FindAllParams {
   limit?: number;
 }
 
-export class filtroAutoriacao {
+export class FiltroAutorizacao {
   @ApiProperty({ required: false })
   chapa?: string;
 

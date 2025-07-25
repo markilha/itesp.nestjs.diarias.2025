@@ -6,7 +6,7 @@ import {
   AutorizarPendenteParams,
   AutorizarRecursoDto,
   CarreagaSetorDto,
-  filtroAutoriacao,
+  FiltroAutorizacao,
   FindAllParams,
 } from './autorizaDto';
 
@@ -145,7 +145,7 @@ export class autorizaService {
 
   async findRecursos(
     user: AuthUserDto,
-    params: filtroAutoriacao,
+    params: FiltroAutorizacao,
   ): Promise<{ data: any[]; total: number; totalFiltrado: number }> {
     try {
       const chapa = params.chapa || user.chapa;
@@ -218,7 +218,7 @@ export class autorizaService {
     }
   }
 
-  private montarFiltros(params: filtroAutoriacao, queryParams: any): string[] {
+  private montarFiltros(params: FiltroAutorizacao, queryParams: any): string[] {
     const conditions: string[] = [];
 
     const addCond = (cond: string, paramKey: string, value: any) => {

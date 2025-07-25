@@ -92,23 +92,23 @@ function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
 export class SaqueService {
   constructor(
     @InjectRepository(SaqueEntity, 'oracleConnection')
-    private saqueRepository: Repository<SaqueEntity>,
-    private itinerarioService: ItinirarioService,
-    private ufespService: UfespService,
-    private despesaDiaria: DespesadiariaService,
-    private reqtransService: reqtransService,
-    private reembolsoService: reembolsoService,
-    private funcsalarioService: FuncsalarioService,
-    private extornoService: extornoService,
-    private itensreqrecService: itensreqrecService,
-    private reqnumerarioService: ReqnumerarioService,
-    private destinoService: destinoService,
-    private naotrabservice: naotrabService,
-    private documentosService: documentosService,
-    private pcontasService: PcontasService,
-    private pcontasnumService: PcontasNumService,
-    private ndocumentoService: ndocumentoService,
-    private ppessoaService: PpessoaService,
+    private readonly saqueRepository: Repository<SaqueEntity>,
+    private readonly itinerarioService: ItinirarioService,
+    private readonly ufespService: UfespService,
+    private readonly despesaDiaria: DespesadiariaService,
+    private readonly reqtransService: reqtransService,
+    private readonly reembolsoService: reembolsoService,
+    private readonly funcsalarioService: FuncsalarioService,
+    private readonly extornoService: extornoService,
+    private readonly itensreqrecService: itensreqrecService,
+    private readonly reqnumerarioService: ReqnumerarioService,
+    private readonly destinoService: destinoService,
+    private readonly naotrabservice: naotrabService,
+    private readonly documentosService: documentosService,
+    private readonly pcontasService: PcontasService,
+    private readonly pcontasnumService: PcontasNumService,
+    private readonly ndocumentoService: ndocumentoService,
+    private readonly ppessoaService: PpessoaService,
   ) {}
 
   private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
@@ -313,16 +313,6 @@ export class SaqueService {
         filterConditions.push('b.CHAPA = :chapa');
         filterValues.push(chapa);
       }
-
-      // const per = permissaoFindAll(user.permissao);
-      // if (per) {
-      //   filterConditions.push(
-      //     `SUBSTR(b.CODSECAO, 0, ${per}) = '${user.codsecao.substring(0, per)}'`,
-      //   );
-      // } else {
-      //   filterConditions.push('b.CHAPA = :chapa');
-      //   filterValues.push(chapa);
-      // }
 
       // Verifica e adiciona cada filtro dinamicamente
       if (params.SQE_ID_CODIGO) {
