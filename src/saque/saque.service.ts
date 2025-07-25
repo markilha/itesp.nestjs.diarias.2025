@@ -71,6 +71,7 @@ import { permissaoCargo } from '../util/enums/cargo';
 import { filtrarSetorLike } from '../util/permissao/porSecao';
 import { PpessoaService } from '../ppessoa/ppessoa.service';
 import { SaqueTipoN } from '../util/enums/sqeefetivo';
+import { gerarSQLSetor } from 'src/util/geraSqlSetor';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -601,7 +602,7 @@ export class SaqueService {
 
   //TODO: Solicitar saque
   async solicitarSaque(params: SolitarDto, user: AuthUserDto): Promise<any> {
-    let Rg_Reembolsar = 1;
+    const Rg_Reembolsar: number = 1;
     let Rg_TipoSaque = 1;
     let TipoDespesa = '7';
     let semrec = 1;

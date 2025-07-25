@@ -537,8 +537,7 @@ export class InsSaqueDto {
   PAR30: number; // RNU_VLINTEGRAL
   PAR31: number; // RNU_VLPARCIAL
   PAR32: number; // RNU_VLBASE
-
-  ID: {}; // Identificador
+  ID: object; // Identificador
 }
 
 export class SolitarDto {
