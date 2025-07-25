@@ -143,7 +143,7 @@ export class autorizaService {
     }
   }
 
-  //TODO: FILTRAR RECURSOS
+  //TODO FILTRAR RECURSOS
   async findRecursos(
     user: AuthUserDto,
     params: filtroAutoriacao,
@@ -262,12 +262,11 @@ export class autorizaService {
     }
   }
 
-  //TODO: Seleciona aprova pendente
+  //TODO Seleciona aprova pendente
   async selAprovaPendente(user: AuthUserDto, params: AutorizarPendenteParams): Promise<any> {
     try {
       const queryParams: any = {};
       const conditions: string[] = [];
-      // const { CODSECAO } = await this.ppessoaService.find({ chapa: user.chapa });
 
       let sql = `
       SELECT 
@@ -290,22 +289,6 @@ export class autorizaService {
         sql += ' AND ' + conditions.join(' AND ');
       }
 
-      //   if (tipo === 1) {
-      //   sql += `
-      //     AND a.codsecao <> :gerencia
-      //     AND a.codsecao LIKE :setor
-      //   `;
-      //   binds.gerencia = desc;
-      //   binds.setor = desc.substring(0, 12) + '%';
-      // } else if (tipo === 2) {
-      //   sql += `
-      //     AND a.codsecao <> :diretoria
-      //     AND a.dir_id_codigo = :dir
-      //   `;
-      //   binds.diretoria = dmExtCodDiretoria;
-      //   binds.dir = desc;
-      // }
-
       //agrupa por diretorias
       sql += `
       GROUP BY 
@@ -323,7 +306,7 @@ export class autorizaService {
     }
   }
 
-  //TODO: CARREGA SETORES
+  //TODO CARREGA SETORES
   async carregarSetores(user: AuthUserDto): Promise<{ data: CarreagaSetorDto[] }> {
     try {
       const { PERMISSAO: permissao, CODSECAO: codigosecao } = await this.ppessoaService.find({
@@ -418,19 +401,6 @@ export class autorizaService {
   }
 
   async autorizarNega(params: AutorizarRecursoDto, user: AuthUserDto) {
-    // let updateUsuReq = `
-    //   UPDATE TRANSPORTE.S001_USUREQ SET
-    //   CHAPA = :par2,
-    //   USU_MOV = :par3
-    //   WHERE REQ_ID_CODIGO = :par1
-    //   AND CHAPA = :par2`
-
-    // let updateStatusRequisicao = `
-    //   Update Transporte.S001_REQUISICAO Set
-    //   REQ_STATUS=:par2
-    //   where REQ_id_codigo=:par1
-    //   `
-
     try {
       await this.autorizaRepository.manager.transaction(async (transactionalEntityManager) => {
         // Atualizar o status do item para autorizado
