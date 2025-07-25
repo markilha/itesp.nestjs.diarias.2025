@@ -306,6 +306,16 @@ export class ListSaqueParams {
   @ApiProperty({})
   limit?: number;
 }
+export class ConsultaDetalheParams {
+  @ApiProperty({
+    example: 113010,
+    description: 'Número da requisição',
+    type: Number,
+    required: true,
+    nullable: true,
+  })
+  REQ_ID_CODIGO?: number;
+}
 
 export class findMesParams {
   @ApiProperty({ required: false, type: '000111' })
