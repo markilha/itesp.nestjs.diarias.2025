@@ -38,6 +38,8 @@ import { ndocumentoModule } from './ndocumento/ndocumento.module';
 import { autorizaModule } from './autoriza/autoriza.module';
 import { auditaPlanejaModule } from './auditaPlaneja/auditaPlaneja.module';
 import { FuncionariosModule } from './funcionarios/funcionarios.module';
+import { RegionaisModule } from './regionais/regionais.module';
+import { PsecaoModule } from './psecao/psecao.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -76,6 +78,8 @@ import { FuncionariosModule } from './funcionarios/funcionarios.module';
     autorizaModule,
     auditaPlanejaModule,
     FuncionariosModule,
+    RegionaisModule,
+    PsecaoModule,
   ],
   controllers: [docsController],
   providers: [docsService],

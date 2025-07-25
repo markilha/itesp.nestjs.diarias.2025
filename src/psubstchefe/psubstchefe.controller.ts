@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { psubstchefeService } from './psubstchefe.service';
 import { FindAllParams } from './psubstchefeDto';
@@ -21,8 +21,7 @@ export class psubstchefeController {
     isArray: true,
   })
   @ApiResponse({ status: 500, description: 'Erro interno do servidor' })
-  async findAtual(@Query() params: FindAllParams): Promise<psubstchefeEntity> {
-    const codigo = params.CODSECAO;
-    return await this.psubstchefeService.findAtual(codigo);
+  async findAtual(@Query() params: FindAllParams): Promise<any> {
+    return await this.psubstchefeService.findAtual(params);
   }
 }

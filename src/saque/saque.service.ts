@@ -67,46 +67,49 @@ import { PcontasNumService } from '../pcontasnum/pcontasnum.service';
 import { ndocumentoService } from '../ndocumento/ndocumento.service';
 import { ndocumentoEntity } from '../database/db_oracle/entities/ndocumento.entity';
 import { verificaAutorizacao } from '../util/permissao/permissao';
-import { permissaoFindAll } from '../util/permissao/permissao';
 import { permissaoCargo } from '../util/enums/cargo';
+import { filtrarSetorLike } from '../util/permissao/porSecao';
+import { PpessoaService } from '../ppessoa/ppessoa.service';
+import { SaqueTipoN } from '../util/enums/sqeefetivo';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
     ? {
-      dataSaida: itinerario.ITI_DTSAIDA,
-      horaSaida: itinerario.ITI_HSAIDA,
-      dataChegada: itinerario.ITI_DTCHEGADA,
-      horaChegada: itinerario.ITI_HCHEGADA,
-    }
+        dataSaida: itinerario.ITI_DTSAIDA,
+        horaSaida: itinerario.ITI_HSAIDA,
+        dataChegada: itinerario.ITI_DTCHEGADA,
+        horaChegada: itinerario.ITI_HCHEGADA,
+      }
     : {
-      dataSaida: consulta.REQ_DTSAIDA,
-      horaSaida: consulta.REQ_HSAIDA,
-      dataChegada: consulta.REQ_DTRET,
-      horaChegada: consulta.REQ_HRET,
-    };
+        dataSaida: consulta.REQ_DTSAIDA,
+        horaSaida: consulta.REQ_HSAIDA,
+        dataChegada: consulta.REQ_DTRET,
+        horaChegada: consulta.REQ_HRET,
+      };
 }
 
 @Injectable()
 export class SaqueService {
   constructor(
     @InjectRepository(SaqueEntity, 'oracleConnection')
-    private saqueRepository: Repository<SaqueEntity>,
-    private itinerarioService: ItinirarioService,
-    private ufespService: UfespService,
-    private despesaDiaria: DespesadiariaService,
-    private reqtransService: reqtransService,
-    private reembolsoService: reembolsoService,
-    private funcsalarioService: FuncsalarioService,
-    private extornoService: extornoService,
-    private itensreqrecService: itensreqrecService,
-    private reqnumerarioService: ReqnumerarioService,
-    private destinoService: destinoService,
-    private naotrabservice: naotrabService,
-    private documentosService: documentosService,
-    private pcontasService: PcontasService,
-    private pcontasnumService: PcontasNumService,
-    private ndocumentoService: ndocumentoService,
-  ) { }
+    private readonly saqueRepository: Repository<SaqueEntity>,
+    private readonly itinerarioService: ItinirarioService,
+    private readonly ufespService: UfespService,
+    private readonly despesaDiaria: DespesadiariaService,
+    private readonly reqtransService: reqtransService,
+    private readonly reembolsoService: reembolsoService,
+    private readonly funcsalarioService: FuncsalarioService,
+    private readonly extornoService: extornoService,
+    private readonly itensreqrecService: itensreqrecService,
+    private readonly reqnumerarioService: ReqnumerarioService,
+    private readonly destinoService: destinoService,
+    private readonly naotrabservice: naotrabService,
+    private readonly documentosService: documentosService,
+    private readonly pcontasService: PcontasService,
+    private readonly pcontasnumService: PcontasNumService,
+    private readonly ndocumentoService: ndocumentoService,
+    private readonly ppessoaService: PpessoaService,
+  ) {}
 
   private async buscarConsulta(sqeIdCodigo: number): Promise<any> {
     const saque = await this.findOne(sqeIdCodigo);
@@ -281,17 +284,16 @@ export class SaqueService {
       throw error instanceof HttpException
         ? error
         : new HttpException(
-          'Erro ao buscar dados necessários para prestação',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+            'Erro ao buscar dados necessários para prestação',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
     }
   }
 
-  //BUSCAR TODOS OS SAQUES
-
+  //Buscar todos os saques
   async findAll(params: FindParamsSaque, user: AuthUserDto): Promise<any> {
     try {
-      const chapa = user.chapa;
+      const chapa = params.CHAPA ? params.CHAPA : user.chapa;
       const orderByField = params.orderBy || 'a.SQE_DTPEDIDO';
       const orderDirection = params.orderDirection || 'ASC';
       const page = params.page || 1;
@@ -301,11 +303,12 @@ export class SaqueService {
       const filterConditions: string[] = [];
       const filterValues: any[] = [];
 
-      const per = permissaoFindAll(user.permissao);
-      if (per) {
-        filterConditions.push(
-          `SUBSTR(b.CODSECAO, 0, ${per}) = '${user.codsecao.substring(0, per)}'`,
-        );
+      // FILTRO POR SETOR
+      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: chapa });
+      const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'b.CODSECAO');
+      if (pesquisa) {
+        filterConditions.push(pesquisa);
+        filterValues.push(user.chapa);
       } else {
         filterConditions.push('b.CHAPA = :chapa');
         filterValues.push(chapa);
@@ -435,26 +438,22 @@ export class SaqueService {
       }
 
       if (params.agreement) {
-        consulta = consulta.filter((item: any) => item.STS_SAQUE_CONVENIADO == params.agreement)
+        consulta = consulta.filter((item: any) => item.STS_SAQUE_CONVENIADO == params.agreement);
       }
 
       if (params.NOME) {
         const nomeBusca = params.NOME.toUpperCase();
-        consulta = consulta.filter(
-          (item: any) => item.NOME?.toUpperCase().includes(nomeBusca),
-        );
+        consulta = consulta.filter((item: any) => item.NOME?.toUpperCase().includes(nomeBusca));
       }
 
       return {
-        data: consulta,
         total: totalCount,
+        data: consulta,
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
-  //buscar prestação de conta
 
   async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto> {
     let destino: Destino | null = null;
@@ -577,8 +576,6 @@ export class SaqueService {
     }
   }
 
-  //Buscar ultimo id
-
   async lastId(): Promise<number> {
     try {
       const lastIdResult = await this.saqueRepository.query(
@@ -592,13 +589,13 @@ export class SaqueService {
   }
 
   async solicitarSaque(params: SolitarDto, user: AuthUserDto): Promise<any> {
-    let Rg_Reembolsar = 1;
-    let Rg_TipoSaque = 1;
-    let TipoDespesa = '7';
-    let semrec = 1;
-    let ReembCompl = 1;
-    let Rg_Complemento = 1;
-    let terceiro = 'N';
+    const Rg_Reembolsar: number = 1;
+    const Rg_TipoSaque: number = 1;
+    const TipoDespesa: string = '7';
+    const semrec: number = 1;
+    const ReembCompl: number = 1;
+    const Rg_Complemento: number = 1;
+    let terceiro: string = 'N';
 
     if (user.chapa != params.chapa && !user.roles.includes(Role.SUPERVISOR)) {
       throw new HttpException('Usuário não autorizado', HttpStatus.UNAUTHORIZED);
@@ -931,7 +928,7 @@ export class SaqueService {
 
   async GravaSaqueReembolso(params: any, user: AuthUserDto): Promise<any> {
     try {
-      let parametros: InsSaqueDto = new InsSaqueDto();
+      const parametros: InsSaqueDto = new InsSaqueDto();
 
       if (!params.reqIdCodigo) {
         throw new HttpException('Requisição não informada', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1122,7 +1119,6 @@ export class SaqueService {
     return await this.saqueRepository.save(saque);
   }
 
-  // RETORNA SAQUE PENDENTES
   async selecionaSaquePendentes(params: ParamsPendente, user: AuthUserDto): Promise<any> {
     try {
       let where = '';
@@ -1156,13 +1152,19 @@ export class SaqueService {
       let gsaque = 0;
       const saque = await this.findOne(params.SQE_ID_CODIGO);
 
+      //Verifica se sua permissão é de Tesouraria - o unico que pode cancelar um saque feito pelo financeiro
       if (
         !(
           user.permissao === permissaoCargo.TESOURARIA_INTERIOR ||
           user.permissao === permissaoCargo.TESOURARIA_SEDE
         )
       ) {
-        if (saque.sqeEfetivo === 'S' || saque.sqeEfetivo === 'E' || saque.sqeEfetivo === 'P') {
+        //S,E,P
+        if (
+          saque.sqeEfetivo === SaqueTipoN['35-sim-Viagem'] ||
+          saque.sqeEfetivo === SaqueTipoN['34-sim-Viagem-Reembolso'] ||
+          saque.sqeEfetivo === SaqueTipoN['34-sim-Viagem-Reembolso']
+        ) {
           throw new HttpException(
             'O Saque efetuado pelo Financeiro, não permitido exclusão!',
             HttpStatus.BAD_REQUEST,
@@ -1170,14 +1172,22 @@ export class SaqueService {
         }
       }
 
+      //busca o item de recurso da tabela ITENSREQREC
       const itens = await this.itensreqrecService.findOne(saque.iteIdCodigo);
 
+      // Verifcia se o usuario tem permissão para cancelar o saque
       verificaAutorizacao(itens.CHAPA, user);
+
+      // Busca a requisição de numerário
       const req = await this.reqnumerarioService.findOne(saque.sqeIdCodigo);
 
+      // Cria um mensagem padronizada para o cancelamento
       const msg = `Saque:${saque.sqeIdCodigo}-Cancelado:${user.chapa}-${DataUtils.formatarDataAtualString()}-Req.Viagem:${req.REQ_ID_CODIGO}`;
+
+      // Atualiza os dados da tabela ITENSREQREC
       await this.itensreqrecService.update(itens);
-      if (saque.sqeEfetivo === 'D') {
+
+      if (saque.sqeEfetivo === SaqueTipoN['32-não-Viagem-c/Lanc-Documentos']) {
         gsaque = 1;
         const updateValor = itens.IRR_VALOR_PREST - saque.sqeVlPrest;
         itens.IRR_VALOR_PREST = updateValor;

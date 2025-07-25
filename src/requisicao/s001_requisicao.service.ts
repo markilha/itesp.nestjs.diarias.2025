@@ -37,7 +37,6 @@ import { AuthUserDto } from '../auth/use.auth.Dto';
 import { PpessoaService } from '../ppessoa/ppessoa.service';
 import { filtrarSetorLike } from 'src/util/permissao/porSecao';
 import { gerarFiltroStatus } from 'src/util/gerarFiltro';
-import { filter } from 'rxjs';
 
 @Injectable()
 export class S001RequisicaoService {
@@ -49,7 +48,7 @@ export class S001RequisicaoService {
     private itinirarioService: ItinirarioService,
     private naotrabservice: naotrabService,
     private ppessoaService: PpessoaService,
-  ) { }
+  ) {}
 
   private async buscarItinerario(reqIdCodigo: number) {
     try {
@@ -60,23 +59,34 @@ export class S001RequisicaoService {
     }
   }
 
-  //Buscar requisiçoes de viagem
+  //FIND PRESTAÇÃO DE CONTA
   async find(params: FindAllParams, user: AuthUserDto): Promise<any> {
     try {
+      let filtro = true;
       const conditions: string[] = [`r.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')`];
-      // Adiciona condição para chapa
-      const chapa = params.chapa ? params.chapa : user.chapa;
-      conditions.push(`r.CHAPA = '${chapa}'`);
+
+      //filtrar por chapa
+      if (params.chapa) {
+        conditions.push(`r.CHAPA = '${params.chapa}'`);
+        filtro = false;
+      }
 
       // Adiciona outras condições de busca
       if (params.reqIdCodigo) {
         conditions.push(`r.REQ_ID_CODIGO = ${params.reqIdCodigo}`);
+        filtro = false;
       }
+
+      // filtra por municipio
       if (params.codMunicipio) {
         conditions.push(`r.COD_MUNICIPIO = ${params.codMunicipio}`);
+        filtro = false;
       }
+
+      // filtar por status
       if (params.reqStatus) {
         conditions.push(`r.REQ_STATUS = '${params.reqStatus}'`);
+        filtro = false;
       }
 
       // Define ordenação - garantindo que sempre tenha o prefixo da tabela
@@ -86,6 +96,18 @@ export class S001RequisicaoService {
         orderBy = `r.${orderBy}`;
       }
       const orderDirection = params.orderDirection === 'DESC' ? 'DESC' : 'ASC';
+
+      // FILTRO POR SETOR
+      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: user.chapa });
+
+      if (filtro) {
+        const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'fs.CODSECAO', user.chapa);
+        if (pesquisa) {
+          conditions.push(pesquisa);
+        } else {
+          conditions.push(`r.CHAPA = '${user.chapa}'`);
+        }
+      }
 
       const query = `
       SELECT * FROM (
@@ -115,16 +137,20 @@ export class S001RequisicaoService {
             r.CHAPA AS "chapa", 
             r.REQ_PACOTE AS "reqPacote",
             r.REQ_GOVERNADOR AS "reqGovernador",
-            fs.salario AS "salario",
+            fs.NOME AS "nome",
+            fs.salario AS "salario",            
             d.MUN_ID_CODIGO AS "munIdCodigo",
             d.DES_LOCAL AS "desLocal",   
             m.MUN_CIDADE AS "munCidade",
-            dd.DTD_VALOR_MAX AS "dtdValorMax"
+            dd.DTD_VALOR_MAX AS "dtdValorMax",
+            fs.CODSECAO AS "codsecao",
+            pp.cpf  AS "cpf"
           FROM FINANCEIRO.V009_REQUISICAO r
           LEFT JOIN TRANSPORTE.S001_DESTINO d ON r.REQ_ID_CODIGO = d.REQ_ID_CODIGO    
           LEFT JOIN TRANSPORTE.S001_MUNIC_DETRAN m ON d.MUN_ID_CODIGO = m.MUN_ID_CODIGO
           LEFT JOIN FINANCEIRO.V009_funcsalario fs ON r.CHAPA = fs.CHAPA
           LEFT JOIN FINANCEIRO.V009_DESPESADIARIA dd ON fs.CARGO = dd.CARGO
+          LEFT JOIN RM.PPESSOA pp ON fs.CHAPA = pp.CODUSUARIO 
           WHERE ${conditions.join(' AND ')}
           ORDER BY ${orderBy} ${orderDirection}
         ) t
@@ -143,8 +169,10 @@ export class S001RequisicaoService {
 
       // Executa a query
       const requisicoes = await this.requisicaoRepository.manager.query(query, parameters);
+      console.log(requisicoes);
+
       const results = await Promise.all(
-        requisicoes.map((requisicao) => this.processRequisicao(requisicao)),
+        requisicoes.map((requisicao: any) => this.processRequisicao(requisicao)),
       );
 
       //Consulta para contar o total de registros
@@ -170,6 +198,7 @@ export class S001RequisicaoService {
     }
   }
 
+  //CALCULO DA DIARIA DA REQUISIÇÃO
   private async processRequisicao(requisicao: any): Promise<ReturnRequisicaoDto> {
     try {
       let UFESP = 0;
@@ -270,6 +299,12 @@ export class S001RequisicaoService {
       return new ReturnRequisicaoDto({
         reqIdCodigo: requisicao.reqIdCodigo,
         chapa: requisicao.chapa,
+        nome: requisicao.nome,
+        cpf: requisicao.cpf,
+        salario: requisicao.salario,
+        salario50Porcento: salario50PorcentoNumber,
+        saldoDisponivel: saldoRestante,
+        saqueMes: saqueMes,
         oriMunicipio: requisicao.nmeMunic,
         reqDtReq: requisicao.reqDtReq,
         reqDtSaida: requisicao.reqDtSaida,
@@ -290,10 +325,7 @@ export class S001RequisicaoService {
         diariaIntegral: diarias?.VL_DIARIA_INTEGRAL || 0,
         diariaParcial: diarias?.VL_DIARIA_PARCIAL || 0,
         diariaBase: diarias?.VL_DIARIA_BASE || 0,
-        saqueMes: saqueMes,
         valorSolicitado: diarias?.VL_DIARIA_TOTAL || 0,
-        salario50Porcento: salario50PorcentoNumber,
-        saldoDisponivel: saldoRestante,
         regDescricao: requisicao.regDescricao,
         traDescricao: requisicao.traDescricao,
         diariaParcPorc: diarias?.PARPERC || 0,
@@ -328,6 +360,7 @@ export class S001RequisicaoService {
     }
   }
 
+  //Busca requisições aprovadas
   async findAllAprovadas(params: FindAllAutorizadasParams, user: AuthUserDto): Promise<any> {
     try {
       const pageNumber = params.page ?? 1;
@@ -384,9 +417,11 @@ export class S001RequisicaoService {
       }
 
       //FILTRO POR SETOR
-      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: user?.chapa ?? params?.chapa });
-      const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'fs.codsecao');
+      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({
+        chapa: user?.chapa ?? params?.chapa,
+      });
 
+      const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'fs.codsecao');
       if (params.chapa) {
         queryBuilder.andWhere('r.chapa = :chapa', { chapa: params.chapa });
       } else {
@@ -432,7 +467,7 @@ export class S001RequisicaoService {
     }
   }
 
-  // Busca requisições aprovadas no mes atual
+  //Busca requisições aprovadas no mes atual
 
   async findMesAtual(params: findMesParams, user: AuthUserDto): Promise<RequisDto[]> {
     try {
@@ -691,7 +726,10 @@ export class S001RequisicaoService {
         WHERE rn > :offset
       `;
 
-      const consulta = await this.requisicaoRepository.query(stringQuery, Object.values(filterValues));
+      const consulta = await this.requisicaoRepository.query(
+        stringQuery,
+        Object.values(filterValues),
+      );
       return {
         data: consulta,
         total: consulta.length ?? 0,
@@ -703,21 +741,12 @@ export class S001RequisicaoService {
   }
 
   async findDetalheRequisicao(params: ConsultaDetalheParams, user: AuthUserDto): Promise<any> {
-    // user = {
-    //   "sub": 27396,
-    //   "login": "dmk3",
-    //   "chapa": "000081",
-    //   "roles": [
-    //     "SUPERVISOR"
-    //   ],
-    //   "permissao": 8,
-    //   "codsecao": "1.3.02.07.04.17.00"
-    // }
     try {
-      if (!user?.chapa) throw new HttpException("Usuário desconhecido.", HttpStatus.FORBIDDEN);
-      if (!params?.REQ_ID_CODIGO) throw new HttpException("Requisição não encontrada.", HttpStatus.FORBIDDEN)
+      if (!user?.chapa) throw new HttpException('Usuário desconhecido.', HttpStatus.FORBIDDEN);
+      if (!params?.REQ_ID_CODIGO)
+        throw new HttpException('Requisição não encontrada.', HttpStatus.FORBIDDEN);
 
-      let filterConditions = [];
+      const filterConditions = [];
       const filterValues: Record<string, any> = {};
 
       if (params.REQ_ID_CODIGO) {
@@ -739,11 +768,14 @@ export class S001RequisicaoService {
             INNER JOIN FINANCEIRO.S009_ITENSREQREC irr on rn.ITE_ID_CODIGO = irr.ITE_ID_CODIGO
             WHERE ${filters}
       `;
-      const consulta = await this.requisicaoRepository.query(stringQuery, Object.values(filterValues));
+      const consulta = await this.requisicaoRepository.query(
+        stringQuery,
+        Object.values(filterValues),
+      );
       return {
         data: consulta,
         total: consulta.length ?? 0,
-      }
+      };
     } catch (error) {
       console.log(error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -2,7 +2,7 @@ import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { autorizaService } from './autoriza.service'; // Importa o serviço
 
 import { AuthGuard } from '../auth/auth.guard';
-import { CarreagaSetorDto, FindAllParams } from './autorizaDto';
+import { AutorizarPendenteParams, CarreagaSetorDto, FindAllParams } from './autorizaDto';
 import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { AuthUserDto } from 'src/auth/use.auth.Dto';
@@ -18,7 +18,7 @@ export class autorizaController {
     return await this.autorizaService.findAll(params);
   }
 
-  @Get('findrecursos')
+  @Get('saques')
   async findre(
     @CurrentUser() user: AuthUserDto,
     @Query() params: FindAllParams,
@@ -33,4 +33,18 @@ export class autorizaController {
   async autorizaRecurso(@Query() params: FindAllParams, @CurrentUser() user: AuthUserDto) {
     return await this.autorizaService.autorizarNega(params, user);
   }
+  @Get('pendentes')
+  async selAprovaPendente(
+    @Query() params: AutorizarPendenteParams,
+    @CurrentUser() user: AuthUserDto,
+  ) {
+    return await this.autorizaService.selAprovaPendente(user, params);
+  }
+  // @Get('saques')
+  // async findSaque(
+  //   @CurrentUser() user: AuthUserDto,
+  //   @Query() params: FindAllParams,
+  // ): Promise<{ data: any[]; total: number }> {
+  //   return await this.autorizaService.findSaque(user, params);
+  // }
 }
