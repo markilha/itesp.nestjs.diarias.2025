@@ -1,6 +1,6 @@
-import { Controller, Get, UseGuards, Param, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, UseGuards, Query, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { FindAllParamsDto, returnTotal, userInfo, userNivelDto, UsersDto } from './users.dto';
+import { FindAllParamsDto, returnTotal, userInfo, userNivelDto } from './users.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { FindAllParams } from './users.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
