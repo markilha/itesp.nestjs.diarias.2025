@@ -59,7 +59,7 @@ export class S001RequisicaoService {
     }
   }
 
-  //TODO: FIND PRESTAÇÃO DE CONTA
+  //FIND PRESTAÇÃO DE CONTA
   async find(params: FindAllParams, user: AuthUserDto): Promise<any> {
     try {
       let filtro = true;
@@ -198,7 +198,7 @@ export class S001RequisicaoService {
     }
   }
 
-  // TODO: CALCULO DA DIARIA DA REQUISIÇÃO
+  //CALCULO DA DIARIA DA REQUISIÇÃO
   private async processRequisicao(requisicao: any): Promise<ReturnRequisicaoDto> {
     try {
       let UFESP = 0;
@@ -360,7 +360,7 @@ export class S001RequisicaoService {
     }
   }
 
-  //TODO: Busca requisições aprovadas
+  //Busca requisições aprovadas
   async findAllAprovadas(params: FindAllAutorizadasParams, user: AuthUserDto): Promise<any> {
     try {
       const pageNumber = params.page ?? 1;
@@ -467,7 +467,7 @@ export class S001RequisicaoService {
     }
   }
 
-  //TODO: Busca requisições aprovadas no mes atual
+  //Busca requisições aprovadas no mes atual
 
   async findMesAtual(params: findMesParams, user: AuthUserDto): Promise<RequisDto[]> {
     try {
@@ -741,21 +741,12 @@ export class S001RequisicaoService {
   }
 
   async findDetalheRequisicao(params: ConsultaDetalheParams, user: AuthUserDto): Promise<any> {
-    // user = {
-    //   "sub": 27396,
-    //   "login": "dmk3",
-    //   "chapa": "000081",
-    //   "roles": [
-    //     "SUPERVISOR"
-    //   ],
-    //   "permissao": 8,
-    //   "codsecao": "1.3.02.07.04.17.00"
-    // }
     try {
-      if (!user?.chapa) throw new HttpException("Usuário desconhecido.", HttpStatus.FORBIDDEN);
-      if (!params?.REQ_ID_CODIGO) throw new HttpException("Requisição não encontrada.", HttpStatus.FORBIDDEN)
+      if (!user?.chapa) throw new HttpException('Usuário desconhecido.', HttpStatus.FORBIDDEN);
+      if (!params?.REQ_ID_CODIGO)
+        throw new HttpException('Requisição não encontrada.', HttpStatus.FORBIDDEN);
 
-      let filterConditions = [];
+      const filterConditions = [];
       const filterValues: Record<string, any> = {};
 
       if (params.REQ_ID_CODIGO) {
@@ -777,11 +768,14 @@ export class S001RequisicaoService {
             INNER JOIN FINANCEIRO.S009_ITENSREQREC irr on rn.ITE_ID_CODIGO = irr.ITE_ID_CODIGO
             WHERE ${filters}
       `;
-      const consulta = await this.requisicaoRepository.query(stringQuery, Object.values(filterValues));
+      const consulta = await this.requisicaoRepository.query(
+        stringQuery,
+        Object.values(filterValues),
+      );
       return {
         data: consulta,
         total: consulta.length ?? 0,
-      }
+      };
     } catch (error) {
       console.log(error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

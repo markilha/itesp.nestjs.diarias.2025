@@ -143,7 +143,6 @@ export class autorizaService {
     }
   }
 
-  //TODO FILTRAR RECURSOS
   async findRecursos(
     user: AuthUserDto,
     params: filtroAutoriacao,
@@ -262,7 +261,7 @@ export class autorizaService {
     }
   }
 
-  //TODO Seleciona aprova pendente
+  //Seleciona aprova pendente
   async selAprovaPendente(user: AuthUserDto, params: AutorizarPendenteParams): Promise<any> {
     try {
       const queryParams: any = {};
@@ -306,7 +305,9 @@ export class autorizaService {
     }
   }
 
-  //TODO CARREGA SETORES
+  /**
+   *TODO : Carrega setores de acordo com a permissão do usuário
+   */
   async carregarSetores(user: AuthUserDto): Promise<{ data: CarreagaSetorDto[] }> {
     try {
       const { PERMISSAO: permissao, CODSECAO: codigosecao } = await this.ppessoaService.find({

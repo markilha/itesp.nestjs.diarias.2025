@@ -291,7 +291,7 @@ export class SaqueService {
     }
   }
 
-  //TODO: Buscar todos os saques
+  //Buscar todos os saques
   async findAll(params: FindParamsSaque, user: AuthUserDto): Promise<any> {
     try {
       const chapa = params.CHAPA ? params.CHAPA : user.chapa;
@@ -466,7 +466,6 @@ export class SaqueService {
     }
   }
 
-  //TODO: buscar prestação de conta
   async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto> {
     let destino: Destino | null = null;
     try {
@@ -600,7 +599,6 @@ export class SaqueService {
     }
   }
 
-  //TODO: Solicitar saque
   async solicitarSaque(params: SolitarDto, user: AuthUserDto): Promise<any> {
     const Rg_Reembolsar: number = 1;
     let Rg_TipoSaque = 1;
@@ -939,7 +937,6 @@ export class SaqueService {
     }
   }
 
-  //TODO: Gravar Saque Reembolso
   async GravaSaqueReembolso(params: any, user: AuthUserDto): Promise<any> {
     try {
       let parametros: InsSaqueDto = new InsSaqueDto();
@@ -1133,7 +1130,6 @@ export class SaqueService {
     return await this.saqueRepository.save(saque);
   }
 
-  //TODO: RETORNA SAQUE PENDENTES
   async selecionaSaquePendentes(params: ParamsPendente, user: AuthUserDto): Promise<any> {
     try {
       let where = '';
@@ -1161,7 +1157,9 @@ export class SaqueService {
     }
   }
 
-  //TODO: Cancelar Saque
+  /**
+   *TODO Cancela um saque existente.
+   */
   async cancelarSaque(params: ParamsCancela, user: AuthUserDto): Promise<any> {
     try {
       let grava = 0;
