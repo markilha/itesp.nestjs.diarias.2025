@@ -71,7 +71,6 @@ import { permissaoCargo } from '../util/enums/cargo';
 import { filtrarSetorLike } from '../util/permissao/porSecao';
 import { PpessoaService } from '../ppessoa/ppessoa.service';
 import { SaqueTipoN } from '../util/enums/sqeefetivo';
-import { gerarSQLSetor } from 'src/util/geraSqlSetor';
 
 function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
   return consulta.TRA_ID_CODIGO === 1
@@ -601,12 +600,12 @@ export class SaqueService {
 
   async solicitarSaque(params: SolitarDto, user: AuthUserDto): Promise<any> {
     const Rg_Reembolsar: number = 1;
-    let Rg_TipoSaque = 1;
-    let TipoDespesa = '7';
-    let semrec = 1;
-    let ReembCompl = 1;
-    let Rg_Complemento = 1;
-    let terceiro = 'N';
+    const Rg_TipoSaque: number = 1;
+    const TipoDespesa: string = '7';
+    const semrec: number = 1;
+    const ReembCompl: number = 1;
+    const Rg_Complemento: number = 1;
+    let terceiro: string = 'N';
 
     if (user.chapa != params.chapa && !user.roles.includes(Role.SUPERVISOR)) {
       throw new HttpException('Usuário não autorizado', HttpStatus.UNAUTHORIZED);
@@ -939,7 +938,7 @@ export class SaqueService {
 
   async GravaSaqueReembolso(params: any, user: AuthUserDto): Promise<any> {
     try {
-      let parametros: InsSaqueDto = new InsSaqueDto();
+      const parametros: InsSaqueDto = new InsSaqueDto();
 
       if (!params.reqIdCodigo) {
         throw new HttpException('Requisição não informada', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1157,9 +1156,6 @@ export class SaqueService {
     }
   }
 
-  /**
-   *TODO Cancela um saque existente.
-   */
   async cancelarSaque(params: ParamsCancela, user: AuthUserDto): Promise<any> {
     try {
       let grava = 0;

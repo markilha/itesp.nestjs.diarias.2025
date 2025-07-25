@@ -305,9 +305,6 @@ export class autorizaService {
     }
   }
 
-  /**
-   *TODO : Carrega setores de acordo com a permissão do usuário
-   */
   async carregarSetores(user: AuthUserDto): Promise<{ data: CarreagaSetorDto[] }> {
     try {
       const { PERMISSAO: permissao, CODSECAO: codigosecao } = await this.ppessoaService.find({
