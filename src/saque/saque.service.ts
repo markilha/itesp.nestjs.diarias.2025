@@ -338,6 +338,10 @@ export class SaqueService {
         filtroSetor = false;
       }
 
+      if (params.RNU_DTINICIO?.toLocaleUpperCase() === 'NULL' || params.RNU_DTINICIO === null) {
+        filterConditions.push(`c.RNU_DTINICIO IS NULL`);
+      }
+
       if (filtroSetor) {
         const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: chapa });
         const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'b.CODSECAO', user.chapa);
@@ -416,6 +420,8 @@ export class SaqueService {
             STATUS_PREST,
             ID_DOC: docs && docs[0] ? docs[0].ID_DOC : null,
             ORIGINAL_NAME: docs && docs[0] ? docs[0].ORIGINAL_NAME : null,
+            RNU_DTINICIO: item.RNU_DTINICIO,
+            RNU_DTFIM: item.RNU_DTFIM,
           });
         }),
       );
