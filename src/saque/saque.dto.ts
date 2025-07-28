@@ -48,6 +48,7 @@ export class FindParamsSaque {
   endDate?: string;
   @ApiProperty({ required: false })
   agreement?: string;
+
   @ApiProperty({ required: false })
   page?: number;
   @ApiProperty({ required: false })
@@ -56,8 +57,6 @@ export class FindParamsSaque {
   orderBy?: string;
   @ApiProperty({ required: false })
   orderDirection?: 'ASC' | 'DESC';
-  @ApiProperty({ required: false })
-  full?: boolean;
 }
 
 export class ParamsPendente {

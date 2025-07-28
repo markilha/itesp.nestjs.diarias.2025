@@ -302,39 +302,48 @@ export class SaqueService {
 
       const filterConditions: string[] = [];
       const filterValues: any[] = [];
+      let filtroSetor = true;
 
-      // FILTRO POR SETOR
-      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: chapa });
-      const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'b.CODSECAO');
-      if (pesquisa) {
-        filterConditions.push(pesquisa);
-        filterValues.push(user.chapa);
-      } else {
+      if (params.CHAPA) {
         filterConditions.push('b.CHAPA = :chapa');
         filterValues.push(chapa);
+        filtroSetor = false;
       }
 
-      // Verifica e adiciona cada filtro dinamicamente
       if (params.SQE_ID_CODIGO) {
         filterConditions.push('a.SQE_ID_CODIGO = :SQE_ID_CODIGO');
         filterValues.push(params.SQE_ID_CODIGO);
+        filtroSetor = false;
       }
       if (params.REQ_ID_CODIGO) {
         filterConditions.push('d.REQ_ID_CODIGO = :REQ_ID_CODIGO');
         filterValues.push(params.REQ_ID_CODIGO);
+        filtroSetor = false;
       }
       if (params.STS_DESCRICAO) {
         filterConditions.push('b.STS_DESCRICAO = :STS_DESCRICAO');
         filterValues.push(params.STS_DESCRICAO);
+        filtroSetor = false;
       }
 
       if (params.REQ_STATUS) {
         filterConditions.push('d.REQ_STATUS = :REQ_STATUS');
         filterValues.push(params.REQ_STATUS);
+        filtroSetor = false;
       }
+
       if (params.SQE_EFETIVO) {
         filterConditions.push('a.SQE_EFETIVO = :SQE_EFETIVO');
         filterValues.push(params.SQE_EFETIVO);
+        filtroSetor = false;
+      }
+
+      if (filtroSetor) {
+        const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: chapa });
+        const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'b.CODSECAO', user.chapa);
+        if (pesquisa) {
+          filterConditions.push(pesquisa);
+        }
       }
 
       const result = await this.saqueRepository.query(

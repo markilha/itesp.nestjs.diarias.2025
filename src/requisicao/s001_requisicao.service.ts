@@ -577,23 +577,13 @@ export class S001RequisicaoService {
     try {
       const filterConditions = [];
       const filterValues: Record<string, any> = {};
-
-      // Dados do usuário logado
-      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: user.chapa });
-      const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'b.CODSECAO');
+      let filtroSetor = true;
 
       // Se não tem permissão de chefia, retorna apenas os dados do usuário logado
       if (params.chapa) {
         filterConditions.push('b.CHAPA = :chapa');
         filterValues.chapa = params.chapa;
-      } else {
-        if (pesquisa) {
-          filterConditions.push(pesquisa);
-          filterValues.chapa = user.chapa;
-        } else {
-          filterConditions.push('b.CHAPA = :chapa');
-          filterValues.chapa = user.chapa;
-        }
+        filtroSetor = false;
       }
 
       // Filtro por data de início
@@ -613,6 +603,15 @@ export class S001RequisicaoService {
         filterValues.prazoAtivo = params.prazoAtivo;
       } else {
         filterConditions.push("b.PRA_ATIVO = 'N'");
+      }
+
+      // FILTRAR POR SETOR
+      if (filtroSetor) {
+        const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: user.chapa });
+        const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'b.CODSECAO', user.chapa);
+        if (pesquisa) {
+          filterConditions.push(pesquisa);
+        }
       }
 
       const stringQuery = ` 
