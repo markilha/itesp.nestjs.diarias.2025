@@ -6,7 +6,6 @@ import * as OBS from 'esdk-obs-nodejs';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
-import { generateUniqueFileName } from 'src/util/nomearArquivo';
 
 @Injectable()
 export class docsService {
@@ -20,17 +19,15 @@ export class docsService {
     });
   }
 
-  async getDocumentLink(ID_DOC: number) {
+  async getDocumentLink(SQE_ID_CODIGO: number) {
     try {
-      const doc = await this.documentosService.findOne(ID_DOC);
-      const fullKey = `${doc.SQE_ID_CODIGO}/${doc.NOME_DOCUMENTO}`;
+      const objectKey = `SQE_${SQE_ID_CODIGO}/comprovante.pdf`;
+
       const result = this.obsClient.createSignedUrlSync({
         Method: 'GET',
         Bucket: 'itesp-ccp',
-        Key: fullKey,
-        Expires: 3600, // Expiração da URL (1 hora neste caso)
-        ResponseContentDisposition: 'inline', // Exibe o arquivo diretamente no navegador
-        ResponseContentType: 'application/pdf', // Tipo de conteúdo para PDF
+        Key: objectKey,
+        Expires: 3600,
       });
 
       // Retorna a URL gerada
@@ -43,34 +40,12 @@ export class docsService {
 
   async docsToOBS(file: FileDto, SQE_ID_CODIGO: number) {
     const tempDir = os.tmpdir();
-    const tempFilePath = path.join(tempDir, file.originalname);
+    const tempFilePath = path.join(tempDir, 'comprovante.pdf');
     fs.writeFileSync(tempFilePath, file.buffer);
     const fileStream = fs.createReadStream(tempFilePath);
 
     const bucketName = 'itesp-ccp';
-    const nomeArquivo = Buffer.from(file.originalname, 'latin1').toString('utf8');
-    const nomeArquivoFinal = generateUniqueFileName(nomeArquivo, SQE_ID_CODIGO);
-    const objectKey = `DIARIAS_${SQE_ID_CODIGO}/${nomeArquivoFinal}`;
-
-    const dados = {
-      NOME_DOCUMENTO: nomeArquivoFinal,
-      SQE_ID_CODIGO,
-      ORIGINAL_NAME: nomeArquivo,
-    };
-
-    let existe = [];
-
-    try {
-      existe = await this.documentosService.findBySQE_ID_CODIGO(SQE_ID_CODIGO);
-    } catch (error) {
-      console.log('Documento não encontrado');
-    }
-
-    if (existe.length > 0) {
-      throw new HttpException('Comprovante já enviado para este saque', HttpStatus.CONFLICT);
-    }
-
-    await this.documentosService.create(dados);
+    const objectKey = `SQE_${SQE_ID_CODIGO}/comprovante.pdf`;
 
     return new Promise((resolve, reject) => {
       this.obsClient.putObject(

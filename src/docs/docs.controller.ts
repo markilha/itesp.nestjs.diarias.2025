@@ -1,11 +1,9 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpException,
   HttpStatus,
-  Param,
   Post,
   Query,
   UploadedFile,
@@ -34,7 +32,7 @@ export class docsController {
     },
   })
   async getDocumentLink(@Query() params: FindAllParams) {
-    return await this.docsService.getDocumentLink(params.ID_DOC);
+    return await this.docsService.getDocumentLink(params.SQE_ID_CODIGO);
   }
 
   @Post('upload')
