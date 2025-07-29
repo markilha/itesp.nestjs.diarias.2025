@@ -48,6 +48,15 @@ export class FindParamsSaque {
   endDate?: string;
   @ApiProperty({ required: false })
   agreement?: string;
+  @ApiProperty({
+    required: false,
+    description:
+      'Quando for definido como null, serão retornadas todas as viagens não realizadas. Exemplo: RNU_DTINICIO = null.',
+  })
+  RNU_DTINICIO?: string;
+  @ApiProperty({ required: false })
+  RNU_DTFIM?: string;
+
   @ApiProperty({ required: false })
   page?: number;
   @ApiProperty({ required: false })
@@ -56,8 +65,6 @@ export class FindParamsSaque {
   orderBy?: string;
   @ApiProperty({ required: false })
   orderDirection?: 'ASC' | 'DESC';
-  @ApiProperty({ required: false })
-  full?: boolean;
 }
 
 export class ParamsPendente {
@@ -193,6 +200,10 @@ export class returnSaqueDto {
   STATUS_PREST?: string;
   @ApiProperty({ required: false })
   CODSECAO?: string;
+  @ApiProperty({ required: false })
+  RNU_DTINICIO?: string;
+  @ApiProperty({ required: false })
+  RNU_DTFIM?: string;
 
   constructor(params: any) {
     this.SQE_ID_CODIGO = params.SQE_ID_CODIGO;
@@ -220,6 +231,8 @@ export class returnSaqueDto {
     this.ID_DOC = params.ID_DOC;
     this.ORIGINAL_NAME = params.ORIGINAL_NAME;
     this.CODSECAO = params.CODSECAO;
+    this.RNU_DTINICIO = params.RNU_DTINICIO;
+    this.RNU_DTFIM = params.RNU_DTFIM;
   }
 }
 export class PrestacaoDto {
@@ -548,6 +561,7 @@ export class SolitarDto {
   diariaIntegral: number;
   diariaParcial: number;
   diariaBase: number;
+  conveniado?: number;
 }
 
 export interface RetNumSaque {

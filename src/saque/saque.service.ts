@@ -293,50 +293,14 @@ export class SaqueService {
   //Buscar todos os saques
   async findAll(params: FindParamsSaque, user: AuthUserDto): Promise<any> {
     try {
-      const chapa = params.CHAPA ? params.CHAPA : user.chapa;
+      const chapa = params.CHAPA ?? user.chapa;
       const orderByField = params.orderBy || 'a.SQE_DTPEDIDO';
       const orderDirection = params.orderDirection || 'ASC';
       const page = params.page || 1;
       const itemsPerPage = params.limit || 1000;
       const offset = (page - 1) * itemsPerPage;
 
-      const filterConditions: string[] = [];
-      const filterValues: any[] = [];
-
-      // FILTRO POR SETOR
-      const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: chapa });
-      const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'b.CODSECAO');
-      if (pesquisa) {
-        filterConditions.push(pesquisa);
-        filterValues.push(user.chapa);
-      } else {
-        filterConditions.push('b.CHAPA = :chapa');
-        filterValues.push(chapa);
-      }
-
-      // Verifica e adiciona cada filtro dinamicamente
-      if (params.SQE_ID_CODIGO) {
-        filterConditions.push('a.SQE_ID_CODIGO = :SQE_ID_CODIGO');
-        filterValues.push(params.SQE_ID_CODIGO);
-      }
-      if (params.REQ_ID_CODIGO) {
-        filterConditions.push('d.REQ_ID_CODIGO = :REQ_ID_CODIGO');
-        filterValues.push(params.REQ_ID_CODIGO);
-      }
-      if (params.STS_DESCRICAO) {
-        filterConditions.push('b.STS_DESCRICAO = :STS_DESCRICAO');
-        filterValues.push(params.STS_DESCRICAO);
-      }
-
-      if (params.REQ_STATUS) {
-        filterConditions.push('d.REQ_STATUS = :REQ_STATUS');
-        filterValues.push(params.REQ_STATUS);
-      }
-      if (params.SQE_EFETIVO) {
-        filterConditions.push('a.SQE_EFETIVO = :SQE_EFETIVO');
-        filterValues.push(params.SQE_EFETIVO);
-      }
-
+      const { filterConditions, filterValues } = await this.buildFilters(params, chapa, user);
       const result = await this.saqueRepository.query(
         querySaque(filterConditions, orderByField, orderDirection, true),
         [...filterValues, offset, itemsPerPage],
@@ -349,102 +313,10 @@ export class SaqueService {
       const totalCount = count[0]?.TOTAL_REGISTROS || 0;
 
       let consulta = await Promise.all(
-        result.map(async (item: any) => {
-          // Calcular valores de extorno e devolução
-          const { VL_DEVOLUCAO, VL_EXTORNO } = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
-
-          // Busca documentos
-          let docs: docsEntity[] | null = null;
-          if (Number(params?.agreement) === 0) {
-            try {
-              docs = await this.documentosService.findBySQE_ID_CODIGO(item.SQE_ID_CODIGO);
-            } catch (error) {
-              console.log(error);
-            }
-          }
-          // Obter status
-          const STATUS_PREST = RetonaPrestacaoStatus(
-            item.SQE_EFETIVO,
-            item.SQE_TIPOSAQUE,
-            item.PRA_ATIVO,
-            item.SQE_DTPREST,
-            item.SQE_VLPREST,
-          );
-
-          const STATUS_SAQUE = RetornaSaquePendentes(
-            item.SQE_EFETIVO,
-            item.SQE_TIPOSAQUE,
-            item.PRA_ATIVO,
-          );
-
-          //Obter status do saque
-
-          // Retorna a estrutura do objeto
-          return new returnSaqueDto({
-            SQE_ID_CODIGO: item.SQE_ID_CODIGO,
-            SQE_DTPEDIDO: DataUtils.converterParaData(item.SQE_DTPEDIDO),
-            SQE_DTSAQUE: DataUtils.converterParaData(item.SQE_DTSAQUE),
-            SQE_VLSAQUE: Number(item.SQE_VLSAQUE) || 0,
-            SQE_VLPREST: Number(item.SQE_VLPREST) || 0,
-            RRE_ID_CODIGO: item.RRE_ID_CODIGO,
-            ITE_ID_CODIGO: item.ITE_ID_CODIGO,
-            SQE_DTPREST: DataUtils.converterParaData(item.SQE_DTPREST),
-            NOME: item.NOME,
-            CODSECAO: item.CODSECAO,
-            REQ_ID_CODIGO: item.REQ_ID_CODIGO,
-            TDE_DESCRICAO: item.TDE_DESCRICAO,
-            STS_DESCRICAO: item.STS_DESCRICAO,
-            REQ_DTREQ: DataUtils.converterParaData(item.REQ_DTREQ),
-            REQ_STATUS: item.REQ_STATUS,
-            CHAPA: item.CHAPA,
-            STS_SAQUE_CONVENIADO: item.STS_SAQUE_CONVENIADO,
-            VL_COMPLEMENTAR: VL_EXTORNO,
-            VL_EXTORNO: VL_DEVOLUCAO,
-            SQE_EFETIVO: item.SQE_EFETIVO,
-            PRA_ATIVO: item.PRA_ATIVO,
-            SQE_TIPOSAQUE: item.SQE_TIPOSAQUE === 'N' ? 'Diária' : '',
-            STATUS_SAQUE,
-            STATUS_PREST,
-            ID_DOC: docs && docs[0] ? docs[0].ID_DOC : null,
-            ORIGINAL_NAME: docs && docs[0] ? docs[0].ORIGINAL_NAME : null,
-          });
-        }),
+        result.map(async (item: any) => this.mapToReturnDto(item, params)),
       );
 
-      if (params.startDate && params.endDate) {
-        //FILTRAR ENTRE DATAS O ARRAY DE OBJETO CONSULTA
-        const { startDate, endDate } = formatDates(params.startDate, params.endDate) || {};
-        const filtered = consulta.filter((item) => {
-          const date = DataUtils.converterStringParaData(item.SQE_DTPEDIDO);
-          return (
-            date &&
-            date >= DataUtils.converterStringParaData(startDate) &&
-            date <= DataUtils.converterStringParaData(endDate)
-          );
-        });
-
-        consulta = filtered;
-      }
-
-      // Filtros adicionais
-      if (params.STATUS_PREST) {
-        consulta = consulta.filter((item: any) => item.STATUS_PREST === params.STATUS_PREST);
-      }
-
-      if (params.STATUS_SAQUE) {
-        consulta = consulta.filter(
-          (item: any) => item.STATUS_SAQUE && item.STATUS_SAQUE === params.STATUS_SAQUE,
-        );
-      }
-
-      if (params.agreement) {
-        consulta = consulta.filter((item: any) => item.STS_SAQUE_CONVENIADO == params.agreement);
-      }
-
-      if (params.NOME) {
-        const nomeBusca = params.NOME.toUpperCase();
-        consulta = consulta.filter((item: any) => item.NOME?.toUpperCase().includes(nomeBusca));
-      }
+      consulta = this.applyPostFilters(consulta, params);
 
       return {
         total: totalCount,
@@ -453,6 +325,160 @@ export class SaqueService {
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  private buildFilters(params: FindParamsSaque, chapa: string, user: AuthUserDto) {
+    const filterConditions: string[] = [];
+    const filterValues: any[] = [];
+    let filtroSetor = true;
+
+    if (params.CHAPA) {
+      filterConditions.push('b.CHAPA = :chapa');
+      filterValues.push(chapa);
+      filtroSetor = false;
+    }
+
+    if (params.SQE_ID_CODIGO) {
+      filterConditions.push('a.SQE_ID_CODIGO = :SQE_ID_CODIGO');
+      filterValues.push(params.SQE_ID_CODIGO);
+      filtroSetor = false;
+    }
+
+    if (params.REQ_ID_CODIGO) {
+      filterConditions.push('d.REQ_ID_CODIGO = :REQ_ID_CODIGO');
+      filterValues.push(params.REQ_ID_CODIGO);
+      filtroSetor = false;
+    }
+
+    if (params.STS_DESCRICAO) {
+      filterConditions.push('b.STS_DESCRICAO = :STS_DESCRICAO');
+      filterValues.push(params.STS_DESCRICAO);
+      filtroSetor = false;
+    }
+
+    if (params.REQ_STATUS) {
+      filterConditions.push('d.REQ_STATUS = :REQ_STATUS');
+      filterValues.push(params.REQ_STATUS);
+      filtroSetor = false;
+    }
+
+    if (params.SQE_EFETIVO) {
+      filterConditions.push('a.SQE_EFETIVO = :SQE_EFETIVO');
+      filterValues.push(params.SQE_EFETIVO);
+      filtroSetor = false;
+    }
+
+    if (params.RNU_DTINICIO?.toLocaleUpperCase() === 'NULL' || params.RNU_DTINICIO === null) {
+      filterConditions.push(`c.RNU_DTINICIO IS NULL`);
+    }
+
+    if (filtroSetor) {
+      return this.buildSetorFilter(chapa, user, filterConditions, filterValues);
+    }
+
+    return { filterConditions, filterValues };
+  }
+
+  private async buildSetorFilter(
+    chapa: string,
+    user: AuthUserDto,
+    filterConditions: string[],
+    filterValues: any[],
+  ) {
+    const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa });
+    const pesquisa = filtrarSetorLike(PERMISSAO, CODSECAO, 'b.CODSECAO', user.chapa);
+    if (pesquisa) filterConditions.push(pesquisa);
+    return { filterConditions, filterValues };
+  }
+
+  private async mapToReturnDto(item: any, params: FindParamsSaque): Promise<returnSaqueDto> {
+    const { VL_DEVOLUCAO, VL_EXTORNO } = calcularValores(item.SQE_VLSAQUE, item.SQE_VLPREST);
+    const STATUS_PREST = RetonaPrestacaoStatus(
+      item.SQE_EFETIVO,
+      item.SQE_TIPOSAQUE,
+      item.PRA_ATIVO,
+      item.SQE_DTPREST,
+      item.SQE_VLPREST,
+    );
+    const STATUS_SAQUE = RetornaSaquePendentes(
+      item.SQE_EFETIVO,
+      item.SQE_TIPOSAQUE,
+      item.PRA_ATIVO,
+    );
+
+    let docs: docsEntity[] | null = null;
+    if (Number(params?.agreement) === 0) {
+      try {
+        docs = await this.documentosService.findBySQE_ID_CODIGO(item.SQE_ID_CODIGO);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    return new returnSaqueDto({
+      SQE_ID_CODIGO: item.SQE_ID_CODIGO,
+      SQE_DTPEDIDO: DataUtils.converterParaData(item.SQE_DTPEDIDO),
+      SQE_DTSAQUE: DataUtils.converterParaData(item.SQE_DTSAQUE),
+      SQE_VLSAQUE: Number(item.SQE_VLSAQUE) || 0,
+      SQE_VLPREST: Number(item.SQE_VLPREST) || 0,
+      RRE_ID_CODIGO: item.RRE_ID_CODIGO,
+      ITE_ID_CODIGO: item.ITE_ID_CODIGO,
+      SQE_DTPREST: DataUtils.converterParaData(item.SQE_DTPREST),
+      NOME: item.NOME,
+      CODSECAO: item.CODSECAO,
+      REQ_ID_CODIGO: item.REQ_ID_CODIGO,
+      TDE_DESCRICAO: item.TDE_DESCRICAO,
+      STS_DESCRICAO: item.STS_DESCRICAO,
+      REQ_DTREQ: DataUtils.converterParaData(item.REQ_DTREQ),
+      REQ_STATUS: item.REQ_STATUS,
+      CHAPA: item.CHAPA,
+      STS_SAQUE_CONVENIADO: item.STS_SAQUE_CONVENIADO,
+      VL_COMPLEMENTAR: VL_EXTORNO,
+      VL_EXTORNO: VL_DEVOLUCAO,
+      SQE_EFETIVO: item.SQE_EFETIVO,
+      PRA_ATIVO: item.PRA_ATIVO,
+      SQE_TIPOSAQUE: item.SQE_TIPOSAQUE === 'N' ? 'Diária' : '',
+      STATUS_SAQUE,
+      STATUS_PREST,
+      ID_DOC: docs?.[0]?.ID_DOC || null,
+      ORIGINAL_NAME: docs?.[0]?.ORIGINAL_NAME || null,
+      RNU_DTINICIO: item.RNU_DTINICIO,
+      RNU_DTFIM: item.RNU_DTFIM,
+    });
+  }
+  private applyPostFilters(consulta: any[], params: FindParamsSaque) {
+    let result = [...consulta];
+
+    if (params.startDate && params.endDate) {
+      const { startDate, endDate } = formatDates(params.startDate, params.endDate) || {};
+      result = result.filter((item) => {
+        const date = DataUtils.converterStringParaData(item.SQE_DTPEDIDO);
+        return (
+          date &&
+          date >= DataUtils.converterStringParaData(startDate) &&
+          date <= DataUtils.converterStringParaData(endDate)
+        );
+      });
+    }
+
+    if (params.STATUS_PREST) {
+      result = result.filter((item: any) => item.STATUS_PREST === params.STATUS_PREST);
+    }
+
+    if (params.STATUS_SAQUE) {
+      result = result.filter((item: any) => item.STATUS_SAQUE === params.STATUS_SAQUE);
+    }
+
+    if (params.agreement) {
+      result = result.filter((item: any) => item.STS_SAQUE_CONVENIADO == params.agreement);
+    }
+
+    if (params.NOME) {
+      const nomeBusca = params.NOME.toUpperCase();
+      result = result.filter((item: any) => item.NOME?.toUpperCase().includes(nomeBusca));
+    }
+
+    return result;
   }
 
   async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto> {
@@ -609,19 +635,23 @@ export class SaqueService {
       if (!params.reqIdCodigo) {
         throw new HttpException('Requisição não informada', HttpStatus.INTERNAL_SERVER_ERROR);
       }
+
       const valorSaque = params.diariaIntegral + params.diariaParcial;
+
       if (valorSaque <= 0) {
         throw new HttpException(
           'Valor do Saque não pode ser Zero',
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
+
       const funcionario = await this.funcsalarioService.findByCodigo(params.chapa);
 
       const prazo = await this.saqueRepository.query(selecionaUltimoPrazo, [
         funcionario.REG_ID_CODIGO,
       ]);
 
+      // Verifica se pedido de recurso já existe
       const where = `and A.Chapa =:NChapa and A.RRE_ID_CODIGO=:NREQ and A.TDE_ID_CODIGO=:TIPODESP AND A.IRR_RECURSO='S'`;
       const ItensReqRec = await this.saqueRepository.query(`${SelecionaItensRecurso} ${where}`, [
         params.chapa,
@@ -665,7 +695,9 @@ export class SaqueService {
           [PAR1, PAR2, PAR3, PAR4, PAR5, PAR6, PAR7, PAR8, PAR9, PAR10, PAR11, PAR12, PAR13, PAR14, PAR15, PAR16, PAR17, PAR18, PAR19, PAR20, PAR21, PAR22, IDITE], //prettier-ignore
         );
 
-        itemRecurso = await this.itensreqrecService.findOne(req[0]);
+        const codigo = req[0] - 1;
+
+        itemRecurso = await this.itensreqrecService.findOne(codigo);
 
         const where = `
         And A.DIR_ID_CODIGO=:CODDIR
@@ -917,6 +949,14 @@ export class SaqueService {
       //   /*REQUISIÇÃO DE TRANSPORTE*/
       if (parametros.PAR10 === 'N' && parametros.PAR3 === '7' && parametros.PAR2 === 'S') {
         await this.reqtransService.updateStatus(requisicao.REQ_ID_CODIGO, parametros.PAR29);
+      }
+
+      if (params.conveniado === 1) {
+        // Atualiza o status do saque para conveniado
+        await this.saqueRepository.query(
+          `UPDATE S009_SAQUE SET STS_SAQUE_CONVENIADO = 1 WHERE SQE_ID_CODIGO = :sqeIdCodigo`,
+          [resultSaque.sqeIdCodigo],
+        );
       }
 
       return { sqeIdCodigo: resultSaque.sqeIdCodigo };
