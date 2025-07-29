@@ -62,40 +62,7 @@ export class S001RequisicaoService {
   //FIND PRESTAÇÃO DE CONTA
   async find(params: FindAllParams, user: AuthUserDto): Promise<any> {
     try {
-      let filtro = true;
-      const conditions: string[] = [`r.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')`];
-
-      //filtrar por chapa
-      if (params.chapa) {
-        conditions.push(`r.CHAPA = '${params.chapa}'`);
-        filtro = false;
-      }
-
-      // Adiciona outras condições de busca
-      if (params.reqIdCodigo) {
-        conditions.push(`r.REQ_ID_CODIGO = ${params.reqIdCodigo}`);
-        filtro = false;
-      }
-
-      // filtra por municipio
-      if (params.codMunicipio) {
-        conditions.push(`r.COD_MUNICIPIO = ${params.codMunicipio}`);
-        filtro = false;
-      }
-
-      // filtar por status
-      if (params.reqStatus) {
-        conditions.push(`r.REQ_STATUS = '${params.reqStatus}'`);
-        filtro = false;
-      }
-
-      // Define ordenação - garantindo que sempre tenha o prefixo da tabela
-      let orderBy = params.orderBy || 'REQ_ID_CODIGO';
-      // Adiciona o prefixo 'r.' apenas se ainda não tiver um prefixo
-      if (!orderBy.includes('.')) {
-        orderBy = `r.${orderBy}`;
-      }
-      const orderDirection = params.orderDirection === 'DESC' ? 'DESC' : 'ASC';
+      const { conditions, filtro, orderBy, orderDirection } = this.buildFilters(params);
 
       // FILTRO POR SETOR
       const { PERMISSAO, CODSECAO } = await this.ppessoaService.find({ chapa: user.chapa });
@@ -195,6 +162,46 @@ export class S001RequisicaoService {
       console.log(error);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+  private buildFilters(params: FindAllParams) {
+    const conditions: string[] = [`r.REQ_DTSAIDA >= TO_DATE('2009-08-10', 'YYYY-MM-DD')`];
+    let filtro = true;
+
+    //filtrar por chapa
+    if (params.chapa) {
+      conditions.push(`r.CHAPA = '${params.chapa}'`);
+      filtro = false;
+    }
+
+    // Adiciona outras condições de busca
+    if (params.reqIdCodigo) {
+      conditions.push(`r.REQ_ID_CODIGO = ${params.reqIdCodigo}`);
+      filtro = false;
+    }
+
+    // filtra por municipio
+    if (params.codMunicipio) {
+      conditions.push(`r.COD_MUNICIPIO = ${params.codMunicipio}`);
+      filtro = false;
+    }
+
+    // filtar por status
+    if (params.reqStatus) {
+      conditions.push(`r.REQ_STATUS = '${params.reqStatus}'`);
+      filtro = false;
+    }
+
+    // Define ordenação - garantindo que sempre tenha o prefixo da tabela
+    let orderBy = params.orderBy || 'REQ_ID_CODIGO';
+
+    // Adiciona o prefixo 'r.' apenas se ainda não tiver um prefixo
+    if (!orderBy.includes('.')) {
+      orderBy = `r.${orderBy}`;
+    }
+
+    const orderDirection = params.orderDirection === 'DESC' ? 'DESC' : 'ASC';
+
+    return { conditions, filtro, orderBy, orderDirection };
   }
 
   //CALCULO DA DIARIA DA REQUISIÇÃO
