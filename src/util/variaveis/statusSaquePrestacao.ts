@@ -1,3 +1,5 @@
+import { SaqueTipoN } from '../enums/sqeefetivo';
+
 export function RetonaPrestacaoStatus(
   sqeefetivo: string,
   sqetiposaque: string,
@@ -7,7 +9,11 @@ export function RetonaPrestacaoStatus(
 ) {
   //  praativo != 'N' &&
   const STATUS =
-    ['P', 'S', 'E'].includes(sqeefetivo) &&
+    [
+      SaqueTipoN['35-sim-Viagem'],
+      SaqueTipoN['34-sim-Viagem-Reembolso'],
+      SaqueTipoN['37-sim-Viagem-Complemento'],
+    ].includes(sqeefetivo as SaqueTipoN) &&
     sqetiposaque === 'N' &&
     (sqedtprest === null || sqevlprest === 0 || sqedtprest === '')
       ? 'Pendente'
@@ -17,18 +23,18 @@ export function RetonaPrestacaoStatus(
 
   return STATUS;
 }
-//SQE_TIPOSAQUE: 'N', SQE_EFETIVO: 'S', TIPO: 'Viagem', EFETUADO: 'Sim  - Pagamento Efetuado'
-//SQE_TIPOSAQUE: 'N',  SQE_EFETIVO: 'P',  TIPO: 'Viagem-Reembolso',  EFETUADO: 'Sim - Pagamento Efetuado'
-//SQE_TIPOSAQUE: 'N',SQE_EFETIVO: 'E',TIPO: 'Viagem - Complemento', EFETUADO: 'Sim - Pagamento Efetuado',
-
 export function RetornaSaquePendentes(sqeefetivo: string, sqetiposaque: string, praativo: string) {
   //&& praativo != 'N'
+  console.log(praativo);
   const STATUS =
-    ['A', 'C', 'D', 'T'].includes(sqeefetivo) && sqetiposaque === 'N' ? 'Pendente' : 'Realizada';
+    [
+      SaqueTipoN['25-não-Viagem'],
+      SaqueTipoN['28-não-Viagem-Complemento'],
+      SaqueTipoN['32-não-Viagem-c/Lanc-Documentos'],
+      SaqueTipoN['48-aguardando-Viagem'],
+    ].includes(sqeefetivo as SaqueTipoN) && sqetiposaque === 'N'
+      ? 'Pendente'
+      : 'Realizada';
 
   return STATUS;
 }
-//SQE_TIPOSAQUE: 'N', SQE_EFETIVO: 'A', TIPO: 'Viagem', EFETUADO: 'Não - Aguardar Pagamento'
-//SQE_TIPOSAQUE: 'N', SQE_EFETIVO: 'C',TIPO: 'Viagem-Complemento', EFETUADO: 'Não - Aguardar Pagamento'
-//SQE_TIPOSAQUE: 'N', SQE_EFETIVO: 'D',TIPO: 'Viagem-c/Lanc. Documentos',EFETUADO: 'Não - Aguardando documentos/relatório para efetuar Pagamento'
-//SQE_TIPOSAQUE: 'N', SQE_EFETIVO: 'T',TIPO: 'Viagem',EFETUADO: 'Aguardando Transferência para saque',
