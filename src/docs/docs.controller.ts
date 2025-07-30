@@ -35,6 +35,19 @@ export class docsController {
     return await this.docsService.getDocumentLink(params.SQE_ID_CODIGO);
   }
 
+  @Get('nomedoc')
+  @ApiOperation({ summary: 'Obtém link para download de um documento' })
+  @ApiResponse({
+    status: 200,
+    description: 'Retorna o nome do arquivo',
+    schema: {
+      example: { nome: 'comprovante.pdf' },
+    },
+  })
+  async getDocumentName(@Query() params: FindAllParams) {
+    return await this.docsService.getDocumentName(params.SQE_ID_CODIGO);
+  }
+
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({ summary: 'Faz docs de um arquivo para o OBS e salva no banco de dados' })

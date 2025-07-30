@@ -20,32 +20,98 @@ export class docsService {
   }
 
   async getDocumentLink(SQE_ID_CODIGO: number) {
-    try {
-      const objectKey = `SQE_${SQE_ID_CODIGO}/comprovante.pdf`;
-
-      const result = this.obsClient.createSignedUrlSync({
-        Method: 'GET',
-        Bucket: 'itesp-ccp',
-        Key: objectKey,
-        Expires: 3600,
-      });
-
-      // Retorna a URL gerada
-      return { url: result.SignedUrl };
-    } catch (err) {
-      console.error(err);
-      throw new HttpException('Erro ao gerar URL do arquivo', HttpStatus.INTERNAL_SERVER_ERROR);
+    const bucketName = process.env.OBS_BUCKET_NAME;
+    if (!bucketName) {
+      throw new Error('OBS_BUCKET_NAME não definida no .env');
     }
+    const folder = `SQE_${SQE_ID_CODIGO}`;
+    const extensoes = ['.pdf', '.png', '.jpg'];
+
+    for (const ext of extensoes) {
+      const objectKey = `${folder}/comprovante${ext}`;
+      try {
+        // Tenta gerar URL assinada
+        const result = this.obsClient.createSignedUrlSync({
+          Method: 'GET',
+          Bucket: bucketName,
+          Key: objectKey,
+          Expires: 3600, // 1 hora
+        });
+
+        // Se conseguiu, retorna a URL
+        return { url: result.SignedUrl };
+      } catch (err) {
+        if (err.code !== 'NoSuchKey') {
+          console.error(`Erro ao buscar o arquivo: ${objectKey}`, err);
+        }
+      }
+    }
+
+    // Se não achou nenhuma das extensões
+    throw new HttpException('Arquivo do comprovante não encontrado', HttpStatus.NOT_FOUND);
+  }
+
+  async getDocumentName(SQE_ID_CODIGO: number): Promise<{ nome: string }> {
+    const bucketName = process.env.OBS_BUCKET_NAME;
+    if (!bucketName) {
+      throw new Error('OBS_BUCKET_NAME não definida no .env');
+    }
+    const folder = `SQE_${SQE_ID_CODIGO}`;
+    const extensoes = ['.pdf', '.png', '.jpg'];
+
+    for (const ext of extensoes) {
+      const objectKey = `${folder}/comprovante${ext}`;
+      try {
+        // Verifica se o objeto existe consultando os metadados
+        await this.obsClient.getObjectMetadata({
+          Bucket: bucketName,
+          Key: objectKey,
+        });
+
+        return { nome: `comprovante${ext}` };
+      } catch (err) {
+        if (err.code !== 'NoSuchKey') {
+          console.error(`Erro ao buscar o arquivo: ${objectKey}`, err);
+        }
+      }
+    }
+
+    throw new HttpException('Arquivo do comprovante não encontrado', HttpStatus.NOT_FOUND);
   }
 
   async docsToOBS(file: FileDto, SQE_ID_CODIGO: number) {
+    const bucketName = process.env.OBS_BUCKET_NAME;
+    if (!bucketName) {
+      throw new Error('OBS_BUCKET_NAME não definida no .env');
+    }
+    const extensaoPermitida = ['.pdf', '.png', '.jpg', '.jpeg'];
+    const fileExt = path.extname(file.originalname).toLowerCase();
+
+    if (!extensaoPermitida.includes(fileExt)) {
+      throw new Error('Extensão de arquivo não suportada. Envie PDF, PNG ou JPG.');
+    }
+
     const tempDir = os.tmpdir();
-    const tempFilePath = path.join(tempDir, 'comprovante.pdf');
+    const tempFilePath = path.join(tempDir, `comprovante${fileExt}`);
     fs.writeFileSync(tempFilePath, file.buffer);
     const fileStream = fs.createReadStream(tempFilePath);
 
-    const bucketName = 'itesp-ccp';
-    const objectKey = `SQE_${SQE_ID_CODIGO}/comprovante.pdf`;
+    const folder = `SQE_${SQE_ID_CODIGO}`;
+    const objectKey = `${folder}/comprovante${fileExt}`;
+
+    // Deleta os arquivos antigos (pdf, png, jpg)
+    const extensoes = ['.pdf', '.png', '.jpg'];
+    for (const ext of extensoes) {
+      const oldKey = `${folder}/comprovante${ext}`;
+      try {
+        await this.obsClient.deleteObject({ Bucket: bucketName, Key: oldKey });
+      } catch (err) {
+        // Se o arquivo não existir, apenas ignora o erro
+        if (err.code !== 'NoSuchKey') {
+          console.error(`Erro ao tentar deletar ${oldKey}`, err);
+        }
+      }
+    }
 
     return new Promise((resolve, reject) => {
       this.obsClient.putObject(
@@ -53,7 +119,6 @@ export class docsService {
           Bucket: bucketName,
           Key: objectKey,
           Body: fileStream,
-          ContentType: 'application/pdf',
         },
         (err, result) => {
           if (err) {
