@@ -470,7 +470,7 @@ export class SaqueService {
   }
 
   async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto> {
-    let destino: Destino | null = null;
+    let destino = {} as Destino;
     try {
       const consulta = await this.buscarConsulta(params.SQE_ID_CODIGO);
 
@@ -500,7 +500,7 @@ export class SaqueService {
       const rnus = getRnus(consulta);
 
       const { calcDiaraInial, calcDiaraRetorn, diariaIntegral, diaraPorc } =
-        await this.calcularDiarias(consulta, rnus, UFESP, UFESPcargoValor, destino as Destino);
+        await this.calcularDiarias(consulta, rnus, UFESP, UFESPcargoValor, destino);
 
       const { vlExtornoIntegral, vlExtornParcial, vlDevolucaoIntegral, vlDevolucaoParcial } =
         this.calcularExtornosEDevolucoes(calcDiaraInial, calcDiaraRetorn);
