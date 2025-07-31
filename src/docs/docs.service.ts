@@ -6,7 +6,6 @@ import * as OBS from 'esdk-obs-nodejs';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
-import { generateUniqueFileName } from 'src/util/nomearArquivo';
 
 @Injectable()
 export class docsService {
@@ -20,57 +19,99 @@ export class docsService {
     });
   }
 
-  async getDocumentLink(ID_DOC: number) {
-    try {
-      const doc = await this.documentosService.findOne(ID_DOC);
-      const fullKey = `${doc.SQE_ID_CODIGO}/${doc.NOME_DOCUMENTO}`;
-      const result = this.obsClient.createSignedUrlSync({
-        Method: 'GET',
-        Bucket: 'itesp-ccp',
-        Key: fullKey,
-        Expires: 3600, // Expiração da URL (1 hora neste caso)
-        ResponseContentDisposition: 'inline', // Exibe o arquivo diretamente no navegador
-        ResponseContentType: 'application/pdf', // Tipo de conteúdo para PDF
-      });
-
-      // Retorna a URL gerada
-      return { url: result.SignedUrl };
-    } catch (err) {
-      console.error(err);
-      throw new HttpException('Erro ao gerar URL do arquivo', HttpStatus.INTERNAL_SERVER_ERROR);
+  async getDocumentLink(SQE_ID_CODIGO: number) {
+    const bucketName = process.env.OBS_BUCKET_NAME;
+    if (!bucketName) {
+      throw new Error('OBS_BUCKET_NAME não definida no .env');
     }
+    const folder = `SQE_${SQE_ID_CODIGO}`;
+    const extensoes = ['.pdf', '.png', '.jpg'];
+
+    for (const ext of extensoes) {
+      const objectKey = `${folder}/comprovante${ext}`;
+      try {
+        // Tenta gerar URL assinada
+        const result = this.obsClient.createSignedUrlSync({
+          Method: 'GET',
+          Bucket: bucketName,
+          Key: objectKey,
+          Expires: 3600, // 1 hora
+        });
+
+        // Se conseguiu, retorna a URL
+        return { url: result.SignedUrl };
+      } catch (err) {
+        if (err.code !== 'NoSuchKey') {
+          console.error(`Erro ao buscar o arquivo: ${objectKey}`, err);
+        }
+      }
+    }
+
+    // Se não achou nenhuma das extensões
+    throw new HttpException('Arquivo do comprovante não encontrado', HttpStatus.NOT_FOUND);
+  }
+
+  async getDocumentName(SQE_ID_CODIGO: number): Promise<{ nome: string }> {
+    const bucketName = process.env.OBS_BUCKET_NAME;
+    if (!bucketName) {
+      throw new Error('OBS_BUCKET_NAME não definida no .env');
+    }
+    const folder = `SQE_${SQE_ID_CODIGO}`;
+    const extensoes = ['.pdf', '.png', '.jpg'];
+
+    for (const ext of extensoes) {
+      const objectKey = `${folder}/comprovante${ext}`;
+      try {
+        // Verifica se o objeto existe consultando os metadados
+        await this.obsClient.getObjectMetadata({
+          Bucket: bucketName,
+          Key: objectKey,
+        });
+
+        return { nome: `comprovante${ext}` };
+      } catch (err) {
+        if (err.code !== 'NoSuchKey') {
+          console.error(`Erro ao buscar o arquivo: ${objectKey}`, err);
+        }
+      }
+    }
+
+    throw new HttpException('Arquivo do comprovante não encontrado', HttpStatus.NOT_FOUND);
   }
 
   async docsToOBS(file: FileDto, SQE_ID_CODIGO: number) {
+    const bucketName = process.env.OBS_BUCKET_NAME;
+    if (!bucketName) {
+      throw new Error('OBS_BUCKET_NAME não definida no .env');
+    }
+    const extensaoPermitida = ['.pdf', '.png', '.jpg', '.jpeg'];
+    const fileExt = path.extname(file.originalname).toLowerCase();
+
+    if (!extensaoPermitida.includes(fileExt)) {
+      throw new Error('Extensão de arquivo não suportada. Envie PDF, PNG ou JPG.');
+    }
+
     const tempDir = os.tmpdir();
-    const tempFilePath = path.join(tempDir, file.originalname);
+    const tempFilePath = path.join(tempDir, `comprovante${fileExt}`);
     fs.writeFileSync(tempFilePath, file.buffer);
     const fileStream = fs.createReadStream(tempFilePath);
 
-    const bucketName = 'itesp-ccp';
-    const nomeArquivo = Buffer.from(file.originalname, 'latin1').toString('utf8');
-    const nomeArquivoFinal = generateUniqueFileName(nomeArquivo, SQE_ID_CODIGO);
-    const objectKey = `DIARIAS_${SQE_ID_CODIGO}/${nomeArquivoFinal}`;
+    const folder = `SQE_${SQE_ID_CODIGO}`;
+    const objectKey = `${folder}/comprovante${fileExt}`;
 
-    const dados = {
-      NOME_DOCUMENTO: nomeArquivoFinal,
-      SQE_ID_CODIGO,
-      ORIGINAL_NAME: nomeArquivo,
-    };
-
-    let existe = [];
-
-    try {
-      existe = await this.documentosService.findBySQE_ID_CODIGO(SQE_ID_CODIGO);
-    } catch (error) {
-      console.log('Documento não encontrado');
+    // Deleta os arquivos antigos (pdf, png, jpg)
+    const extensoes = ['.pdf', '.png', '.jpg'];
+    for (const ext of extensoes) {
+      const oldKey = `${folder}/comprovante${ext}`;
+      try {
+        await this.obsClient.deleteObject({ Bucket: bucketName, Key: oldKey });
+      } catch (err) {
+        // Se o arquivo não existir, apenas ignora o erro
+        if (err.code !== 'NoSuchKey') {
+          console.error(`Erro ao tentar deletar ${oldKey}`, err);
+        }
+      }
     }
-
-    if (existe.length > 0) {
-      throw new HttpException('Comprovante já enviado para este saque', HttpStatus.CONFLICT);
-    }
-
-    await this.documentosService.create(dados);
 
     return new Promise((resolve, reject) => {
       this.obsClient.putObject(
@@ -78,7 +119,6 @@ export class docsService {
           Bucket: bucketName,
           Key: objectKey,
           Body: fileStream,
-          ContentType: 'application/pdf',
         },
         (err, result) => {
           if (err) {
