@@ -245,6 +245,14 @@ export class PrestacaoDto {
   @ApiProperty()
   RNU_ID_CODIGO: number;
   @ApiProperty()
+  RNU_DTINICIO: Date;
+  @ApiProperty()
+  RNU_HORAINICIO: string;
+  @ApiProperty()
+  RNU_DTFIM: Date;
+  @ApiProperty()
+  RNU_HORAFIM: string;
+  @ApiProperty()
   CHAPA: string;
   @ApiProperty()
   SQE_VLPREST: number;
@@ -286,14 +294,7 @@ export class PrestacaoDto {
   CTR_STATUS: string;
   @ApiProperty()
   STATUS: string;
-  @ApiProperty()
-  ITI_DTSAIDA: Date;
-  @ApiProperty()
-  ITI_HSAIDA: string;
-  @ApiProperty()
-  ITI_DTCHEGADA: Date;
-  @ApiProperty()
-  ITI_HCHEGADA: string;
+
   //DIARIAS-QUANTIDADES
   @ApiProperty()
   INTPREV: number;
@@ -375,10 +376,10 @@ export class PrestacaoDto {
     this.REQ_GOVERNADOR = params.REQ_GOVERNADOR;
     this.REQ_MOTIVO = params.REQ_MOTIVO;
     this.CTR_STATUS = params.CTR_STATUS;
-    this.ITI_DTSAIDA = params.ITI_DTSAIDA;
-    this.ITI_HSAIDA = params.ITI_HSAIDA;
-    this.ITI_DTCHEGADA = params.ITI_DTCHEGADA;
-    this.ITI_HCHEGADA = params.ITI_HCHEGADA;
+    this.RNU_DTINICIO = params.RNU_DTINICIO;
+    this.RNU_HORAINICIO = params.RNU_HORAINICIO;
+    this.RNU_DTFIM = params.RNU_DTFIM;
+    this.RNU_HORAFIM = params.RNU_HORAFIM;
     this.INTPREV = params.INTPREV;
     this.PARPREV = params.PARPREV;
     this.INTREAL = params.INTREAL;
@@ -442,10 +443,6 @@ export class SaquePrestDto {
   REQ_GOVERNADOR: string;
   REQ_MOTIVO: string;
   CTR_STATUS: string;
-  ITI_DTSAIDA: Date;
-  ITI_HSAIDA: string;
-  ITI_DTCHEGADA: Date;
-  ITI_HCHEGADA: string;
   INTREAL: number;
   PARREAL: number;
   VLINTEGRAL: number;
@@ -491,10 +488,6 @@ export class SaquePrestDto {
     this.REQ_GOVERNADOR = params.REQ_GOVERNADOR;
     this.REQ_MOTIVO = params.REQ_MOTIVO;
     this.CTR_STATUS = params.CTR_STATUS;
-    this.ITI_DTSAIDA = params.ITI_DTSAIDA;
-    this.ITI_HSAIDA = params.ITI_HSAIDA;
-    this.ITI_DTCHEGADA = params.ITI_DTCHEGADA;
-    this.ITI_HCHEGADA = params.ITI_HCHEGADA;
     this.INTREAL = params.INTREAL;
     this.PARREAL = params.PARREAL;
     this.VLINTEGRAL = params.VLINTEGRAL;
@@ -813,6 +806,10 @@ export class buscarSaqueDto {
   PRA_ATIVO?: string;
   REQ_ID_CODIGO?: number;
   RNU_ID_CODIGO?: number;
+  RNU_DTINICIO?: Date;
+  RNU_HORAINICIO?: string;
+  RNU_DTFIM?: Date;
+  RNU_HORAFIM?: string;
   REQ_STATUS?: string;
   REQ_DTSAIDA?: Date;
   REQ_HSAIDA?: string;

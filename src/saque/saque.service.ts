@@ -4,13 +4,13 @@ import {
   SaqueDto,
   PrestacaoDto,
   SolitarDto,
-  DateTimeParams,
   returnSaqueDto,
   buscarSaqueDto,
   ParamsPendente,
   ParamsCancela,
   InsSaqueDto,
   ParamsAltera,
+  DateTimeParams,
 } from './saque.dto';
 
 import { SaqueEntity } from '../database/db_oracle/entities/saque.entity';
@@ -18,7 +18,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { calcularValores } from '../util/calculo_extorno';
 import { formatDates } from '../util/formatStarDateEndDate';
-import { ItinirarioService } from '../itinirario/itinirario.service';
 import {
   calcQuantDiariaIntegralParcialPorcen,
   calcularDiariaValores,
@@ -72,20 +71,22 @@ import { filtrarSetorLike } from '../util/permissao/porSecao';
 import { PpessoaService } from '../ppessoa/ppessoa.service';
 import { SaqueTipoN } from '../util/enums/sqeefetivo';
 
-function getDateTimeParams(consulta: any, itinerario: any): DateTimeParams {
-  return consulta.TRA_ID_CODIGO === 1
-    ? {
-        dataSaida: itinerario.ITI_DTSAIDA,
-        horaSaida: itinerario.ITI_HSAIDA,
-        dataChegada: itinerario.ITI_DTCHEGADA,
-        horaChegada: itinerario.ITI_HCHEGADA,
-      }
-    : {
-        dataSaida: consulta.REQ_DTSAIDA,
-        horaSaida: consulta.REQ_HSAIDA,
-        dataChegada: consulta.REQ_DTRET,
-        horaChegada: consulta.REQ_HRET,
-      };
+function getRnus(consulta: any): DateTimeParams {
+  if (consulta.RNU_DTINICIO) {
+    return {
+      dataSaida: consulta.RNU_DTINICIO,
+      horaSaida: consulta.RNU_HORAINICIO,
+      dataChegada: consulta.RNU_DTFIM,
+      horaChegada: consulta.RNU_HORAFIM,
+    };
+  } else {
+    return {
+      dataSaida: consulta.REQ_DTSAIDA,
+      horaSaida: consulta.REQ_HSAIDA,
+      dataChegada: consulta.REQ_DTRET,
+      horaChegada: consulta.REQ_HRET,
+    };
+  }
 }
 
 @Injectable()
@@ -93,7 +94,6 @@ export class SaqueService {
   constructor(
     @InjectRepository(SaqueEntity, 'oracleConnection')
     private readonly saqueRepository: Repository<SaqueEntity>,
-    private readonly itinerarioService: ItinirarioService,
     private readonly ufespService: UfespService,
     private readonly despesaDiaria: DespesadiariaService,
     private readonly reqtransService: reqtransService,
@@ -131,6 +131,10 @@ export class SaqueService {
       PRA_ATIVO: itensreq.PRA_ATIVO,
       REQ_ID_CODIGO: reqnumerario.REQ_ID_CODIGO,
       RNU_ID_CODIGO: reqnumerario.RNU_ID_CODIGO,
+      RNU_DTINICIO: reqnumerario.RNU_DTINICIO,
+      RNU_HORAINICIO: reqnumerario.RNU_HORAINICIO,
+      RNU_DTFIM: reqnumerario.RNU_DTFIM,
+      RNU_HORAFIM: reqnumerario.RNU_HORAFIM,
       REQ_STATUS: reqtrans.REQ_STATUS,
       REQ_DTSAIDA: reqtrans.REQ_DTSAIDA,
       REQ_HSAIDA: reqtrans.REQ_HSAIDA,
@@ -149,15 +153,6 @@ export class SaqueService {
     };
 
     return saquedto;
-  }
-
-  private async buscarItinerario(reqIdCodigo: number) {
-    try {
-      return await this.itinerarioService.findUltimo(reqIdCodigo);
-    } catch (error) {
-      console.error('Erro ao buscar itinerário:', error);
-      return null;
-    }
   }
 
   private async buscarUfesp(dataSaida: string): Promise<number> {
@@ -192,14 +187,12 @@ export class SaqueService {
     try {
       let calcDiaraInial = null;
       let calcDiaraRetorn = null;
-
-      const itiDataHora = getDateTimeParams(consulta, itinerario);
       const nt = await this.naotrabservice.totalDiariaNaoTrabalhada(consulta.REQ_ID_CODIGO);
 
       const diariaNaoTrabalhada = nt.total || 0;
 
       const { diariaIntegral, diariaParcial, diaraPorc } = calcQuantDiariaIntegralParcialPorcen(
-        itiDataHora,
+        itinerario,
         diariaNaoTrabalhada,
       );
 
@@ -222,7 +215,7 @@ export class SaqueService {
         pacote,
         diariaIntegral,
         diariaParcial,
-        itiDataHora.horaChegada,
+        itinerario.horaChegada,
       );
 
       return {
@@ -261,12 +254,7 @@ export class SaqueService {
 
   private async buscarDadosNecessarios(consulta: any) {
     try {
-      const [itinerario, UFESP, UFESPcargoValor] = await Promise.all([
-        this.buscarItinerario(consulta.REQ_ID_CODIGO).catch((error) => {
-          console.log(error);
-          throw new HttpException('Erro ao buscar itinerário: ', HttpStatus.INTERNAL_SERVER_ERROR);
-        }),
-
+      const [UFESP, UFESPcargoValor] = await Promise.all([
         this.buscarUfesp(consulta.REQ_DTSAIDA).catch((error) => {
           console.log(error);
           throw new HttpException(
@@ -279,7 +267,7 @@ export class SaqueService {
         }),
       ]);
 
-      return { itinerario, UFESP, UFESPcargoValor };
+      return { UFESP, UFESPcargoValor };
     } catch (error) {
       throw error instanceof HttpException
         ? error
@@ -482,7 +470,7 @@ export class SaqueService {
   }
 
   async findPrestacao(params: FindParamsSaque): Promise<PrestacaoDto> {
-    let destino: Destino | null = null;
+    let destino = {} as Destino;
     try {
       const consulta = await this.buscarConsulta(params.SQE_ID_CODIGO);
 
@@ -493,14 +481,7 @@ export class SaqueService {
         );
       }
 
-      const { itinerario, UFESP, UFESPcargoValor } = await this.buscarDadosNecessarios(consulta);
-
-      if (!itinerario && consulta.TRA_ID_CODIGO === 1) {
-        throw new HttpException(
-          'Meio de transporte veiculo sem itinerário!!!',
-          HttpStatus.NOT_FOUND,
-        );
-      }
+      const { UFESP, UFESPcargoValor } = await this.buscarDadosNecessarios(consulta);
 
       try {
         destino = verificarDestino(consulta.MUN_ID_CODIGO) as Destino;
@@ -516,15 +497,10 @@ export class SaqueService {
         consulta.SQE_DTPREST,
         consulta.SQE_VLPREST,
       );
+      const rnus = getRnus(consulta);
 
       const { calcDiaraInial, calcDiaraRetorn, diariaIntegral, diaraPorc } =
-        await this.calcularDiarias(
-          consulta,
-          itinerario,
-          UFESP,
-          UFESPcargoValor,
-          destino as Destino,
-        );
+        await this.calcularDiarias(consulta, rnus, UFESP, UFESPcargoValor, destino);
 
       const { vlExtornoIntegral, vlExtornParcial, vlDevolucaoIntegral, vlDevolucaoParcial } =
         this.calcularExtornosEDevolucoes(calcDiaraInial, calcDiaraRetorn);
@@ -552,6 +528,10 @@ export class SaqueService {
         REQ_ID_CODIGO: consulta.REQ_ID_CODIGO,
         SQE_ID_CODIGO: consulta.SQE_ID_CODIGO,
         RNU_ID_CODIGO: consulta.RNU_ID_CODIGO,
+        RNU_DTINICIO: consulta.RNU_DTINICIO,
+        RNU_HORAINICIO: consulta.RNU_HORAINICIO,
+        RNU_DTFIM: consulta.RNU_DTFIM,
+        RNU_HORAFIM: consulta.RNU_HORAFIM,
         CHAPA: consulta.CHAPA,
         SQE_DTPREST: consulta.SQE_DTPREST,
         SQE_VLPREST: consulta.IRR_VALOR_PREST,
@@ -571,10 +551,6 @@ export class SaqueService {
         REQ_MOTIVO: consulta.REQ_MOTIVO,
         CTR_STATUS: consulta.CTR_STATUS,
         STATUS,
-        ITI_DTSAIDA: itinerario?.ITI_DTSAIDA,
-        ITI_HSAIDA: itinerario?.ITI_HSAIDA,
-        ITI_DTCHEGADA: itinerario?.ITI_DTCHEGADA,
-        ITI_HCHEGADA: itinerario?.ITI_HCHEGADA,
         SQE_VLSAQUE: Number(consulta.SQE_VLSAQUE) || 0,
         INTREAL: diariaIntegral,
         PARREAL: calcDiaraRetorn.PARPERC,
